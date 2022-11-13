@@ -90,7 +90,25 @@ int main (int argv, char** argc) {
   rokz::GetDeviceQueue (&glob.queues.graphics, glob.queue_fams.graphics.value(), glob.device);
 
   rokz::GetDeviceQueue (&glob.queues.present, glob.queue_fams.present.value(), glob.device);
+
+
   
+  rokz::CreateSwapchain (glob.swapchain, glob.create_info.swapchain,
+                         glob.surface, glob.physical_device,
+                         glob.device,  glob.glfwin);
+
+
+  std::vector<VkImage> swapchain_images;
+  rokz::GetSwapChainImages (swapchain_images, glob.swapchain, glob.device); 
+                            
+  rokz::CreateImageViews; //  (std::vector<VkImageView>& swapchain_imageviews);
+
+  rokz::CreatePipeline; 
+
+
+  
+  //
+  //
   const double time_per_frame_sec = 1.0 / 60.0;
   dt = time_per_frame_sec; // just do this for now
   
@@ -126,12 +144,13 @@ int main (int argv, char** argc) {
   }
   // end loop
 
-  if (!run) { 
-    std::this_thread::sleep_for (std::chrono::milliseconds (1000)); 
+  if (!run) {
+    printf ("config just exit atm\n"); 
+    std::this_thread::sleep_for (std::chrono::milliseconds (300)); 
   }
 
   // CLEAN UP
-  rokz::Cleanup (glob.surface, glob.glfwin , glob.device, glob.instance);
+  rokz::Cleanup (glob.swapchain, glob.surface, glob.glfwin , glob.device, glob.instance);
   //void Cleanup (VkSurfaceKHR& surf, GLFWwindow* w, VkDevice& dev, VkInstance &vkinst);
   glfwTerminate();
 

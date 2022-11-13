@@ -1,5 +1,6 @@
 #include "rokz.h"
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 
 
 const bool kEnableValidationLayers = true;
@@ -408,9 +409,11 @@ rokz::Glob& rokz::Default (rokz::Glob& g) {
   g.create_info.instance= {};
   g.create_info.device  = {};
   g.create_info.queue   = {};
+  g.create_info.swapchain= {};
   g.queue_fams = {}; 
   g.queue_fams.graphics.reset();
   g.queue_fams.present.reset();
+
   return g; 
 }  
 
@@ -423,6 +426,16 @@ VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& info, uint32_t 
 
   return info; 
 }
+
+VkSwapchainCreateInfoKHR& rokz::Default (VkSwapchainCreateInfoKHR& info, const VkSurfaceKHR& surf) {
+  
+  info.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  info.surface = surf;
+
+  return info; 
+}
+
+
 
 VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats) {
   
@@ -505,7 +518,7 @@ VkPresentModeKHR rokz::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkExtent2D ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* win) {
+VkExtent2D rokz::ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* win) {
 
   if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
     return capabilities.currentExtent;
@@ -525,6 +538,132 @@ VkExtent2D ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities, GLFWw
     return actual_extent;
   }
 }
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateSwapchain (VkSwapchainKHR& swapchain, 
+                            VkSwapchainCreateInfoKHR& swapchaincreateinfo,
+                            const VkSurfaceKHR& surf,
+                            const VkPhysicalDevice& physdev, 
+                            const VkDevice& dev, 
+                            GLFWwindow* glfwin) {
+  printf ("%s", __FUNCTION__);
+
+  rokz::SwapchainSupportInfo swapchain_supp_info {};
+  QuerySwapchainSupport (swapchain_supp_info, surf, physdev); 
+  
+  Default (swapchaincreateinfo, surf); 
+  VkSurfaceFormatKHR surface_format = ChooseSwapSurfaceFormat (swapchain_supp_info.formats);
+  VkPresentModeKHR   present_mode   = ChooseSwapPresentMode   (swapchain_supp_info.present_modes);
+  VkExtent2D         extent         = ChooseSwapExtent        (swapchain_supp_info.capabilities, glfwin);
+  
+
+  uint32_t image_count = swapchain_supp_info.capabilities.minImageCount + 1; 
+  if (swapchain_supp_info.capabilities.maxImageCount > 0 && image_count > swapchain_supp_info.capabilities.maxImageCount) {
+    image_count = swapchain_supp_info.capabilities.maxImageCount;
+  }
+
+  swapchaincreateinfo.minImageCount = image_count;
+  swapchaincreateinfo.imageFormat = surface_format.format;
+  swapchaincreateinfo.imageColorSpace = surface_format.colorSpace;
+  swapchaincreateinfo.imageExtent = extent;
+  swapchaincreateinfo.imageArrayLayers = 1;
+  swapchaincreateinfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+
+  QueueFamilyIndices que_fam_inds; 
+  FindQueueFamilies (que_fam_inds, surf, physdev); 
+
+  uint32_t fam_inds[] = {
+
+    que_fam_inds.graphics.value(),
+    que_fam_inds.present.value (),
+    
+  }; 
+  
+  if (que_fam_inds.graphics != que_fam_inds.present) {
+    printf ("[VK_SHARING_MODE_CONCURRENT]\n");
+    swapchaincreateinfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    swapchaincreateinfo.queueFamilyIndexCount = 2;
+    swapchaincreateinfo.pQueueFamilyIndices = fam_inds;
+  } else {
+    printf ("[VK_SHARING_MODE_EXCLUSIVE]\n");
+    swapchaincreateinfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchaincreateinfo.queueFamilyIndexCount = 0;     // Optional
+    swapchaincreateinfo.pQueueFamilyIndices = nullptr; // Optional
+  }
+
+  swapchaincreateinfo.preTransform   = swapchain_supp_info.capabilities.currentTransform;
+  swapchaincreateinfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+  swapchaincreateinfo.presentMode    = present_mode; 
+  swapchaincreateinfo.clipped        = VK_TRUE;
+  swapchaincreateinfo.oldSwapchain   = VK_NULL_HANDLE;
+
+  if (vkCreateSwapchainKHR (dev, &swapchaincreateinfo, nullptr, &swapchain) != VK_SUCCESS) {
+    printf ("failed to create swap chain!\n");
+    printf ("LEAVING[FALSE] %s\n", __FUNCTION__);
+    return false; 
+  }
+
+  printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
+  return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::GetSwapChainImages (std::vector<VkImage> &swapchain_images,
+                               VkSwapchainKHR& swapchain,
+                               const VkDevice& dev) {
+  printf ("%s\n", __FUNCTION__);
+
+  uint32_t image_count = 0; 
+
+  VkResult res;
+  res = vkGetSwapchainImagesKHR(dev, swapchain, &image_count, nullptr);
+  if (res != VK_SUCCESS) {
+    printf ("LEAVING[FALSE] %s\n", __FUNCTION__);
+    return false;
+  }
+  swapchain_images.resize(image_count);
+  res = vkGetSwapchainImagesKHR (dev, swapchain, &image_count, &swapchain_images[0]);
+  if (res != VK_SUCCESS) {
+    printf ("LEAVING[FALSE] %s\n", __FUNCTION__);
+    return false;
+  }
+
+  printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
+  return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateImageViews(std::vector<VkImageView> &swapchain_imageviews) {
+  
+  return false;   
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreatePipeline (){
+
+  return false; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::Initialize (Glob& glob) {
+
+
+  return false; 
+}
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -532,11 +671,13 @@ void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& devic
   const uint32_t que_index = 0; // diffrnt than que_fam_ind
   return vkGetDeviceQueue (device, fam_ind, que_index, que);
 }
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-void rokz::Cleanup (VkSurfaceKHR& surf, GLFWwindow* w , VkDevice& dev, VkInstance &inst) {
 
+// ---------------------------------------------------------------------
+// DESTROY ALL THE THINGS
+// ---------------------------------------------------------------------
+void rokz::Cleanup (VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, GLFWwindow* w , VkDevice& dev, VkInstance &inst) {
+
+  vkDestroySwapchainKHR(dev, swapchain, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr); 
   vkDestroyDevice (dev, nullptr); 
   vkDestroyInstance(inst, nullptr);
