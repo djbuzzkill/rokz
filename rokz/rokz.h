@@ -44,7 +44,7 @@
 
 namespace rokz {
 
-  typedef std::optional<unsigned int> MaybeIndex;
+  typedef std::optional<uint32_t> MaybeIndex;
 
 
   struct QueueFamilyIndices {
@@ -52,7 +52,6 @@ namespace rokz {
     MaybeIndex present; 
   };
 
-  
   //
   struct CreateInfo {
     VkInstanceCreateInfo     instance; // {};
@@ -60,6 +59,13 @@ namespace rokz {
     VkDeviceQueueCreateInfo  queue;
   };
 
+
+  struct SwapchainSupportInfo {
+    VkSurfaceCapabilitiesKHR        capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR>   present_modes;    
+  };   
+  
   //
   struct Glob {
     
@@ -69,19 +75,16 @@ namespace rokz {
     VkPhysicalDevice      physical_device;
     VkPhysicalDeviceFeatures device_features;
 
-    VkDevice              device;
+    // device + queues?
     GLFWwindow*           glfwin;
+    VkSurfaceKHR          surface;
+    VkDevice              device;
+    struct { VkQueue graphics; VkQueue present; } queues;
 
     QueueFamilyIndices    queue_fams;
     float                 queue_priority;
     
-    struct { VkQueue graphics; VkQueue present; } queues;
-
-    VkSurfaceKHR          surface;
-    
     CreateInfo            create_info;
-
-    
     // bool               enable_validation;
   };
 
@@ -100,6 +103,12 @@ namespace rokz {
                                          const VkSurfaceKHR& surf,
                                          const VkPhysicalDevice& physdev);
 
+
+  SwapchainSupportInfo& QuerySwapchainSupport (SwapchainSupportInfo& deets,
+                                               const VkSurfaceKHR& surf,
+                                               const VkPhysicalDevice& dev); 
+
+  
   GLFWwindow* CreateWindow_glfw (GLFWwindow*& w);
   bool CheckValidationSupport (const std::vector<const char*>& validation_layers);
   int  CreateInstance (Glob& glob);
@@ -117,10 +126,15 @@ namespace rokz {
 
   void Cleanup (VkSurfaceKHR& surf, GLFWwindow* w, VkDevice& dev, VkInstance &vkinst);
 
+  VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats);
+  VkPresentModeKHR   ChooseSwapPresentMode  (const std::vector<VkPresentModeKHR>& available_modes);
+  VkExtent2D         ChooseSwapExtent       (const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* win);
+  
+
 
   // TODO
   bool CreateSurface    (VkSurfaceKHR* surf, GLFWwindow* glfwin , const VkInstance& inst);
-  void CreateSwapChain  (); 
+  void CreateSwapchain  (); 
   void CreateImageViews (); 
   void CreateRenderPass ();
   void CreatePipeline   (); 

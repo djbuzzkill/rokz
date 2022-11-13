@@ -21,6 +21,7 @@ void UpdateState(rokz::Glob& glob, double dt) {
 
 //
 void Render(rokz::Glob &glob, double dt) {
+
   
 }
 
@@ -41,7 +42,6 @@ int main (int argv, char** argc) {
   
   glfwInit();
 
-
   rokz::CreateWindow_glfw (glob.glfwin);
 
   rokz::CreateInstance    (glob);
@@ -51,15 +51,41 @@ int main (int argv, char** argc) {
   rokz::SelectPhysicalDevice (glob.physical_device, glob.queue_fams, glob.surface, glob.instance);
 
   // queue info
+
+  //rokz:: QueueFamilyIndices fam_inds;
+
+  //fam_inds.graphics =  glob.queue_fams.graphics;
+  //fam_inds.present =  glob.queue_fams.present;
+  
+  
+  try {
   glob.queue_priority = 1.0f;
-  rokz::Default (glob.create_info.queue, glob.queue_fams.graphics.value(), &glob.queue_priority);
+
+  if (glob.queue_fams.graphics.has_value()) {
+    printf ("HAS_VALUE:TRUE\n"); 
+  }
+  else  {
+    printf ("HAS_VALUE:FALSE\n"); 
+  }
+  
+  rokz::Default (glob.create_info.queue, glob.queue_fams.graphics.value() , &glob.queue_priority);
+  }
+  catch (std::bad_optional_access& badopt) {
+
+    printf ("61 bad_optional_access\n"); 
+  }
+  catch(...) {
+    
+    printf ("65 FindQueueFamileez\n"); 
+  }
   // device info
   rokz::Default (glob.create_info.device, &glob.create_info.queue, &glob.device_features); 
 
-  printf (" graphics ind[%u]\n",  glob.queue_fams.graphics.value()); 
+  
+  printf (" present ind[%u]\n",  glob.queue_fams.present.value());
   rokz::CreateLogicalDevice (&glob.device, &glob.create_info.device, glob.physical_device); 
+  printf (" graphics ind[%u]\n",  glob.queue_fams.graphics.value());
 
-  printf (" graphics ind[%u]\n",  glob.queue_fams.graphics.value()); 
   // get queue handle
   rokz::GetDeviceQueue (&glob.queues.graphics, glob.queue_fams.graphics.value(), glob.device);
 
