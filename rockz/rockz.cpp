@@ -5,13 +5,23 @@
 
 //#include "skittlez/skittlez.h"
 
-  //
-void UpdateInput(rokz::Glob& glob, double dt) {
+
+void SetupScene () {
+  printf ("lolz\n"); 
+}
+
+void ShutdownScene () {
+  printf ("lolz\n"); 
+}
+
+
+//
+void UpdateInput (rokz::Glob& glob, double dt) {
 
 }
 
   //
-void UpdateState(rokz::Glob& glob, double dt) {
+void UpdateScene (rokz::Glob& glob, double dt) {
 
   for (int i = 0; i < 1000000; ++i ) {
       
@@ -20,13 +30,9 @@ void UpdateState(rokz::Glob& glob, double dt) {
 }
 
 //
-void Render(rokz::Glob &glob, double dt) {
-
+void RenderScene (rokz::Glob &glob, double dt) {
   
 }
-
-
-
 
 //
 //
@@ -103,10 +109,10 @@ int main (int argv, char** argc) {
                             
   rokz::CreateImageViews; //  (std::vector<VkImageView>& swapchain_imageviews);
 
-  rokz::CreatePipeline; 
+  rokz::CreatePipeline;
 
 
-  
+  SetupScene (); 
   //
   //
   const double time_per_frame_sec = 1.0 / 60.0;
@@ -126,24 +132,29 @@ int main (int argv, char** argc) {
     printf("frame[%zu]\n", frame_counter++);
     auto start = std::chrono::high_resolution_clock::now();
 
-
     // while (!glfwWindowShouldClose(glob.glfwin)) {
     //     glfwPollEvents(); <-- not tested
     // }
-    
     UpdateInput(glob, dt);
-    UpdateState (glob, dt);
-    Render(glob, dt);
-    
+
+    UpdateScene (glob, dt);
+
+    RenderScene (glob, dt);
+
+
+    // how long did we take
     auto time_to_make_frame = std::chrono::high_resolution_clock::now() - start;
     if (time_to_make_frame  < time_per_frame) {
       auto sleep_time = time_per_frame - time_to_make_frame;
       std::this_thread::sleep_for (sleep_time); 
-      
     }
+
   }
   // end loop
 
+  ShutdownScene(); 
+
+  
   if (!run) {
     printf ("config just exit atm\n"); 
     std::this_thread::sleep_for (std::chrono::milliseconds (300)); 

@@ -181,7 +181,19 @@ namespace rokz {
 
   bool
   CreatePipeline   (); 
+
+  bool
+  CreateFrameBuffers ();
+
+  bool
+  CreateCommandPool (); 
   
+  bool
+  CreateCommandBuffer ();
+
+  bool
+  CreateSyncObjects ();
+
 } // namespace rokz
 
 #endif

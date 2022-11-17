@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 
+//#include <vulkan/vulkan.hpp>
+
 
 const bool kEnableValidationLayers = true;
   //#endif
@@ -85,9 +87,7 @@ rokz::QueueFamilyIndices& rokz::FindQueueFamilies (rokz::QueueFamilyIndices& ind
 
   vkGetPhysicalDeviceQueueFamilyProperties (physdev, &que_count, &que_fam_props[0]);
 
-  try {
-  
-    for (uint32_t ique = 0; ique < que_count; ++ique) {
+  for (uint32_t ique = 0; ique < que_count; ++ique) {
     
       VkBool32 present_support = VK_FALSE;
       vkGetPhysicalDeviceSurfaceSupportKHR (physdev, ique, surf, &present_support);
@@ -97,11 +97,11 @@ rokz::QueueFamilyIndices& rokz::FindQueueFamilies (rokz::QueueFamilyIndices& ind
 
         assert (inds.present.has_value ());
 
-        printf ("HAS PRESENT;\n"); 
+        printf ("found PRESENT queue;\n"); 
       }
       
       if (que_fam_props[ique].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-        printf ("HAS GRAPHICS;\n");
+        printf ("found GRAPHICS queue;\n");
         inds.graphics = ique;
 
         assert (inds.graphics.has_value()); 
@@ -118,20 +118,13 @@ rokz::QueueFamilyIndices& rokz::FindQueueFamilies (rokz::QueueFamilyIndices& ind
     }
   }
 
-  }
-  catch (std::bad_optional_access& badopt) {
-
-    printf ("bad_optional_access\n"); 
-  }
-  catch(...) {
-    
-    printf ("FindQueueFamileez\n"); 
-  }
   
   return inds;
 }
 
-
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device) {
   printf ("%s\n", __FUNCTION__);
 
@@ -144,31 +137,20 @@ bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device) {
   
   std::set<std::string> req_exts (&device_extensions[0], &device_extensions[device_extensions.size()]);
 
-  try {
+  // try {
   
-    printf ("looking for extensions:\n"); 
-    for (const auto& e : req_exts) {
-      printf ("  .. %s\n", e.c_str ()); 
-    }
-
-    printf("available extensions:\n");
-    for (const auto &extension : available_exts) {
-      printf("  .. %s\n", extension.extensionName);
-      req_exts.erase(extension.extensionName);
-    }
+  printf ("looking for extensions:\n"); 
+  for (const auto& e : req_exts) {
+    printf ("  .. %s\n", e.c_str ()); 
   }
-  catch (std::bad_optional_access& badopt) {
-
-    printf ("bad_optional_access\n"); 
+  
+  printf("available extensions:\n");
+  for (const auto &extension : available_exts) {
+    printf("  .. %s\n", extension.extensionName);
+    req_exts.erase(extension.extensionName);
   }
-  catch(...) {
-    
-    printf ("FindQueueFamileez\n"); 
-  }
-
     
   // printf ("LEAVING %s (empty:%s)\n", __FUNCTION__, req_exts.empty()? "TRUE" : "FALSE");
-
   return req_exts.empty();
 }
 
@@ -176,8 +158,8 @@ bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device) {
 //
 // ---------------------------------------------------------------------
 rokz::SwapchainSupportInfo& rokz::QuerySwapchainSupport (rokz::SwapchainSupportInfo& deets,
-                                                   const VkSurfaceKHR& surf,
-                                                   const VkPhysicalDevice& dev) {
+                                                         const VkSurfaceKHR&         surf,
+                                                         const VkPhysicalDevice&     dev) {
 
   printf ("%s\n", __FUNCTION__);
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR (dev, surf, &deets.capabilities);
@@ -187,7 +169,6 @@ rokz::SwapchainSupportInfo& rokz::QuerySwapchainSupport (rokz::SwapchainSupportI
   printf ("fmt_count[%u]\n", fmt_count); 
   
   if (fmt_count != 0) {
-
     deets.formats.resize(fmt_count);
     VkResult res = vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surf, &fmt_count, &deets.formats[0]);
   }
@@ -225,15 +206,12 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, const VkSurfaceKHR& sur
   
   rokz::SwapchainSupportInfo swapchain_supp_info {};
 
-  swapchain_supp_info.capabilities = {};
-  swapchain_supp_info.formats = {};
-  swapchain_supp_info.present_modes = {};
+  // swapchain_supp_info.capabilities = {};
+  // swapchain_supp_info.formats = {};
+  // swapchain_supp_info.present_modes = {};
 
   bool all_queues_available =
     AllQueuesAvailable (rokz::FindQueueFamilies (outind, surf, physdev)); 
-
-  // assert (outind.present.has_value());
-  // assert (outind.graphics.has_value());
   
   if (all_queues_available) {
     printf ("[all_queues_available]\n"); 
@@ -242,36 +220,28 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, const VkSurfaceKHR& sur
   if (exts_supported) {
 
     rokz::QuerySwapchainSupport(swapchain_supp_info, surf, physdev);
-
-    if (swapchain_supp_info.formats.empty())
-      printf ("!![swapchain_supp_info.formats.empty]\n"); 
-
-    if (swapchain_supp_info.present_modes.empty())
-      printf ("!![swapchain_supp_info.present_modes.empty]\n"); 
-    
+    // if (swapchain_supp_info.formats.empty())
+    //   printf ("!![swapchain_supp_info.formats.empty]\n"); 
+    // if (swapchain_supp_info.present_modes.empty())
+    //   printf ("!![swapchain_supp_info.present_modes.empty]\n"); 
     swapchain_adequate = !swapchain_supp_info.formats.empty() && !swapchain_supp_info.present_modes.empty();
   }
-
 
   if (swapchain_adequate) {
     printf ("[swapchain_adequate]\n"); 
   }
-  else{
+  else {
     printf ("[swapchain_inadequate]\n"); 
   }
   
-  
   vkGetPhysicalDeviceProperties(physdev, &devprops);
-  vkGetPhysicalDeviceFeatures(physdev, &devfeatures);
-
+  vkGetPhysicalDeviceFeatures  (physdev, &devfeatures);
   // bool device_is_suitable =
   //   devprops.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
   //   && devfeatures.geometryShader;
-
   return all_queues_available
     && exts_supported
     && swapchain_adequate; 
-
 }
 
 // ---------------------------------------------------------------------
@@ -318,12 +288,11 @@ bool rokz::SelectPhysicalDevice (VkPhysicalDevice&         physdev,
   return false; 
 }
 
-
-
-
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 std::vector<const char*>& GetRequiredExtensions (std::vector<const char*>&  exts) {
   exts.clear ();
-
 
   // GLFW REQ'D EXTENSIONS
   uint32_t glfw_ext_count = 0;
@@ -353,11 +322,11 @@ int rokz::CreateInstance(rokz::Glob& glob) {
   glob.app_info.apiVersion       = VK_API_VERSION_1_1;
   //glob.app_info.pNext = nullptr; 
 
-
   // VkInstanceCreateInfo
   glob.create_info.instance.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   glob.create_info.instance.pApplicationInfo = &glob.app_info;
-  
+
+  // 
   std::vector<const char*> req_exts; 
   GetRequiredExtensions (req_exts);  
   glob.create_info.instance.enabledExtensionCount = req_exts.size();
@@ -384,8 +353,7 @@ int rokz::CreateInstance(rokz::Glob& glob) {
     return __LINE__;
   }
   
-  printf("WOOOOO!!!1\n");
-  
+  printf("WoooooOOOooooOoooooooOOoOoOOOoooOoOOOOOOO!!!1\n");
   // ENUMERATEINSTANCEEXTENSIONPROPERTIES
   uint32_t ext_count = 0;
   vkEnumerateInstanceExtensionProperties (nullptr, &ext_count, nullptr);
@@ -417,7 +385,9 @@ rokz::Glob& rokz::Default (rokz::Glob& g) {
   return g; 
 }  
 
-VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority){
+VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& info,
+                                        uint32_t que_fam_index,
+                                        float* q_priority){
 
   info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO; 
   info.queueFamilyIndex = que_fam_index ; // glob.queue_fams.graphics.value();
@@ -427,7 +397,8 @@ VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& info, uint32_t 
   return info; 
 }
 
-VkSwapchainCreateInfoKHR& rokz::Default (VkSwapchainCreateInfoKHR& info, const VkSurfaceKHR& surf) {
+VkSwapchainCreateInfoKHR& rokz::Default (VkSwapchainCreateInfoKHR& info,
+                                         const VkSurfaceKHR&       surf) {
   
   info.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   info.surface = surf;
@@ -435,9 +406,9 @@ VkSwapchainCreateInfoKHR& rokz::Default (VkSwapchainCreateInfoKHR& info, const V
   return info; 
 }
 
-
-
-VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats) {
+VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo&       info,
+                                   VkDeviceQueueCreateInfo*  quecreateinfo,
+                                   VkPhysicalDeviceFeatures* devfeats) {
   
   info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   info.enabledExtensionCount = static_cast<uint32_t> (device_extensions.size ());
@@ -450,13 +421,9 @@ VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo& info, VkDeviceQueueCreate
   return info;
 }
 
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-//  rokz::CreateLogicalDevice (&glob.device, &glob.create_info.device, glob.physical_device); 
-
-
 bool rokz::CreateLogicalDevice (
     VkDevice*                 device,
     const VkDeviceCreateInfo* createinfo,
@@ -469,7 +436,6 @@ bool rokz::CreateLogicalDevice (
 
   return VK_SUCCESS == res; 
 }
-
 
 // ---------------------------------------------------------------------
 //
