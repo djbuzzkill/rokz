@@ -1,99 +1,12 @@
 
-#ifndef ROKZ_INCLUDE
-#define ROKZ_INCLUDE
+#ifndef ROKZ_FUNCS_INCLUDE
+#define ROKZ_FUNCS_INCLUDE
 
 
-
-#include <ctime>
-#include <cstdio>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <cassert>
-#include <cmath>
-#include <memory>
-#include <map>
-#include <set>
-#include <array>
-
-#include <vector>
-#include <string>
-#include <list>
-#include <algorithm>
-#include <tuple>
-#include <functional>
-#include <optional>
-#include <random>
-
-#include <chrono>
-#include <thread>
-#include <iostream>
-
-
-//#include <vulkan/vulkan.h> <--  GLFW_INCLUDE_VULKAN will do it for us
-#define VK_USE_PLATFORM_XCB_KHR
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#define GLFW_EXPOSE_NATIVE_X11
-#include <GLFW/glfw3native.h>
-
-#include <vulkan/vulkan_core.h>
-
+#include "common.h"
 
 
 namespace rokz {
-
-  typedef std::optional<uint32_t> MaybeIndex;
-
-
-  struct QueueFamilyIndices {
-    MaybeIndex graphics;
-    MaybeIndex present; 
-  };
-
-  //
-  struct CreateInfo {
-    VkInstanceCreateInfo     instance; // {};
-    VkDeviceCreateInfo       device;
-    VkDeviceQueueCreateInfo  queue;
-    VkSwapchainCreateInfoKHR swapchain;
-    VkImageViewCreateInfo    imageview; 
-
-  };
-
-
-  struct SwapchainSupportInfo {
-    VkSurfaceCapabilitiesKHR        capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR>   present_modes;    
-  };
-
-
-  //
-  struct Glob {
-    
-    VkApplicationInfo     app_info; // {};
-    VkInstance            instance;
-
-    VkPhysicalDevice      physical_device;
-    VkPhysicalDeviceFeatures device_features;
-    VkSwapchainKHR        swapchain;
-    std::vector<VkImage>  swapchain_images;
-    std::vector<VkImageView> swapchain_imageviews;
-
-  // device + queues?
-    GLFWwindow*           glfwin;
-    VkSurfaceKHR          surface;
-    VkDevice              device;
-    struct { VkQueue graphics; VkQueue present; } queues;
-
-    QueueFamilyIndices    queue_fams;
-    float                 queue_priority;
-    
-    CreateInfo            create_info;
-    // bool               enable_validation;
-  };
 
   bool
   Initialize (Glob& glob);

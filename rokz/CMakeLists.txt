@@ -5,11 +5,9 @@ project (rokz)
 #set ("CMAKE_CXX_FLAGS=-g -O0")
 #set ("CMAKE_C_FLAGS=-g -O0")
 
-
-
-
 #  
 set (ROKZ_HEADER_FILES
+  common.h
   rokz_types.h
   rokz_funcs.h
 )
