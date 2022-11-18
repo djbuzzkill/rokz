@@ -378,12 +378,20 @@ rokz::Glob& rokz::Default (rokz::Glob& g) {
   g.create_info.device  = {};
   g.create_info.queue   = {};
   g.create_info.swapchain= {};
+  g.create_info.imageview = {}; 
   g.queue_fams = {}; 
   g.queue_fams.graphics.reset();
   g.queue_fams.present.reset();
 
   return g; 
-}  
+}
+
+
+
+
+
+
+
 
 VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& info,
                                         uint32_t que_fam_index,
@@ -590,14 +598,17 @@ bool rokz::GetSwapChainImages (std::vector<VkImage> &swapchain_images,
 
   VkResult res;
   res = vkGetSwapchainImagesKHR(dev, swapchain, &image_count, nullptr);
+  
   if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] %s\n", __FUNCTION__);
+    printf ("LEAVING[FALSE] after image_count %s\n", __FUNCTION__);
     return false;
   }
+  printf ( "no. swapchain images[%u]\n", image_count); 
+
   swapchain_images.resize(image_count);
   res = vkGetSwapchainImagesKHR (dev, swapchain, &image_count, &swapchain_images[0]);
   if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] %s\n", __FUNCTION__);
+    printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
     return false;
   }
 
@@ -608,10 +619,55 @@ bool rokz::GetSwapChainImages (std::vector<VkImage> &swapchain_images,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateImageViews(std::vector<VkImageView> &swapchain_imageviews) {
+VkImageViewCreateInfo Default (VkImageViewCreateInfo& createinfo, 
+                               const VkImage&         image,
+                               VkFormat               fmt) {
+
+  createinfo = {}; 
+  createinfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  createinfo.image = image;
+  createinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  createinfo.format = fmt; 
+  createinfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  createinfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  createinfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  createinfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+  createinfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  createinfo.subresourceRange.baseMipLevel = 0;
+  createinfo.subresourceRange.levelCount = 1;
+  createinfo.subresourceRange.baseArrayLayer = 0;
+  createinfo.subresourceRange.layerCount = 1;
   
-  return false;   
 }
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateImageViews (std::vector<VkImageView>&  swapchain_imageviews,
+                            const std::vector<VkImage>& swapchain_images,
+                            VkFormat                    surf_fmt, 
+                            const VkDevice& dev) {
+
+  swapchain_imageviews.resize (swapchain_images.size()); 
+  
+  for (size_t i = 0; i < swapchain_imageviews.size(); i++) {
+
+    VkImageViewCreateInfo createinfo = {};
+
+    Default (createinfo, swapchain_images[i], surf_fmt); 
+
+    VkResult res = vkCreateImageView (dev, &createinfo, nullptr, &swapchain_imageviews[i]);
+    if (res != VK_SUCCESS) {
+      return false; 
+    }
+  }
+
+  return true;   
+}
+
+
+
 
 // ---------------------------------------------------------------------
 //
@@ -641,12 +697,23 @@ void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& devic
 // ---------------------------------------------------------------------
 // DESTROY ALL THE THINGS
 // ---------------------------------------------------------------------
-void rokz::Cleanup (VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, GLFWwindow* w , VkDevice& dev, VkInstance &inst) {
+void rokz::Cleanup(VkSwapchainKHR &swapchain,
+                   VkSurfaceKHR &surf,
+                   std::vector<VkImageView>& image_views, 
+
+                   GLFWwindow* w ,
+                   VkDevice& dev,
+                   VkInstance &inst) {
 
   vkDestroySwapchainKHR(dev, swapchain, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr); 
+  for (auto imageview : image_views) {
+    vkDestroyImageView(dev, imageview, nullptr);
+  }
+
   vkDestroyDevice (dev, nullptr); 
   vkDestroyInstance(inst, nullptr);
+
   
   glfwDestroyWindow(w);
 }

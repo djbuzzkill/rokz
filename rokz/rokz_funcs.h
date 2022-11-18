@@ -58,6 +58,8 @@ namespace rokz {
     VkDeviceCreateInfo       device;
     VkDeviceQueueCreateInfo  queue;
     VkSwapchainCreateInfoKHR swapchain;
+    VkImageViewCreateInfo    imageview; 
+
   };
 
 
@@ -65,8 +67,9 @@ namespace rokz {
     VkSurfaceCapabilitiesKHR        capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR>   present_modes;    
-  };   
-  
+  };
+
+
   //
   struct Glob {
     
@@ -76,7 +79,10 @@ namespace rokz {
     VkPhysicalDevice      physical_device;
     VkPhysicalDeviceFeatures device_features;
     VkSwapchainKHR        swapchain;
-    // device + queues?
+    std::vector<VkImage>  swapchain_images;
+    std::vector<VkImageView> swapchain_imageviews;
+
+  // device + queues?
     GLFWwindow*           glfwin;
     VkSurfaceKHR          surface;
     VkDevice              device;
@@ -143,6 +149,7 @@ namespace rokz {
   void
   Cleanup (VkSwapchainKHR& swapchain,
            VkSurfaceKHR& surf,
+           std::vector<VkImageView>& image_views, 
            GLFWwindow* w,
            VkDevice& dev,
            VkInstance &inst);
@@ -173,8 +180,11 @@ namespace rokz {
                            VkSwapchainKHR& swapchain,
                            const VkDevice& dev);
 
-  bool
-  CreateImageViews (std::vector<VkImageView>& swapchain_imageviews);
+  bool CreateImageViews(std::vector<VkImageView> &swapchain_imageviews,
+                        const std::vector<VkImage> &swapchain_images,
+                        VkFormat                    surf_fmt, 
+                        const VkDevice&             dev); 
+
 
   void
   CreateRenderPass ();

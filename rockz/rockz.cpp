@@ -23,10 +23,10 @@ void UpdateInput (rokz::Glob& glob, double dt) {
   //
 void UpdateScene (rokz::Glob& glob, double dt) {
 
-  for (int i = 0; i < 1000000; ++i ) {
+  // for (int i = 0; i < 1000000; ++i ) {
       
-    std::cos ( 3.1459265 * i * 0.000001); 
-  }
+  //   std::cos ( 3.1459265 * i * 0.000001); 
+  // }
 }
 
 //
@@ -64,7 +64,6 @@ int main (int argv, char** argc) {
   //fam_inds.present =  glob.queue_fams.present;
   
   
-  try {
   glob.queue_priority = 1.0f;
 
   if (glob.queue_fams.graphics.has_value()) {
@@ -75,15 +74,7 @@ int main (int argv, char** argc) {
   }
   
   rokz::Default (glob.create_info.queue, glob.queue_fams.graphics.value() , &glob.queue_priority);
-  }
-  catch (std::bad_optional_access& badopt) {
 
-    printf ("61 bad_optional_access\n"); 
-  }
-  catch(...) {
-    
-    printf ("65 FindQueueFamileez\n"); 
-  }
   // device info
   rokz::Default (glob.create_info.device, &glob.create_info.queue, &glob.device_features); 
 
@@ -103,13 +94,16 @@ int main (int argv, char** argc) {
                          glob.surface, glob.physical_device,
                          glob.device,  glob.glfwin);
 
+  
+  rokz::GetSwapChainImages (glob.swapchain_images, glob.swapchain, glob.device); 
 
-  std::vector<VkImage> swapchain_images;
-  rokz::GetSwapChainImages (swapchain_images, glob.swapchain, glob.device); 
-                            
-  rokz::CreateImageViews; //  (std::vector<VkImageView>& swapchain_imageviews);
+ 
+  rokz::CreateImageViews (glob.swapchain_imageviews,
+                          glob.swapchain_images,
+                          glob.create_info.swapchain.imageFormat, 
+                          glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
-  rokz::CreatePipeline;
+  rokz::CreatePipeline; 
 
 
   SetupScene (); 
@@ -161,7 +155,11 @@ int main (int argv, char** argc) {
   }
 
   // CLEAN UP
-  rokz::Cleanup (glob.swapchain, glob.surface, glob.glfwin , glob.device, glob.instance);
+  rokz::Cleanup (glob.swapchain, glob.surface,
+                 glob.swapchain_imageviews, 
+                 glob.glfwin ,
+                 glob.device,
+                 glob.instance);
   //void Cleanup (VkSurfaceKHR& surf, GLFWwindow* w, VkDevice& dev, VkInstance &vkinst);
   glfwTerminate();
 
