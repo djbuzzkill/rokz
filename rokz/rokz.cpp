@@ -40,7 +40,7 @@ GLFWwindow* rokz::CreateWindow_glfw (GLFWwindow*& w) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CheckValidationSupport (const std::vector<const char*>& validation_layers) {
+bool rokz::CheckValidationSupport (const std::vector<const char*>& val_layers) {
 
   printf ("%s\n", __FUNCTION__); 
 
@@ -51,7 +51,7 @@ bool rokz::CheckValidationSupport (const std::vector<const char*>& validation_la
 
   vkEnumerateInstanceLayerProperties(&layer_count, &available_layers[0]);
 
-  for (const char* layer_name : validation_layers) {
+  for (const char* layer_name : val_layers) {
     printf ("   LOOKING FOR[%s]\n", layer_name);
     bool layer_found = false;
 
@@ -314,45 +314,46 @@ std::vector<const char*>& GetRequiredExtensions (std::vector<const char*>&  exts
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-//, const std::vector<const char*>& validation_layers
-int rokz::CreateInstance(rokz::Glob& glob) {
-  
+//int rokz::CreateInstance (Instance, appinfo, createinfo)
+
+int rokz::CreateInstance (VkInstance& instance, VkApplicationInfo& app_info, VkInstanceCreateInfo& inst_info) {
+
   // VkApplicationInfo
-  glob.app_info.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  glob.app_info.pApplicationName = "Hello Triangle";
-  glob.app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-  glob.app_info.pEngineName      = "No Engine";
-  glob.app_info.engineVersion    = VK_MAKE_VERSION(1, 1, 0);
-  glob.app_info.apiVersion       = VK_API_VERSION_1_1;
+  app_info.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  app_info.pApplicationName = "Hello Triangle";
+  app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+  app_info.pEngineName      = "No Engine";
+  app_info.engineVersion    = VK_MAKE_VERSION(1, 1, 0);
+  app_info.apiVersion       = VK_API_VERSION_1_1;
   //glob.app_info.pNext = nullptr; 
 
   // VkInstanceCreateInfo
-  glob.create_info.instance.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  glob.create_info.instance.pApplicationInfo = &glob.app_info;
-
-  // 
   std::vector<const char*> req_exts; 
   GetRequiredExtensions (req_exts);  
-  glob.create_info.instance.enabledExtensionCount = req_exts.size();
-  glob.create_info.instance.ppEnabledExtensionNames = &req_exts[0];
-  glob.create_info.instance.pNext = nullptr; 
+
+  inst_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+  inst_info.pApplicationInfo = &app_info;
+  // 
+  inst_info.enabledExtensionCount = req_exts.size();
+  inst_info.ppEnabledExtensionNames = &req_exts[0];
+  inst_info.pNext = nullptr; 
 
 
   if (kEnableValidationLayers && CheckValidationSupport (validation_layers)) {
     printf ("ENABLE VALIDATION LAYERS\n"); 
-    glob.create_info.instance.enabledLayerCount   = validation_layers.size(); 
-    glob.create_info.instance.ppEnabledLayerNames = &validation_layers[0]; 
+    inst_info.enabledLayerCount   = validation_layers.size(); 
+    inst_info.ppEnabledLayerNames = &validation_layers[0]; 
     // !! SETUP up additional output cb handling...
   }
   else {
     printf ("VALIDATION LAYERS ARE DISABLED\n"); 
-    glob.create_info.instance.enabledLayerCount   = 0;
-    glob.create_info.instance.ppEnabledLayerNames = nullptr;
+    inst_info.enabledLayerCount   = 0;
+    inst_info.ppEnabledLayerNames = nullptr;
   }
 
   // CREATEINSTANCE
   printf ("vkCreateInstance() \n"); 
-  if (vkCreateInstance (&glob.create_info.instance, nullptr, &glob.instance) != VK_SUCCESS) {
+  if (vkCreateInstance (&inst_info, nullptr, &instance) != VK_SUCCESS) {
     printf("failed to create instance!");
     return __LINE__;
   }
@@ -373,6 +374,7 @@ int rokz::CreateInstance(rokz::Glob& glob) {
   
   return 0;
 }
+
 
 rokz::Glob& rokz::Default (rokz::Glob& g) {
   g.queue_priority = 1.0f;
@@ -550,7 +552,7 @@ bool rokz::CreateSwapchain (VkSwapchainKHR& swapchain,
   swapchaincreateinfo.imageArrayLayers = 1;
   swapchaincreateinfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-
+  
   QueueFamilyIndices que_fam_inds; 
   FindQueueFamilies (que_fam_inds, surf, physdev); 
 
@@ -676,9 +678,192 @@ bool rokz::CreateImageViews (std::vector<VkImageView>&  swapchain_imageviews,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreatePipeline (){
+bool rokz::CreatePipelineLayout () {
 
   return false; 
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkShaderModule& rokz::CreateShaderModule(VkShaderModule& shader_module, const rokz::bytearray& code, const VkDevice& dev) {
+
+  VkShaderModuleCreateInfo create_info {};
+  create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  create_info.codeSize = code.size();
+  create_info.pCode = reinterpret_cast<const uint32_t *>(&code[0]);
+
+  if (vkCreateShaderModule(dev, &create_info, nullptr, &shader_module) != VK_SUCCESS) {
+    printf ("failed to create shader module!\n");
+    //throw std::runtime_error("failed to create shader module!");
+  }
+
+  return shader_module; 
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
+                                   std::vector<VkShaderModule>& shader_modules,
+                                   const VkExtent2D& swapchain_extent,
+                                   const VkDevice& device) {
+  
+  //rokz::From_file (vertbin, "/home/djbuzzkill/owenslake/data/shader/basic_vert.spv");
+  std::string vert_file =  "/home/djbuzzkill/owenslake/data/shader/basic_vert.spv" ;
+  bytearray      vertbin;
+  VkShaderModule vertmod; 
+  From_file(vertbin, vert_file);
+  rokz::CreateShaderModule (vertmod,  vertbin, device); 
+  shader_modules.push_back (vertmod); 
+  // VERT SHADER 
+  VkPipelineShaderStageCreateInfo vert_shader_stage_info {};
+  vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+  vert_shader_stage_info.module = vertmod;
+  vert_shader_stage_info.pSpecializationInfo = nullptr; 
+  vert_shader_stage_info.pName = "main";
+  //vkDestroyShaderModule(glob.device, vertmod, nullptr);
+
+  // FRAG SHADER 
+  std::string frag_file =   "/home/djbuzzkill/owenslake/data/shader/basic_frag.spv" ;
+  bytearray      fragbin;
+  VkShaderModule fragmod; 
+  From_file(fragbin, frag_file );
+  rokz::CreateShaderModule (fragmod,  fragbin, device); 
+  shader_modules.push_back (fragmod); 
+  //
+  VkPipelineShaderStageCreateInfo frag_shader_stage_info {};
+  frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+  frag_shader_stage_info.module = fragmod;
+  frag_shader_stage_info.pSpecializationInfo = nullptr; 
+  frag_shader_stage_info.pName = "main";
+
+  //
+  VkPipelineShaderStageCreateInfo shader_stages[] = {
+    vert_shader_stage_info,
+    frag_shader_stage_info
+  };
+
+  // VERTEX INPUT
+  VkPipelineVertexInputStateCreateInfo vertex_input_state_info{};
+  vertex_input_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  vertex_input_state_info.vertexBindingDescriptionCount = 0;
+  vertex_input_state_info.pVertexBindingDescriptions = nullptr; // Optional
+  vertex_input_state_info.vertexAttributeDescriptionCount = 0;
+  vertex_input_state_info.pVertexAttributeDescriptions = nullptr; // Optional
+
+
+  
+  // INPUT ASSEMBLY STATE
+  VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+  inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+  // DYNAMIC STATE 
+  std::vector<VkDynamicState> dynamic_states = {
+    VK_DYNAMIC_STATE_VIEWPORT,
+    VK_DYNAMIC_STATE_SCISSOR};
+
+  VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
+  dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
+  dynamic_state_create_info.pDynamicStates = &dynamic_states[0];
+
+  // VIEWPORT 
+  VkViewport viewport{};
+  viewport.x = 0.0f;
+  viewport.y = 0.0f;
+  viewport.width = (float)swapchain_extent.width;
+  viewport.height = (float)swapchain_extent.height;
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+
+  // SCISSOR RECT
+  VkRect2D scissor; 
+  scissor.offset = {0, 0};
+  scissor.extent = swapchain_extent;
+
+  // VkPipelineViewportStateCreateInfo
+  VkPipelineViewportStateCreateInfo viewport_state_create_info{};
+  viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+  viewport_state_create_info.viewportCount = 1;
+  
+  viewport_state_create_info.pViewports = &viewport;
+  viewport_state_create_info.scissorCount = 1;
+  viewport_state_create_info.pScissors = &scissor;
+
+  // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
+ VkPipelineRasterizationStateCreateInfo rasterizer{};
+ rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+ rasterizer.depthClampEnable = VK_FALSE;
+ rasterizer.rasterizerDiscardEnable = VK_FALSE;
+ rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+ rasterizer.lineWidth = 1.0f;
+ rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+ rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+ rasterizer.depthBiasEnable = VK_FALSE;
+ rasterizer.depthBiasConstantFactor = 0.0f; // Optional
+ rasterizer.depthBiasClamp = 0.0f;          // Optional
+ rasterizer.depthBiasSlopeFactor = 0.0f;    // Optional
+
+ // MULTI SAMPLING
+ VkPipelineMultisampleStateCreateInfo multisampling{};
+ multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+ multisampling.sampleShadingEnable = VK_FALSE;
+ multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+ multisampling.minSampleShading = 1.0f;          // Optional
+ multisampling.pSampleMask = nullptr;            // Optional
+ multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
+ multisampling.alphaToOneEnable = VK_FALSE;      // Optional
+
+ // DEPTH/STENCIL 
+ VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil_create_info {};
+
+
+ // COLOR BLENDING
+ VkPipelineColorBlendAttachmentState color_blend_attachment{};
+ color_blend_attachment.colorWriteMask =
+     VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+     VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+ color_blend_attachment.blendEnable = VK_FALSE;
+ color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+ color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+ color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
+ color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+ color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+ color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+ // Create Info
+ VkPipelineColorBlendStateCreateInfo color_blending_create_info{};
+ color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+ color_blending_create_info.logicOpEnable = VK_FALSE;
+ color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; // Optional
+ color_blending_create_info.attachmentCount = 1;
+ color_blending_create_info.pAttachments = &color_blend_attachment;
+ color_blending_create_info.blendConstants[0] = 0.0f; // Optional
+ color_blending_create_info.blendConstants[1] = 0.0f; // Optional
+ color_blending_create_info.blendConstants[2] = 0.0f; // Optional
+ color_blending_create_info.blendConstants[3] = 0.0f; // Optional
+
+
+ // PIPELINE LAYOUT CREATE INFO
+ VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
+ pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+ pipeline_layout_create_info.setLayoutCount = 0;            // Optional
+ pipeline_layout_create_info.pSetLayouts = nullptr;         // Optional
+ pipeline_layout_create_info.pushConstantRangeCount = 0;    // Optional
+ pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
+
+ if (vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
+   printf ("failed to create pipeline layout!\n");
+   return false; 
+ }
+
+ return true; 
 }
 
 // ---------------------------------------------------------------------
@@ -703,17 +888,24 @@ void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& devic
 // ---------------------------------------------------------------------
 void rokz::Cleanup(VkSwapchainKHR &swapchain,
                    VkSurfaceKHR &surf,
+                   std::vector<VkShaderModule>& shader_modules,
+                   VkPipelineLayout& pipeline_layout, 
                    std::vector<VkImageView>& image_views, 
-
                    GLFWwindow* w ,
                    VkDevice& dev,
                    VkInstance &inst) {
 
   vkDestroySwapchainKHR(dev, swapchain, nullptr);
-  vkDestroySurfaceKHR (inst, surf, nullptr); 
+  vkDestroySurfaceKHR (inst, surf, nullptr);
+
+  for (auto shmod : shader_modules) {
+    vkDestroyShaderModule (dev, shmod, nullptr); 
+  }
+  
   for (auto imageview : image_views) {
     vkDestroyImageView(dev, imageview, nullptr);
   }
+  vkDestroyPipelineLayout(dev, pipeline_layout, nullptr);
 
   vkDestroyDevice (dev, nullptr); 
   vkDestroyInstance(inst, nullptr);

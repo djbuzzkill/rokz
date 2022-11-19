@@ -1,10 +1,12 @@
 
-#include "rockz.h"
+#include "rockz.h"              // 
 #include "rokz/rokz.h"
 #include <vulkan/vulkan_core.h>
 
-//#include "skittlez/skittlez.h"
 
+#include <filesystem>
+//#include "skittlez/skittlez.h"
+#include "glm/glm.hpp"
 
 void SetupScene () {
   printf ("lolz\n"); 
@@ -44,13 +46,17 @@ int main (int argv, char** argc) {
 
   rokz::Glob glob; // something representing the app state
 
+  auto curr_path = std::filesystem::current_path ();
+  
+  printf ("current path: %s\n" , curr_path.string ().c_str()); 
+  
   Default (glob); 
   
   glfwInit();
 
   rokz::CreateWindow_glfw (glob.glfwin);
 
-  rokz::CreateInstance    (glob);
+  rokz::CreateInstance    (glob.instance, glob.app_info, glob.create_info.instance);
 
   rokz::CreateSurface (&glob.surface, glob.glfwin , glob.instance);
 
@@ -88,8 +94,6 @@ int main (int argv, char** argc) {
 
   rokz::GetDeviceQueue (&glob.queues.present, glob.queue_fams.present.value(), glob.device);
 
-
-  
   rokz::CreateSwapchain (glob.swapchain, glob.create_info.swapchain,
                          glob.surface, glob.physical_device,
                          glob.device,  glob.glfwin);
@@ -97,15 +101,25 @@ int main (int argv, char** argc) {
   
   rokz::GetSwapChainImages (glob.swapchain_images, glob.swapchain, glob.device); 
 
- 
   rokz::CreateImageViews (glob.swapchain_imageviews,
                           glob.swapchain_images,
                           glob.create_info.swapchain.imageFormat, 
                           glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
-  rokz::CreatePipeline; 
+
+  rokz::CreateGraphicsPipeline(glob.pipeline_layout,
+                               glob.shader_modules, 
+                               glob.create_info.swapchain.imageExtent, 
+                               glob.device); 
+
+  //VkShaderModule vertmod; 
+  //rokz::bytearray vertbin;
+  //rokz::From_file (vertbin, "/home/djbuzzkill/owenslake/data/shader/basic_vert.spv");
+  //rokz::CreateShaderModule (vertmod,  vertbin, glob.device); 
+  //vkDestroyShaderModule(glob.device, vertmod, nullptr);
 
 
+  
   SetupScene (); 
   //
   //
@@ -155,11 +169,14 @@ int main (int argv, char** argc) {
   }
 
   // CLEAN UP
-  rokz::Cleanup (glob.swapchain, glob.surface,
-                 glob.swapchain_imageviews, 
-                 glob.glfwin ,
-                 glob.device,
-                 glob.instance);
+  rokz::Cleanup(glob.swapchain,
+                glob.surface,
+                glob.shader_modules, 
+                glob.pipeline_layout, 
+                glob.swapchain_imageviews,
+                glob.glfwin ,
+                glob.device,
+                glob.instance);
   //void Cleanup (VkSurfaceKHR& surf, GLFWwindow* w, VkDevice& dev, VkInstance &vkinst);
   glfwTerminate();
 

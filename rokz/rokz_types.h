@@ -6,7 +6,6 @@
 #include "common.h"
 
 
-
 namespace rokz {
 
   typedef std::optional<uint32_t> MaybeIndex;
@@ -27,7 +26,6 @@ namespace rokz {
 
   };
 
-
   struct SwapchainSupportInfo {
     VkSurfaceCapabilitiesKHR        capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
@@ -35,7 +33,7 @@ namespace rokz {
   };
 
 
-  //
+  // Context
   struct Glob {
     
     VkApplicationInfo     app_info; // {};
@@ -46,11 +44,15 @@ namespace rokz {
     VkSwapchainKHR        swapchain;
     std::vector<VkImage>  swapchain_images;
     std::vector<VkImageView> swapchain_imageviews;
-
-  // device + queues?
-    GLFWwindow*           glfwin;
-    VkSurfaceKHR          surface;
+    std::vector<VkShaderModule> shader_modules; 
+    
+    VkPipelineLayout pipeline_layout; 
+    
+    // device + queues?
+    GLFWwindow*           glfwin;  // 
+    VkSurfaceKHR          surface; // surface is related to a window?
     VkDevice              device;
+    
     struct { VkQueue graphics; VkQueue present; } queues;
 
     QueueFamilyIndices    queue_fams;
