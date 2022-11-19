@@ -385,6 +385,9 @@ rokz::Glob& rokz::Default (rokz::Glob& g) {
   g.create_info.queue   = {};
   g.create_info.swapchain= {};
   g.create_info.imageview = {}; 
+  g.create_info.renderpass = {};
+  g.create_info.pipeline = {}; 
+
   g.queue_fams = {}; 
   g.queue_fams.graphics.reset();
   g.queue_fams.present.reset();
@@ -672,18 +675,6 @@ bool rokz::CreateImageViews (std::vector<VkImageView>&  swapchain_imageviews,
   return true;   
 }
 
-
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreatePipelineLayout () {
-
-  return false; 
-}
-
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -706,8 +697,9 @@ VkShaderModule& rokz::CreateShaderModule(VkShaderModule& shader_module, const ro
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
-                                   std::vector<VkShaderModule>& shader_modules,
+bool rokz::CreateGraphicsPipeline(VkPipelineLayout &pipeline_layout,
+                                  VkGraphicsPipelineCreateInfo& create_info, 
+                                  std::vector<VkShaderModule>& shader_modules,
                                    const VkExtent2D& swapchain_extent,
                                    const VkDevice& device) {
   
@@ -755,14 +747,12 @@ bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
   vertex_input_state_info.pVertexBindingDescriptions = nullptr; // Optional
   vertex_input_state_info.vertexAttributeDescriptionCount = 0;
   vertex_input_state_info.pVertexAttributeDescriptions = nullptr; // Optional
-
-
   
   // INPUT ASSEMBLY STATE
-  VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-  inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-  inputAssembly.primitiveRestartEnable = VK_FALSE;
+  VkPipelineInputAssemblyStateCreateInfo input_assembly{};
+  input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  input_assembly.primitiveRestartEnable = VK_FALSE;
 
   // DYNAMIC STATE 
   std::vector<VkDynamicState> dynamic_states = {
@@ -773,6 +763,7 @@ bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
   dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
   dynamic_state_create_info.pDynamicStates = &dynamic_states[0];
+
 
   // VIEWPORT 
   VkViewport viewport{};
@@ -788,6 +779,8 @@ bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
   scissor.offset = {0, 0};
   scissor.extent = swapchain_extent;
 
+
+  
   // VkPipelineViewportStateCreateInfo
   VkPipelineViewportStateCreateInfo viewport_state_create_info{};
   viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -826,24 +819,24 @@ bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
 
 
  // COLOR BLENDING
- VkPipelineColorBlendAttachmentState color_blend_attachment{};
- color_blend_attachment.colorWriteMask =
+ VkPipelineColorBlendAttachmentState color_blend_attachment_state{};
+ color_blend_attachment_state.colorWriteMask =
      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
- color_blend_attachment.blendEnable = VK_FALSE;
- color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
- color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
- color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
- color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
- color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
- color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+ color_blend_attachment_state.blendEnable = VK_FALSE;
+ color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+ color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+ color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
+ color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+ color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+ color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
  // Create Info
  VkPipelineColorBlendStateCreateInfo color_blending_create_info{};
  color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
  color_blending_create_info.logicOpEnable = VK_FALSE;
  color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; // Optional
  color_blending_create_info.attachmentCount = 1;
- color_blending_create_info.pAttachments = &color_blend_attachment;
+ color_blending_create_info.pAttachments = &color_blend_attachment_state;
  color_blending_create_info.blendConstants[0] = 0.0f; // Optional
  color_blending_create_info.blendConstants[1] = 0.0f; // Optional
  color_blending_create_info.blendConstants[2] = 0.0f; // Optional
@@ -863,7 +856,60 @@ bool rokz::CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout,
    return false; 
  }
 
- return true; 
+ create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+ create_info.stageCount = 2;
+ create_info.pStages = shader_stages;
+ create_info.pVertexInputState = &vertex_input_state_info;
+ create_info.pInputAssemblyState = &input_assembly;
+ create_info.pViewportState = &viewport_state_create_info;
+ create_info.pRasterizationState = &rasterizer;
+ create_info.pMultisampleState = &multisampling;
+ create_info.pDepthStencilState = nullptr; // Optional
+ create_info.pColorBlendState = &color_blending_create_info;
+ create_info.pDynamicState = &dynamic_state_create_info;
+
+   
+ return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device) {
+
+  // COLOR ATTACHMENT
+  VkAttachmentDescription color_attachment{};
+  color_attachment.format = swapchain_format ;
+  color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  // 
+  VkAttachmentReference color_attachment_ref{};
+  color_attachment_ref.attachment = 0;
+  color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  // SUBPASS 
+  VkSubpassDescription subpass{};
+  subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpass.colorAttachmentCount = 1;
+  subpass.pColorAttachments = &color_attachment_ref;
+
+  // CREATEINFO. gets passed back out
+  create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  create_info.attachmentCount = 1;
+  create_info.pAttachments = &color_attachment;
+  create_info.subpassCount = 1;
+  create_info.pSubpasses = &subpass;
+
+  if (vkCreateRenderPass(device, &create_info, nullptr, &render_pass) != VK_SUCCESS) {
+    printf ("failed to create render pass!\n");
+    return false; 
+    }
+
+  return true; 
 }
 
 // ---------------------------------------------------------------------
@@ -886,10 +932,10 @@ void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& devic
 // ---------------------------------------------------------------------
 // DESTROY ALL THE THINGS
 // ---------------------------------------------------------------------
-void rokz::Cleanup(VkSwapchainKHR &swapchain,
-                   VkSurfaceKHR &surf,
-                   std::vector<VkShaderModule>& shader_modules,
-                   VkPipelineLayout& pipeline_layout, 
+void rokz::Cleanup(VkSwapchainKHR &swapchain, VkSurfaceKHR &surf,
+                   std::vector<VkShaderModule> &shader_modules,
+                   VkPipelineLayout &pipeline_layout,
+                   VkRenderPass& render_pass, 
                    std::vector<VkImageView>& image_views, 
                    GLFWwindow* w ,
                    VkDevice& dev,
@@ -905,8 +951,11 @@ void rokz::Cleanup(VkSwapchainKHR &swapchain,
   for (auto imageview : image_views) {
     vkDestroyImageView(dev, imageview, nullptr);
   }
-  vkDestroyPipelineLayout(dev, pipeline_layout, nullptr);
 
+
+  vkDestroyPipelineLayout(dev, pipeline_layout, nullptr);
+  vkDestroyRenderPass (dev, render_pass, nullptr); 
+  
   vkDestroyDevice (dev, nullptr); 
   vkDestroyInstance(inst, nullptr);
 

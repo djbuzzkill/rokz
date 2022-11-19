@@ -43,17 +43,18 @@ namespace rokz {
   bool               CreateSwapchain (VkSwapchainKHR& swapchain, VkSwapchainCreateInfoKHR& swapchaincreateinfo, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev, const VkDevice& dev, GLFWwindow* glfwin);
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
-  void               Cleanup (VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, std::vector<VkShaderModule>& shader_modules, VkPipelineLayout& pipeline_layout,  std::vector<VkImageView>& image_views,  GLFWwindow* w, VkDevice& dev, VkInstance &inst);
   
-  bool CreateShaderModule (); 
-  bool CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout, std::vector<VkShaderModule>& shader_modules, const VkExtent2D& swapchain_extent, const VkDevice& device); 
+  VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
+  bool               CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout, VkGraphicsPipelineCreateInfo& create_info, std::vector<VkShaderModule>& shader_modules, const VkExtent2D& swapchain_extent, const VkDevice& device); 
 
-  VkShaderModule& CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
+  bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
 
+  
+  void               Cleanup (VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, std::vector<VkShaderModule>& shader_modules, VkPipelineLayout& pipeline_layout, VkRenderPass& render_pass, std::vector<VkImageView>& image_views,  GLFWwindow* w, VkDevice& dev, VkInstance &inst);
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------
-  void CreateRenderPass ();
+  
   bool CreateFrameBuffers ();
   bool CreateCommandPool (); 
   bool CreateCommandBuffer ();

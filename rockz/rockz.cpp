@@ -7,6 +7,7 @@
 #include <filesystem>
 //#include "skittlez/skittlez.h"
 #include "glm/glm.hpp"
+#include "rokz/rokz_funcs.h"
 
 void SetupScene () {
   printf ("lolz\n"); 
@@ -106,17 +107,16 @@ int main (int argv, char** argc) {
                           glob.create_info.swapchain.imageFormat, 
                           glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
-
+  rokz::CreateRenderPass (glob.render_pass,
+                          glob.create_info.renderpass,
+                          glob.create_info.swapchain.imageFormat,
+                          glob.device);
+  
   rokz::CreateGraphicsPipeline(glob.pipeline_layout,
+                               glob.create_info.pipeline, 
                                glob.shader_modules, 
                                glob.create_info.swapchain.imageExtent, 
-                               glob.device); 
-
-  //VkShaderModule vertmod; 
-  //rokz::bytearray vertbin;
-  //rokz::From_file (vertbin, "/home/djbuzzkill/owenslake/data/shader/basic_vert.spv");
-  //rokz::CreateShaderModule (vertmod,  vertbin, glob.device); 
-  //vkDestroyShaderModule(glob.device, vertmod, nullptr);
+                               glob.device);
 
 
   
@@ -172,7 +172,8 @@ int main (int argv, char** argc) {
   rokz::Cleanup(glob.swapchain,
                 glob.surface,
                 glob.shader_modules, 
-                glob.pipeline_layout, 
+                glob.pipeline_layout,
+                glob.render_pass, 
                 glob.swapchain_imageviews,
                 glob.glfwin ,
                 glob.device,

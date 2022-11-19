@@ -23,6 +23,26 @@ namespace rokz {
     VkDeviceQueueCreateInfo  queue;
     VkSwapchainCreateInfoKHR swapchain;
     VkImageViewCreateInfo    imageview; 
+    VkRenderPassCreateInfo   renderpass; 
+    VkGraphicsPipelineCreateInfo pipeline;
+
+
+  // VkPipelineShaderStageCreateInfo vert_shader_stage_info {};
+  // VkPipelineShaderStageCreateInfo frag_shader_stage_info {};
+  // VkPipelineInputAssemblyStateCreateInfo input_assembly{};
+  // VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
+  // VkPipelineViewportStateCreateInfo viewport_state_create_info{};
+  // VkPipelineRasterizationStateCreateInfo rasterizer{};
+  // VkPipelineMultisampleStateCreateInfo multisampling{};
+  // VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil_create_info {};
+  // VkPipelineColorBlendStateCreateInfo color_blending_create_info{};
+  // VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
+
+
+
+
+
+
 
   };
 
@@ -46,6 +66,7 @@ namespace rokz {
     std::vector<VkImageView> swapchain_imageviews;
     std::vector<VkShaderModule> shader_modules; 
     
+    VkRenderPass render_pass;
     VkPipelineLayout pipeline_layout; 
     
     // device + queues?
