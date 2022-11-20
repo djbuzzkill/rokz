@@ -24,26 +24,20 @@ namespace rokz {
     VkSwapchainCreateInfoKHR swapchain;
     VkImageViewCreateInfo    imageview; 
     VkRenderPassCreateInfo   renderpass; 
+
+    VkPipelineLayoutCreateInfo   pipeline_layout; 
     VkGraphicsPipelineCreateInfo pipeline;
 
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
+    VkPipelineVertexInputStateCreateInfo   vertex_input_state; 
+    VkPipelineViewportStateCreateInfo viewport_state;
 
-  // VkPipelineShaderStageCreateInfo vert_shader_stage_info {};
-  // VkPipelineShaderStageCreateInfo frag_shader_stage_info {};
-  // VkPipelineInputAssemblyStateCreateInfo input_assembly{};
-  // VkPipelineDynamicStateCreateInfo dynamic_state_create_info {};
-  // VkPipelineViewportStateCreateInfo viewport_state_create_info{};
-  // VkPipelineRasterizationStateCreateInfo rasterizer{};
-  // VkPipelineMultisampleStateCreateInfo multisampling{};
-  // VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil_create_info {};
-  // VkPipelineColorBlendStateCreateInfo color_blending_create_info{};
-  // VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
-
-
-
-
-
-
-
+    VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
+    VkPipelineDynamicStateCreateInfo         dynamic_state;
+    VkPipelineRasterizationStateCreateInfo rasterizer;
+    VkPipelineMultisampleStateCreateInfo multisampling; 
+    VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil; 
+    VkPipelineColorBlendStateCreateInfo color_blending;
   };
 
   struct SwapchainSupportInfo {
@@ -66,13 +60,25 @@ namespace rokz {
     std::vector<VkImageView> swapchain_imageviews;
     std::vector<VkShaderModule> shader_modules; 
     
+
+    std::vector<VkDynamicState>       dynamic_states; 
+
     VkRenderPass render_pass;
     VkPipelineLayout pipeline_layout; 
-    
+    VkPipeline       pipeline; 
     // device + queues?
     GLFWwindow*           glfwin;  // 
     VkSurfaceKHR          surface; // surface is related to a window?
     VkDevice              device;
+
+
+    VkViewport viewport;
+    VkRect2D   scissor; 
+
+
+
+
+
     
     struct { VkQueue graphics; VkQueue present; } queues;
 

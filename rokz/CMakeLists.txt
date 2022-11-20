@@ -9,6 +9,8 @@ project (rokz)
 set (ROKZ_HEADER_FILES
   common.h
   utility.h
+  binary_IO.h
+  defaults.h
   rokz_types.h
   rokz_funcs.h
 )
@@ -17,6 +19,7 @@ set (ROKZ_HEADER_FILES
 set (ROKZ_SOURCE_FILES
   utility.cpp
   binary_IO.cpp
+  defaults.cpp
   rokz.cpp
 )
 

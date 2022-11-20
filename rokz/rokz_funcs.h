@@ -45,12 +45,48 @@ namespace rokz {
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
   
   VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
-  bool               CreateGraphicsPipeline (VkPipelineLayout& pipeline_layout, VkGraphicsPipelineCreateInfo& create_info, std::vector<VkShaderModule>& shader_modules, const VkExtent2D& swapchain_extent, const VkDevice& device); 
 
+
+  bool CreateGraphicsPipelineLayout(VkPipelineLayout &pipeline_layout,
+                                    VkPipelineLayoutCreateInfo& pipeline_layout_create_info, 
+                                    const VkRenderPass &render_pass,
+                                    std::vector<VkShaderModule>&                  shader_modules,
+                                    std::vector<VkPipelineShaderStageCreateInfo>& shader_stages_create_info,
+                                    VkPipelineVertexInputStateCreateInfo& vertex_input_stage_info,
+                                    VkPipelineInputAssemblyStateCreateInfo&   input_assembly,
+                                    std::vector<VkDynamicState>&              dynamic_states,
+                                    VkPipelineDynamicStateCreateInfo&         dynamic_state_create_info,
+                                    VkViewport& viewport, 
+                                    VkRect2D&   scissor,
+                                    VkPipelineRasterizationStateCreateInfo& rasterizer,
+                                    VkPipelineMultisampleStateCreateInfo& mltisampling, 
+                                    VkPipelineDepthStencilStateCreateInfo& pipeline_depth_stencil_create_info, 
+    
+                                    VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
+
+                                    VkPipelineViewportStateCreateInfo& viewport_state_create_info, 
+                                    const VkExtent2D &swapchain_extent, const VkDevice &device);
+
+  
+  bool CreateGraphicsPipeline (VkPipeline &pipeline,
+                               VkGraphicsPipelineCreateInfo &create_info,
+                               const VkPipelineShaderStageCreateInfo*        shader_stages, // array
+                               const VkPipelineVertexInputStateCreateInfo*   vertex_input_state_info,
+                               const VkPipelineInputAssemblyStateCreateInfo& input_assembly,
+                               const VkPipelineViewportStateCreateInfo*      viewport_state_create_info,
+                               const VkPipelineRasterizationStateCreateInfo* rasterizer,
+                               const VkPipelineMultisampleStateCreateInfo*   multisampling,
+                               const VkPipelineColorBlendStateCreateInfo&    color_blending_create_info,
+                               const VkPipelineDynamicStateCreateInfo*       dynamic_state_create_info,
+                               const VkPipelineLayout&                       pipeline_layout,
+                               const VkRenderPass&                           render_pass,
+                               const VkDevice                                device); 
+
+  
   bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
 
   
-  void               Cleanup (VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, std::vector<VkShaderModule>& shader_modules, VkPipelineLayout& pipeline_layout, VkRenderPass& render_pass, std::vector<VkImageView>& image_views,  GLFWwindow* w, VkDevice& dev, VkInstance &inst);
+  void               Cleanup (VkPipeline& pipeline, VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, std::vector<VkShaderModule>& shader_modules, VkPipelineLayout& pipeline_layout, VkRenderPass& render_pass, std::vector<VkImageView>& image_views,  GLFWwindow* w, VkDevice& dev, VkInstance &inst);
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------

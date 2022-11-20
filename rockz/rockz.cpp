@@ -69,10 +69,7 @@ int main (int argv, char** argc) {
 
   //fam_inds.graphics =  glob.queue_fams.graphics;
   //fam_inds.present =  glob.queue_fams.present;
-  
-  
   glob.queue_priority = 1.0f;
-
   if (glob.queue_fams.graphics.has_value()) {
     printf ("HAS_VALUE:TRUE\n"); 
   }
@@ -111,15 +108,43 @@ int main (int argv, char** argc) {
                           glob.create_info.renderpass,
                           glob.create_info.swapchain.imageFormat,
                           glob.device);
-  
-  rokz::CreateGraphicsPipeline(glob.pipeline_layout,
-                               glob.create_info.pipeline, 
-                               glob.shader_modules, 
-                               glob.create_info.swapchain.imageExtent, 
-                               glob.device);
+
+  rokz::CreateGraphicsPipelineLayout(
+      glob.pipeline_layout, glob.create_info.pipeline_layout,
+      glob.render_pass,
+      glob.shader_modules,
+      glob.create_info.shader_stages,
+      glob.create_info.vertex_input_state,
+      glob.create_info.input_assembly,
+      glob.dynamic_states,
+      glob.create_info.dynamic_state,
+      glob.viewport,
+      glob.scissor,
+      glob.create_info.rasterizer, 
+      glob.create_info.multisampling,
+      glob.create_info.pipeline_depth_stencil,
+      glob.create_info.color_blending,
+      glob.create_info.viewport_state, 
+      glob.create_info.swapchain.imageExtent,
+      glob.device);
+
+  rokz::CreateGraphicsPipeline(
+      glob.pipeline,
+      glob.create_info.pipeline,
+      &glob.create_info.shader_stages[0],
+      &glob.create_info.vertex_input_state,
+      glob.create_info.input_assembly,
+      &glob.create_info.viewport_state,
+      &glob.create_info.rasterizer,
+      &glob.create_info.multisampling,
+      glob.create_info.color_blending,
+      &glob.create_info.dynamic_state,
+      glob.pipeline_layout,
+      glob.render_pass,
+      glob.device);
 
 
-  
+  //
   SetupScene (); 
   //
   //
@@ -169,7 +194,8 @@ int main (int argv, char** argc) {
   }
 
   // CLEAN UP
-  rokz::Cleanup(glob.swapchain,
+  rokz::Cleanup(glob.pipeline,
+                glob.swapchain,
                 glob.surface,
                 glob.shader_modules, 
                 glob.pipeline_layout,
