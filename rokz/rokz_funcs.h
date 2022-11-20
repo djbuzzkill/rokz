@@ -47,6 +47,19 @@ namespace rokz {
   VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
 
 
+
+  bool CreateGraphicsPipelineLayout (
+    VkPipelineLayout&                             pipeline_layout,
+    const VkRenderPass&                           render_pass,
+    std::vector<VkShaderModule>&                  shader_modules,
+    std::vector<VkDynamicState>&                  dynamic_states,
+    VkViewport&                                   viewport, 
+    VkRect2D&                                     scissor,
+    CreateInfo&                                   create_info, 
+    const VkExtent2D&                             swapchain_extent,
+    const VkDevice&                               device); 
+
+  
   bool CreateGraphicsPipelineLayout(VkPipelineLayout &pipeline_layout,
                                     VkPipelineLayoutCreateInfo& pipeline_layout_create_info, 
                                     const VkRenderPass &render_pass,
@@ -61,27 +74,33 @@ namespace rokz {
                                     VkPipelineRasterizationStateCreateInfo& rasterizer,
                                     VkPipelineMultisampleStateCreateInfo& mltisampling, 
                                     VkPipelineDepthStencilStateCreateInfo& pipeline_depth_stencil_create_info, 
-    
                                     VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
-
                                     VkPipelineViewportStateCreateInfo& viewport_state_create_info, 
-                                    const VkExtent2D &swapchain_extent, const VkDevice &device);
+
+                                    const VkExtent2D &swapchain_extent,
+                                    const VkDevice &device);
 
   
+  bool CreateGraphicsPipeline (VkPipeline &pipeline,
+                               VkGraphicsPipelineCreateInfo &pipeline_create_info,
+                               const CreateInfo&            create_info, 
+                               const VkPipelineLayout&      pipeline_layout,
+                               const VkRenderPass&          render_pass,
+                               const VkDevice               device); 
+
   bool CreateGraphicsPipeline (VkPipeline &pipeline,
                                VkGraphicsPipelineCreateInfo &create_info,
                                const VkPipelineShaderStageCreateInfo*        shader_stages, // array
                                const VkPipelineVertexInputStateCreateInfo*   vertex_input_state_info,
-                               const VkPipelineInputAssemblyStateCreateInfo& input_assembly,
+                               const VkPipelineInputAssemblyStateCreateInfo* input_assembly,
                                const VkPipelineViewportStateCreateInfo*      viewport_state_create_info,
                                const VkPipelineRasterizationStateCreateInfo* rasterizer,
                                const VkPipelineMultisampleStateCreateInfo*   multisampling,
-                               const VkPipelineColorBlendStateCreateInfo&    color_blending_create_info,
+                               const VkPipelineColorBlendStateCreateInfo*    color_blending_create_info,
                                const VkPipelineDynamicStateCreateInfo*       dynamic_state_create_info,
                                const VkPipelineLayout&                       pipeline_layout,
                                const VkRenderPass&                           render_pass,
                                const VkDevice                                device); 
-
   
   bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
 
