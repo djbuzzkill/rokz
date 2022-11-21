@@ -986,9 +986,14 @@ bool rokz::CreateRenderPass (RenderPass &render_pass, VkFormat swapchain_format,
   render_pass.dependancy = {};
   render_pass.dependancy.srcSubpass    = VK_SUBPASS_EXTERNAL;
   render_pass.dependancy.dstSubpass    = co_in;
+
+  render_pass.dependancy.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  render_pass.dependancy.srcAccessMask = co_in;
+  
   render_pass.dependancy.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   render_pass.dependancy.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+  
   // CREATEINFO. gets passed back out
   render_pass.create_info = {}; 
   render_pass.create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -1265,6 +1270,7 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
 
   int width = 0, height = 0;
   glfwGetFramebufferSize(glfwin, &width, &height);
+
   while (width == 0 || height == 0) {
     glfwGetFramebufferSize(glfwin, &width, &height);
     glfwWaitEvents();
