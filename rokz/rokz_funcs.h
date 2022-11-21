@@ -45,16 +45,19 @@ namespace rokz {
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
   
   VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
+  bool               CreateShaderModules (std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
+  bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
+  bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
+  //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
 
-
+  bool               CreateRenderPass (RenderPass& render_pass,
+                                       VkFormat swapchain_format,
+                                       const VkDevice &device); 
 
   bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
-                                     const VkRenderPass&          render_pass,
-                                     std::vector<VkShaderModule>& shader_modules,
-                                     std::vector<VkDynamicState>& dynamic_states,
                                      VkViewport&                  viewport, 
                                      VkRect2D&                    scissor,
-                                     CreateInfo&                  create_info, 
+                                     CreateInfo&                  create_info,
                                      const VkExtent2D&            swapchain_extent,
                                      const VkDevice&              device); 
 
@@ -62,14 +65,56 @@ namespace rokz {
                                VkGraphicsPipelineCreateInfo &pipeline_create_info,
                                const CreateInfo&            create_info, 
                                const VkPipelineLayout&      pipeline_layout,
-                               const VkRenderPass&          render_pass,
+                               const RenderPass&          render_pass,
                                const VkDevice               device); 
 
+
+
+  bool CreateFramebuffers (std::vector<VkFramebuffer>&           framebuffers,
+                           std::vector<VkFramebufferCreateInfo>& create_infos,
+                           const RenderPass&                   render_pass, 
+                           const VkExtent2D                      swapchain_ext, 
+                           const std::vector<VkImageView>&       image_views, 
+                           const VkDevice&                       device); 
+
+
+  bool CreateCommandPool (VkCommandPool&            command_pool,
+                          VkCommandPoolCreateInfo&  create_info,
+                          const QueueFamilyIndices& queue_family_inds, const VkDevice& device);
   
-  bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
+  bool CreateCommandBuffer(VkCommandBuffer &command_buffer,
+                           VkCommandBufferAllocateInfo& create_info, 
+                           const VkCommandPool &command_pool,
+                           const VkDevice &device); 
+
+
+  bool RecordCommandBuffer(VkCommandBuffer &command_buffer,
+                           const VkPipeline pipeline,
+                           const VkExtent2D &ext2d,
+                           const VkFramebuffer &framebuffer,
+                           const RenderPass &render_pass,
+                           const VkDevice &device) ; 
+  
+  bool CreateSyncObjs (SyncStruc& sync, CreateInfo& create_info, const VkDevice& device);
+
+  void Cleanup (VkPipeline&                 pipeline,
+                std::vector<VkFramebuffer>& framebuffers, 
+                VkSwapchainKHR&             swapchain,
+                VkSurfaceKHR&               surf,
+                VkCommandBuffer&            command_buffer,
+                VkCommandPool&              command_pool, 
+                SyncStruc&                  sync, 
+                std::vector<VkShaderModule>& shader_modules,
+                VkPipelineLayout&           pipeline_layout,
+                RenderPass&                 render_pass,
+                std::vector<VkImageView>&  image_views,
+                GLFWwindow* w,
+                VkDevice& dev,
+                VkInstance &inst);
+
 
   
-  void               Cleanup (VkPipeline& pipeline, VkSwapchainKHR& swapchain, VkSurfaceKHR& surf, std::vector<VkShaderModule>& shader_modules, VkPipelineLayout& pipeline_layout, VkRenderPass& render_pass, std::vector<VkImageView>& image_views,  GLFWwindow* w, VkDevice& dev, VkInstance &inst);
+
   // ------------------------------------------------------------------
   //
   // ------------------------------------------------------------------

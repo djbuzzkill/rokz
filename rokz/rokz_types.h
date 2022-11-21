@@ -7,85 +7,116 @@
 
 
 namespace rokz {
-
+  //
   typedef std::optional<uint32_t> MaybeIndex;
 
-
+  // --------------------------------------------------------
   struct QueueFamilyIndices {
     MaybeIndex graphics;
     MaybeIndex present; 
   };
 
-  //
-  struct CreateInfo {
-    VkInstanceCreateInfo     instance; // {};
-    VkDeviceCreateInfo       device;
-    VkDeviceQueueCreateInfo  queue;
-    VkSwapchainCreateInfoKHR swapchain;
-    VkImageViewCreateInfo    imageview; 
-    VkRenderPassCreateInfo   renderpass; 
+  // --------------------------------------------------------
+  struct SyncStruc  {
+    VkSemaphore image_available_sem;
+    VkSemaphore render_fnished_sem;
+    VkFence     in_flight_fen;
+  };
+  
+  // --------------------------------------------------------
+  struct RenderPass {
+    enum AttachmentIndex {
+      COLOR = 0, 
+      DEPTHSTENCIL = 1, 
+      UNUSED = 2,
+    }; 
+  
+    VkRenderPass            handle; 
+    VkRenderPassCreateInfo  create_info;
 
-    VkPipelineLayoutCreateInfo   pipeline_layout; 
-    VkGraphicsPipelineCreateInfo pipeline;
+    VkAttachmentDescription attach_desc[3];
+    VkAttachmentReference   attach_ref[3];
 
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
-    VkPipelineVertexInputStateCreateInfo   vertex_input_state; 
-    VkPipelineViewportStateCreateInfo viewport_state;
+    std::vector<VkSubpassDescription> subpass_descs;
 
-    VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
-    VkPipelineDynamicStateCreateInfo         dynamic_state;
-    VkPipelineRasterizationStateCreateInfo rasterizer;
-    VkPipelineMultisampleStateCreateInfo multisampling; 
-    VkPipelineDepthStencilStateCreateInfo pipeline_depth_stencil; 
-    VkPipelineColorBlendStateCreateInfo color_blending;
+    VkSubpassDependency dependancy;
   };
 
+  // --------------------------------------------------------
+  struct CreateInfo {
+    VkInstanceCreateInfo                     instance; 
+    VkDeviceCreateInfo                       device;
+    VkDeviceQueueCreateInfo                  queue;
+    VkSwapchainCreateInfoKHR                 swapchain;
+    VkImageViewCreateInfo                    imageview; 
+    VkRenderPassCreateInfo                   renderpass; 
+
+    VkCommandPoolCreateInfo                 command_pool; 
+    VkCommandBufferAllocateInfo             command_buffer; 
+    //
+    VkPipelineLayoutCreateInfo               pipeline_layout; 
+    VkGraphicsPipelineCreateInfo             pipeline;
+    std::vector<VkFramebufferCreateInfo>     framebuffers; 
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
+    VkPipelineVertexInputStateCreateInfo     vertex_input_state; 
+    VkPipelineViewportStateCreateInfo        viewport_state;
+    //
+    VkSemaphoreCreateInfo  semaphore;
+    VkFenceCreateInfo      fence;
+    //
+    VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
+    VkPipelineDynamicStateCreateInfo         dynamic_state;
+    VkPipelineRasterizationStateCreateInfo   rasterizer;
+    VkPipelineMultisampleStateCreateInfo     multisampling; 
+    VkPipelineDepthStencilStateCreateInfo    pipeline_depth_stencil; 
+    VkPipelineColorBlendStateCreateInfo      color_blend;
+  };
+
+  // --------------------------------------------------------
   struct SwapchainSupportInfo {
     VkSurfaceCapabilitiesKHR        capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR>   present_modes;    
   };
 
-
-  // Context
+  // --------------------------------------------------------
   struct Glob {
-    
-    VkApplicationInfo     app_info; // {};
-    VkInstance            instance;
+    VkApplicationInfo           app_info; // {};
+    VkInstance                  instance;
 
-    VkPhysicalDevice      physical_device;
-    VkPhysicalDeviceFeatures device_features;
-    VkSwapchainKHR        swapchain;
-    std::vector<VkImage>  swapchain_images;
-    std::vector<VkImageView> swapchain_imageviews;
+    VkPhysicalDevice            physical_device;
+    VkPhysicalDeviceFeatures    device_features;
+    VkSwapchainKHR              swapchain;
+
+    std::vector<VkImage>        swapchain_images;
+    std::vector<VkImageView>    swapchain_imageviews;
+    std::vector<VkFramebuffer>  swapchain_framebuffers;
     std::vector<VkShaderModule> shader_modules; 
-    
 
-    std::vector<VkDynamicState>       dynamic_states; 
+    VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
-    VkRenderPass render_pass;
-    VkPipelineLayout pipeline_layout; 
-    VkPipeline       pipeline; 
+    std::vector<VkDynamicState> dynamic_states; 
+    VkCommandPool               command_pool; 
+
+    VkCommandBuffer             command_buffer; 
+    RenderPass                  render_pass; 
+    //VkRenderPass                render_pass;
+
+    VkPipelineLayout            pipeline_layout; 
+    VkPipeline                  pipeline; 
     // device + queues?
-    GLFWwindow*           glfwin;  // 
-    VkSurfaceKHR          surface; // surface is related to a window?
-    VkDevice              device;
+    GLFWwindow*                 glfwin;  // 
+    VkSurfaceKHR                surface; // 
+    VkDevice                    device;
 
-
-    VkViewport viewport;
-    VkRect2D   scissor; 
-
-
-
-
-
+    VkViewport                  viewport;
+    VkRect2D                    scissor; 
     
     struct { VkQueue graphics; VkQueue present; } queues;
 
-    QueueFamilyIndices    queue_fams;
-    float                 queue_priority;
-    
-    CreateInfo            create_info;
+    QueueFamilyIndices         queue_fams;
+    float                      queue_priority;
+    CreateInfo                 create_info;
     // bool               enable_validation;
   };
 

@@ -4,10 +4,18 @@
 #include <vulkan/vulkan_core.h>
 
 
-#include <filesystem>
 //#include "skittlez/skittlez.h"
 #include "glm/glm.hpp"
 #include "rokz/rokz_funcs.h"
+
+
+
+void look_at_this_shhhhi () {
+  // auto tup = std::tuple{ 420, "wtf", 3.15f}; 
+  // auto& [a1, b1, c1] = tup; 
+  }
+
+
 
 void SetupScene () {
   printf ("lolz\n"); 
@@ -33,13 +41,76 @@ void UpdateScene (rokz::Glob& glob, double dt) {
 }
 
 //
-void RenderScene (rokz::Glob &glob, double dt) {
+void RenderScene (rokz::Glob &glob, rokz::SyncStruc& sync, double dt) {
   
+  vkWaitForFences(glob.device, 1, &sync.in_flight_fen, VK_TRUE, UINT64_MAX);
+  vkResetFences(glob.device, 1, &sync.in_flight_fen);  
+ 
+  uint32_t image_index;
+  vkAcquireNextImageKHR (glob.device,
+                         glob.swapchain,
+                         UINT64_MAX,
+                         sync.image_available_sem,
+                         VK_NULL_HANDLE,
+                         &image_index);
+
+  vkResetCommandBuffer( glob.command_buffer, 0);
+  rokz::RecordCommandBuffer(glob.command_buffer, glob.pipeline,
+                            glob.create_info.swapchain.imageExtent,
+                            glob.swapchain_framebuffers[image_index],
+                            glob.render_pass, glob.device);
+
+  VkSubmitInfo submit_info{};
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+  VkSemaphore wait_semaphores[] = {sync.image_available_sem};
+
+  VkSemaphore signal_semaphores[] = {sync.render_fnished_sem }; 
+
+  VkPipelineStageFlags wait_stages[] = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitSemaphores = wait_semaphores;
+
+  submit_info.signalSemaphoreCount = 1; 
+  submit_info.pSignalSemaphores = signal_semaphores; 
+
+  submit_info.pWaitDstStageMask = wait_stages;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &glob.command_buffer;
+
+  
+  
+  if (vkQueueSubmit(glob.queues.graphics, 1, &submit_info, sync.in_flight_fen) != VK_SUCCESS) {
+    printf("failed to submit draw command buffer!");
+  }
+
+  
+ VkPresentInfoKHR present_info{};
+ VkSwapchainKHR swapchains[] = { glob.swapchain };
+
+ present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+ present_info.waitSemaphoreCount = 1;
+ present_info.pWaitSemaphores = signal_semaphores;
+ present_info.swapchainCount  = 1;
+ present_info.pSwapchains     = swapchains;
+ present_info.pImageIndices   = &image_index;
+ present_info.pResults        = nullptr; 
+
+
+ vkQueuePresentKHR(glob.queues.present, &present_info);
+
+ 
+
 }
 
 //
 //
-int main (int argv, char** argc) {
+
+
+
+int rokz_test_create (const std::vector<std::string>& args) {
 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
@@ -47,10 +118,7 @@ int main (int argv, char** argc) {
 
   rokz::Glob glob; // something representing the app state
 
-  auto curr_path = std::filesystem::current_path ();
-  
-  printf ("current path: %s\n" , curr_path.string ().c_str()); 
-  
+  auto rokz_path = std::filesystem::path ( "/home/djbuzzkill/owenslake");
   Default (glob); 
   
   glfwInit();
@@ -104,24 +172,41 @@ int main (int argv, char** argc) {
                           glob.create_info.swapchain.imageFormat, 
                           glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
+
+
   rokz::CreateRenderPass (glob.render_pass,
-                          glob.create_info.renderpass,
                           glob.create_info.swapchain.imageFormat,
                           glob.device);
+  // bool               CreateRenderPass (RenderPass &render_pass,
+  //                                      VkFormat swapchain_format,
+  //                                      const VkDevice &device); 
+  
+  // rokz::CreateRenderPass (glob.render_pass,
+  //                         glob.create_info.renderpass,
+  //                         glob.create_info.swapchain.imageFormat,
+  //                         glob.device);
 
 
+  rokz::CreateShaderModules (glob.shader_modules,
+                             glob.create_info.shader_stages,
+                             rokz_path,
+                             glob.device);
+
+  rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.create_info.color_blend); 
+
+  
+  rokz::CreateDynamicStates(glob.dynamic_states,
+                            glob.create_info.dynamic_state); 
+  
   rokz::CreateGraphicsPipelineLayout(
       glob.pipeline_layout,
-      glob.render_pass,
-      glob.shader_modules,
-      glob.dynamic_states,
       glob.viewport,
       glob.scissor,
       glob.create_info,
       glob.create_info.swapchain.imageExtent,
       glob.device);
 
-  rokz::CreateGraphicsPipeline(
+  rokz::CreateGraphicsPipeline (
       glob.pipeline,
       glob.create_info.pipeline,
       glob.create_info,
@@ -130,76 +215,120 @@ int main (int argv, char** argc) {
       glob.device);
 
 
+  
+  rokz::CreateFramebuffers (glob.swapchain_framebuffers,
+                            glob.create_info.framebuffers,
+                            glob.render_pass,
+                            glob.create_info.swapchain.imageExtent,
+                            glob.swapchain_imageviews,
+                            glob.device); 
+
+
+  rokz::CreateCommandPool (glob.command_pool,
+                           glob.create_info.command_pool,
+                           glob.queue_fams,
+                           glob.device);
+
+
+  rokz::CreateCommandBuffer(glob.command_buffer,
+                            glob.create_info.command_buffer, 
+                            glob.command_pool, 
+                            glob.device);
+
+  
+  rokz::SyncStruc sync; 
+  rokz::CreateSyncObjs(sync, glob.create_info, glob.device); 
+
   //
-  SetupScene (); 
+  SetupScene();
   //
   //
   const double time_per_frame_sec = 1.0 / 60.0;
   dt = time_per_frame_sec; // just do this for now
   
-  std::chrono::microseconds
-    time_per_frame_us (static_cast<size_t> (time_per_frame_sec * 1000000.0));
-
+  std::chrono::microseconds time_per_frame_us(
+                                              static_cast<size_t>(time_per_frame_sec * 1000000.0));
+  
   std::chrono::duration<size_t, std::chrono::microseconds::period>
-    time_per_frame (time_per_frame_us);
+    time_per_frame(time_per_frame_us);
   
   size_t frame_counter = 0;
 
-  // loop 
-  bool run = false; 
-  while (run) {
+    // loop
+  bool run = true;
+  while (run && !glfwWindowShouldClose(glob.glfwin)) {
+
+    glfwPollEvents(); 
+
     printf("frame[%zu]\n", frame_counter++);
     auto start = std::chrono::high_resolution_clock::now();
-
+    
     // while (!glfwWindowShouldClose(glob.glfwin)) {
-    //     glfwPollEvents(); <-- not tested
     // }
     UpdateInput(glob, dt);
-
-    UpdateScene (glob, dt);
-
-    RenderScene (glob, dt);
-
-
+    
+    UpdateScene(glob, dt);
+    
+    RenderScene(glob, sync, dt);
+    
     // how long did we take
-    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - start;
-    if (time_to_make_frame  < time_per_frame) {
+    auto time_to_make_frame =
+      std::chrono::high_resolution_clock::now() - start;
+    if (time_to_make_frame < time_per_frame) {
       auto sleep_time = time_per_frame - time_to_make_frame;
-      std::this_thread::sleep_for (sleep_time); 
+      std::this_thread::sleep_for(sleep_time);
     }
-
   }
-  // end loop
+    // end loop
 
-  ShutdownScene(); 
+  ShutdownScene();
 
-  
   if (!run) {
-    printf ("config just exit atm\n"); 
-    std::this_thread::sleep_for (std::chrono::milliseconds (300)); 
+    printf("config just exit atm\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
   }
 
-  // CLEAN UP
-  rokz::Cleanup(glob.pipeline,
-                glob.swapchain,
-                glob.surface,
-                glob.shader_modules, 
-                glob.pipeline_layout,
-                glob.render_pass, 
-                glob.swapchain_imageviews,
-                glob.glfwin ,
-                glob.device,
+  vkDeviceWaitIdle(glob.device);
+  
+    // CLEAN UP
+  rokz::Cleanup(glob.pipeline, glob.swapchain_framebuffers, glob.swapchain,
+                glob.surface, glob.command_buffer, glob.command_pool,
+                sync, 
+                glob.shader_modules, glob.pipeline_layout, glob.render_pass,
+                glob.swapchain_imageviews, glob.glfwin, glob.device,
                 glob.instance);
-  //void Cleanup (VkSurfaceKHR& surf, GLFWwindow* w, VkDevice& dev, VkInstance &vkinst);
-  glfwTerminate();
+  // void Cleanup (VkSurfaceKHR& surf, GLFWwindow* w, VkDevice& dev,
+  // VkInstance &vkinst);
+
+    glfwTerminate();
+  
+  return 0;
+}
+
+int main (int argv, char** argc) {
+
+
+  const std::vector<std::string> args (argc, argc + argv);
+
+  rokz_test_create (args); 
+
+
+  // printf ("current path: %s\n" , curr_path.string ().c_str()); 
+  // printf ("current path: %s\n" , rel_path.string ().c_str());
+
+  // for (auto path_it =  curr_path.begin (); path_it != curr_path.end (); ++path_it) {
+  //   if (*path_it == std::filesystem::path ("rokz")) {
+  //       printf ("FOUND \"rokz\"\n");
+
+  //       auto cur_path = std::filesystem::path ( *path_it );
+
+  //       auto new_path = cur_path /  "data";
+  //       printf ("NEW Path[%s]\n", new_path.string().c_str());
+        
+  //   }
+  // }
+  
 
   return 0; 
 }
-
-
-
-
-void look_at_this_shhhhi () {
-  // auto tup = std::tuple{ 420, "wtf", 3.15f}; 
-  // auto& [a1, b1, c1] = tup; 
-  }
+  
