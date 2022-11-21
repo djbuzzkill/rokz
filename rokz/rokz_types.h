@@ -42,6 +42,11 @@ namespace rokz {
     VkSubpassDependency dependancy;
   };
 
+  struct SyncCreateInfo {
+    VkSemaphoreCreateInfo  semaphore;
+    VkFenceCreateInfo      fence;
+  }; 
+  
   // --------------------------------------------------------
   struct CreateInfo {
     VkInstanceCreateInfo                     instance; 
@@ -51,8 +56,9 @@ namespace rokz {
     VkImageViewCreateInfo                    imageview; 
     VkRenderPassCreateInfo                   renderpass; 
 
-    VkCommandPoolCreateInfo                 command_pool; 
-    VkCommandBufferAllocateInfo             command_buffer; 
+    VkCommandPoolCreateInfo                  command_pool; 
+    std::vector<VkCommandBufferAllocateInfo> command_buffer; 
+
     //
     VkPipelineLayoutCreateInfo               pipeline_layout; 
     VkGraphicsPipelineCreateInfo             pipeline;
@@ -61,9 +67,11 @@ namespace rokz {
     VkPipelineVertexInputStateCreateInfo     vertex_input_state; 
     VkPipelineViewportStateCreateInfo        viewport_state;
     //
-    VkSemaphoreCreateInfo  semaphore;
-    VkFenceCreateInfo      fence;
-    //
+
+    std::vector<SyncCreateInfo> syncs; 
+    // VkSemaphoreCreateInfo  semaphore;
+    // VkFenceCreateInfo      fence;
+    // //
     VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
     VkPipelineDynamicStateCreateInfo         dynamic_state;
     VkPipelineRasterizationStateCreateInfo   rasterizer;
@@ -81,24 +89,26 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct Glob {
-    VkApplicationInfo           app_info; // {};
-    VkInstance                  instance;
+    VkApplicationInfo            app_info; // {};
+    VkInstance                   instance;
 
-    VkPhysicalDevice            physical_device;
-    VkPhysicalDeviceFeatures    device_features;
-    VkSwapchainKHR              swapchain;
+    VkPhysicalDevice             physical_device;
+    VkPhysicalDeviceFeatures     device_features;
+    VkSwapchainKHR               swapchain;
 
-    std::vector<VkImage>        swapchain_images;
-    std::vector<VkImageView>    swapchain_imageviews;
-    std::vector<VkFramebuffer>  swapchain_framebuffers;
-    std::vector<VkShaderModule> shader_modules; 
+    std::vector<VkImage>         swapchain_images;
+    std::vector<VkImageView>     swapchain_imageviews;
+    std::vector<VkFramebuffer>   swapchain_framebuffers;
+    std::vector<VkShaderModule>  shader_modules; 
 
     VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
-    std::vector<VkDynamicState> dynamic_states; 
-    VkCommandPool               command_pool; 
+    std::vector<VkDynamicState>  dynamic_states; 
+    VkCommandPool                command_pool; 
 
-    VkCommandBuffer             command_buffer; 
+    std::vector<VkCommandBuffer> command_buffer; 
+    std::vector<SyncStruc>       syncs; 
+
     RenderPass                  render_pass; 
     //VkRenderPass                render_pass;
 

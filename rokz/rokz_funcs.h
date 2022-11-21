@@ -41,6 +41,18 @@ namespace rokz {
   
   bool               CreateSurface (VkSurfaceKHR* surf, GLFWwindow* glfwin, const VkInstance& inst);
   bool               CreateSwapchain (VkSwapchainKHR& swapchain, VkSwapchainCreateInfoKHR& swapchaincreateinfo, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev, const VkDevice& dev, GLFWwindow* glfwin);
+
+  bool RecreateSwapchain (VkSwapchainKHR&                       swapchain,
+                          VkSwapchainCreateInfoKHR&             swapchaincreateinfo,
+                          std::vector<VkImage>&                 swapchain_images, 
+                          std::vector<VkFramebuffer>&           framebuffers,
+                          std::vector<VkFramebufferCreateInfo>& create_infos,
+                          RenderPass&                           render_pass, 
+                          std::vector<VkImageView>&             image_views, 
+                          VkSurfaceKHR&                         surf,
+                          VkPhysicalDevice&                     physdev,
+                          VkDevice& dev, GLFWwindow*            glfwin); 
+
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
   
@@ -68,8 +80,6 @@ namespace rokz {
                                const RenderPass&          render_pass,
                                const VkDevice               device); 
 
-
-
   bool CreateFramebuffers (std::vector<VkFramebuffer>&           framebuffers,
                            std::vector<VkFramebufferCreateInfo>& create_infos,
                            const RenderPass&                   render_pass, 
@@ -95,15 +105,22 @@ namespace rokz {
                            const RenderPass &render_pass,
                            const VkDevice &device) ; 
   
-  bool CreateSyncObjs (SyncStruc& sync, CreateInfo& create_info, const VkDevice& device);
+  bool CreateSyncObjs (SyncStruc& sync, SyncCreateInfo& create_info, const VkDevice& device);
 
+
+
+  void CleanupSwapchain (std::vector<VkFramebuffer>& framebuffers, 
+                         std::vector<VkImageView>&   image_views,
+                         VkSwapchainKHR&             swapchain,
+                         const VkDevice&             device); 
+
+  
   void Cleanup (VkPipeline&                 pipeline,
                 std::vector<VkFramebuffer>& framebuffers, 
                 VkSwapchainKHR&             swapchain,
                 VkSurfaceKHR&               surf,
-                VkCommandBuffer&            command_buffer,
                 VkCommandPool&              command_pool, 
-                SyncStruc&                  sync, 
+                std::vector<SyncStruc>&     syncs, 
                 std::vector<VkShaderModule>& shader_modules,
                 VkPipelineLayout&           pipeline_layout,
                 RenderPass&                 render_pass,
@@ -112,8 +129,6 @@ namespace rokz {
                 VkDevice& dev,
                 VkInstance &inst);
 
-
-  
 
   // ------------------------------------------------------------------
   //

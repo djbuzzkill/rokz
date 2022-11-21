@@ -1,6 +1,7 @@
 
 #include "rockz.h"              // 
 #include "rokz/rokz.h"
+#include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 
 
@@ -9,13 +10,16 @@
 #include "rokz/rokz_funcs.h"
 
 
+const size_t kMaxFramesInFlight = 2; 
 
 void look_at_this_shhhhi () {
   // auto tup = std::tuple{ 420, "wtf", 3.15f}; 
   // auto& [a1, b1, c1] = tup; 
   }
 
-
+static void ResizeCB (GLFWwindow* window, int width, int height) {
+  *reinterpret_cast<bool*> (glfwGetWindowUserPointer(window)) = true;
+}
 
 void SetupScene () {
   printf ("lolz\n"); 
@@ -41,21 +45,34 @@ void UpdateScene (rokz::Glob& glob, double dt) {
 }
 
 //
-void RenderScene (rokz::Glob &glob, rokz::SyncStruc& sync, double dt) {
-  
-  vkWaitForFences(glob.device, 1, &sync.in_flight_fen, VK_TRUE, UINT64_MAX);
-  vkResetFences(glob.device, 1, &sync.in_flight_fen);  
- 
-  uint32_t image_index;
-  vkAcquireNextImageKHR (glob.device,
+bool RenderScene (rokz::Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>& syncs, bool& resize, double dt) {
+
+  vkWaitForFences(glob.device, 1, &syncs[curr_frame].in_flight_fen, VK_TRUE, UINT64_MAX);
+
+  uint32_t image_index = 0;;
+  VkResult acquire_res = vkAcquireNextImageKHR (glob.device,
                          glob.swapchain,
                          UINT64_MAX,
-                         sync.image_available_sem,
+                         syncs[curr_frame].image_available_sem,
                          VK_NULL_HANDLE,
                          &image_index);
 
-  vkResetCommandBuffer( glob.command_buffer, 0);
-  rokz::RecordCommandBuffer(glob.command_buffer, glob.pipeline,
+  if (acquire_res == VK_ERROR_OUT_OF_DATE_KHR || acquire_res == VK_SUBOPTIMAL_KHR || resize) {
+    resize = false; 
+    return rokz::RecreateSwapchain (
+        glob.swapchain, glob.create_info.swapchain, glob.swapchain_images,
+        glob.swapchain_framebuffers, glob.create_info.framebuffers,
+        glob.render_pass, glob.swapchain_imageviews, glob.surface,
+        glob.physical_device, glob.device, glob.glfwin);
+  } 
+  else if (acquire_res != VK_SUCCESS) {
+    printf("failed to acquire swap chain image!");
+    return false;
+  }
+  vkResetFences(glob.device, 1, &syncs[curr_frame].in_flight_fen);
+  
+  vkResetCommandBuffer( glob.command_buffer[curr_frame], 0);
+  rokz::RecordCommandBuffer(glob.command_buffer[curr_frame], glob.pipeline,
                             glob.create_info.swapchain.imageExtent,
                             glob.swapchain_framebuffers[image_index],
                             glob.render_pass, glob.device);
@@ -63,9 +80,9 @@ void RenderScene (rokz::Glob &glob, rokz::SyncStruc& sync, double dt) {
   VkSubmitInfo submit_info{};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-  VkSemaphore wait_semaphores[] = {sync.image_available_sem};
+  VkSemaphore wait_semaphores[] = {syncs[curr_frame].image_available_sem};
 
-  VkSemaphore signal_semaphores[] = {sync.render_fnished_sem }; 
+  VkSemaphore signal_semaphores[] = {syncs[curr_frame].render_fnished_sem }; 
 
   VkPipelineStageFlags wait_stages[] = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -78,11 +95,9 @@ void RenderScene (rokz::Glob &glob, rokz::SyncStruc& sync, double dt) {
 
   submit_info.pWaitDstStageMask = wait_stages;
   submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &glob.command_buffer;
-
+  submit_info.pCommandBuffers = &glob.command_buffer[curr_frame];
   
-  
-  if (vkQueueSubmit(glob.queues.graphics, 1, &submit_info, sync.in_flight_fen) != VK_SUCCESS) {
+  if (vkQueueSubmit(glob.queues.graphics, 1, &submit_info, syncs[curr_frame].in_flight_fen) != VK_SUCCESS) {
     printf("failed to submit draw command buffer!");
   }
 
@@ -96,13 +111,11 @@ void RenderScene (rokz::Glob &glob, rokz::SyncStruc& sync, double dt) {
  present_info.swapchainCount  = 1;
  present_info.pSwapchains     = swapchains;
  present_info.pImageIndices   = &image_index;
- present_info.pResults        = nullptr; 
-
+ present_info.pResults        = nullptr;
 
  vkQueuePresentKHR(glob.queues.present, &present_info);
 
- 
-
+ return true; 
 }
 
 //
@@ -123,8 +136,12 @@ int rokz_test_create (const std::vector<std::string>& args) {
   
   glfwInit();
 
+  bool fb_resize = false; 
   rokz::CreateWindow_glfw (glob.glfwin);
+  glfwSetFramebufferSizeCallback (glob.glfwin, ResizeCB); 
+  glfwSetWindowUserPointer (glob.glfwin, &fb_resize); 
 
+  
   rokz::CreateInstance    (glob.instance, glob.app_info, glob.create_info.instance);
 
   rokz::CreateSurface (&glob.surface, glob.glfwin , glob.instance);
@@ -230,14 +247,19 @@ int rokz_test_create (const std::vector<std::string>& args) {
                            glob.device);
 
 
-  rokz::CreateCommandBuffer(glob.command_buffer,
-                            glob.create_info.command_buffer, 
-                            glob.command_pool, 
-                            glob.device);
 
-  
-  rokz::SyncStruc sync; 
-  rokz::CreateSyncObjs(sync, glob.create_info, glob.device); 
+  glob.command_buffer.resize (kMaxFramesInFlight);
+  glob.create_info.command_buffer.resize (kMaxFramesInFlight);
+  glob.create_info.syncs.resize (kMaxFramesInFlight);
+  glob.syncs.resize (kMaxFramesInFlight);
+
+  for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
+    rokz::CreateCommandBuffer(glob.command_buffer[i],
+                              glob.create_info.command_buffer[i],
+                              glob.command_pool, glob.device);
+
+    rokz::CreateSyncObjs(glob.syncs[i], glob.create_info.syncs[i], glob.device);
+  }
 
   //
   SetupScene();
@@ -246,21 +268,22 @@ int rokz_test_create (const std::vector<std::string>& args) {
   const double time_per_frame_sec = 1.0 / 60.0;
   dt = time_per_frame_sec; // just do this for now
   
-  std::chrono::microseconds time_per_frame_us(
-                                              static_cast<size_t>(time_per_frame_sec * 1000000.0));
+  std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
   
   std::chrono::duration<size_t, std::chrono::microseconds::period>
     time_per_frame(time_per_frame_us);
   
-  size_t frame_counter = 0;
+  //size_t frame_counter = 0;
 
     // loop
   bool run = true;
+  uint32_t curr_frame = 0; 
+  bool result = false;
   while (run && !glfwWindowShouldClose(glob.glfwin)) {
 
     glfwPollEvents(); 
 
-    printf("frame[%zu]\n", frame_counter++);
+    //printf("frame[%zu]\n", frame_counter++);
     auto start = std::chrono::high_resolution_clock::now();
     
     // while (!glfwWindowShouldClose(glob.glfwin)) {
@@ -269,7 +292,9 @@ int rokz_test_create (const std::vector<std::string>& args) {
     
     UpdateScene(glob, dt);
     
-    RenderScene(glob, sync, dt);
+    result = RenderScene (glob, curr_frame, glob.syncs, fb_resize, dt);
+    if (result == false)
+      run = false;
     
     // how long did we take
     auto time_to_make_frame =
@@ -278,22 +303,20 @@ int rokz_test_create (const std::vector<std::string>& args) {
       auto sleep_time = time_per_frame - time_to_make_frame;
       std::this_thread::sleep_for(sleep_time);
     }
+
+    curr_frame = (curr_frame+1) % kMaxFramesInFlight;
   }
     // end loop
 
   ShutdownScene();
 
-  if (!run) {
-    printf("config just exit atm\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
-  }
 
   vkDeviceWaitIdle(glob.device);
   
     // CLEAN UP
   rokz::Cleanup(glob.pipeline, glob.swapchain_framebuffers, glob.swapchain,
-                glob.surface, glob.command_buffer, glob.command_pool,
-                sync, 
+                glob.surface, glob.command_pool,
+                glob.syncs, 
                 glob.shader_modules, glob.pipeline_layout, glob.render_pass,
                 glob.swapchain_imageviews, glob.glfwin, glob.device,
                 glob.instance);

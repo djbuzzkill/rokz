@@ -5,6 +5,7 @@
 
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
+#include "rokz/rokz_funcs.h"
 #include "vk_mem_alloc.h"
 
 //#include <vulkan/vulkan.hpp>
@@ -1196,7 +1197,7 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
     return false; 
   }
   
-  printf ("BAI %s\n", __FUNCTION__); 
+  //printf ("BAI %s\n", __FUNCTION__); 
   return true;
 }
 
@@ -1204,7 +1205,7 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateSyncObjs (SyncStruc&      sync,
-                           CreateInfo&     create_info,
+                           SyncCreateInfo& create_info,
                            const VkDevice& device) {
 
   create_info.semaphore = {};
@@ -1246,15 +1247,68 @@ void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& devic
 }
 
 // ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
+                       VkSwapchainCreateInfoKHR &swapchaincreateinfo,
+                       std::vector<VkImage> &swapchain_images,
+                       std::vector<VkFramebuffer> &framebuffers,
+                       std::vector<VkFramebufferCreateInfo> &create_infos,
+                       RenderPass &render_pass,
+                       std::vector<VkImageView> &image_views,
+                       VkSurfaceKHR &surf,
+                       VkPhysicalDevice &physdev,
+                       VkDevice &dev,
+                       GLFWwindow *glfwin) {
+
+
+
+  int width = 0, height = 0;
+  glfwGetFramebufferSize(glfwin, &width, &height);
+  while (width == 0 || height == 0) {
+    glfwGetFramebufferSize(glfwin, &width, &height);
+    glfwWaitEvents();
+  }
+  
+  vkDeviceWaitIdle (dev);
+
+  CleanupSwapchain (framebuffers, image_views, swapchain, dev);
+  bool swapchain_res = CreateSwapchain (swapchain, swapchaincreateinfo, surf, physdev, dev, glfwin); 
+  bool imageviews_res = CreateImageViews (image_views, swapchain_images, swapchaincreateinfo.imageFormat, dev);
+  bool framebuffers_res = CreateFramebuffers (framebuffers, create_infos, render_pass, swapchaincreateinfo.imageExtent, image_views, dev);
+  return swapchain_res &&imageviews_res && framebuffers_res; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
+                            std::vector<VkImageView> &image_views,
+                            VkSwapchainKHR &swapchain,
+                            const VkDevice& device) {
+
+  for (auto fb : framebuffers) {
+    vkDestroyFramebuffer (device, fb, nullptr); 
+  }
+
+  for (auto imageview : image_views) {
+    vkDestroyImageView(device, imageview, nullptr);
+  }
+
+  vkDestroySwapchainKHR(device, swapchain, nullptr);
+  
+}
+
+
+// ---------------------------------------------------------------------
 // DESTROY ALL THE THINGS
 // ---------------------------------------------------------------------
 void rokz::Cleanup(VkPipeline &pipeline,
                    std::vector<VkFramebuffer> &framebuffers,
                    VkSwapchainKHR &swapchain,
                    VkSurfaceKHR &surf,
-                   VkCommandBuffer &command_buffer,
                    VkCommandPool &command_pool,
-                   SyncStruc& sync, 
+                   std::vector<SyncStruc>& syncs, 
                    std::vector<VkShaderModule> &shader_modules,
                    VkPipelineLayout &pipeline_layout,
                    RenderPass &render_pass,
@@ -1262,28 +1316,24 @@ void rokz::Cleanup(VkPipeline &pipeline,
                    GLFWwindow *w,
                    VkDevice &dev, VkInstance &inst) {
 
-  vkDestroyPipeline (dev, pipeline, nullptr);
 
-  for (auto fb : framebuffers) {
-    vkDestroyFramebuffer (dev, fb, nullptr); 
-  }
+
+  CleanupSwapchain (framebuffers, image_views, swapchain, dev);
   
-  vkDestroySwapchainKHR(dev, swapchain, nullptr);
+  vkDestroyPipeline (dev, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);
-  
   vkDestroyCommandPool ( dev, command_pool, nullptr);
 
-  vkDestroySemaphore(dev, sync.image_available_sem, nullptr);
-  vkDestroySemaphore(dev, sync.render_fnished_sem, nullptr);
-  vkDestroyFence(dev, sync.in_flight_fen, nullptr);
-  
+  for (size_t i = 0; i < syncs.size (); ++i) {
+    vkDestroySemaphore(dev, syncs[i].image_available_sem, nullptr);
+    vkDestroySemaphore(dev, syncs[i].render_fnished_sem, nullptr);
+    vkDestroyFence(dev, syncs[i].in_flight_fen, nullptr);
+  }
+
   for (auto shmod : shader_modules) {
     vkDestroyShaderModule (dev, shmod, nullptr); 
   }
   
-  for (auto imageview : image_views) {
-    vkDestroyImageView(dev, imageview, nullptr);
-  }
 
 
   vkDestroyPipelineLayout(dev, pipeline_layout, nullptr);
