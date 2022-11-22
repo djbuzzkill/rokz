@@ -16,6 +16,10 @@
 
 #include "rokz/rokz.h"
 
+
+#include <glm/glm.hpp>
+
+
 int wave (); 
 
 #endif

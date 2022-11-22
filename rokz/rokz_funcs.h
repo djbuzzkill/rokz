@@ -61,10 +61,7 @@ namespace rokz {
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
   bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
-
-  bool               CreateRenderPass (RenderPass& render_pass,
-                                       VkFormat swapchain_format,
-                                       const VkDevice &device); 
+  bool               CreateRenderPass (RenderPass& render_pass, VkFormat swapchain_format, const VkDevice &device); 
 
   bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
                                      VkViewport&                  viewport, 
@@ -100,6 +97,7 @@ namespace rokz {
 
   bool RecordCommandBuffer(VkCommandBuffer &command_buffer,
                            const VkPipeline pipeline,
+                           const VkBuffer& vertex_buffer, 
                            const VkExtent2D &ext2d,
                            const VkFramebuffer &framebuffer,
                            const RenderPass &render_pass,
@@ -114,10 +112,34 @@ namespace rokz {
                          VkSwapchainKHR&             swapchain,
                          const VkDevice&             device); 
 
+
+
+  // bool CreateVertexBuffer (VkBuffer& buff,
+  //                          VkBufferCreateInfo& create_info,
+  //                          size_t sizeof_elem,
+  //                          size_t num_elem, 
+  //                          const VkDevice& device); 
+
+  // bool CreateVertexBuffer (BufferStruc& buff,
+  //                          size_t sizeof_elem,
+  //                          size_t num_elem, 
+  //                          const VkDevice& device); 
+
+  bool CreateVertexBuffer (BufferStruc& buffstruc, 
+                           size_t sizeof_elem,
+                           size_t num_elem, 
+                           const VkDevice& device,
+                           const VkPhysicalDevice& phsydev); 
+
+  bool CopyToBuffer (BufferStruc& buffstruc,
+                     const void* src,
+                     size_t size,
+                     const VkDevice& device); 
   
   void Cleanup (VkPipeline&                 pipeline,
                 std::vector<VkFramebuffer>& framebuffers, 
                 VkSwapchainKHR&             swapchain,
+                BufferStruc&                vb_struc, 
                 VkSurfaceKHR&               surf,
                 VkCommandPool&              command_pool, 
                 std::vector<SyncStruc>&     syncs, 
@@ -129,6 +151,11 @@ namespace rokz {
                 VkDevice& dev,
                 VkInstance &inst);
 
+  //bool AllocateMemory ( BufferStruc& buff_struc); 
+  // ------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------
+  bool FindMemoryType (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev ); 
 
   // ------------------------------------------------------------------
   //

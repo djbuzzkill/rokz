@@ -46,6 +46,14 @@ namespace rokz {
     VkSemaphoreCreateInfo  semaphore;
     VkFenceCreateInfo      fence;
   }; 
+
+
+  struct BufferStruc {
+    VkBuffer           handle;
+    VkDeviceMemory     mem; 
+    VkBufferCreateInfo create_info; 
+    VkMemoryAllocateInfo alloc_info;
+  }; 
   
   // --------------------------------------------------------
   struct CreateInfo {
@@ -59,6 +67,7 @@ namespace rokz {
     VkCommandPoolCreateInfo                  command_pool; 
     std::vector<VkCommandBufferAllocateInfo> command_buffer; 
 
+    
     //
     VkPipelineLayoutCreateInfo               pipeline_layout; 
     VkGraphicsPipelineCreateInfo             pipeline;
@@ -103,6 +112,11 @@ namespace rokz {
 
     VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
+    BufferStruc vertex_buffer; 
+
+    BufferStruc index_buffer;
+    
+    
     std::vector<VkDynamicState>  dynamic_states; 
     VkCommandPool                command_pool; 
 

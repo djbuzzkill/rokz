@@ -828,13 +828,6 @@ bool rokz::CreateGraphicsPipelineLayout(
   //VkPipelineColorBlendStateCreateInfo&          color_blending_create_info = create_info.color_blending;
   VkPipelineViewportStateCreateInfo&            viewport_state_create_info = create_info.viewport_state;
 
-  // VERTEX INPUT
-  vertex_input_state_info = {};
-  vertex_input_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertex_input_state_info.vertexBindingDescriptionCount = 0;
-  vertex_input_state_info.pVertexBindingDescriptions = nullptr; // Optional
-  vertex_input_state_info.vertexAttributeDescriptionCount = 0;
-  vertex_input_state_info.pVertexAttributeDescriptions = nullptr; // Optional
   
   // INPUT ASSEMBLY STATE
   input_assembly = {};
@@ -943,7 +936,7 @@ bool rokz::CreateGraphicsPipeline (
     return false;
   }
 
-  return false; 
+  return true; 
   
 }
 
@@ -986,13 +979,10 @@ bool rokz::CreateRenderPass (RenderPass &render_pass, VkFormat swapchain_format,
   render_pass.dependancy = {};
   render_pass.dependancy.srcSubpass    = VK_SUBPASS_EXTERNAL;
   render_pass.dependancy.dstSubpass    = co_in;
-
   render_pass.dependancy.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   render_pass.dependancy.srcAccessMask = co_in;
-  
   render_pass.dependancy.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   render_pass.dependancy.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
   
   // CREATEINFO. gets passed back out
   render_pass.create_info = {}; 
@@ -1101,7 +1091,7 @@ bool rokz::CreateFramebuffers (
     }
   }
 
-  return false; 
+  return true; 
 }
 
 // ---------------------------------------------------------------------
@@ -1125,6 +1115,68 @@ bool rokz::CreateCommandPool (VkCommandPool&            command_pool,
   return true; 
 }
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateVertexBuffer (BufferStruc& buffstruc, 
+                               size_t sizeof_elem,
+                               size_t num_elem, 
+                               const VkDevice& device,
+                               const VkPhysicalDevice& physdev) {
+
+  buffstruc.create_info = {};
+  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffstruc.create_info.size = sizeof_elem *  num_elem; 
+    
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  if (vkCreateBuffer(device, &buffstruc.create_info, nullptr, &buffstruc.handle) != VK_SUCCESS) {
+    printf ("[%s] VB create failed", __FUNCTION__);
+    return false; 
+  }
+
+  VkMemoryRequirements vb_mem_reqs;
+  vkGetBufferMemoryRequirements(device, buffstruc.handle, &vb_mem_reqs);
+
+  uint32_t mem_type_filter = 0;
+  VkMemoryPropertyFlags mem_prop_flags; 
+  rokz::FindMemoryType (mem_type_filter, mem_prop_flags, physdev); 
+
+  buffstruc.alloc_info = {}; 
+  buffstruc.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  buffstruc.alloc_info.allocationSize = vb_mem_reqs.size;
+  buffstruc.alloc_info.memoryTypeIndex =
+    rokz::FindMemoryType(vb_mem_reqs.memoryTypeBits,
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         physdev);
+
+  if (vkAllocateMemory(device, &buffstruc.alloc_info, nullptr, &buffstruc.mem) != VK_SUCCESS) {
+    printf ("[%s]  VB  mem-alloc failed\n", __FUNCTION__);
+    return false;
+  }
+
+  if (VK_SUCCESS != vkBindBufferMemory (device, buffstruc.handle, buffstruc.mem, 0)) {
+    printf ("[%s]  VB memory bind failed\n", __FUNCTION__);
+    return false;
+  }
+  
+  return true; 
+}
+
+
+
+bool rokz::CopyToBuffer (BufferStruc& buffstruc, const void* src, size_t size, const VkDevice& device) {
+  void* dst;
+  vkMapMemory (device, buffstruc.mem, 0, buffstruc.create_info.size, 0, &dst);
+  memcpy (dst, src, size);
+  vkUnmapMemory (device, buffstruc.mem);
+  return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
                                VkCommandBufferAllocateInfo& create_info, 
                                const VkCommandPool &command_pool,
@@ -1149,6 +1201,7 @@ bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
 // ---------------------------------------------------------------------
 bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
                                const VkPipeline pipeline,
+                               const VkBuffer& vertex_buffer, 
                                const VkExtent2D &ext2d,
                                const VkFramebuffer &framebuffer,
                                const RenderPass &render_pass,
@@ -1192,6 +1245,11 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
   scissor.extent = ext2d;
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
+
+  VkBuffer vertex_buffers[] = {vertex_buffer};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+  
   vkCmdDraw (command_buffer, 3, 1, 0, 0);
   
   vkCmdEndRenderPass(command_buffer);
@@ -1206,6 +1264,27 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
   return true;
 }
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool  rokz::FindMemoryType (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
+    
+  VkPhysicalDeviceMemoryProperties mem_props;
+  vkGetPhysicalDeviceMemoryProperties(physdev, &mem_props);
+
+  for (uint32_t i = 0; i < mem_props.memoryTypeCount; i++) {
+   
+    if (type_filter & (1 << i) && (mem_props.memoryTypes[i].propertyFlags & prop_flags) == prop_flags ) {
+      type_filter = i; 
+      return true;
+    }
+  }
+
+  
+  printf ("[%s] find memory type failed", __FUNCTION__);
+  return false; 
+}
+    
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -1266,8 +1345,6 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
                        VkDevice &dev,
                        GLFWwindow *glfwin) {
 
-
-
   int width = 0, height = 0;
   glfwGetFramebufferSize(glfwin, &width, &height);
 
@@ -1282,7 +1359,7 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
   bool swapchain_res = CreateSwapchain (swapchain, swapchaincreateinfo, surf, physdev, dev, glfwin); 
   bool imageviews_res = CreateImageViews (image_views, swapchain_images, swapchaincreateinfo.imageFormat, dev);
   bool framebuffers_res = CreateFramebuffers (framebuffers, create_infos, render_pass, swapchaincreateinfo.imageExtent, image_views, dev);
-  return swapchain_res &&imageviews_res && framebuffers_res; 
+  return (swapchain_res &&imageviews_res && framebuffers_res); 
 }
 
 // ---------------------------------------------------------------------
@@ -1312,6 +1389,7 @@ void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
 void rokz::Cleanup(VkPipeline &pipeline,
                    std::vector<VkFramebuffer> &framebuffers,
                    VkSwapchainKHR &swapchain,
+                   BufferStruc&        vbstruc, 
                    VkSurfaceKHR &surf,
                    VkCommandPool &command_pool,
                    std::vector<SyncStruc>& syncs, 
@@ -1325,6 +1403,10 @@ void rokz::Cleanup(VkPipeline &pipeline,
 
 
   CleanupSwapchain (framebuffers, image_views, swapchain, dev);
+
+  vkDestroyBuffer (dev, vbstruc.handle, nullptr); 
+  vkFreeMemory (dev, vbstruc.mem, nullptr);
+
   
   vkDestroyPipeline (dev, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);

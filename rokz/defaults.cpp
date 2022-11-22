@@ -4,6 +4,28 @@
 
 using namespace rokz;
 
+
+
+
+
+VkPipelineVertexInputStateCreateInfo& rokz::Init (VkPipelineVertexInputStateCreateInfo& create_info,
+                                                  const VkVertexInputBindingDescription& binding_desc, 
+                                                  const std::array<VkVertexInputAttributeDescription, 2>& attrib_desc)
+{
+  // VERTEX INPUT
+  create_info = {};
+  create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  create_info.vertexBindingDescriptionCount = 1;
+  create_info.pVertexBindingDescriptions = &binding_desc; // Optional
+  create_info.vertexAttributeDescriptionCount = attrib_desc.size(); 
+  create_info.pVertexAttributeDescriptions = &attrib_desc[0]; // Optional
+
+  return create_info; 
+}
+
+
+
+
 VkInstanceCreateInfo& rokz::Default (VkInstanceCreateInfo& create_info) {
   return create_info;
 }

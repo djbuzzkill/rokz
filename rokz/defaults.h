@@ -7,6 +7,16 @@
 
 namespace rokz {
 
+
+
+
+
+  VkPipelineVertexInputStateCreateInfo& Init (VkPipelineVertexInputStateCreateInfo& create_info,
+                                              const VkVertexInputBindingDescription& binding_desc, 
+                                              const std::array<VkVertexInputAttributeDescription, 2>& attrib_desc); 
+
+
+  
   VkInstanceCreateInfo&                    Default (VkInstanceCreateInfo& create_info); // 
   VkDeviceCreateInfo&                      Default (VkDeviceCreateInfo& create_info);
   VkDeviceQueueCreateInfo&                 Default (VkDeviceQueueCreateInfo& create_info);    
