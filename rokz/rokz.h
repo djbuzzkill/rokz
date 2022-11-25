@@ -7,6 +7,5 @@
 #include "rokz_types.h"
 #include "rokz_funcs.h"
 
-#include <GLFW/glfw3.h>
 
 #endif

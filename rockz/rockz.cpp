@@ -148,7 +148,7 @@ bool RenderFrame (rokz::Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncS
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
   rokz::RecordCommandBuffer(glob.command_buffer[curr_frame],
                             glob.pipeline,
-                            glob.vertex_buffer.handle, 
+                            glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
                             glob.create_info.swapchain.imageExtent,
                             glob.swapchain_framebuffers[image_index],
                             glob.render_pass, glob.device);
@@ -301,18 +301,46 @@ int rokz_test_create (const std::vector<std::string>& args) {
                            glob.device);
 
 
-  rokz::CreateVertexBuffer (glob.vertex_buffer, 
+  rokz::BufferStruc vb_transfer; 
+  rokz::CreateVertexBuffer_transfer (vb_transfer,  
                             sizeof(Vertex_simple),
                             sizeof(simple_verts) / sizeof(Vertex_simple),
                             glob.device, 
                             glob.physical_device); 
   
+  rokz::CreateVertexBuffer_device (glob.vertex_buffer_device, 
+                            sizeof(Vertex_simple),
+                            sizeof(simple_verts) / sizeof(Vertex_simple),
+                            glob.device, 
+                            glob.physical_device); 
 
-  rokz::CopyToBuffer (glob.vertex_buffer,
-                     simple_verts,
-                     sizeof(simple_verts),
-                     glob.device); 
+  void* transfer_ptr = nullptr; 
+  if (rokz::MapBuffer ( &transfer_ptr, vb_transfer, glob.device)) {
+    memcpy (transfer_ptr, simple_verts,  sizeof(simple_verts) ); 
+    rokz::UnmapBuffer (vb_transfer, glob.device); 
+  }
 
+  rokz::MoveToBuffer_XB2DB  (glob.vertex_buffer_device, // device buffer
+                             vb_transfer, // user buffer, 
+                             sizeof(simple_verts),
+                             glob.command_pool, 
+                             glob.queues.graphics,
+                             glob. device); 
+
+  vkDestroyBuffer (glob.device, vb_transfer.handle, nullptr); 
+  vkFreeMemory (glob.device, vb_transfer.mem, nullptr);
+
+  // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
+  //                           sizeof(Vertex_simple),
+  //                           sizeof(simple_verts) / sizeof(Vertex_simple),
+  //                           glob.device, 
+  //                           glob.physical_device); 
+  
+  // rokz::MoveToBuffer_user_mem (glob.vertex_buffer_user, // glob.vertex_buffer_user
+  //                               simple_verts,
+  //                              sizeof(simple_verts),
+  //                              glob.device); 
+  
   
   // items per frames 
   glob.command_buffer.resize (kMaxFramesInFlight);
@@ -343,8 +371,9 @@ int rokz_test_create (const std::vector<std::string>& args) {
   bool        run       = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
+  int  countdown = 60; 
   //
-  while (run && !glfwWindowShouldClose(glob.glfwin)) {
+  while (countdown && run && !glfwWindowShouldClose(glob.glfwin)) {
 
     glfwPollEvents(); 
     auto start = std::chrono::high_resolution_clock::now();
@@ -365,6 +394,8 @@ int rokz_test_create (const std::vector<std::string>& args) {
       std::this_thread::sleep_for(sleep_time);
     }
     curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
+
+    countdown--; 
   }
 
   // end loop
@@ -374,7 +405,7 @@ int rokz_test_create (const std::vector<std::string>& args) {
   
   // CLEAN UP
   rokz::Cleanup(glob.pipeline, glob.swapchain_framebuffers, glob.swapchain,
-                glob.vertex_buffer, 
+                glob.vertex_buffer_device, // glob.vertex_buffer_user, 
                 glob.surface,
                 glob.command_pool,
                 glob.syncs, 

@@ -6,7 +6,6 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 #include "rokz/rokz_funcs.h"
-#include "vk_mem_alloc.h"
 
 //#include <vulkan/vulkan.hpp>
 
@@ -39,6 +38,8 @@ GLFWwindow* rokz::CreateWindow_glfw (GLFWwindow*& w) {
   return w; 
 }
 
+// kittyCAD API Token: 
+// b78b74a3-2183-45f6-8bf1-4b996e9a825b
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -576,8 +577,8 @@ bool rokz::CreateSwapchain (VkSwapchainKHR& swapchain,
   } else {
     printf ("[VK_SHARING_MODE_EXCLUSIVE]\n");
     swapchaincreateinfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swapchaincreateinfo.queueFamilyIndexCount = 0;     // Optional
-    swapchaincreateinfo.pQueueFamilyIndices = nullptr; // Optional
+    swapchaincreateinfo.queueFamilyIndexCount = 0;     
+    swapchaincreateinfo.pQueueFamilyIndices = nullptr; 
   }
 
   swapchaincreateinfo.preTransform   = swapchain_supp_info.capabilities.currentTransform;
@@ -786,23 +787,23 @@ bool rokz::CreateColorBlendState (VkPipelineColorBlendAttachmentState&   color_b
       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
       VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   color_blend_attachment_state.blendEnable = VK_FALSE;
-  color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-  color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;                                    // Optional
-  color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-  color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-  color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;                                    // Optional
-  color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+  color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; 
+  color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; 
+  color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD; 
+  color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
+  color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD; 
   // Create Info
   color_blending_create_info = {};
   color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blending_create_info.logicOpEnable = VK_FALSE;
-  color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; // Optional
+  color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
   color_blending_create_info.attachmentCount = 1;
   color_blending_create_info.pAttachments = &color_blend_attachment_state;
-  color_blending_create_info.blendConstants[0] = 0.0f; // Optional
-  color_blending_create_info.blendConstants[1] = 0.0f; // Optional
-  color_blending_create_info.blendConstants[2] = 0.0f; // Optional
-  color_blending_create_info.blendConstants[3] = 0.0f; // Optional
+  color_blending_create_info.blendConstants[0] = 0.0f; 
+  color_blending_create_info.blendConstants[1] = 0.0f; 
+  color_blending_create_info.blendConstants[2] = 0.0f; 
+  color_blending_create_info.blendConstants[3] = 0.0f; 
   return true;
 }
 
@@ -870,19 +871,19 @@ bool rokz::CreateGraphicsPipelineLayout(
   rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
   rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
   rasterizer.depthBiasEnable = VK_FALSE;
-  rasterizer.depthBiasConstantFactor = 0.0f; // Optional
-  rasterizer.depthBiasClamp = 0.0f;          // Optional
-  rasterizer.depthBiasSlopeFactor = 0.0f;    // Optional
+  rasterizer.depthBiasConstantFactor = 0.0f; 
+  rasterizer.depthBiasClamp = 0.0f;          
+  rasterizer.depthBiasSlopeFactor = 0.0f;    
 
   // MULTI SAMPLING
   multisampling = {};
   multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   multisampling.sampleShadingEnable = VK_FALSE;
   multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-  multisampling.minSampleShading = 1.0f;          // Optional
-  multisampling.pSampleMask = nullptr;            // Optional
-  multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
-  multisampling.alphaToOneEnable = VK_FALSE;      // Optional
+  multisampling.minSampleShading = 1.0f;          
+  multisampling.pSampleMask = nullptr;            
+  multisampling.alphaToCoverageEnable = VK_FALSE; 
+  multisampling.alphaToOneEnable = VK_FALSE;      
 
   // DEPTH/STENCIL
   pipeline_depth_stencil_create_info = {};
@@ -890,10 +891,10 @@ bool rokz::CreateGraphicsPipelineLayout(
   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
   pipeline_layout_create_info = {};
   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout_create_info.setLayoutCount = 0;            // Optional
-  pipeline_layout_create_info.pSetLayouts = nullptr;         // Optional
-  pipeline_layout_create_info.pushConstantRangeCount = 0;    // Optional
-  pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
+  pipeline_layout_create_info.setLayoutCount = 0;            
+  pipeline_layout_create_info.pSetLayouts = nullptr;         
+  pipeline_layout_create_info.pushConstantRangeCount = 0;    
+  pipeline_layout_create_info.pPushConstantRanges = nullptr; 
 
   if (vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
     printf("failed to create pipeline layout!\n");
@@ -928,8 +929,8 @@ bool rokz::CreateGraphicsPipeline (
   pipeline_create_info.layout = pipeline_layout; 
   pipeline_create_info.renderPass = render_pass.handle;
   pipeline_create_info.subpass = 0;
-  pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
-  pipeline_create_info.basePipelineIndex = -1;              // Optional
+  pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; 
+  pipeline_create_info.basePipelineIndex = -1;              
 
   if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline) != VK_SUCCESS) {
     printf("failed to create graphics pipeline!");
@@ -1115,6 +1116,103 @@ bool rokz::CreateCommandPool (VkCommandPool&            command_pool,
   return true; 
 }
 
+// bool rokz::CreateVertexBuffer (BufferStruc& buffstruc, 
+//                                size_t sizeof_elem,
+//                                size_t num_elem, 
+//                                const VkDevice& device,
+//                                const VkPhysicalDevice& physdev) {
+
+//   buffstruc.create_info = {};
+//   buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+//   buffstruc.create_info.size = sizeof_elem *  num_elem; 
+    
+//   buffstruc.create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+//   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+//   if (vkCreateBuffer(device, &buffstruc.create_info, nullptr, &buffstruc.handle) != VK_SUCCESS) {
+//     printf ("[%s] VB create failed", __FUNCTION__);
+//     return false; 
+//   }
+
+//   VkMemoryRequirements vb_mem_reqs;
+//   vkGetBufferMemoryRequirements(device, buffstruc.handle, &vb_mem_reqs);
+
+//   uint32_t mem_type_filter = 0;
+//   VkMemoryPropertyFlags mem_prop_flags; 
+//   rokz::FindMemoryType (mem_type_filter, mem_prop_flags, physdev); 
+
+//   buffstruc.alloc_info = {}; 
+//   buffstruc.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+//   buffstruc.alloc_info.allocationSize = vb_mem_reqs.size;
+//   buffstruc.alloc_info.memoryTypeIndex =
+//     rokz::FindMemoryType(vb_mem_reqs.memoryTypeBits,
+//                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+//                          physdev);
+
+//   if (vkAllocateMemory(device, &buffstruc.alloc_info, nullptr, &buffstruc.mem) != VK_SUCCESS) {
+//     printf ("[%s]  VB  mem-alloc failed\n", __FUNCTION__);
+//     return false;
+//   }
+
+//   if (VK_SUCCESS != vkBindBufferMemory (device, buffstruc.handle, buffstruc.mem, 0)) {
+//     printf ("[%s]  VB memory bind failed\n", __FUNCTION__);
+//     return false;
+//   }
+  
+//   return true; 
+// }
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateBuffer (BufferStruc&            buffstruc, 
+                         const VkDevice&         device,
+                         const VkPhysicalDevice& physdev) {
+
+  if (vkCreateBuffer (device, &buffstruc.create_info, nullptr, &buffstruc.handle) != VK_SUCCESS) {
+    printf ("failed to create buffer!");
+    return false; 
+  }
+  
+  VkMemoryRequirements mem_reqs;
+  vkGetBufferMemoryRequirements(device, buffstruc.handle, &mem_reqs);
+    
+  buffstruc.alloc_info = {}; 
+  buffstruc.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  buffstruc.alloc_info.allocationSize = mem_reqs.size;
+
+  buffstruc.alloc_info.memoryTypeIndex =
+    rokz::FindMemoryType (mem_reqs.memoryTypeBits, buffstruc.mem_prop_flags, physdev);
+
+  if (vkAllocateMemory(device, &buffstruc.alloc_info, nullptr, &buffstruc.mem) != VK_SUCCESS) {
+    printf ("failed to allocate buffer memory!");
+    return false; 
+  }
+
+  if (VK_SUCCESS != vkBindBufferMemory (device, buffstruc.handle, buffstruc.mem, 0)) {
+    printf ("[%s]  VB memory bind failed\n", __FUNCTION__);
+    return false;
+  }
+
+  return true; 
+} 
+
+
+// void createVertexBuffer() {
+//     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+//     VkBuffer stagingBuffer;
+//     VkDeviceMemory stagingBufferMemory;
+//     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+//     void* data;
+//     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+//         memcpy(data, vertices.data(), (size_t) bufferSize);
+//     vkUnmapMemory(device, stagingBufferMemory);
+
+//     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+// }
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -1123,55 +1221,142 @@ bool rokz::CreateVertexBuffer (BufferStruc& buffstruc,
                                size_t num_elem, 
                                const VkDevice& device,
                                const VkPhysicalDevice& physdev) {
-
+  //
   buffstruc.create_info = {};
   buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buffstruc.create_info.size = sizeof_elem *  num_elem; 
-    
-  buffstruc.create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  buffstruc.create_info.size  = sizeof_elem * num_elem; 
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; 
   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-  if (vkCreateBuffer(device, &buffstruc.create_info, nullptr, &buffstruc.handle) != VK_SUCCESS) {
-    printf ("[%s] VB create failed", __FUNCTION__);
-    return false; 
-  }
-
-  VkMemoryRequirements vb_mem_reqs;
-  vkGetBufferMemoryRequirements(device, buffstruc.handle, &vb_mem_reqs);
-
-  uint32_t mem_type_filter = 0;
-  VkMemoryPropertyFlags mem_prop_flags; 
-  rokz::FindMemoryType (mem_type_filter, mem_prop_flags, physdev); 
-
-  buffstruc.alloc_info = {}; 
-  buffstruc.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  buffstruc.alloc_info.allocationSize = vb_mem_reqs.size;
-  buffstruc.alloc_info.memoryTypeIndex =
-    rokz::FindMemoryType(vb_mem_reqs.memoryTypeBits,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         physdev);
-
-  if (vkAllocateMemory(device, &buffstruc.alloc_info, nullptr, &buffstruc.mem) != VK_SUCCESS) {
-    printf ("[%s]  VB  mem-alloc failed\n", __FUNCTION__);
-    return false;
-  }
-
-  if (VK_SUCCESS != vkBindBufferMemory (device, buffstruc.handle, buffstruc.mem, 0)) {
-    printf ("[%s]  VB memory bind failed\n", __FUNCTION__);
-    return false;
-  }
   
-  return true; 
+  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
+  //
+  return rokz::CreateBuffer (buffstruc, device, physdev); 
+}
+
+// ---------------------------------------------------------------------
+// transfer buffer
+// ---------------------------------------------------------------------
+bool rokz::CreateVertexBuffer_transfer (BufferStruc& buffstruc, 
+                               size_t sizeof_elem,
+                               size_t num_elem, 
+                               const VkDevice& device,
+                               const VkPhysicalDevice& physdev) {
+  //
+  buffstruc.create_info = {};
+  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffstruc.create_info.size  = sizeof_elem * num_elem; 
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; // | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  
+  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
+  //
+  return rokz::CreateBuffer (buffstruc, device, physdev); 
+}
+
+// ---------------------------------------------------------------------
+//   device buffer
+// ---------------------------------------------------------------------
+bool rokz::CreateVertexBuffer_device (BufferStruc& buffstruc, 
+                                      size_t sizeof_elem,
+                                      size_t num_elem, 
+                                      const VkDevice& device,
+                                      const VkPhysicalDevice& physdev) {
+  //
+  buffstruc.create_info = {};
+  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffstruc.create_info.size  = sizeof_elem * num_elem; 
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  
+  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; 
+  //
+  return rokz::CreateBuffer (buffstruc, device, physdev); 
 }
 
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::MoveToBuffer_XB2DB  (BufferStruc& buff_dst, // device buffer
+                                BufferStruc& buff_src, // user buffer, 
+                                size_t size,
+                                const VkCommandPool& command_pool, 
+                                const VkQueue& que, 
+                                const VkDevice& device) {
 
-bool rokz::CopyToBuffer (BufferStruc& buffstruc, const void* src, size_t size, const VkDevice& device) {
+  if ( !(buff_src.create_info.usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)) {
+    printf ("buff_src is not TRANSFER_SRC "); 
+    return false; 
+  }
+
+  if ( !(buff_dst.create_info.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT)) {
+    printf ("buff_dst is not TRANSFER_DST "); 
+    return false; 
+  }
+  
+  VkCommandBufferAllocateInfo alloc_info{};
+  alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  alloc_info.commandPool = command_pool;
+  alloc_info.commandBufferCount = 1;
+
+  VkCommandBuffer cmdbuf;
+  vkAllocateCommandBuffers(device, &alloc_info, &cmdbuf);
+
+  VkCommandBufferBeginInfo begin_info{};
+  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+  vkBeginCommandBuffer (cmdbuf, &begin_info);
+
+  VkBufferCopy copy_desc{};
+  copy_desc.srcOffset = 0; 
+  copy_desc.dstOffset = 0; 
+  copy_desc.size = size;
+
+  vkCmdCopyBuffer(cmdbuf, buff_src.handle, buff_dst.handle, 1, &copy_desc);
+  vkEndCommandBuffer(cmdbuf);    
+
+  VkSubmitInfo submit_info{};
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &cmdbuf;
+    
+  vkQueueSubmit(que, 1, &submit_info, VK_NULL_HANDLE);
+  vkQueueWaitIdle(que);
+  return false; 
+}
+
+// ---------------------------------------------------------------------
+// lock/unlock vb
+// ---------------------------------------------------------------------
+bool rokz::MapBuffer (void** ptr, BufferStruc& vb, const VkDevice& device) { 
+
+  assert (vb.mem_prop_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT); 
+  if (vb.mem_prop_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+    return VK_SUCCESS == vkMapMemory (device, vb.mem, 0, vb.create_info.size, 0, ptr);
+  }
+  
+  return false; 
+}
+
+// 
+void rokz::UnmapBuffer (BufferStruc& vb, const VkDevice& device) {
+  vkUnmapMemory (device, vb.mem);
+}
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+bool rokz::MoveToBuffer_user_mem (BufferStruc& dst_vb, const void* src, size_t size, const VkDevice& device) {
   void* dst;
-  vkMapMemory (device, buffstruc.mem, 0, buffstruc.create_info.size, 0, &dst);
-  memcpy (dst, src, size);
-  vkUnmapMemory (device, buffstruc.mem);
-  return true;
+
+  if (VK_SUCCESS == vkMapMemory (device, dst_vb.mem, 0, dst_vb.create_info.size, 0, &dst)) {
+    
+    memcpy (dst, src, size);
+    vkUnmapMemory (device, dst_vb.mem);
+    return true; 
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------
@@ -1267,7 +1452,7 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool  rokz::FindMemoryType (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
+bool rokz::FindMemoryType (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
     
   VkPhysicalDeviceMemoryProperties mem_props;
   vkGetPhysicalDeviceMemoryProperties(physdev, &mem_props);

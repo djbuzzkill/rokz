@@ -49,10 +49,12 @@ namespace rokz {
 
 
   struct BufferStruc {
-    VkBuffer           handle;
-    VkDeviceMemory     mem; 
-    VkBufferCreateInfo create_info; 
-    VkMemoryAllocateInfo alloc_info;
+    VkBuffer              handle;
+    VkDeviceMemory        mem; 
+    VkBufferUsageFlags    usage_flags; 
+    VkMemoryPropertyFlags mem_prop_flags;
+    VkBufferCreateInfo    create_info; 
+    VkMemoryAllocateInfo  alloc_info;
   }; 
   
   // --------------------------------------------------------
@@ -67,8 +69,6 @@ namespace rokz {
     VkCommandPoolCreateInfo                  command_pool; 
     std::vector<VkCommandBufferAllocateInfo> command_buffer; 
 
-    
-    //
     VkPipelineLayoutCreateInfo               pipeline_layout; 
     VkGraphicsPipelineCreateInfo             pipeline;
     std::vector<VkFramebufferCreateInfo>     framebuffers; 
@@ -112,10 +112,11 @@ namespace rokz {
 
     VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
-    BufferStruc vertex_buffer; 
-
-    BufferStruc index_buffer;
     
+    BufferStruc vertex_buffer_user; 
+    BufferStruc index_buffer_user;
+    
+    BufferStruc vertex_buffer_device; 
     
     std::vector<VkDynamicState>  dynamic_states; 
     VkCommandPool                command_pool; 
@@ -124,7 +125,7 @@ namespace rokz {
     std::vector<SyncStruc>       syncs; 
 
     RenderPass                  render_pass; 
-    //VkRenderPass                render_pass;
+    VkDescriptorSetLayout       descriptor_layout;    
 
     VkPipelineLayout            pipeline_layout; 
     VkPipeline                  pipeline; 
