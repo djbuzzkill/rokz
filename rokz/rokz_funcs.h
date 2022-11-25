@@ -102,6 +102,15 @@ namespace rokz {
                            const VkFramebuffer &framebuffer,
                            const RenderPass &render_pass,
                            const VkDevice &device) ; 
+
+  bool RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
+                                    const VkPipeline pipeline,
+                                    const VkBuffer& vertex_buffer, 
+                                    const VkBuffer& index_buffer, 
+                                    const VkExtent2D &ext2d,
+                                    const VkFramebuffer &framebuffer,
+                                    const RenderPass &render_pass,
+                                    const VkDevice &device); 
   
   bool CreateSyncObjs (SyncStruc& sync, SyncCreateInfo& create_info, const VkDevice& device);
 
@@ -148,7 +157,19 @@ namespace rokz {
                            size_t num_elem, 
                            const VkDevice& device,
                            const VkPhysicalDevice& physdev); 
+  // 
+  bool CreateIndexBuffer_transfer (BufferStruc& buffstruc, 
+                                   VkIndexType index_type, // VK_INDEX_TYPE_UINT16
+                                   size_t num_elem, 
+                                   const VkDevice& device,
+                                   const VkPhysicalDevice& physdev); 
 
+  bool CreateIndexBuffer_device (BufferStruc& buffstruc, 
+                                 VkIndexType index_type, // VK_INDEX_TYPE_UINT16
+                                 size_t num_elem, 
+                                 const VkDevice& device,
+                                 const VkPhysicalDevice& physdev); 
+  //
   // lock user memory vb
   bool MapBuffer   (void** mappedmem, BufferStruc& vb, const VkDevice& device);
   void UnmapBuffer (BufferStruc& vb, const VkDevice& device); 
@@ -166,8 +187,8 @@ namespace rokz {
                             const VkCommandPool& command_pool, 
                             const VkQueue&       que, 
                             const VkDevice&      device); 
-
-  //
+  // 
+  void DestroyBuffer (BufferStruc& buf, const VkDevice &device); 
   //
   void Cleanup (VkPipeline&                 pipeline,
                 std::vector<VkFramebuffer>& framebuffers, 

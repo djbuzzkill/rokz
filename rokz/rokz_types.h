@@ -55,6 +55,7 @@ namespace rokz {
     VkMemoryPropertyFlags mem_prop_flags;
     VkBufferCreateInfo    create_info; 
     VkMemoryAllocateInfo  alloc_info;
+    VkIndexType          index_type;
   }; 
   
   // --------------------------------------------------------
@@ -116,6 +117,7 @@ namespace rokz {
     BufferStruc vertex_buffer_user; 
     BufferStruc index_buffer_user;
     
+    BufferStruc index_buffer_device; 
     BufferStruc vertex_buffer_device; 
     
     std::vector<VkDynamicState>  dynamic_states; 

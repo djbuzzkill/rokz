@@ -1273,6 +1273,64 @@ bool rokz::CreateVertexBuffer_device (BufferStruc& buffstruc,
   return rokz::CreateBuffer (buffstruc, device, physdev); 
 }
 
+// ---------------------------------------------------------------------
+//   device buffer
+// ---------------------------------------------------------------------
+bool rokz::CreateIndexBuffer_transfer (BufferStruc& buffstruc, 
+                                       VkIndexType index_type,
+                                       size_t num_elem, 
+                                       const VkDevice& device,
+                                       const VkPhysicalDevice& physdev) {
+
+  size_t sizeof_index = 0; 
+  switch (index_type) {
+  case VK_INDEX_TYPE_UINT8_EXT: sizeof_index = 1; break;
+  case VK_INDEX_TYPE_UINT16: sizeof_index = 2; break;
+  case VK_INDEX_TYPE_UINT32: sizeof_index = 4; break;
+  default: printf (".....[%s] INVALID INDEX TYPE.......\n", __FUNCTION__ ); 
+  }  
+  //
+  buffstruc.create_info = {};
+  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffstruc.create_info.size  = sizeof_index * num_elem; 
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+  buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  
+  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
+  buffstruc.index_type  = index_type;
+  //
+  return rokz::CreateBuffer (buffstruc, device, physdev); 
+}
+
+// ---------------------------------------------------------------------
+//   device buffer
+// ---------------------------------------------------------------------
+bool rokz::CreateIndexBuffer_device (BufferStruc& buffstruc, 
+                                     VkIndexType index_type,
+                                     size_t num_elem, 
+                                     const VkDevice& device,
+                                     const VkPhysicalDevice& physdev) {
+
+  size_t sizeof_index = 0; 
+  switch (index_type) {
+  case VK_INDEX_TYPE_UINT8_EXT: sizeof_index = 1; break;
+  case VK_INDEX_TYPE_UINT16: sizeof_index = 2; break;
+  case VK_INDEX_TYPE_UINT32: sizeof_index = 4; break;
+  default: printf (".....[%s] INVALID INDEX TYPE.......\n", __FUNCTION__ ); 
+  }  
+  //
+  buffstruc.create_info = {};
+  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffstruc.create_info.size  = sizeof_index * num_elem; 
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+  buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  
+  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; 
+
+  buffstruc.index_type  = index_type;
+  //
+  return rokz::CreateBuffer (buffstruc, device, physdev); 
+}
 
 // ---------------------------------------------------------------------
 //
@@ -1323,7 +1381,7 @@ bool rokz::MoveToBuffer_XB2DB  (BufferStruc& buff_dst, // device buffer
     
   vkQueueSubmit(que, 1, &submit_info, VK_NULL_HANDLE);
   vkQueueWaitIdle(que);
-  return false; 
+  return true; 
 }
 
 // ---------------------------------------------------------------------
@@ -1436,6 +1494,78 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
   
   vkCmdDraw (command_buffer, 3, 1, 0, 0);
+  
+  vkCmdEndRenderPass(command_buffer);
+
+  // end 
+  if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
+    printf ("failed to record command buffer!");
+    return false; 
+  }
+  
+  //printf ("BAI %s\n", __FUNCTION__); 
+  return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
+                               const VkPipeline pipeline,
+                               const VkBuffer& vertex_buffer, 
+                               const VkBuffer& index_buffer, 
+                               const VkExtent2D &ext2d,
+                               const VkFramebuffer &framebuffer,
+                               const RenderPass &render_pass,
+                               const VkDevice &device) {
+
+  VkCommandBufferBeginInfo begin_info {};
+  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  begin_info.flags = 0;                  // 
+  begin_info.pInheritanceInfo = nullptr; // 
+
+  if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
+     printf ("failed to begin recording command buffer!");
+     return false; 
+  }
+  // begin command list
+  VkRenderPassBeginInfo pass_info{};
+  VkClearValue clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}}; 
+  pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  pass_info.renderPass = render_pass.handle; 
+  pass_info.framebuffer = framebuffer; 
+  pass_info.renderArea.offset = {0, 0};
+  pass_info.renderArea.extent = ext2d;
+  pass_info.clearValueCount = 1; 
+  pass_info.pClearValues = &clear_color; 
+
+  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
+  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+  VkViewport viewport{};
+  viewport.x = 0.0f;
+  viewport.y = 0.0f;
+  viewport.width = static_cast<float>(ext2d.width);
+  viewport.height = static_cast<float>(ext2d.height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+  VkRect2D scissor{};
+  scissor.offset = {0, 0};
+  scissor.extent = ext2d;
+  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+
+  VkBuffer vertex_buffers[] = {vertex_buffer};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
+
+  vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
+  
+  vkCmdDrawIndexed (command_buffer, 6, 1, 0, 0, 0);
   
   vkCmdEndRenderPass(command_buffer);
 
@@ -1568,6 +1698,12 @@ void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
 }
 
 
+void rokz::DestroyBuffer (BufferStruc& buf, const VkDevice &device) {
+
+  vkDestroyBuffer (device, buf.handle, nullptr); 
+  vkFreeMemory (device, buf.mem, nullptr);
+}
+
 // ---------------------------------------------------------------------
 // DESTROY ALL THE THINGS
 // ---------------------------------------------------------------------
@@ -1589,9 +1725,8 @@ void rokz::Cleanup(VkPipeline &pipeline,
 
   CleanupSwapchain (framebuffers, image_views, swapchain, dev);
 
-  vkDestroyBuffer (dev, vbstruc.handle, nullptr); 
-  vkFreeMemory (dev, vbstruc.mem, nullptr);
-
+  
+  DestroyBuffer (vbstruc, dev); 
   
   vkDestroyPipeline (dev, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);

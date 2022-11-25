@@ -58,13 +58,16 @@ const std::array<VkVertexInputAttributeDescription, 2>& SimpleAttributeDesc () {
 }
 
 
-Vertex_simple simple_verts[] = {
-  {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-  {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-  {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+const Vertex_simple simple_verts[] = {
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 };
 
-
+const uint16_t simple_indices[] = {
+    0, 1, 2, 2, 3, 0
+};
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -146,13 +149,24 @@ bool RenderFrame (rokz::Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncS
   vkResetFences (glob.device, 1, &syncs[curr_frame].in_flight_fen);
   
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
-  rokz::RecordCommandBuffer(glob.command_buffer[curr_frame],
+  // rokz::RecordCommandBuffer(glob.command_buffer[curr_frame],
+  //                           glob.pipeline,
+  //                           glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
+  //                           glob.create_info.swapchain.imageExtent,
+  //                           glob.swapchain_framebuffers[image_index],
+  //                           glob.render_pass, glob.device);
+
+  rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
                             glob.pipeline,
                             glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
+                            glob.index_buffer_device.handle,
                             glob.create_info.swapchain.imageExtent,
                             glob.swapchain_framebuffers[image_index],
                             glob.render_pass, glob.device);
 
+  //bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
+
+  
   VkSubmitInfo submit_info {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   VkSemaphore wait_semaphores[]      = {syncs[curr_frame].image_available_sem};
@@ -308,17 +322,18 @@ int rokz_test_create (const std::vector<std::string>& args) {
                             glob.device, 
                             glob.physical_device); 
   
-  rokz::CreateVertexBuffer_device (glob.vertex_buffer_device, 
-                            sizeof(Vertex_simple),
-                            sizeof(simple_verts) / sizeof(Vertex_simple),
-                            glob.device, 
-                            glob.physical_device); 
 
   void* transfer_ptr = nullptr; 
   if (rokz::MapBuffer ( &transfer_ptr, vb_transfer, glob.device)) {
     memcpy (transfer_ptr, simple_verts,  sizeof(simple_verts) ); 
     rokz::UnmapBuffer (vb_transfer, glob.device); 
   }
+
+  rokz::CreateVertexBuffer_device (glob.vertex_buffer_device, 
+                            sizeof(Vertex_simple),
+                            sizeof(simple_verts) / sizeof(Vertex_simple),
+                            glob.device, 
+                            glob.physical_device); 
 
   rokz::MoveToBuffer_XB2DB  (glob.vertex_buffer_device, // device buffer
                              vb_transfer, // user buffer, 
@@ -327,8 +342,37 @@ int rokz_test_create (const std::vector<std::string>& args) {
                              glob.queues.graphics,
                              glob. device); 
 
-  vkDestroyBuffer (glob.device, vb_transfer.handle, nullptr); 
-  vkFreeMemory (glob.device, vb_transfer.mem, nullptr);
+  rokz::DestroyBuffer  (vb_transfer, glob.device); 
+
+  // INDEX BUFF
+  rokz::BufferStruc ib_transfer;
+  rokz::CreateIndexBuffer_transfer (ib_transfer,
+                                    VK_INDEX_TYPE_UINT16,
+                                    6,
+                                    glob.device,
+                                    glob.physical_device); 
+
+  if (rokz::MapBuffer ( &transfer_ptr, ib_transfer, glob.device)) {
+    memcpy (transfer_ptr, simple_indices,  sizeof(simple_indices) ); 
+    rokz::UnmapBuffer (ib_transfer, glob.device); 
+  }
+
+  rokz::CreateIndexBuffer_device (glob.index_buffer_device,
+                                  VK_INDEX_TYPE_UINT16,
+                                  6,
+                                  glob.device,
+                                  glob.physical_device); 
+
+
+  rokz::MoveToBuffer_XB2DB  (glob.index_buffer_device, // device buffer
+                             ib_transfer, // user buffer, 
+                             sizeof(simple_indices),
+                             glob.command_pool, 
+                             glob.queues.graphics,
+                             glob.device); 
+
+  rokz::DestroyBuffer  (ib_transfer, glob.device); 
+
 
   // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
   //                           sizeof(Vertex_simple),
