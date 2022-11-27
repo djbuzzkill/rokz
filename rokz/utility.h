@@ -48,9 +48,9 @@ namespace rokz {
     return 0; 
   }
 
-  // ---------------------------------------------------
+  // ----------------------------------------------------------
   //
-  // ---------------------------------------------------
+  // ----------------------------------------------------------
   template<typename Seq>
   inline Seq& From_file (Seq& out, const std::string& fname) {
 
@@ -66,7 +66,32 @@ namespace rokz {
     }
     return out; 
   } 
- 
+
+
+  // ----------------------------------------------------------
+  //
+  // ----------------------------------------------------------
+  struct SwapchainSupportInfo {
+    VkSurfaceCapabilitiesKHR        capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR>   present_modes;    
+  };
+  // ----------------------------------------------------------
+  //
+  // ----------------------------------------------------------
+
+  const std::vector<const char*>& GetDeviceExtensionNames (); 
+
+  bool                  CheckValidationSupport (const std::vector<const char*>& val_layers); 
+  bool                  SelectPhysicalDevice (VkPhysicalDevice& physdev, QueueFamilyIndices& queueind, const VkSurfaceKHR& surf, const VkInstance& inst);
+  QueueFamilyIndices&   FindQueueFamilies (QueueFamilyIndices& queue_fams, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev);
+  SwapchainSupportInfo& QuerySwapchainSupport (SwapchainSupportInfo& deets, const VkSurfaceKHR& surf, const VkPhysicalDevice& dev); 
+  bool                  CheckValidationSupport (const std::vector<const char*>& validation_layers);
+
+  bool                      CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
+  bool                      FindMemoryType              (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev ); 
+  std::vector<const char*>& GetRequiredExtensionNames   (std::vector<const char*>&  exts); 
+
 }
 
 

@@ -26,6 +26,18 @@ namespace rokz {
   // ---------------------------------------------------
   //
   // ---------------------------------------------------
+  typedef std::optional<uint32_t> MaybeIndex;
+
+  // --------------------------------------------------------
+  struct QueueFamilyIndices {
+    MaybeIndex graphics;
+    MaybeIndex present; 
+  };
+
+
+  // ---------------------------------------------------
+  //
+  // ---------------------------------------------------
   struct destructor {
     
     virtual ~destructor () = default;

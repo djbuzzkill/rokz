@@ -7,16 +7,39 @@ project (rokz)
 
 #  
 set (ROKZ_HEADER_FILES
-  common.h
+
+  rokz.h
+  buffer.h
+  context.h
+  shader.h
+  texture.h
+  uniform.h
+  window.h
   utility.h
   binary_IO.h
   defaults.h
+
   rokz_types.h
   rokz_funcs.h
+  shared_types.h
+  common.h
 )
 
 #
 set (ROKZ_SOURCE_FILES
+
+
+
+
+
+  buffer.cpp
+  context.cpp
+  shader.cpp
+  texture.cpp
+  uniform.cpp
+  window.cpp
+
+
   utility.cpp
   binary_IO.cpp
   defaults.cpp

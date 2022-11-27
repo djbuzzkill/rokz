@@ -4,25 +4,146 @@
 
 using namespace rokz;
 
-
-
-
-
-VkPipelineVertexInputStateCreateInfo& rokz::Init (VkPipelineVertexInputStateCreateInfo& create_info,
-                                                  const VkVertexInputBindingDescription& binding_desc, 
-                                                  const std::array<VkVertexInputAttributeDescription, 2>& attrib_desc)
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineVertexInputStateCreateInfo& rokz::Init (
+   VkPipelineVertexInputStateCreateInfo&                   create_info,
+   const VkVertexInputBindingDescription&                  binding_desc, 
+   const std::array<VkVertexInputAttributeDescription, 2>& attrib_desc)
 {
   // VERTEX INPUT
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   create_info.vertexBindingDescriptionCount = 1;
-  create_info.pVertexBindingDescriptions = &binding_desc; // Optional
+  create_info.pVertexBindingDescriptions = &binding_desc; 
   create_info.vertexAttributeDescriptionCount = attrib_desc.size(); 
-  create_info.pVertexAttributeDescriptions = &attrib_desc[0]; // Optional
+  create_info.pVertexAttributeDescriptions = &attrib_desc[0]; 
 
   return create_info; 
 }
 
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkViewport& rokz::Init (VkViewport& vp, float wd, float  ht, float dp ) {
+
+  // VIEWPORT 
+  vp = {};
+  vp.x = 0.0f;
+  vp.y = 0.0f;
+  vp.width = wd;
+  vp.height = ht;
+  vp.minDepth = 0.0f;
+  vp.maxDepth = dp;
+
+  return vp ;
+}
+
+
+VkRect2D& rokz::Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext) { 
+  // SCISSOR RECT
+  rect = {}; 
+  rect.offset = offs;
+  rect.extent = ext;
+  return rect; 
+}
+
+
+//---------------------------------------------------------------------
+//
+//---------------------------------------------------------------------
+VkPipelineViewportStateCreateInfo& rokz::Init (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor) { 
+  // VkPipelineViewportStateCreateInfo
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+
+  ci.viewportCount = 1;
+  ci.pViewports = &vp; 
+
+  ci.scissorCount = 1;
+  ci.pScissors = &scissor;
+
+  return ci; 
+}
+
+//---------------------------------------------------------------------
+//
+//---------------------------------------------------------------------
+VkPipelineRasterizationStateCreateInfo & rokz::Init (VkPipelineRasterizationStateCreateInfo& ci) {
+  // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  ci.depthClampEnable = VK_FALSE;
+  ci.rasterizerDiscardEnable = VK_FALSE;
+  ci.polygonMode = VK_POLYGON_MODE_FILL;
+  ci.lineWidth = 1.0f;
+  ci.cullMode = VK_CULL_MODE_BACK_BIT;
+  ci.frontFace = VK_FRONT_FACE_CLOCKWISE;
+  ci.depthBiasEnable = VK_FALSE;
+  ci.depthBiasConstantFactor = 0.0f; 
+  ci.depthBiasClamp = 0.0f;          
+  ci.depthBiasSlopeFactor = 0.0f;    
+
+  return ci;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+
+VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCreateInfo& ci) { 
+  // MULTI SAMPLING
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  ci.sampleShadingEnable = VK_FALSE;
+  ci.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  ci.minSampleShading = 1.0f;          
+  ci.pSampleMask = nullptr;            
+  ci.alphaToCoverageEnable = VK_FALSE; 
+  ci.alphaToOneEnable = VK_FALSE;      
+  return ci; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCreateInfo& ci) {
+
+  ci = {};
+  return ci; 
+}
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+
+VkPipelineInputAssemblyStateCreateInfo& rokz::Init (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim) { 
+  // INPUT ASSEMBLY STATE
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  ci.pNext = nullptr; 
+  ci.flags = 0x0;
+  ci.topology = prim ; //VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  ci.primitiveRestartEnable = VK_FALSE;
+  return ci; 
+
+}
+
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkDescriptorSetLayoutBinding& rokz::Init (VkDescriptorSetLayoutBinding& ds, uint32_t index, VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags) {
+  ds =  {};
+  ds.binding = index;
+  ds.descriptorType = desc_type ;
+  ds.descriptorCount = 1;
+  ds.stageFlags = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_ALL_GRAPHICS
+  ds.pImmutableSamplers = nullptr; 
+  return ds;
+}
 
 
 

@@ -11,10 +11,14 @@ project (rockz)
 
   
 set (ROCKZ_HEADER_FILES
-  rockz.h
+
+    rockz.h
 )
 	
 set (ROCKZ_SOURCE_FILES
+
+  texture_tool.cpp
+  rokz_test.cpp
   rockz.cpp
 )
 
@@ -27,6 +31,10 @@ add_executable (
 target_link_libraries (
   rockz
 
+
+  IL
+  ILU
+  
   zmq
   rokz
   glfw

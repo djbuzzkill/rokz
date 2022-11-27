@@ -20,6 +20,9 @@
 #include <glm/glm.hpp>
 
 
-int wave (); 
+
+int rokz_test_create (const std::vector<std::string>& args); 
+int texture_tool (const std::vector<std::string>& args); 
+
 
 #endif
