@@ -43,6 +43,14 @@ namespace rokz {
   }; 
 
   // --------------------------------------------------------
+  struct DescriptorPool {
+
+    VkDescriptorPool           handle;
+    VkDescriptorPoolSize       size;
+    VkDescriptorPoolCreateInfo ci;
+  };
+
+  // --------------------------------------------------------
   struct ShaderModule {
     VkShaderModule                 handle; 
     rokz::bytearray                bin; 
@@ -54,6 +62,11 @@ namespace rokz {
     VkPipelineLayout            handle;
     VkPipelineLayoutCreateInfo  ci;
   };
+
+  struct DescriptorSetLayout { 
+    VkDescriptorSetLayout           handle;    
+    VkDescriptorSetLayoutCreateInfo ci;
+  }; 
 
   // --------------------------------------------------------
   struct PipelineStateCreateInfo {
@@ -76,7 +89,7 @@ namespace rokz {
     PipelineStateCreateInfo      state_ci;
   };
 
-  
+
   VkSwapchainCreateInfoKHR& Default (VkSwapchainCreateInfoKHR& info, const VkSurfaceKHR& surf); 
   VkDeviceQueueCreateInfo&  Default (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
   VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
@@ -85,7 +98,7 @@ namespace rokz {
   // ------------------------------------------------------------------
 
 
-  int CreateInstance (VkInstance& instance, VkApplicationInfo& app_info, VkInstanceCreateInfo& inst_info);  
+  int                CreateInstance (VkInstance& instance, VkApplicationInfo& app_info, VkInstanceCreateInfo& inst_info);  
   bool               CreateLogicalDevice (VkDevice* device, const VkDeviceCreateInfo* createinfo, const VkPhysicalDevice& physdev);
 
   void               GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& device); 
@@ -96,16 +109,16 @@ namespace rokz {
   bool               CreateSurface (VkSurfaceKHR* surf, GLFWwindow* glfwin, const VkInstance& inst);
   bool               CreateSwapchain (VkSwapchainKHR& swapchain, VkSwapchainCreateInfoKHR& swapchaincreateinfo, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev, const VkDevice& dev, GLFWwindow* glfwin);
 
-  bool RecreateSwapchain (VkSwapchainKHR&                       swapchain,
-                          VkSwapchainCreateInfoKHR&             swapchaincreateinfo,
-                          std::vector<VkImage>&                 swapchain_images, 
-                          std::vector<VkFramebuffer>&           framebuffers,
-                          std::vector<VkFramebufferCreateInfo>& create_infos,
-                          RenderPass&                           render_pass, 
-                          std::vector<VkImageView>&             image_views, 
-                          VkSurfaceKHR&                         surf,
-                          VkPhysicalDevice&                     physdev,
-                          VkDevice& dev, GLFWwindow*            glfwin); 
+  bool               RecreateSwapchain (VkSwapchainKHR&                       swapchain,
+                                        VkSwapchainCreateInfoKHR&             swapchaincreateinfo,
+                                        std::vector<VkImage>&                 swapchain_images, 
+                                        std::vector<VkFramebuffer>&           framebuffers,
+                                        std::vector<VkFramebufferCreateInfo>& create_infos,
+                                        RenderPass&                           render_pass, 
+                                        std::vector<VkImageView>&             image_views, 
+                                        VkSurfaceKHR&                         surf,
+                                        VkPhysicalDevice&                     physdev,
+                                        VkDevice& dev, GLFWwindow*            glfwin); 
 
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
@@ -118,7 +131,7 @@ namespace rokz {
 
 
   VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
-  bool               CreateShaderModules (std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
+  bool               CreateShaderModules(std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
 
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
   bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
@@ -176,6 +189,13 @@ namespace rokz {
                                     const VkFramebuffer &framebuffer,
                                     const RenderPass &render_pass,
                                     const VkDevice &device); 
+
+  bool CreateDescriptorPool (DescriptorPool& desc_pool,
+                             VkDescriptorType type,
+                             uint32_t count,
+                             const VkDevice &device); 
+
+
   
   bool CreateSyncObjs (SyncStruc& sync, SyncCreateInfo& create_info, const VkDevice& device);
 
@@ -199,7 +219,7 @@ namespace rokz {
                 VkSurfaceKHR&               surf,
                 VkCommandPool&              command_pool, 
                 std::vector<SyncStruc>&     syncs, 
-                std::vector<VkShaderModule>& shader_modules,
+                std::vector<ShaderModule>& shader_modules,
                 VkPipelineLayout&           pipeline_layout,
                 RenderPass&                 render_pass,
                 std::vector<VkImageView>&  image_views,

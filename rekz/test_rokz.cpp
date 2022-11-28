@@ -67,6 +67,7 @@ struct StandardTransform3D {
     glm::mat4 view;
     glm::mat4 proj;
 };
+const size_t kSizeOf_StandardTransform3D = sizeof (StandardTransform3D); 
 
 // --------------------------------------------------------
 struct CreateInfo {
@@ -99,11 +100,6 @@ struct CreateInfo {
 };
 
 
-struct DescriptorSetLayout { 
-  VkDescriptorSetLayout           handle;    
-  VkDescriptorSetLayoutCreateInfo ci;
-}; 
-
 
 
 // --------------------------------------------------------
@@ -121,7 +117,8 @@ struct Glob {
   std::vector<VkImage>         swapchain_images;
   std::vector<VkImageView>     swapchain_imageviews;
   std::vector<VkFramebuffer>   swapchain_framebuffers;
-  std::vector<VkShaderModule>  shader_modules; 
+  //std::vector<VkShaderModule>  shader_modules; 
+  std::vector<rokz::ShaderModule>  shader_modules; 
 
   VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
@@ -132,14 +129,15 @@ struct Glob {
   rokz::BufferStruc index_buffer_device; 
   rokz::BufferStruc vertex_buffer_device; 
 
-  std::vector<rokz::BufferStruc>     uniform_buffers;
+  std::vector<rokz::BufferStruc> uniform_buffers;
+  std::vector<void*>             uniform_mapped_pointers; 
     
   std::vector<VkDynamicState>  dynamic_states; 
   VkCommandPool                command_pool; 
   std::vector<VkCommandBuffer> command_buffer; 
   std::vector<rokz::SyncStruc> syncs; 
   rokz::RenderPass             render_pass; 
-  DescriptorSetLayout          descriptor_set_layout;
+  rokz::DescriptorSetLayout    descriptor_set_layout;
   std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
   
   //PipelineLayout              pipeline_layout; 
@@ -186,7 +184,7 @@ bool CreateDescriptorSetLayout (VkDescriptorSetLayout&              descriptor_s
   return true; 
 }
 
-
+//VkDescriptorSetAllocateInfo
 
 // ---------------------------------------------------------------------
 // CreateGraphicsPipelineLayout 
@@ -211,14 +209,6 @@ bool CreateGraphicsPipelineLayout_defaults (
   rokz::Init (sci.multisampling); 
   rokz::Init (sci.depthstencil); 
 
-  // PIPELINE LAYOUT CREATE INFO 
-  // pipeline_layout.create_info = {};
-  // pipeline_layout.create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  // pipeline_layout.create_info.setLayoutCount = 1;            
-  // pipeline_layout.create_info.pSetLayouts = &desc_set_layout;         
-  // pipeline_layout.create_info.pushConstantRangeCount = 0;    
-  // pipeline_layout.create_info.pPushConstantRanges = nullptr; 
-
   if (vkCreatePipelineLayout (device, &pipeline_layout.ci, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
     printf("failed to create pipeline layout!\n");
     return false;
@@ -226,48 +216,6 @@ bool CreateGraphicsPipelineLayout_defaults (
 
   return true;
 }
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-// bool CreateGraphicsPipeline (
-//     VkPipeline&                   pipeline,
-//     VkGraphicsPipelineCreateInfo& create_info,
-
-//     const VkPipelineLayout&       pipeline_layout,
-//     const rokz::RenderPass&       render_pass, 
-//     const VkDevice                device) {
-
-//   // CreateGraphicsPipeline  OLD VERSION
-//   // CreateGraphicsPipeline  OLD VERSION
-//   // CreateGraphicsPipeline  OLD VERSION
-//   // CreateGraphicsPipeline  OLD VERSION
-//   create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-//   create_info.stageCount          = 2;
-//   create_info.pStages             = &create_info.shader_stages[0]; 
-//   create_info.pVertexInputState   = &create_info.vertex_input_state; ;
-//   create_info.pInputAssemblyState = &create_info.input_assembly;
-//   create_info.pViewportState      = &create_info.viewport_state;
-//   create_info.pRasterizationState = &create_info.rasterizer;
-//   create_info.pMultisampleState   = &create_info.multisampling;
-//   create_info.pDepthStencilState  = nullptr; // create_info.pipeline_depth_stencil;  
-//   create_info.pColorBlendState    = &create_info.color_blend; 
-//   create_info.pDynamicState       = &create_info.dynamic_state; 
-//   create_info.layout              = pipeline_layout; 
-//   create_info.renderPass          = render_pass.handle;
-//   create_info.subpass             = 0;
-//   create_info.basePipelineHandle  = VK_NULL_HANDLE; 
-//   create_info.basePipelineIndex   = -1;              
-
-
-//   if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline) != VK_SUCCESS) {
-//     printf("failed to create graphics pipeline!");
-//     return false;
-//   }
-
-//   return true; 
-// }
 
 
 // ---------------------------------------------------------------------
@@ -356,24 +304,21 @@ void look_at_this_shhhhi () {
 //
 // --------------------------------------------------------------------
 bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
-                           std::vector<void*> mapped_uniform_pointers, 
+                           std::vector<void*>& mapped_uniform_pointers, 
                            const VkDevice& device,
                            const VkPhysicalDevice& physdev) {
 
+  uniform_buffers.resize         (kMaxFramesInFlight);
+  mapped_uniform_pointers.resize (kMaxFramesInFlight); 
 
-  mapped_uniform_pointers.resize  (kMaxFramesInFlight); 
-  uniform_buffers.resize (kMaxFramesInFlight);
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
-
-    if (!rokz::CreateUniformBuffer (uniform_buffers[i], sizeof (StandardTransform3D), 1, device, physdev)) {
+    if (!rokz::CreateUniformBuffer (uniform_buffers[i], kSizeOf_StandardTransform3D, 1, device, physdev)) {
       printf (" [FAIL] CreateUniformbuffer in  CreateUniformbuffers\n"); 
       return false; 
     }
 
     rokz::MapBuffer (&mapped_uniform_pointers[i], uniform_buffers[i], device); 
   }
-  //createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-  //vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
 
   return true; 
 }
@@ -394,8 +339,9 @@ void UpdateUniformBuffers (Glob& glob, uint32_t current_image, double dt) {
   mats.model = glm::rotate(glm::mat4(1.0f), sim_timef * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
   mats.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 0.1f, 10.0f);
-
-
+  mats.proj[1][1] *= -1;
+ 
+  memcpy (glob.uniform_mapped_pointers[current_image], &mats, kSizeOf_StandardTransform3D); 
 
   //auto currentTime = std::chrono::high_resolution_clock::now();
     //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
@@ -645,9 +591,8 @@ int test_rokz (const std::vector<std::string>& args) {
               glob.create_info.swapchain.imageExtent.width,
               glob.create_info.swapchain.imageExtent.height,
               1.0f);
+
   rokz::Init (glob.scissor, VkOffset2D {0, 0}, glob.create_info.swapchain.imageExtent);
-
-
 
   rokz::PipelineStateCreateInfo& sci = glob.pipeline.state_ci;
   rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
@@ -769,6 +714,10 @@ int test_rokz (const std::vector<std::string>& args) {
 
   rokz::DestroyBuffer  (ib_transfer, glob.device); 
 
+  CreateUniformBuffers (glob.uniform_buffers,
+                        glob.uniform_mapped_pointers, 
+                        glob.device,
+                        glob.physical_device); 
 
   // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
   //                           sizeof(Vertex_simple),
@@ -780,7 +729,6 @@ int test_rokz (const std::vector<std::string>& args) {
   //                               simple_verts,
   //                              sizeof(simple_verts),
   //                              glob.device); 
-  
   
   // items per frames 
   glob.command_buffer.resize (kMaxFramesInFlight);
@@ -846,13 +794,23 @@ int test_rokz (const std::vector<std::string>& args) {
     countdown--; 
   }
 
-  // end loop
-  ShutdownScene();
-
   vkDeviceWaitIdle(glob.device);
 
 
+
+  // end loop
+  ShutdownScene();
+  // 
   rokz::DestroyBuffer (glob.index_buffer_device, glob.device); 
+
+  for (auto& ub : glob.uniform_buffers) {
+    rokz::DestroyBuffer (ub, glob.device); 
+  }
+
+  printf ( "[TODO]:DESTROY DESCRIPTOR LAYOUT\n"); 
+  //vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
+
   // CLEAN UP
   rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
                 glob.vertex_buffer_device, // glob.vertex_buffer_user, 

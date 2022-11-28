@@ -1010,6 +1010,29 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
 }
 
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateDescriptorPool (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
+{
+
+  desc_pool.size.type            = type;   // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  desc_pool.size.descriptorCount = desc_count ; //static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+  desc_pool.ci = {};
+  desc_pool.ci.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  desc_pool.ci.poolSizeCount = 1; 
+  desc_pool.ci.pPoolSizes    = &desc_pool.size;
+
+
+  if (vkCreateDescriptorPool(device, &desc_pool.ci, nullptr, &desc_pool.handle) != VK_SUCCESS) {
+    printf ("failed to create descriptor pool!");
+    return false;
+  }
+  
+  return true;; 
+
+}
 
 
 // ---------------------------------------------------------------------
@@ -1115,7 +1138,7 @@ void rokz::Cleanup(VkPipeline &pipeline,
                    VkSurfaceKHR &surf,
                    VkCommandPool &command_pool,
                    std::vector<SyncStruc>& syncs, 
-                   std::vector<VkShaderModule> &shader_modules,
+                   std::vector<ShaderModule> &shader_modules,
                    VkPipelineLayout &pipeline_layout,
                    RenderPass &render_pass,
                    std::vector<VkImageView> &image_views,
@@ -1142,7 +1165,7 @@ void rokz::Cleanup(VkPipeline &pipeline,
   }
 
   for (auto shmod : shader_modules) {
-    vkDestroyShaderModule (dev, shmod, nullptr); 
+    vkDestroyShaderModule (dev, shmod.handle, nullptr); 
   }
   
 
