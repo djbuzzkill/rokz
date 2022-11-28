@@ -30,6 +30,10 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct QueueFamilyIndices {
+
+    QueueFamilyIndices () : graphics(), present () {
+    }
+    
     MaybeIndex graphics;
     MaybeIndex present; 
   };

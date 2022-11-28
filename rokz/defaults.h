@@ -13,7 +13,7 @@ namespace rokz {
 
   VkPipelineVertexInputStateCreateInfo& Init (VkPipelineVertexInputStateCreateInfo& create_info,
                                               const VkVertexInputBindingDescription& binding_desc, 
-                                              const std::array<VkVertexInputAttributeDescription, 2>& attrib_desc); 
+                                              const std::vector<VkVertexInputAttributeDescription>& attrib_desc); 
 
 
 // ---------------------------------------------------------------------
@@ -27,7 +27,11 @@ namespace rokz {
   VkPipelineDepthStencilStateCreateInfo&  Init (VkPipelineDepthStencilStateCreateInfo& ci);
   VkDescriptorSetLayoutBinding&           Init (VkDescriptorSetLayoutBinding& ds, uint32_t index, VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags); 
 
+  
   VkPipelineViewportStateCreateInfo&      Init (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor); 
+
+  VkDescriptorSetLayoutCreateInfo&        Init (VkDescriptorSetLayoutCreateInfo& ci);
+
   
   
   VkInstanceCreateInfo&                    Default (VkInstanceCreateInfo& create_info); // 

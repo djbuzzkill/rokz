@@ -1,24 +1,23 @@
 
-#include "rockz.h"              // 
-#include "rokz/rokz.h"
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan_core.h>
-
-#include "rokz/defaults.h"
-//#include "rokz/rokz_funcs.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "rekz.h"              // 
+// #include "rokz/defaults.h"
+// //#include "rokz/rokz_funcs.h"
+// #include <glm/glm.hpp>
+// #include <glm/gtc/matrix_transform.hpp>
 
 
 const size_t kMaxFramesInFlight = 2; 
+
+
+// #include "rokz/rokz.h"
+// #include <GLFW/glfw3.h>
+// #include <vulkan/vulkan_core.h>
 
 
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-
 struct Vertex_simple {
 
   glm::vec2 pos; 
@@ -27,41 +26,29 @@ struct Vertex_simple {
 }; 
 
 
-struct PipelineLayout { 
-  VkPipelineLayout            handle;
-  VkPipelineLayoutCreateInfo  create_info;
-};
 
+const VkVertexInputBindingDescription kSimpleVertexBindingDesc =  {
+  0,                            // binding    
+  sizeof (Vertex_simple),       // stride      
+  VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
+}; 
 
-const VkVertexInputBindingDescription& SimpleBindingDesc () {
-  
-  static  VkVertexInputBindingDescription desc;
+const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc =  {
 
-  desc.binding = 0;
-  desc.stride =  sizeof(Vertex_simple); 
-  desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX ; 
-    
-  return desc;
-}
+  VkVertexInputAttributeDescription {
+    0,                             //  .location 
+    0,                             //  .binding  
+    VK_FORMAT_R32G32_SFLOAT,       //  .format   
+    offsetof(Vertex_simple, pos),  //  .offset   
+  },
+  VkVertexInputAttributeDescription {
+    1,                             //
+    0, 
+    VK_FORMAT_R32G32B32_SFLOAT,
+    offsetof(Vertex_simple, col), 
+  }
 
-
-const std::array<VkVertexInputAttributeDescription, 2>& SimpleAttributeDesc () {
-
-  static  std::array<VkVertexInputAttributeDescription, 2> desc ;
-
-  desc[0].binding = 0;
-  desc[0].location = 0; 
-  desc[0].format = VK_FORMAT_R32G32_SFLOAT;
-  desc[0].offset = offsetof(Vertex_simple, pos);
-
-  desc[1].binding = 0; 
-  desc[1].location = 1;
-  desc[1].format = VK_FORMAT_R32G32B32_SFLOAT; 
-  desc[1].offset =  offsetof(Vertex_simple, col);
-
-  return desc;
-}
-
+}; 
 
 const Vertex_simple simple_verts[] = {
     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -75,8 +62,7 @@ const uint16_t simple_indices[] = {
 };
 
 
-
-struct BasicTransform3D {
+struct StandardTransform3D {
     glm::mat4 model;
     glm::mat4 view;
     glm::mat4 proj;
@@ -96,25 +82,35 @@ struct CreateInfo {
 
   VkGraphicsPipelineCreateInfo             pipeline;
   std::vector<VkFramebufferCreateInfo>     framebuffers; 
-  std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
-  VkPipelineVertexInputStateCreateInfo     vertex_input_state; 
-  VkPipelineViewportStateCreateInfo        viewport_state;
   //
 
   std::vector<rokz::SyncCreateInfo> syncs; 
   // VkSemaphoreCreateInfo  semaphore;
   // VkFenceCreateInfo      fence;
   // //
-  VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
-  VkPipelineDynamicStateCreateInfo         dynamic_state;
-  VkPipelineRasterizationStateCreateInfo   rasterizer;
-  VkPipelineMultisampleStateCreateInfo     multisampling; 
-  VkPipelineDepthStencilStateCreateInfo    pipeline_depth_stencil; 
-  VkPipelineColorBlendStateCreateInfo      color_blend;
+  // VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
+  // VkPipelineVertexInputStateCreateInfo     vertex_input_state; 
+  // VkPipelineViewportStateCreateInfo        viewport_state;
+  // VkPipelineRasterizationStateCreateInfo   rasterizer;
+  // VkPipelineMultisampleStateCreateInfo     multisampling; 
+  // VkPipelineDepthStencilStateCreateInfo    depth_stencil_state; 
+  // VkPipelineColorBlendStateCreateInfo      color_blend;
+  // VkPipelineDynamicStateCreateInfo         dynamic_state;
 };
+
+
+struct DescriptorSetLayout { 
+  VkDescriptorSetLayout           handle;    
+  VkDescriptorSetLayoutCreateInfo ci;
+}; 
+
+
 
 // --------------------------------------------------------
 struct Glob {
+
+  Glob () = default;
+  
   VkApplicationInfo            app_info; // {};
   VkInstance                   instance;
 
@@ -140,15 +136,16 @@ struct Glob {
     
   std::vector<VkDynamicState>  dynamic_states; 
   VkCommandPool                command_pool; 
-
   std::vector<VkCommandBuffer> command_buffer; 
   std::vector<rokz::SyncStruc> syncs; 
-
   rokz::RenderPass             render_pass; 
-  VkDescriptorSetLayout        descriptor_set_layout;    
+  DescriptorSetLayout          descriptor_set_layout;
+  std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
+  
+  //PipelineLayout              pipeline_layout; 
 
-  PipelineLayout              pipeline_layout; 
-  VkPipeline                  pipeline; 
+
+  rokz::Pipeline              pipeline; 
   // device + queues?
   GLFWwindow*                 glfwin;  // 
   VkSurfaceKHR                surface; // 
@@ -162,6 +159,8 @@ struct Glob {
   rokz::QueueFamilyIndices         queue_fams;
   float                      queue_priority;
   CreateInfo                 create_info;
+
+  double                      sim_time; 
   // bool               enable_validation;
 };
 
@@ -193,62 +192,34 @@ bool CreateDescriptorSetLayout (VkDescriptorSetLayout&              descriptor_s
 // CreateGraphicsPipelineLayout 
 
 // ---------------------------------------------------------------------
-bool CreateGraphicsPipelineLayout_default (
-    PipelineLayout&                    pipeline_layout, 
+bool CreateGraphicsPipelineLayout_defaults (
+    rokz::PipelineLayout&                 pipeline_layout, 
     // VkPipelineLayout&                  pipeline_layout,
     // VkPipelineLayoutCreateInfo&        create_info,
-    VkDescriptorSetLayout&             desc_set_layout, 
-    VkDescriptorSetLayoutBinding&      desc_set_layout_binding, 
     VkViewport&                        viewport,
     VkRect2D&                          scissor,
-    CreateInfo&                        create_info,
+    rokz::PipelineStateCreateInfo&     sci,
     const VkExtent2D&                  swapchain_extent,
     const VkDevice&                    device)
 {
-  std::vector<VkPipelineShaderStageCreateInfo>& shader_stages_create_info = create_info.shader_stages;
-  VkPipelineVertexInputStateCreateInfo&         vertex_input_state_info = create_info.vertex_input_state;
-  VkPipelineInputAssemblyStateCreateInfo&       input_assembly = create_info.input_assembly; 
-  VkPipelineRasterizationStateCreateInfo&       rasterizer = create_info.rasterizer;
-  VkPipelineMultisampleStateCreateInfo&         multisampling = create_info.multisampling;
-  VkPipelineDepthStencilStateCreateInfo&        depth_stencil_create_info = create_info.pipeline_depth_stencil; 
-  //VkPipelineColorBlendStateCreateInfo&          color_blending_create_info = create_info.color_blending;
-  VkPipelineViewportStateCreateInfo&            viewport_state_create_info = create_info.viewport_state;
-
-  rokz::Init (input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  
   rokz::Init (viewport, swapchain_extent.width, swapchain_extent.height, 1.0f);
-
   rokz::Init (scissor,  VkOffset2D {0, 0}, swapchain_extent);
+  rokz::Init (sci.viewport_state, viewport, scissor);
 
-  rokz::Init (viewport_state_create_info, viewport, scissor);
+  rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::Init (sci.rasterizer); 
+  rokz::Init (sci.multisampling); 
+  rokz::Init (sci.depthstencil); 
 
-  rokz::Init (rasterizer); 
+  // PIPELINE LAYOUT CREATE INFO 
+  // pipeline_layout.create_info = {};
+  // pipeline_layout.create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  // pipeline_layout.create_info.setLayoutCount = 1;            
+  // pipeline_layout.create_info.pSetLayouts = &desc_set_layout;         
+  // pipeline_layout.create_info.pushConstantRangeCount = 0;    
+  // pipeline_layout.create_info.pPushConstantRanges = nullptr; 
 
-  rokz::Init (multisampling); 
-
-  // DEPTH/STENCIL
-  rokz::Init (depth_stencil_create_info); 
-
-  // index:0, uniform, vert stage
-  rokz::Init (desc_set_layout_binding, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-
-  assert (false); 
-  VkDescriptorSetLayoutCreateInfo desc_set_layout_ci; 
-  CreateDescriptorSetLayout (desc_set_layout,
-                             desc_set_layout_ci,
-                             desc_set_layout_binding,
-                             device); 
-
-
-                             // PIPELINE LAYOUT CREATE INFO 
-  pipeline_layout.create_info = {};
-  pipeline_layout.create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout.create_info.setLayoutCount = 1;            
-  pipeline_layout.create_info.pSetLayouts = &desc_set_layout;         
-  pipeline_layout.create_info.pushConstantRangeCount = 0;    
-  pipeline_layout.create_info.pPushConstantRanges = nullptr; 
-
-  if (vkCreatePipelineLayout (device, &pipeline_layout.create_info, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
+  if (vkCreatePipelineLayout (device, &pipeline_layout.ci, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
     printf("failed to create pipeline layout!\n");
     return false;
   }
@@ -256,30 +227,6 @@ bool CreateGraphicsPipelineLayout_default (
   return true;
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-// bool CreateGraphicsPipelineLayout (
-//     VkPipelineLayout&            pipeline_layout,
-//     VkPipelineLayoutCreateInfo&  create_info, 
-//     const VkDescriptorSetLayout& ds_set_layout, 
-//     const VkDevice&              device)
-// {
-//   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
-//   create_info = {};
-//   create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-//   create_info.setLayoutCount = 1;            
-//   create_info.pSetLayouts = &desc_set_layout;         
-//   create_info.pushConstantRangeCount = 0;    
-//   create_info.pPushConstantRanges = nullptr; 
-
-//   if (vkCreatePipelineLayout (device, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
-//     printf("FAILED _create pipeline layout_\n");
-//     return false;
-//   }
-
-//   return true;
-// }
 
 // ---------------------------------------------------------------------
 //
@@ -327,10 +274,9 @@ bool CreateGraphicsPipelineLayout_default (
 //
 // ---------------------------------------------------------------------
 bool CreateGraphicsPipeline (
-    VkPipeline&                   pipeline,
-    VkGraphicsPipelineCreateInfo& create_info,
-    const PipelineLayout&         pipeline_layout,
-    const VkRenderPass&           render_pass,
+    rokz::Pipeline&             pipeline,
+    //const PipelineLayout&       pipeline_layout,
+    const VkRenderPass&         render_pass,
     const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
     const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
     const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
@@ -342,26 +288,26 @@ bool CreateGraphicsPipeline (
     const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
     const VkDevice                                     device)
 {
-  create_info.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  create_info.pNext               = nullptr;
-  create_info.flags               = 0x0; 
-  create_info.stageCount          = ci_shader_stages.size();
-  create_info.pStages             = &ci_shader_stages[0]; 
-  create_info.pVertexInputState   = ci_vertex_input_state; ;
-  create_info.pInputAssemblyState = ci_input_assembly;
-  create_info.pViewportState      = ci_viewport_state;
-  create_info.pRasterizationState = ci_rasterizer;
-  create_info.pMultisampleState   = ci_multisampling;
-  create_info.pDepthStencilState  = ci_depthstencil; 
-  create_info.pColorBlendState    = ci_colorblend; 
-  create_info.pDynamicState       = ci_dynamic_state; 
-  create_info.layout              = pipeline_layout.handle; 
-  create_info.renderPass          = render_pass;
-  create_info.subpass             = 0;
-  create_info.basePipelineHandle  = VK_NULL_HANDLE; 
-  create_info.basePipelineIndex   = -1;              
+  pipeline.ci.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+  pipeline.ci.pNext               = nullptr;
+  pipeline.ci.flags               = 0x0; 
+  pipeline.ci.stageCount          = ci_shader_stages.size();
+  pipeline.ci.pStages             = &ci_shader_stages[0]; 
+  pipeline.ci.pVertexInputState   = ci_vertex_input_state; ;
+  pipeline.ci.pInputAssemblyState = ci_input_assembly;
+  pipeline.ci.pViewportState      = ci_viewport_state;
+  pipeline.ci.pRasterizationState = ci_rasterizer;
+  pipeline.ci.pMultisampleState   = ci_multisampling;
+  pipeline.ci.pDepthStencilState  = ci_depthstencil; 
+  pipeline.ci.pColorBlendState    = ci_colorblend; 
+  pipeline.ci.pDynamicState       = ci_dynamic_state; 
+  pipeline.ci.layout              = pipeline.layout.handle; 
+  pipeline.ci.renderPass          = render_pass;
+  pipeline.ci.subpass             = 0;
+  pipeline.ci.basePipelineHandle  = VK_NULL_HANDLE; 
+  pipeline.ci.basePipelineIndex   = -1;              
 
-  if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline) != VK_SUCCESS) {
+  if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline.ci, nullptr, &pipeline.handle) != VK_SUCCESS) {
     printf("failed to create graphics pipeline!");
     return false;
   }
@@ -373,8 +319,6 @@ bool CreateGraphicsPipeline (
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
-int  CreateInstance (Glob& glob);
-
 
 Glob& Default (Glob& g) {
   g.queue_priority = 1.0f;
@@ -388,10 +332,10 @@ Glob& Default (Glob& g) {
   g.create_info.renderpass = {};
   g.create_info.pipeline = {}; 
 
-  g.queue_fams = {}; 
   g.queue_fams.graphics.reset();
   g.queue_fams.present.reset();
 
+  g.sim_time = 0.0; 
   return g; 
 }
 
@@ -421,7 +365,7 @@ bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
   uniform_buffers.resize (kMaxFramesInFlight);
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
 
-    if (!rokz::CreateUniformBuffer (uniform_buffers[i], sizeof (BasicTransform3D), 1, device, physdev)) {
+    if (!rokz::CreateUniformBuffer (uniform_buffers[i], sizeof (StandardTransform3D), 1, device, physdev)) {
       printf (" [FAIL] CreateUniformbuffer in  CreateUniformbuffers\n"); 
       return false; 
     }
@@ -437,15 +381,24 @@ bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void UpdateUniformBuffers (std::vector<void*> uniform_pointers, uint32_t current_image, float dt) {
+void UpdateUniformBuffers (Glob& glob, uint32_t current_image, double dt) {
+  //static auto startTime = std::chrono::high_resolution_clock::now();
+  glob.sim_time += dt;
+  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
 
-  assert (false); 
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    BasicTransform3D mats; 
+  float sim_timef = glob.sim_time;
+  
+  float asp =  glob.create_info.swapchain.imageExtent.width /  glob.create_info.swapchain.imageExtent.height;
     
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+  StandardTransform3D mats; 
+  mats.model = glm::rotate(glm::mat4(1.0f), sim_timef * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  mats.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 0.1f, 10.0f);
+
+
+
+  //auto currentTime = std::chrono::high_resolution_clock::now();
+    //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 }
 
 // --------------------------------------------------------------------
@@ -540,7 +493,12 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
     return false;
   }
 
+  
   vkResetFences (glob.device, 1, &syncs[curr_frame].in_flight_fen);
+
+
+  UpdateUniformBuffers (glob, image_index, dt); 
+
   
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
   // rokz::RecordCommandBuffer(glob.command_buffer[curr_frame],
@@ -551,7 +509,7 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   //                           glob.render_pass, glob.device);
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
-                            glob.pipeline,
+                            glob.pipeline.handle,
                             glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
                             glob.index_buffer_device.handle,
                             glob.create_info.swapchain.imageExtent,
@@ -598,11 +556,11 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
 }
 
 
-
+            
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-int rokz_test_create (const std::vector<std::string>& args) {
+int test_rokz (const std::vector<std::string>& args) {
 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
@@ -663,23 +621,17 @@ int rokz_test_create (const std::vector<std::string>& args) {
                           glob.device);
 
   rokz::CreateShaderModules (glob.shader_modules,
-                             glob.create_info.shader_stages,
+                             glob.pipeline.state_ci.shader_stages,
                              rokz_path,
                              glob.device);
 
-  rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.create_info.color_blend); 
+  rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
 
-  rokz::CreateDynamicStates (glob.dynamic_states,
-                            glob.create_info.dynamic_state); 
-
+  rokz::CreateDynamicStates (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
 
   // 
-  rokz::Init (glob.create_info.vertex_input_state, SimpleBindingDesc (), SimpleAttributeDesc ()); 
+  rokz::Init (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
   
-
-  assert (false); 
-  CreateGraphicsPipelineLayout_default;
-
   // CreateGraphicsPipelineLayout(
   //     glob.pipeline_layout,
   //     glob.viewport,
@@ -687,15 +639,64 @@ int rokz_test_create (const std::vector<std::string>& args) {
   //     glob.create_info,
   //     glob.create_info.swapchain.imageExtent,
   //     glob.device);
+  CreateGraphicsPipelineLayout_defaults;
+  //glob.create_info.swapchain.imageExtent.width;
+  rokz::Init (glob.viewport,
+              glob.create_info.swapchain.imageExtent.width,
+              glob.create_info.swapchain.imageExtent.height,
+              1.0f);
+  rokz::Init (glob.scissor, VkOffset2D {0, 0}, glob.create_info.swapchain.imageExtent);
 
-  assert (false); 
+
+
+  rokz::PipelineStateCreateInfo& sci = glob.pipeline.state_ci;
+  rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::Init (sci.viewport_state, glob.viewport, glob.scissor);
+  rokz::Init (sci.rasterizer); 
+  //rokz::Init (sci.colorblend);
+  rokz::Init (sci.multisampling); 
+  rokz::Init (sci.depthstencil); 
+
+  //
+  glob.desc_set_layout_bindings.resize (1); 
+  rokz::Init (glob.desc_set_layout_bindings[0],
+              0,
+              VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+              VK_SHADER_STAGE_VERTEX_BIT);
+
+  rokz::CreateDescriptorSetLayout (glob.descriptor_set_layout.handle,
+                                   glob.descriptor_set_layout.ci,
+                                   glob.desc_set_layout_bindings,
+                                   glob.device); 
+
+
+  rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
+                                      glob.pipeline.layout.ci,
+                                      glob.descriptor_set_layout.handle,
+                                      glob.device);
+  
   // CreateGraphicsPipeline (
   //     glob.pipeline,
   //     glob.create_info.pipeline,
   //     glob.create_info,
   //     glob.pipeline_layout,
-  //     glob.render_pass,
-  //     glob.device);
+  //     glob.render_pass, 
+ //     glob.device);
+
+  bool pipeline_res =  CreateGraphicsPipeline (
+    glob.pipeline,
+    //    glob.pipeline.layout, // const PipelineLayout&         pipeline_layout,
+    glob.render_pass.handle,     // const VkRenderPass&           render_pass,
+    sci.shader_stages, //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+    &sci.input_assembly, //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+    &sci.vertex_input_state, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+    &sci.viewport_state, //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+    &sci.rasterizer, //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+    &sci.multisampling, //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+    nullptr, // &ci.depth_stencil_state,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+    &sci.colorblend, //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+    &sci.dynamic_state,//const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+    glob.device);    //const VkDevice                           b          device)
 
   rokz::CreateFramebuffers (glob.swapchain_framebuffers,
                             glob.create_info.framebuffers,
@@ -807,35 +808,41 @@ int rokz_test_create (const std::vector<std::string>& args) {
     time_per_frame(time_per_frame_us);
   
   //size_t    frame_counter = 0;
-  bool        run       = true;
+  bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int  countdown = 60; 
+  int        countdown  = 60; 
+
   //
+  auto t0 = std::chrono::high_resolution_clock::now(); 
+
+  auto then = t0; 
   while (countdown && run && !glfwWindowShouldClose(glob.glfwin)) {
 
     glfwPollEvents(); 
-    auto start = std::chrono::high_resolution_clock::now();
-
+    //start = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::high_resolution_clock::now();    
+    //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
+    dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
+    
     UpdateInput(glob, dt);
     
     UpdateScene(glob, dt);
 
-    UpdateUniformBuffers; //  (std::vector<void*> uniform_pointers, uint32_t current_image, float dt);
-    
     result = RenderFrame (glob, curr_frame, glob.syncs, fb_resize, dt);
 
     if (result == false)
       run = false;
     
     // how long did we take
-    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - start;
+    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
     if (time_to_make_frame < time_per_frame) {
       auto sleep_time = time_per_frame - time_to_make_frame;
       std::this_thread::sleep_for(sleep_time);
     }
     curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
 
+    then = now; // std::chrono::high_resolution_clock::now(); 
     countdown--; 
   }
 
@@ -847,12 +854,12 @@ int rokz_test_create (const std::vector<std::string>& args) {
 
   rokz::DestroyBuffer (glob.index_buffer_device, glob.device); 
   // CLEAN UP
-  rokz::Cleanup(glob.pipeline, glob.swapchain_framebuffers, glob.swapchain,
+  rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
                 glob.vertex_buffer_device, // glob.vertex_buffer_user, 
                 glob.surface,
                 glob.command_pool,
                 glob.syncs, 
-                glob.shader_modules, glob.pipeline_layout.handle, glob.render_pass,
+                glob.shader_modules, glob.pipeline.layout.handle, glob.render_pass,
                 glob.swapchain_imageviews, glob.glfwin, glob.device,
                 glob.instance);
 
@@ -864,141 +871,85 @@ int rokz_test_create (const std::vector<std::string>& args) {
 
 
 
+int  test_time () {
 
+  double dt = 0.0;
 
+  const double time_per_frame_sec = 1.0 / 60.0;
+  dt = time_per_frame_sec; // just do this for now
+  
+  std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
+  
+  std::chrono::duration<size_t, std::chrono::microseconds::period>
+    time_per_frame(time_per_frame_us);
 
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-// bool rokz::CreateGraphicsPipelineLayout(
-//     VkPipelineLayout&                  pipeline_layout,
-//     VkViewport&                        viewport,
-//     VkRect2D&                          scissor,
-//     CreateInfo&                        create_info,
-//     const VkExtent2D&                  swapchain_extent,
-//     const VkDevice&                    device)
-// {
-
-//   VkPipelineLayoutCreateInfo&                   pipeline_layout_create_info = create_info.pipeline_layout; 
-//   std::vector<VkPipelineShaderStageCreateInfo>& shader_stages_create_info = create_info.shader_stages;
-//   VkPipelineVertexInputStateCreateInfo&         vertex_input_state_info = create_info.vertex_input_state;
-//   VkPipelineInputAssemblyStateCreateInfo&       input_assembly = create_info.input_assembly; 
-//   VkPipelineRasterizationStateCreateInfo&       rasterizer = create_info.rasterizer;
-//   VkPipelineMultisampleStateCreateInfo&         multisampling = create_info.multisampling;
-//   VkPipelineDepthStencilStateCreateInfo&        pipeline_depth_stencil_create_info = create_info.pipeline_depth_stencil; 
-//   //VkPipelineColorBlendStateCreateInfo&          color_blending_create_info = create_info.color_blending;
-//   VkPipelineViewportStateCreateInfo&            viewport_state_create_info = create_info.viewport_state;
+  Glob fake;
+  Default (fake);
 
   
-//   // INPUT ASSEMBLY STATE
-//   input_assembly = {};
-//   input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-//   input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-//   input_assembly.primitiveRestartEnable = VK_FALSE;
+  size_t curr_frame = 0;   
+  auto t0 = std::chrono::high_resolution_clock::now(); 
+  auto then = t0; 
+  int countdown = 720; 
 
 
-//   // VIEWPORT 
-//   viewport = {};
-//   viewport.x = 0.0f;
-//   viewport.y = 0.0f;
-//   viewport.width = (float)swapchain_extent.width;
-//   viewport.height = (float)swapchain_extent.height;
-//   viewport.minDepth = 0.0f;
-//   viewport.maxDepth = 1.0f;
-
-//   // SCISSOR RECT
-//   scissor = {}; 
-//   scissor.offset = {0, 0};
-//   scissor.extent = swapchain_extent;
-
-//   // VkPipelineViewportStateCreateInfo
-//   viewport_state_create_info = {};
-//   viewport_state_create_info.sType =
-//       VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-//   viewport_state_create_info.viewportCount = 1;
-
-//   viewport_state_create_info.pViewports = &viewport;
-//   viewport_state_create_info.scissorCount = 1;
-//   viewport_state_create_info.pScissors = &scissor;
-
-//   // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
-//   rasterizer = {};
-//   rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-//   rasterizer.depthClampEnable = VK_FALSE;
-//   rasterizer.rasterizerDiscardEnable = VK_FALSE;
-//   rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-//   rasterizer.lineWidth = 1.0f;
-//   rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-//   rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-//   rasterizer.depthBiasEnable = VK_FALSE;
-//   rasterizer.depthBiasConstantFactor = 0.0f; 
-//   rasterizer.depthBiasClamp = 0.0f;          
-//   rasterizer.depthBiasSlopeFactor = 0.0f;    
-
-//   // MULTI SAMPLING
-//   multisampling = {};
-//   multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-//   multisampling.sampleShadingEnable = VK_FALSE;
-//   multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-//   multisampling.minSampleShading = 1.0f;          
-//   multisampling.pSampleMask = nullptr;            
-//   multisampling.alphaToCoverageEnable = VK_FALSE; 
-//   multisampling.alphaToOneEnable = VK_FALSE;      
-
-//   // DEPTH/STENCIL
-//   pipeline_depth_stencil_create_info = {};
-
-//   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
-//   pipeline_layout_create_info = {};
-//   pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-//   pipeline_layout_create_info.setLayoutCount = 0;            
-//   pipeline_layout_create_info.pSetLayouts = nullptr;         
-//   pipeline_layout_create_info.pushConstantRangeCount = 0;    
-//   pipeline_layout_create_info.pPushConstantRanges = nullptr; 
-
-//   if (vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
-//     printf("failed to create pipeline layout!\n");
-//     return false;
-//   }
-
-//   return true;
-// }
-
-// // ---------------------------------------------------------------------
-// //
-// // ---------------------------------------------------------------------
-// bool rokz::CreateGraphicsPipeline (
-//     VkPipeline&                   pipeline,
-//     VkGraphicsPipelineCreateInfo& pipeline_create_info,
-//     const CreateInfo&             create_info,
-//     const VkPipelineLayout&       pipeline_layout,
-//     const RenderPass&           render_pass,
-//     const VkDevice                device) {
-
-//   pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-//   pipeline_create_info.stageCount = 2;
-//   pipeline_create_info.pStages = &create_info.shader_stages[0]; 
-//   pipeline_create_info.pVertexInputState = &create_info.vertex_input_state; ;
-//   pipeline_create_info.pInputAssemblyState = &create_info.input_assembly;
-//   pipeline_create_info.pViewportState = &create_info.viewport_state;
-//   pipeline_create_info.pRasterizationState = &create_info.rasterizer;
-//   pipeline_create_info.pMultisampleState = &create_info.multisampling;
-//   pipeline_create_info.pDepthStencilState = nullptr; // create_info.pipeline_depth_stencil;  
-//   pipeline_create_info.pColorBlendState = &create_info.color_blend; 
-//   pipeline_create_info.pDynamicState = &create_info.dynamic_state; 
-//   pipeline_create_info.layout = pipeline_layout; 
-//   pipeline_create_info.renderPass = render_pass.handle;
-//   pipeline_create_info.subpass = 0;
-//   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; 
-//   pipeline_create_info.basePipelineIndex = -1;              
-
-//   if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline) != VK_SUCCESS) {
-//     printf("failed to create graphics pipeline!");
-//     return false;
-//   }
-
-//   return true; 
+  double counter_f64 = 0.0;
   
-// }
+  while (countdown) {
+
+    //start = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::high_resolution_clock::now();
+
+    //  std::chrono::milliseconds
+    //dt =
+    //std::cout << "microseconds: " << time_per_frame_us << std::endl;
+    //    auto auto_dt = -0.000001 *std::chrono::duration_cast<std::chrono::milliseconds> (then - now);
+
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds> (then - now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds> (then - now);
+    auto us = std::chrono::duration_cast<std::chrono::microseconds> (then - now);
+    std::cout << "ms: " << -ms.count () << std::endl ;
+    std::cout << "us: " << us.count () << std::endl ;
+    // auto auto_dt =  -0.000001 * us.count ();    
+    // << "secs: " << seconds.count () << std::endl;
+    //auto_dt
+    dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds> (then - now).count ();     
+
+    counter_f64 += dt ;
+    if (counter_f64 += 60.0) {
+      counter_f64 = counter_f64 - 60.0;
+    }
+      
+    
+    std::cout << "us: " << us.count () << std::endl ;
+
+    UpdateScene (fake, dt); 
+
+    //std::chrono::duration<std::chrono::seconds>;
+    //dt =     std::chrono::duration< double>  (then - now); 
+    //dt = ;
+
+    double _ = 0.0;
+    for (int i = 0; i < 373511; ++i) {
+      _ += std::sqrt ( std::cos (i * 0.0123) * std::cos (i * 0.0123) + std::sin (i * 0.0123) * std::sin (i * 0.0123) );
+    }
+    
+    // how long did we take
+    // auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+    // if (time_to_make_frame < time_per_frame) {
+    //   auto sleep_time = time_per_frame - time_to_make_frame;
+    //   std::this_thread::sleep_for(sleep_time);
+    // }
+    // curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
+
+    then = now; // std::chrono::high_resolution_clock::now(); 
+
+    countdown--; 
+  }
+
+  return 0; 
+}
+
+
+
 

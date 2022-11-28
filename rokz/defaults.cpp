@@ -7,10 +7,10 @@ using namespace rokz;
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkPipelineVertexInputStateCreateInfo& rokz::Init (
-   VkPipelineVertexInputStateCreateInfo&                   create_info,
-   const VkVertexInputBindingDescription&                  binding_desc, 
-   const std::array<VkVertexInputAttributeDescription, 2>& attrib_desc)
+VkPipelineVertexInputStateCreateInfo& rokz::Init ( 
+    VkPipelineVertexInputStateCreateInfo&                 create_info,
+    const VkVertexInputBindingDescription&                binding_desc, 
+    const std::vector<VkVertexInputAttributeDescription>& attrib_desc)
 {
   // VERTEX INPUT
   create_info = {};
@@ -23,12 +23,10 @@ VkPipelineVertexInputStateCreateInfo& rokz::Init (
   return create_info; 
 }
 
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkViewport& rokz::Init (VkViewport& vp, float wd, float  ht, float dp ) {
-
+VkViewport& rokz::Init (VkViewport& vp, float wd, float ht, float dp) {
   // VIEWPORT 
   vp = {};
   vp.x = 0.0f;
@@ -41,7 +39,9 @@ VkViewport& rokz::Init (VkViewport& vp, float wd, float  ht, float dp ) {
   return vp ;
 }
 
-
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 VkRect2D& rokz::Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext) { 
   // SCISSOR RECT
   rect = {}; 
@@ -49,7 +49,6 @@ VkRect2D& rokz::Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& 
   rect.extent = ext;
   return rect; 
 }
-
 
 //---------------------------------------------------------------------
 //
@@ -110,7 +109,6 @@ VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCrea
 //
 // ---------------------------------------------------------------------
 VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCreateInfo& ci) {
-
   ci = {};
   return ci; 
 }

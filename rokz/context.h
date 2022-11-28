@@ -33,13 +33,48 @@ namespace rokz {
     VkSubpassDependency dependancy;
   };
 
+  // --------------------------------------------------------
   struct SyncCreateInfo {
     VkSemaphoreCreateInfo  semaphore;
     VkFenceCreateInfo      fence;
   }; 
 
+  // --------------------------------------------------------
+  struct ShaderModule {
+    VkShaderModule                  handle; 
+    rokz::bytearray&                bin; 
+    VkShaderModuleCreateInfo ci;
+    //VkPipelineShaderStageCreateInfo ci;
+  };
+  
+  // --------------------------------------------------------
+  struct PipelineLayout { 
+    VkPipelineLayout            handle;
+    VkPipelineLayoutCreateInfo  ci;
+  };
 
+  // --------------------------------------------------------
+  struct PipelineStateCreateInfo {
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages; 
+    VkPipelineInputAssemblyStateCreateInfo      input_assembly; 
+    VkPipelineVertexInputStateCreateInfo        vertex_input_state;
+    VkPipelineViewportStateCreateInfo           viewport_state;
+    VkPipelineRasterizationStateCreateInfo      rasterizer;
+    VkPipelineMultisampleStateCreateInfo        multisampling;
+    VkPipelineDepthStencilStateCreateInfo       depthstencil;
+    VkPipelineColorBlendStateCreateInfo         colorblend; 
+    VkPipelineDynamicStateCreateInfo            dynamic_state;
+  };
 
+  // --------------------------------------------------------
+  struct Pipeline { 
+    VkPipeline                   handle; 
+    VkGraphicsPipelineCreateInfo ci;
+    PipelineLayout               layout; 
+    PipelineStateCreateInfo      state_ci;
+  };
+
+  
   VkSwapchainCreateInfoKHR& Default (VkSwapchainCreateInfoKHR& info, const VkSurfaceKHR& surf); 
   VkDeviceQueueCreateInfo&  Default (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
   VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
@@ -72,7 +107,8 @@ namespace rokz {
 
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
-  
+
+  bool               CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev);
   VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
   bool               CreateShaderModules (std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
@@ -80,6 +116,22 @@ namespace rokz {
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
   bool               CreateRenderPass (RenderPass& render_pass, VkFormat swapchain_format, const VkDevice &device); 
 
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
+  bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
+                                     VkPipelineLayoutCreateInfo&  create_info, 
+                                     const VkDescriptorSetLayout& desc_set_layout, 
+                                     const VkDevice&              device); 
+
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
+  bool CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl,
+                                  VkDescriptorSetLayoutCreateInfo& ci,
+                                  const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+                                  const VkDevice& device);
+  
 
   bool CreateFramebuffers (std::vector<VkFramebuffer>&           framebuffers,
                            std::vector<VkFramebufferCreateInfo>& create_infos,
@@ -128,7 +180,9 @@ namespace rokz {
                          const VkDevice&             device); 
 
 
+  // ---------------------------------------------------------------------
   //
+  // ---------------------------------------------------------------------
   void Cleanup (VkPipeline&                 pipeline,
                 std::vector<VkFramebuffer>& framebuffers, 
                 VkSwapchainKHR&             swapchain,

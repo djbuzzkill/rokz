@@ -1,15 +1,12 @@
 
-#include "rockz.h"              // 
+//#include "rockz.h"             
 #include "rokz/rokz.h"
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan_core.h>
-
+// #include <GLFW/glfw3.h>
+// #include <vulkan/vulkan_core.h>
 #include "rokz/defaults.h"
 //#include "rokz/rokz_funcs.h"
-
 #include <IL/il.h>
 #include <IL/ilu.h>
-
 // #include <glm/glm.hpp>
 // #include <glm/gtc/matrix_transform.hpp>
 

@@ -12,17 +12,19 @@
 #include <chrono>
 #include <cmath>
 
+
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 
 #include "rokz/rokz.h"
+#include "rokz/defaults.h"
+//#include "rokz/rokz_funcs.h"
 
-
-#include <glm/glm.hpp>
-
-
-
-int rokz_test_create (const std::vector<std::string>& args); 
-int texture_tool (const std::vector<std::string>& args); 
 
 
 #endif

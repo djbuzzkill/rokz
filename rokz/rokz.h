@@ -4,8 +4,8 @@
 #define ROKZ_INCLUDE
 
 
-#include "rokz_types.h"
-#include "rokz_funcs.h"
+/* #include "rokz_types.h" */
+/* #include "rokz_funcs.h" */
 
 #include "buffer.h"
 #include "context.h"

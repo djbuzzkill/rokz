@@ -19,8 +19,8 @@ set (ROKZ_HEADER_FILES
   binary_IO.h
   defaults.h
 
-  rokz_types.h
-  rokz_funcs.h
+  # rokz_types.h
+  # rokz_funcs.h
   shared_types.h
   common.h
 )

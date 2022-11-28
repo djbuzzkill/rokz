@@ -1,40 +1,32 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
-project (rockz)
-
-
-
-
+project (rekz)
 #set ("CMAKE_CXX_FLAGS=-g -O0")
 #set ("CMAKE_C_FLAGS=-g -O0")
-
   
-set (ROCKZ_HEADER_FILES
-
-    rockz.h
+set (REKZ_HEADER_FILES
+    rekz.h
 )
 	
-set (ROCKZ_SOURCE_FILES
-
+set (REKZ_SOURCE_FILES
   texture_tool.cpp
-  rokz_test.cpp
-  rockz.cpp
+  test_rokz.cpp
+  rekz.cpp
 )
 
 add_executable (
-  rockz
-  ${ROCKZ_HEADER_FILES}
-  ${ROCKZ_SOURCE_FILES}
+  rekz
+  ${REKZ_HEADER_FILES}
+  ${REKZ_SOURCE_FILES}
 )
 
 target_link_libraries (
-  rockz
-
+  rekz
 
   IL
   ILU
-  
+
   zmq
   rokz
   glfw
