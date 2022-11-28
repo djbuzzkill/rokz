@@ -112,10 +112,10 @@ VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCr
   ci = {};
   return ci; 
 }
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-
 VkPipelineInputAssemblyStateCreateInfo& rokz::Init (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim) { 
   // INPUT ASSEMBLY STATE
   ci = {};
@@ -129,7 +129,23 @@ VkPipelineInputAssemblyStateCreateInfo& rokz::Init (VkPipelineInputAssemblyState
 }
 
 
-
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineShaderStageCreateInfo& rokz::Init (VkPipelineShaderStageCreateInfo& ci,
+                                             VkShaderStageFlagBits stage_flags,
+                                             const VkShaderModule& module)
+{
+  ci = {};   
+  ci.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  ci.stage  = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT;
+  ci.module = module;
+  ci.pSpecializationInfo = nullptr; 
+  ci.pName = "main";
+  return ci; 
+}
+                                             
+                                             
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------

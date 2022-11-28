@@ -23,6 +23,12 @@ namespace rokz {
   VkViewport&                             Init (VkViewport& vp, float wd, float  ht, float dp); 
   VkPipelineMultisampleStateCreateInfo&   Init (VkPipelineMultisampleStateCreateInfo& ci);
   VkPipelineInputAssemblyStateCreateInfo& Init (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+
+
+  VkPipelineShaderStageCreateInfo&        Init (VkPipelineShaderStageCreateInfo& ci,
+                                                VkShaderStageFlagBits stage_flags,
+                                                const VkShaderModule& module); 
+
   VkPipelineRasterizationStateCreateInfo& Init (VkPipelineRasterizationStateCreateInfo& ci);
   VkPipelineDepthStencilStateCreateInfo&  Init (VkPipelineDepthStencilStateCreateInfo& ci);
   VkDescriptorSetLayoutBinding&           Init (VkDescriptorSetLayoutBinding& ds, uint32_t index, VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags); 

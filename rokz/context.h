@@ -2,7 +2,9 @@
 #define ROKZ_CONTEXT_H
 
 
+#include "common.h"
 #include "buffer.h"
+#include "defaults.h"
 
 
 namespace rokz {
@@ -19,15 +21,16 @@ namespace rokz {
     enum AttachmentIndex {
       COLOR = 0, 
       DEPTHSTENCIL = 1, 
-      UNUSED = 2,
+      UNUSED_1 = 2,
+      UNUSED_2 = 3,
+      ATTACHMENT_INDEX_MAX
     }; 
   
     VkRenderPass            handle; 
     VkRenderPassCreateInfo  create_info;
 
-    VkAttachmentDescription attach_desc[3];
-    VkAttachmentReference   attach_ref[3];
-
+    VkAttachmentDescription attach_desc[ATTACHMENT_INDEX_MAX];
+    VkAttachmentReference   attach_ref[ATTACHMENT_INDEX_MAX];
     std::vector<VkSubpassDescription> subpass_descs;
 
     VkSubpassDependency dependancy;
@@ -41,10 +44,9 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct ShaderModule {
-    VkShaderModule                  handle; 
-    rokz::bytearray&                bin; 
-    VkShaderModuleCreateInfo ci;
-    //VkPipelineShaderStageCreateInfo ci;
+    VkShaderModule                 handle; 
+    rokz::bytearray                bin; 
+    VkShaderModuleCreateInfo       ci;
   };
   
   // --------------------------------------------------------
@@ -109,8 +111,15 @@ namespace rokz {
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
 
   bool               CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev);
+  bool               CreateShaderModules (std::vector<ShaderModule>&                    shader_modules,
+                                          std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos, 
+                                          const std::filesystem::path&                  fspath,
+                                          const VkDevice&                               device);
+
+
   VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
   bool               CreateShaderModules (std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
+
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
   bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 

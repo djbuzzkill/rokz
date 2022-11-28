@@ -375,6 +375,7 @@ bool rokz::CreateImageViews (std::vector<VkImageView>&  swapchain_imageviews,
 bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev) {
 
   From_file (shm.bin, fsrc);
+
   shm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   shm.ci.codeSize = shm.bin.size();
   shm.ci.pCode = reinterpret_cast<const uint32_t*>(&shm.bin[0]);
@@ -386,6 +387,46 @@ bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const 
 
   return true;
 }
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateShaderModules (
+    std::vector<ShaderModule>&                    shader_modules,
+    std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos, 
+    const std::filesystem::path&                  fspath,
+    const VkDevice&                               device)
+{
+  printf ("%s\n", __FUNCTION__); 
+
+
+  shader_modules.resize            (2);
+  shader_stage_create_infos.resize (2);
+  
+  // VERT SHADER 
+  printf ("[2] B4 VERT %s\n", __FUNCTION__); 
+  std::filesystem::path vert_file_path  =  fspath / "data/shader/basic_vert.spv" ;
+
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device))
+    return false; 
+  
+  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
+
+  
+  // FRAG SHADER
+  printf ("[3] B4 FRAG %s\n", __FUNCTION__); 
+  std::filesystem::path frag_file_path = fspath /  "data/shader/basic_frag.spv" ;
+
+  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device))
+    return false; 
+  
+  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
+  //
+
+  return true; 
+}
+
+
+
 
 // ---------------------------------------------------------------------
 //
@@ -406,7 +447,6 @@ VkShaderModule& rokz::CreateShaderModule (VkShaderModule& shader_module,
 
   return shader_module; 
 }
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
