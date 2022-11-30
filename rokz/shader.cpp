@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev) {
 
+  printf ( "%s [%s]\n", __FUNCTION__, fsrc.c_str()); 
   From_file (shm.bin, fsrc);
 
   shm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

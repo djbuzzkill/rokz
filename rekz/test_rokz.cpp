@@ -403,7 +403,7 @@ bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void UpdateUniformBuffers (Glob& glob, uint32_t current_image, double dt) {
+void UpdateUniformBuffers (Glob& glob, uint32_t current_frame, double dt) {
   //static auto startTime = std::chrono::high_resolution_clock::now();
   glob.sim_time += dt;
   printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
@@ -418,7 +418,7 @@ void UpdateUniformBuffers (Glob& glob, uint32_t current_image, double dt) {
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 0.1f, 10.0f);
   mats.proj[1][1] *= -1;
  
-  memcpy (glob.uniform_mapped_pointers[current_image], &mats, kSizeOf_StandardTransform3D); 
+  memcpy (glob.uniform_mapped_pointers[current_frame], &mats, kSizeOf_StandardTransform3D); 
 
   //auto currentTime = std::chrono::high_resolution_clock::now();
     //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
@@ -520,7 +520,7 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   vkResetFences (glob.device, 1, &syncs[curr_frame].in_flight_fen);
 
 
-  UpdateUniformBuffers (glob, image_index, dt); 
+  UpdateUniformBuffers (glob, curr_frame, dt); 
 
   
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
