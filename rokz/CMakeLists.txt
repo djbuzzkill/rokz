@@ -11,6 +11,7 @@ set (ROKZ_HEADER_FILES
   rokz.h
   buffer.h
   context.h
+  descriptor.h
   shader.h
   texture.h
   uniform.h
@@ -32,8 +33,9 @@ set (ROKZ_SOURCE_FILES
 
 
 
-  buffer.cpp
   context.cpp
+  descriptor.cpp
+  buffer.cpp
   shader.cpp
   texture.cpp
   uniform.cpp

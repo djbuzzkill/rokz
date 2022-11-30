@@ -214,6 +214,7 @@ bool rokz::MoveToBuffer_XB2DB  (BufferStruc& buff_dst, // device buffer
 bool rokz::MapBuffer (void** ptr, BufferStruc& vb, const VkDevice& device) { 
 
   assert (vb.mem_prop_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT); 
+
   if (vb.mem_prop_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
     return VK_SUCCESS == vkMapMemory (device, vb.mem, 0, vb.create_info.size, 0, ptr);
   }

@@ -79,12 +79,15 @@ VkPipelineRasterizationStateCreateInfo & rokz::Init (VkPipelineRasterizationStat
   ci.polygonMode = VK_POLYGON_MODE_FILL;
   ci.lineWidth = 1.0f;
   ci.cullMode = VK_CULL_MODE_BACK_BIT;
-  ci.frontFace = VK_FRONT_FACE_CLOCKWISE;
+  ci.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
   ci.depthBiasEnable = VK_FALSE;
   ci.depthBiasConstantFactor = 0.0f; 
   ci.depthBiasClamp = 0.0f;          
   ci.depthBiasSlopeFactor = 0.0f;    
 
+  //ci.cullMode = VK_CULL_MODE_BACK_BIT;
+
+  
   return ci;
 }
 
@@ -102,6 +105,7 @@ VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCrea
   ci.pSampleMask = nullptr;            
   ci.alphaToCoverageEnable = VK_FALSE; 
   ci.alphaToOneEnable = VK_FALSE;      
+
   return ci; 
 }
 

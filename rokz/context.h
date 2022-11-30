@@ -4,6 +4,8 @@
 
 #include "common.h"
 #include "buffer.h"
+#include "shader.h"
+#include "descriptor.h"
 #include "defaults.h"
 
 
@@ -43,30 +45,10 @@ namespace rokz {
   }; 
 
   // --------------------------------------------------------
-  struct DescriptorPool {
-
-    VkDescriptorPool           handle;
-    VkDescriptorPoolSize       size;
-    VkDescriptorPoolCreateInfo ci;
-  };
-
-  // --------------------------------------------------------
-  struct ShaderModule {
-    VkShaderModule                 handle; 
-    rokz::bytearray                bin; 
-    VkShaderModuleCreateInfo       ci;
-  };
-  
-  // --------------------------------------------------------
   struct PipelineLayout { 
     VkPipelineLayout            handle;
     VkPipelineLayoutCreateInfo  ci;
   };
-
-  struct DescriptorSetLayout { 
-    VkDescriptorSetLayout           handle;    
-    VkDescriptorSetLayoutCreateInfo ci;
-  }; 
 
   // --------------------------------------------------------
   struct PipelineStateCreateInfo {
@@ -123,15 +105,7 @@ namespace rokz {
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
 
-  bool               CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev);
-  bool               CreateShaderModules (std::vector<ShaderModule>&                    shader_modules,
-                                          std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos, 
-                                          const std::filesystem::path&                  fspath,
-                                          const VkDevice&                               device);
 
-
-  VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
-  bool               CreateShaderModules(std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
 
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
   bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
@@ -146,14 +120,6 @@ namespace rokz {
                                      const VkDescriptorSetLayout& desc_set_layout, 
                                      const VkDevice&              device); 
 
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
-  bool CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl,
-                                  VkDescriptorSetLayoutCreateInfo& ci,
-                                  const std::vector<VkDescriptorSetLayoutBinding>& bindings,
-                                  const VkDevice& device);
-  
 
   bool CreateFramebuffers (std::vector<VkFramebuffer>&           framebuffers,
                            std::vector<VkFramebufferCreateInfo>& create_infos,
@@ -181,20 +147,15 @@ namespace rokz {
                            const RenderPass &render_pass,
                            const VkDevice &device) ; 
 
-  bool RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
-                                    const VkPipeline pipeline,
-                                    const VkBuffer& vertex_buffer, 
-                                    const VkBuffer& index_buffer, 
-                                    const VkExtent2D &ext2d,
-                                    const VkFramebuffer &framebuffer,
-                                    const RenderPass &render_pass,
-                                    const VkDevice &device); 
-
-  bool CreateDescriptorPool (DescriptorPool& desc_pool,
-                             VkDescriptorType type,
-                             uint32_t count,
-                             const VkDevice &device); 
-
+  bool RecordCommandBuffer_indexed (VkCommandBuffer&       command_buffer,
+                                    const Pipeline&        pipeline,
+                                    const VkDescriptorSet& desc_set, 
+                                    const VkBuffer&        vertex_buffer, 
+                                    const VkBuffer&        index_buffer, 
+                                    const VkExtent2D&      ext2d,
+                                    const VkFramebuffer&   framebuffer,
+                                    const RenderPass&      render_pass,
+                                    const VkDevice&        device); 
 
   
   bool CreateSyncObjs (SyncStruc& sync, SyncCreateInfo& create_info, const VkDevice& device);

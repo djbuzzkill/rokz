@@ -118,6 +118,8 @@ struct Glob {
   std::vector<VkImageView>     swapchain_imageviews;
   std::vector<VkFramebuffer>   swapchain_framebuffers;
   //std::vector<VkShaderModule>  shader_modules; 
+
+
   std::vector<rokz::ShaderModule>  shader_modules; 
 
   VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
@@ -129,20 +131,26 @@ struct Glob {
   rokz::BufferStruc index_buffer_device; 
   rokz::BufferStruc vertex_buffer_device; 
 
-  std::vector<rokz::BufferStruc> uniform_buffers;
-  std::vector<void*>             uniform_mapped_pointers; 
     
   std::vector<VkDynamicState>  dynamic_states; 
   VkCommandPool                command_pool; 
   std::vector<VkCommandBuffer> command_buffer; 
   std::vector<rokz::SyncStruc> syncs; 
   rokz::RenderPass             render_pass; 
-  rokz::DescriptorSetLayout    descriptor_set_layout;
+
+
+  std::vector<rokz::BufferStruc> uniform_buffers;
+  std::vector<void*>             uniform_mapped_pointers; 
+
+  rokz::DescriptorPool           uniform_descriptor_pool;
+  rokz::DescriptorGroup          uniform_group; 
+  // std::vector<VkDescriptorSet>   desc_sets;
+  // VkDescriptorSetAllocateInfo    desc_set_alloc_info;
+  // rokz::DescriptorSetLayout      descriptor_set_layout;
+
+  //VkWriteDescriptorSet         descriptor_write;     
   std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
-  
   //PipelineLayout              pipeline_layout; 
-
-
   rokz::Pipeline              pipeline; 
   // device + queues?
   GLFWwindow*                 glfwin;  // 
@@ -166,25 +174,93 @@ struct Glob {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool CreateDescriptorSetLayout (VkDescriptorSetLayout&              descriptor_set_layout,
-                                VkDescriptorSetLayoutCreateInfo&    ci,
-                                const VkDescriptorSetLayoutBinding& binding,
-                                const VkDevice&                     device) {
+// bool CreateDescriptorSetLayout (VkDescriptorSetLayout&              descriptor_set_layout,
+//                                 VkDescriptorSetLayoutCreateInfo&    ci,
+//                                 const VkDescriptorSetLayoutBinding& binding,
+//                                 const VkDevice&                     device) {
 
-  ci = {};
-  ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  ci.bindingCount = 1;
-  ci.pBindings = &binding;
+//   ci = {};
+//   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+//   ci.bindingCount = 1;
+//   ci.pBindings = &binding;
 
-  if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &descriptor_set_layout) != VK_SUCCESS) {
-    printf ("failed to create descriptor set layout!");
+//   if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &descriptor_set_layout) != VK_SUCCESS) {
+//     printf ("failed to create descriptor set layout!");
+//     return false; 
+//   }
+
+//   return true; 
+// }
+bool SetupUniformDescriptorSets (rokz::DescriptorGroup&                dg,
+                                 const std::vector<rokz::BufferStruc>& buffer_strucs, 
+                                 const VkDescriptorPool&               descriptor_pool,
+                                 const VkDevice&                       device)
+{
+  const size_t num_sets = buffer_strucs.size (); 
+  
+  std::vector<VkDescriptorSetLayout> desc_layouts (num_sets, dg.set_layout.handle);
+  // use same layout for all allocations
+
+  dg.alloc_info = {}; 
+  dg.alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  dg.alloc_info.descriptorPool     = descriptor_pool; 
+  dg.alloc_info.descriptorSetCount = num_sets;
+  dg.alloc_info.pSetLayouts        = &desc_layouts[0];
+  
+  //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
+  if (!rokz::AllocateDescriptorSets (dg.sets, dg.alloc_info, num_sets, device)) {
+    printf ("[FAILED] alloc desc sets %s", __FUNCTION__);
+    return false;
+  }
+  
+  for (uint32_t i = 0; i < num_sets; i++) {
+    // wtf does this do
+    VkDescriptorBufferInfo buffer_info{};
+    buffer_info.buffer  = buffer_strucs[i].handle;
+    buffer_info.offset  = 0;
+    buffer_info.range   = buffer_strucs[i].create_info.size ;
+    //printf ( "%s [%u] buffer_info.range = %lu\n", __FUNCTION__, i, buffer_strucs[i].create_info.size); 
+
+    VkWriteDescriptorSet descriptor_write {};
+    descriptor_write.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_write.dstSet           = dg.sets[i];
+    descriptor_write.dstBinding       = 0;
+    descriptor_write.dstArrayElement  = 0;
+    descriptor_write.descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_write.descriptorCount  = 1;
+
+    descriptor_write.pBufferInfo      = &buffer_info;
+    descriptor_write.pImageInfo       = nullptr; // Optional
+    descriptor_write.pTexelBufferView = nullptr; // Optional}
+
+    vkUpdateDescriptorSets (device, 1, &descriptor_write, 0, nullptr);
+  }
+
+  return false;
+  
+}  
+
+//VkDescriptorSetAllocateInfo
+bool CreateUniformDescriptorPool (rokz::DescriptorPool& dp, const VkDevice& device) {
+
+  dp.size = {} ; //
+  dp.size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  dp.size.descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+
+  dp.ci = {};
+  dp.ci.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  dp.ci.poolSizeCount = 1;
+  dp.ci.pPoolSizes    = &dp.size;
+  dp.ci.maxSets       = static_cast<uint32_t>(kMaxFramesInFlight);
+  dp.ci.flags         = 0;
+  
+  if (!rokz::CreateDescriptorPool (dp, device)) {
+    printf ("[FAILED] %s", __FUNCTION__);
     return false; 
   }
 
-  return true; 
+ return true; 
 }
-
-//VkDescriptorSetAllocateInfo
 
 // ---------------------------------------------------------------------
 // CreateGraphicsPipelineLayout 
@@ -312,6 +388,7 @@ bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
   mapped_uniform_pointers.resize (kMaxFramesInFlight); 
 
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
+
     if (!rokz::CreateUniformBuffer (uniform_buffers[i], kSizeOf_StandardTransform3D, 1, device, physdev)) {
       printf (" [FAIL] CreateUniformbuffer in  CreateUniformbuffers\n"); 
       return false; 
@@ -333,7 +410,7 @@ void UpdateUniformBuffers (Glob& glob, uint32_t current_image, double dt) {
 
   float sim_timef = glob.sim_time;
   
-  float asp =  glob.create_info.swapchain.imageExtent.width /  glob.create_info.swapchain.imageExtent.height;
+  float asp =  (float)glob.create_info.swapchain.imageExtent.width /  (float)glob.create_info.swapchain.imageExtent.height;
     
   StandardTransform3D mats; 
   mats.model = glm::rotate(glm::mat4(1.0f), sim_timef * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -455,12 +532,14 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   //                           glob.render_pass, glob.device);
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
-                            glob.pipeline.handle,
+                            glob.pipeline,
+                            glob.uniform_group.sets[curr_frame], 
                             glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
                             glob.index_buffer_device.handle,
                             glob.create_info.swapchain.imageExtent,
                             glob.swapchain_framebuffers[image_index],
-                            glob.render_pass, glob.device);
+                            glob.render_pass,
+                                     glob.device);
 
   //bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
 
@@ -603,31 +682,26 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::Init (sci.depthstencil); 
 
   //
+
+  //  glob.uniform_group.
   glob.desc_set_layout_bindings.resize (1); 
   rokz::Init (glob.desc_set_layout_bindings[0],
               0,
               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
               VK_SHADER_STAGE_VERTEX_BIT);
 
-  rokz::CreateDescriptorSetLayout (glob.descriptor_set_layout.handle,
-                                   glob.descriptor_set_layout.ci,
+  rokz::CreateDescriptorSetLayout (glob.uniform_group.set_layout.handle,
+                                   glob.uniform_group.set_layout.ci,
                                    glob.desc_set_layout_bindings,
                                    glob.device); 
 
 
   rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
                                       glob.pipeline.layout.ci,
-                                      glob.descriptor_set_layout.handle,
+                                      glob.uniform_group.set_layout.handle,
                                       glob.device);
-  
-  // CreateGraphicsPipeline (
-  //     glob.pipeline,
-  //     glob.create_info.pipeline,
-  //     glob.create_info,
-  //     glob.pipeline_layout,
-  //     glob.render_pass, 
- //     glob.device);
 
+  
   bool pipeline_res =  CreateGraphicsPipeline (
     glob.pipeline,
     //    glob.pipeline.layout, // const PipelineLayout&         pipeline_layout,
@@ -670,12 +744,23 @@ int test_rokz (const std::vector<std::string>& args) {
     rokz::UnmapBuffer (vb_transfer, glob.device); 
   }
 
+  // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
+  //                           sizeof(Vertex_simple),
+  //                           sizeof(simple_verts) / sizeof(Vertex_simple),
+  //                           glob.device, 
+  //                           glob.physical_device); 
+  
+  // rokz::MoveToBuffer_user_mem (glob.vertex_buffer_user, // glob.vertex_buffer_user
+  //                               simple_verts,
+  //                              sizeof(simple_verts),
+  //                              glob.device); 
   rokz::CreateVertexBuffer_device (glob.vertex_buffer_device, 
                             sizeof(Vertex_simple),
                             sizeof(simple_verts) / sizeof(Vertex_simple),
                             glob.device, 
                             glob.physical_device); 
 
+  // TransferToDevice 
   rokz::MoveToBuffer_XB2DB  (glob.vertex_buffer_device, // device buffer
                              vb_transfer, // user buffer, 
                              sizeof(simple_verts),
@@ -714,27 +799,70 @@ int test_rokz (const std::vector<std::string>& args) {
 
   rokz::DestroyBuffer  (ib_transfer, glob.device); 
 
+
+  
   CreateUniformBuffers (glob.uniform_buffers,
                         glob.uniform_mapped_pointers, 
                         glob.device,
                         glob.physical_device); 
 
-  // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
-  //                           sizeof(Vertex_simple),
-  //                           sizeof(simple_verts) / sizeof(Vertex_simple),
-  //                           glob.device, 
-  //                           glob.physical_device); 
+  // rokz::DescriptorPool           uniform_descriptor_pool;
+  // rokz::DescriptorGroup          uniform_group; 
+  //
+  CreateUniformDescriptorPool (glob.uniform_descriptor_pool, glob.device);
   
-  // rokz::MoveToBuffer_user_mem (glob.vertex_buffer_user, // glob.vertex_buffer_user
-  //                               simple_verts,
-  //                              sizeof(simple_verts),
-  //                              glob.device); 
+
+  SetupUniformDescriptorSets (glob.uniform_group,
+                              glob.uniform_buffers,
+                              glob.uniform_descriptor_pool.handle, 
+                              glob.device);  
+
+  // std::vector<VkDescriptorSetLayout> 
+  //   uniform_desc_layouts (kMaxFramesInFlight, glob.uniform_group.set_layout.handle);
+  //   // use same layout for both allocations
+  
+  // glob.uniform_group.alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  // glob.uniform_group.alloc_info.descriptorPool     = glob.uniform_descriptor_pool.handle; 
+  // glob.uniform_group.alloc_info.descriptorSetCount = static_cast<uint32_t>(kMaxFramesInFlight);
+  // glob.uniform_group.alloc_info.pSetLayouts        = uniform_desc_layouts .data();
+  
+  // //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
+
+  // rokz::AllocateDescriptorSets (glob.uniform_group.sets,
+  //                               glob.uniform_group.alloc_info,
+  //                               kMaxFramesInFlight,
+  //                               glob.device); 
+  
+  // for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+  //   // wtf does this do
+  //   VkDescriptorBufferInfo buffer_info{};
+  //   buffer_info.buffer = glob.uniform_buffers[0].handle;
+  //   buffer_info.offset = 0;
+  //   buffer_info.range = kSizeOf_StandardTransform3D;
+
+  //   VkWriteDescriptorSet descriptor_write {};
+  //   descriptor_write.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  //   descriptor_write.dstSet           = glob.uniform_group.sets[i];
+  //   descriptor_write.dstBinding       = 0;
+  //   descriptor_write.dstArrayElement  = 0;
+  //   descriptor_write.descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  //   descriptor_write.descriptorCount  = 1;
+
+  //   descriptor_write.pBufferInfo      = &buffer_info;
+  //   descriptor_write.pImageInfo       = nullptr; // Optional
+  //   descriptor_write.pTexelBufferView = nullptr; // Optional}
+
+  //   vkUpdateDescriptorSets (glob.device, 1, &descriptor_write, 0, nullptr);
+  // }
+  
   
   // items per frames 
   glob.command_buffer.resize (kMaxFramesInFlight);
+  glob.syncs.resize (kMaxFramesInFlight);
+
   glob.create_info.command_buffer.resize (kMaxFramesInFlight);
   glob.create_info.syncs.resize (kMaxFramesInFlight);
-  glob.syncs.resize (kMaxFramesInFlight);
+
   for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
     // sep
     rokz::CreateCommandBuffer(glob.command_buffer[i],

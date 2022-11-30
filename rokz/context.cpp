@@ -370,147 +370,6 @@ bool rokz::CreateImageViews (std::vector<VkImageView>&  swapchain_imageviews,
 }
 
 // ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
-bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev) {
-
-  From_file (shm.bin, fsrc);
-
-  shm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  shm.ci.codeSize = shm.bin.size();
-  shm.ci.pCode = reinterpret_cast<const uint32_t*>(&shm.bin[0]);
-
-  if (vkCreateShaderModule(dev, &shm.ci, nullptr, &shm.handle) != VK_SUCCESS) {
-    printf ("[%s]FAILED create shader module\n", __FUNCTION__);
-    return false;
-  }
-
-  return true;
-}
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateShaderModules (
-    std::vector<ShaderModule>&                    shader_modules,
-    std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos, 
-    const std::filesystem::path&                  fspath,
-    const VkDevice&                               device)
-{
-  printf ("%s\n", __FUNCTION__); 
-
-
-  shader_modules.resize            (2);
-  shader_stage_create_infos.resize (2);
-  
-  // VERT SHADER 
-  printf ("[2] B4 VERT %s\n", __FUNCTION__); 
-  std::filesystem::path vert_file_path  =  fspath / "data/shader/basic_vert.spv" ;
-
-  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device))
-    return false; 
-  
-  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
-
-  
-  // FRAG SHADER
-  printf ("[3] B4 FRAG %s\n", __FUNCTION__); 
-  std::filesystem::path frag_file_path = fspath /  "data/shader/basic_frag.spv" ;
-
-  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device))
-    return false; 
-  
-  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
-  //
-
-  return true; 
-}
-
-
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-VkShaderModule& rokz::CreateShaderModule (VkShaderModule& shader_module,
-                                          const rokz::bytearray& code,
-                                          const VkDevice& dev) {
-  
-  VkShaderModuleCreateInfo create_info {};
-  create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  create_info.codeSize = code.size();
-  create_info.pCode = reinterpret_cast<const uint32_t *>(&code[0]);
-
-  if (vkCreateShaderModule(dev, &create_info, nullptr, &shader_module) != VK_SUCCESS) {
-    printf ("failed to create shader module!\n");
-    //throw std::runtime_error("failed to create shader module!");
-  }
-
-  return shader_module; 
-}
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateShaderModules (
-    std::vector<VkShaderModule> &shader_modules,
-    std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, 
-    const std::filesystem::path& fspath,
-    const VkDevice& device) {
-  
-  printf ("%s\n", __FUNCTION__); 
-  shader_stage_create_infos.resize (2);
-  
-
-  // VERT SHADER 
-  std::filesystem::path vert_file_path  =  fspath / "data/shader/basic_vert.spv" ;
-  printf ("[1] %s\n",   vert_file_path.string().c_str() );
-  bytearray             vertbin;
-  VkShaderModule        vertmod; 
-  From_file(vertbin, vert_file_path.string());
-  //if (!rokz::CreateShaderModule (shader_modules[0], vertbin, device))
-  if (!rokz::CreateShaderModule (vertmod, vertbin, device))
-    return false; 
-  
-  printf ("[2] %s\n", __FUNCTION__); 
-  shader_modules.push_back (vertmod); // vertmod); 
-  VkPipelineShaderStageCreateInfo& vert_shader_stage_info = shader_stage_create_infos[0];
-  vert_shader_stage_info = {};   
-  vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  vert_shader_stage_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-  vert_shader_stage_info.module = vertmod;
-  vert_shader_stage_info.pSpecializationInfo = nullptr; 
-  vert_shader_stage_info.pName = "main";
-
-  printf ("[3] %s\n", __FUNCTION__); 
-  // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath /  "data/shader/basic_frag.spv" ;
-  bytearray      fragbin;
-  VkShaderModule fragmod; 
-  From_file(fragbin, frag_file_path.string());
-  //if (!rokz::CreateShaderModule (shader_modules[1],  fragbin, device))
-  if (!rokz::CreateShaderModule (fragmod, fragbin, device))
-    return false; 
-  
-  shader_modules.push_back (fragmod); // fragmod); 
-  VkPipelineShaderStageCreateInfo& frag_shader_stage_info  = shader_stage_create_infos[1];
-  frag_shader_stage_info = {}; 
-  frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  frag_shader_stage_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-  frag_shader_stage_info.module = fragmod;
-  frag_shader_stage_info.pSpecializationInfo = nullptr; 
-  frag_shader_stage_info.pName = "main";
-
-  //
-  VkPipelineShaderStageCreateInfo shader_stages[] = {
-    vert_shader_stage_info,
-    frag_shader_stage_info
-  };
-
-
-  printf ("BAI %s\n", __FUNCTION__); 
-  return true; 
-}
-
-// ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info) {
@@ -528,7 +387,9 @@ bool rokz::CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkP
   return true; 
 }
 
-
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 bool rokz::CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state,
                                   VkPipelineColorBlendStateCreateInfo& color_blending_create_info) {
   // COLOR BLENDING
@@ -556,7 +417,6 @@ bool rokz::CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_ble
   color_blending_create_info.blendConstants[3] = 0.0f; 
   return true;
 }
-
 
 // ---------------------------------------------------------------------
 //
@@ -637,9 +497,9 @@ bool rokz::CreateGraphicsPipelineLayout (
   create_info.pSetLayouts            = &desc_set_layout;         
 
 
-  // create_info.setLayoutCount         = 1;            
-  // create_info.pSetLayouts            = &desc_set_layout;         
-  printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 
+  create_info.setLayoutCount         = 1;            
+  create_info.pSetLayouts            = &desc_set_layout;         
+  //printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 
 
   create_info.pushConstantRangeCount = 0;    
   create_info.pPushConstantRanges = nullptr; 
@@ -651,25 +511,7 @@ bool rokz::CreateGraphicsPipelineLayout (
 
   return true;
 }
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSetLayoutCreateInfo& ci,
-                                      const std::vector<VkDescriptorSetLayoutBinding>& bindings,
-                                      const VkDevice& device) {
-    
-    ci = {};
-    ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    ci.bindingCount = bindings.size();
-    ci.pBindings = &bindings[0];
 
-    if (vkCreateDescriptorSetLayout(device, &ci, nullptr, &dsl) != VK_SUCCESS) {
-        printf ("failed to create descriptor set layout!");
-        return false; 
-    }
-    
-    return true;
-}
 
 // ---------------------------------------------------------------------
 //
@@ -922,6 +764,7 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
   VkBuffer vertex_buffers[] = {vertex_buffer};
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
   
   vkCmdDraw (command_buffer, 3, 1, 0, 0);
   
@@ -940,14 +783,15 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
-                               const VkPipeline pipeline,
-                               const VkBuffer& vertex_buffer, 
-                               const VkBuffer& index_buffer, 
-                               const VkExtent2D &ext2d,
-                               const VkFramebuffer &framebuffer,
-                               const RenderPass &render_pass,
-                               const VkDevice &device) {
+bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
+                                        const Pipeline&        pipeline,
+                                        const VkDescriptorSet& desc_set, 
+                                        const VkBuffer&        vertex_buffer, 
+                                        const VkBuffer&        index_buffer, 
+                                        const VkExtent2D &ext2d,
+                                        const VkFramebuffer &framebuffer,
+                                        const RenderPass &render_pass,
+                                        const VkDevice &device) {
 
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -971,7 +815,7 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
 
   vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
 
   VkViewport viewport{};
   viewport.x = 0.0f;
@@ -994,6 +838,15 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
 
 
   vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
+
+  vkCmdBindDescriptorSets (command_buffer,
+                           VK_PIPELINE_BIND_POINT_GRAPHICS,
+                           pipeline.layout.handle,
+                           0,
+                           1,
+                           &desc_set, //&descriptorSets[currentFrame],
+                           0,
+                           nullptr);
   
   vkCmdDrawIndexed (command_buffer, 6, 1, 0, 0, 0);
   
@@ -1008,32 +861,6 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
   //printf ("BAI %s\n", __FUNCTION__); 
   return true;
 }
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateDescriptorPool (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
-{
-
-  desc_pool.size.type            = type;   // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  desc_pool.size.descriptorCount = desc_count ; //static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-  desc_pool.ci = {};
-  desc_pool.ci.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  desc_pool.ci.poolSizeCount = 1; 
-  desc_pool.ci.pPoolSizes    = &desc_pool.size;
-
-
-  if (vkCreateDescriptorPool(device, &desc_pool.ci, nullptr, &desc_pool.handle) != VK_SUCCESS) {
-    printf ("failed to create descriptor pool!");
-    return false;
-  }
-  
-  return true;; 
-
-}
-
 
 // ---------------------------------------------------------------------
 //
@@ -1144,7 +971,6 @@ void rokz::Cleanup(VkPipeline &pipeline,
                    std::vector<VkImageView> &image_views,
                    GLFWwindow *w,
                    VkDevice &dev, VkInstance &inst) {
-
 
 
   //    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
