@@ -67,6 +67,7 @@ struct StandardTransform3D {
     glm::mat4 view;
     glm::mat4 proj;
 };
+
 const size_t kSizeOf_StandardTransform3D = sizeof (StandardTransform3D); 
 
 // --------------------------------------------------------
@@ -86,20 +87,99 @@ struct CreateInfo {
   //
 
   std::vector<rokz::SyncCreateInfo> syncs; 
-  // VkSemaphoreCreateInfo  semaphore;
-  // VkFenceCreateInfo      fence;
-  // //
-  // VkPipelineInputAssemblyStateCreateInfo   input_assembly; 
-  // VkPipelineVertexInputStateCreateInfo     vertex_input_state; 
-  // VkPipelineViewportStateCreateInfo        viewport_state;
-  // VkPipelineRasterizationStateCreateInfo   rasterizer;
-  // VkPipelineMultisampleStateCreateInfo     multisampling; 
-  // VkPipelineDepthStencilStateCreateInfo    depth_stencil_state; 
-  // VkPipelineColorBlendStateCreateInfo      color_blend;
-  // VkPipelineDynamicStateCreateInfo         dynamic_state;
 };
 
 
+// --------------------------------------------------------
+VkImageCreateInfo& Init (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht, uint32_t dp){
+
+  ci = {};
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent.width  = wd;
+  ci.extent.height = ht;
+  ci.extent.depth  = dp;
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = 1;
+
+  ci.format = VK_FORMAT_R8G8B8A8_SRGB;
+  ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  ci.samples = VK_SAMPLE_COUNT_1_BIT;
+  ci.flags = 0; // Optional
+  return ci; 
+}
+
+struct Image {
+
+  VkImage              handle;
+  VkImageCreateInfo    ci;
+  VkDeviceMemory       mem; 
+  VkMemoryAllocateInfo alloc_info;
+  
+}; 
+
+// --------------------------------------------------------
+bool AllocateImage (Image& image, const VkPhysicalDevice& physdev , const VkDevice& device) {
+
+
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(device, image.handle, &mem_reqs);
+
+  image.alloc_info = {};
+  image.alloc_info.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  image.alloc_info.allocationSize = mem_reqs.size;
+  rokz::FindMemoryType (image.alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, physdev) ;
+
+
+  if (vkAllocateMemory (device, &image.alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
+    printf ("failed to allocate image memory!");
+    return false;
+  }
+
+  vkBindImageMemory (device, image.handle, image.mem, 0);
+  
+  return false;
+}
+
+// --------------------------------------------------------
+bool CreateImage (Image& image,
+                  uint32_t wd,
+                  uint32_t ht,
+                  const VkDevice& device) {
+
+  Init (image.ci, wd, ht, 1); 
+  
+  if (vkCreateImage (device, &image.ci,nullptr, &image.handle) != VK_SUCCESS) {
+    printf ("failed to create image!");
+
+    return false; 
+  }
+
+
+  return true; 
+}
+
+
+
+
+// --------------------------------------------------------
+bool CreateTestTextureImage  (Image& image, const VkDevice& device) {
+
+  assert (false); 
+
+
+
+  TransitionImageLayout; // (image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+  CopyBufferToImage; // (stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+
+
+  
+  return CreateImage (image, 1024, 1024, device); 
+}
 
 
 // --------------------------------------------------------
@@ -137,6 +217,12 @@ struct Glob {
   std::vector<VkCommandBuffer> command_buffer; 
   std::vector<rokz::SyncStruc> syncs; 
   rokz::RenderPass             render_pass; 
+
+
+  // image/texture
+  VkImage         texture_image;
+  VkDeviceMemory  texture_image_memory;
+  VkImageCreateInfo image_create_info;
 
 
   std::vector<rokz::BufferStruc> uniform_buffers;
@@ -243,14 +329,19 @@ bool SetupUniformDescriptorSets (rokz::DescriptorGroup&                dg,
 //VkDescriptorSetAllocateInfo
 bool CreateUniformDescriptorPool (rokz::DescriptorPool& dp, const VkDevice& device) {
 
-  dp.size = {} ; //
-  dp.size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  dp.size.descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+  dp.sizes.resize (2); 
+  dp.sizes[0] = {} ; //
+  dp.sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  dp.sizes[0].descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+
+  dp.sizes[1] = {} ; //
+  dp.sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  dp.sizes[1].descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
 
   dp.ci = {};
   dp.ci.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  dp.ci.poolSizeCount = 1;
-  dp.ci.pPoolSizes    = &dp.size;
+  dp.ci.poolSizeCount = dp.sizes.size();
+  dp.ci.pPoolSizes    = &dp.sizes[0];
   dp.ci.maxSets       = static_cast<uint32_t>(kMaxFramesInFlight);
   dp.ci.flags         = 0;
   
@@ -403,7 +494,7 @@ bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void UpdateUniformBuffers (Glob& glob, uint32_t current_frame, double dt) {
+void UpdateUniformBuffer (Glob& glob, uint32_t current_frame, double dt) {
   //static auto startTime = std::chrono::high_resolution_clock::now();
   glob.sim_time += dt;
   printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
@@ -420,8 +511,6 @@ void UpdateUniformBuffers (Glob& glob, uint32_t current_frame, double dt) {
  
   memcpy (glob.uniform_mapped_pointers[current_frame], &mats, kSizeOf_StandardTransform3D); 
 
-  //auto currentTime = std::chrono::high_resolution_clock::now();
-    //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 }
 
 // --------------------------------------------------------------------
@@ -520,16 +609,10 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   vkResetFences (glob.device, 1, &syncs[curr_frame].in_flight_fen);
 
 
-  UpdateUniformBuffers (glob, curr_frame, dt); 
+  UpdateUniformBuffer (glob, curr_frame, dt); 
 
   
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
-  // rokz::RecordCommandBuffer(glob.command_buffer[curr_frame],
-  //                           glob.pipeline,
-  //                           glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
-  //                           glob.create_info.swapchain.imageExtent,
-  //                           glob.swapchain_framebuffers[image_index],
-  //                           glob.render_pass, glob.device);
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
                             glob.pipeline,
@@ -689,6 +772,11 @@ int test_rokz (const std::vector<std::string>& args) {
               0,
               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
               VK_SHADER_STAGE_VERTEX_BIT);
+
+  // rokz::Init (glob.desc_set_layout_bindings[1],
+  //             1,
+  //             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+  //             VK_SHADER_STAGE_FRAGMENT_BIT);
 
   rokz::CreateDescriptorSetLayout (glob.uniform_group.set_layout.handle,
                                    glob.uniform_group.set_layout.ci,

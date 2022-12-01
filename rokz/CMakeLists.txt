@@ -11,10 +11,12 @@ set (ROKZ_HEADER_FILES
   rokz.h
   buffer.h
   context.h
+  command.h
   descriptor.h
   shader.h
   texture.h
   uniform.h
+  sampler.h
   window.h
   utility.h
   binary_IO.h
@@ -34,11 +36,13 @@ set (ROKZ_SOURCE_FILES
 
 
   context.cpp
+  command.cpp
   descriptor.cpp
   buffer.cpp
   shader.cpp
   texture.cpp
   uniform.cpp
+  sampler.cpp
   window.cpp
 
 

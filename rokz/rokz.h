@@ -9,9 +9,11 @@
 
 #include "buffer.h"
 #include "context.h"
+#include "command.h"
 #include "shader.h"
 #include "texture.h"
 #include "uniform.h"
+#include "sampler.h"
 #include "window.h"
 #include "utility.h"
 #include "binary_IO.h"

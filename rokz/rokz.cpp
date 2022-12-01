@@ -8,3 +8,7 @@
 
 //#include <vulkan/vulkan.hpp>
 
+
+
+
+const char* rokz::kVersionstr = "0.0.1"; 

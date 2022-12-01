@@ -87,9 +87,8 @@ namespace rokz {
   QueueFamilyIndices&   FindQueueFamilies (QueueFamilyIndices& queue_fams, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev);
   SwapchainSupportInfo& QuerySwapchainSupport (SwapchainSupportInfo& deets, const VkSurfaceKHR& surf, const VkPhysicalDevice& dev); 
   bool                  CheckValidationSupport (const std::vector<const char*>& validation_layers);
-
-  bool                      CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
-  bool                      FindMemoryType              (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev ); 
+  bool                  CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
+  bool                  FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
   std::vector<const char*>& GetRequiredExtensionNames   (std::vector<const char*>&  exts); 
 
 }

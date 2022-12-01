@@ -13,9 +13,9 @@ namespace rokz {
   // ---------------------------------------------------------------------
   struct DescriptorPool {
 
-    VkDescriptorPool           handle;
-    VkDescriptorPoolSize       size;
-    VkDescriptorPoolCreateInfo ci;
+    VkDescriptorPool                  handle;
+    std::vector<VkDescriptorPoolSize> sizes;
+    VkDescriptorPoolCreateInfo        ci;
   };
 
   // ---------------------------------------------------------------------

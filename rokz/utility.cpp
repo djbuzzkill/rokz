@@ -217,13 +217,21 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, const VkSurfaceKHR& sur
   }
   
   vkGetPhysicalDeviceProperties(physdev, &devprops);
+
+  devfeatures.samplerAnisotropy = VK_TRUE; // force anistotropy
   vkGetPhysicalDeviceFeatures  (physdev, &devfeatures);
   // bool device_is_suitable =
   //   devprops.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
   //   && devfeatures.geometryShader;
+
+  if (devfeatures.samplerAnisotropy) {
+    printf ("[SUPPORTED] -> Anisotropy\n"); 
+  }
+
   return all_queues_available
     && exts_supported
-    && swapchain_adequate; 
+    && swapchain_adequate
+    && devfeatures.samplerAnisotropy; 
 }
 
 // ---------------------------------------------------------------------
@@ -294,7 +302,7 @@ std::vector<const char*>& rokz::GetRequiredExtensionNames (std::vector<const cha
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::FindMemoryType (uint32_t& type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
+bool rokz::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
     
   VkPhysicalDeviceMemoryProperties mem_props;
   vkGetPhysicalDeviceMemoryProperties(physdev, &mem_props);
@@ -302,12 +310,11 @@ bool rokz::FindMemoryType (uint32_t& type_filter, VkMemoryPropertyFlags prop_fla
   for (uint32_t i = 0; i < mem_props.memoryTypeCount; i++) {
    
     if (type_filter & (1 << i) && (mem_props.memoryTypes[i].propertyFlags & prop_flags) == prop_flags ) {
-      type_filter = i; 
+      type_index = i; 
       return true;
     }
   }
 
-  
   printf ("[%s] find memory type failed", __FUNCTION__);
   return false; 
 }

@@ -20,9 +20,7 @@ bool rokz::CreateBuffer (BufferStruc&            buffstruc,
   buffstruc.alloc_info = {}; 
   buffstruc.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   buffstruc.alloc_info.allocationSize = mem_reqs.size;
-
-  buffstruc.alloc_info.memoryTypeIndex =
-    rokz::FindMemoryType (mem_reqs.memoryTypeBits, buffstruc.mem_prop_flags, physdev);
+  rokz::FindMemoryType ( buffstruc.alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, buffstruc.mem_prop_flags, physdev);
 
   if (vkAllocateMemory(device, &buffstruc.alloc_info, nullptr, &buffstruc.mem) != VK_SUCCESS) {
     printf ("failed to allocate buffer memory!");
