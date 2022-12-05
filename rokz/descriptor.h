@@ -24,7 +24,7 @@ namespace rokz {
     VkDescriptorSetLayoutCreateInfo ci;
   }; 
 
-
+  // ---------------------------------------------------------------------
   struct DescriptorGroup {
     
     std::vector<VkDescriptorSet>   sets;
@@ -32,6 +32,7 @@ namespace rokz {
     VkDescriptorSetAllocateInfo    alloc_info;
 
   }; 
+
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -44,7 +45,6 @@ namespace rokz {
                                   VkDescriptorSetLayoutCreateInfo& ci,
                                   const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                                   const VkDevice& device);
-
 
   // ---------------------------------------------------------------------
   //

@@ -9,10 +9,11 @@ project (rokz)
 set (ROKZ_HEADER_FILES
 
   rokz.h
-  buffer.h
   context.h
-  command.h
   descriptor.h
+  buffer.h
+  image.h
+  command.h
   shader.h
   texture.h
   uniform.h
@@ -39,6 +40,7 @@ set (ROKZ_SOURCE_FILES
   command.cpp
   descriptor.cpp
   buffer.cpp
+  image.cpp
   shader.cpp
   texture.cpp
   uniform.cpp

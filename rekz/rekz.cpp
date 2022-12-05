@@ -9,6 +9,7 @@
 
 int test_rokz (const std::vector<std::string>& args); 
 int texture_tool (const std::vector<std::string>& args); 
+int test_ouput (const std::vector<std::string>& args); 
 int test_time (); 
 // --------------------------------------------------------------------
 //
@@ -19,8 +20,10 @@ int main (int argv, char** argc) {
 
   //   test_time (); 
   test_rokz (args); 
-  //texture_tool (args); 
 
+    // texture_tool (args); 
+    //test_ouput (args);
+  
   printf ("lolz bai %s\n", __FUNCTION__); 
   return 0; 
 }

@@ -12,6 +12,13 @@ namespace rokz {
   // ---------------------------------------------------
   //
   // ---------------------------------------------------
+  typedef std::array<unsigned char, 4> rgba8;
+  typedef std::array<unsigned char, 3> rgb8; 
+
+
+  // ---------------------------------------------------
+  //
+  // ---------------------------------------------------
   template<typename Ty> 
   inline bool in_bounds_incl (Ty val , Ty minval , Ty maxval) {
     return (val >= minval && val <= maxval);
@@ -83,7 +90,9 @@ namespace rokz {
   const std::vector<const char*>& GetDeviceExtensionNames (); 
 
   bool                  CheckValidationSupport (const std::vector<const char*>& val_layers); 
-  bool                  SelectPhysicalDevice (VkPhysicalDevice& physdev, QueueFamilyIndices& queueind, const VkSurfaceKHR& surf, const VkInstance& inst);
+
+  bool SelectPhysicalDevice (VkPhysicalDevice& physdev, VkPhysicalDeviceProperties& device_props, rokz::QueueFamilyIndices& queueind, const VkSurfaceKHR& surf, const VkInstance& inst); 
+
   QueueFamilyIndices&   FindQueueFamilies (QueueFamilyIndices& queue_fams, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev);
   SwapchainSupportInfo& QuerySwapchainSupport (SwapchainSupportInfo& deets, const VkSurfaceKHR& surf, const VkPhysicalDevice& dev); 
   bool                  CheckValidationSupport (const std::vector<const char*>& validation_layers);

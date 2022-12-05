@@ -8,11 +8,17 @@
 
 namespace rokz {
 
+  struct Sampler {
+    VkSampler           handle; 
+    VkSamplerCreateInfo ci;
+  };
 
-  extern const char* kVersionstr; 
-
-
+  
+  VkSamplerCreateInfo& Init (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
+  bool                 CreateSampler (Sampler& sampler, const VkDevice& device); 
+  void                 Destroy (Sampler& sampler, const VkDevice& device); 
+  
 }
-
+    
 
 #endif

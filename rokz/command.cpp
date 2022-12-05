@@ -3,7 +3,9 @@
 
 
 
+// --------------------------------------------------------------------
 //
+// --------------------------------------------------------------------
 VkImageMemoryBarrier& transition_barrier_mask (
     VkPipelineStageFlags& dst_stage,
     VkPipelineStageFlags& src_stage,
@@ -33,7 +35,9 @@ VkImageMemoryBarrier& transition_barrier_mask (
 }
 
 
-// --------------------------------------------------------
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
                                         const VkDevice& device) {
 
@@ -48,7 +52,7 @@ VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
 
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.flags   = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+  begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
   if (VK_SUCCESS != vkBeginCommandBuffer(command_buffer, &begin_info)) {
 
@@ -59,13 +63,13 @@ VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
   return command_buffer;
 }
 
-
-// --------------------------------------------------------
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
                            const VkQueue&       queue,
                            const VkCommandPool& command_pool,
                            const VkDevice&      device) {
-
 
   vkEndCommandBuffer(command_buffer);
 
@@ -78,12 +82,13 @@ void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
   vkQueueWaitIdle(queue);
 
   vkFreeCommandBuffers (device, command_pool, 1, &command_buffer);
-     
 }
 
 
+// --------------------------------------------------------------------
 //
-void rokz::TransitionImageLayout (VkImage image, VkFormat format,
+// --------------------------------------------------------------------
+void rokz::TransitionImageLayout (VkImage image, VkFormat _format,
                             const VkImageLayout& old_layout,
                             const VkImageLayout& new_layout,
                             const VkQueue&       queue,
@@ -126,16 +131,15 @@ void rokz::TransitionImageLayout (VkImage image, VkFormat format,
   
 }
 
-
-
-
-// --------------------------------------------------------
-void  rokz::CopyBuffer (rokz::BufferStruc&           dst,
-                  const rokz::BufferStruc&     src,
-                  VkDeviceSize                 size,
-                  const VkQueue&               queue,
-                  const VkCommandPool&         command_pool,
-                  const VkDevice&              device) {
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+void  rokz::CopyBuffer (rokz::BufferStruc&       dst,
+                        const rokz::BufferStruc& src,
+                        VkDeviceSize             size,
+                        const VkQueue&           queue,
+                        const VkCommandPool&     command_pool,
+                        const VkDevice&          device) {
 
   VkCommandBuffer command_buffer = BeginCommandList (command_pool, device);
 
@@ -147,7 +151,9 @@ void  rokz::CopyBuffer (rokz::BufferStruc&           dst,
 
 }
 
-// --------------------------------------------------------
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 void rokz::CopyBufferToImage (VkImage& image,
                         const VkBuffer buffer,
                         uint32_t width, uint32_t height, 

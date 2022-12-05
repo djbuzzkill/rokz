@@ -1,7 +1,6 @@
 
 #include "buffer.h"
 
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -35,7 +34,23 @@ bool rokz::CreateBuffer (BufferStruc&            buffstruc,
   return true; 
 } 
 
+// ---------------------------------------------------------------------
+// transfer buffer
+// ---------------------------------------------------------------------
+bool rokz::CreateByteBuffer_transfer (BufferStruc& buffer, uint32_t  numbytes, 
+                                      const VkPhysicalDevice& physdev, 
+                                      const VkDevice& device ) { 
+  
+  buffer.create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffer.create_info.size        = numbytes; 
+  buffer.create_info.usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+  buffer.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+  buffer.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+  return rokz::CreateBuffer (buffer, device, physdev); 
+
+}
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateVertexBuffer (BufferStruc& buffstruc, 
@@ -67,7 +82,7 @@ bool rokz::CreateVertexBuffer_transfer (BufferStruc& buffstruc,
   buffstruc.create_info = {};
   buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   buffstruc.create_info.size  = sizeof_elem * num_elem; 
-  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; // | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   
   buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
@@ -142,14 +157,12 @@ bool rokz::CreateIndexBuffer_device (BufferStruc& buffstruc,
   }  
   //
   buffstruc.create_info = {};
-  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buffstruc.create_info.size  = sizeof_index * num_elem; 
-  buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+  buffstruc.create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffstruc.create_info.size        = sizeof_index * num_elem; 
+  buffstruc.create_info.usage       = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  
-  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; 
-
-  buffstruc.index_type  = index_type;
+  buffstruc.mem_prop_flags          = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; 
+  buffstruc.index_type              = index_type;
   //
   return rokz::CreateBuffer (buffstruc, device, physdev); 
 }
@@ -228,18 +241,17 @@ void rokz::UnmapBuffer (BufferStruc& vb, const VkDevice& device) {
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-bool rokz::MoveToBuffer_user_mem (BufferStruc& dst_vb, const void* src, size_t size, const VkDevice& device) {
-  void* dst;
+// bool rokz::MoveToBuffer_user_mem (BufferStruc& dst_vb, const void* src, size_t size, const VkDevice& device) {
+//   void* dst;
 
-  if (VK_SUCCESS == vkMapMemory (device, dst_vb.mem, 0, dst_vb.create_info.size, 0, &dst)) {
+//   if (VK_SUCCESS == vkMapMemory (device, dst_vb.mem, 0, dst_vb.create_info.size, 0, &dst)) {
     
-    memcpy (dst, src, size);
-    vkUnmapMemory (device, dst_vb.mem);
-    return true; 
-  }
-  return false;
-}
-
+//     memcpy (dst, src, size);
+//     vkUnmapMemory (device, dst_vb.mem);
+//     return true; 
+//   }
+//   return false;
+// }
 
 void rokz::DestroyBuffer (BufferStruc& buf, const VkDevice &device) {
 

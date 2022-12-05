@@ -107,14 +107,14 @@ rokz::QueueFamilyIndices& rokz::FindQueueFamilies (rokz::QueueFamilyIndices& ind
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CheckDeviceExtensionSupport(const VkPhysicalDevice& device) {
+bool rokz::CheckDeviceExtensionSupport(const VkPhysicalDevice& physdev) {
   printf ("%s\n", __FUNCTION__);
 
   uint32_t exts_count;
-  vkEnumerateDeviceExtensionProperties(device, nullptr, &exts_count, nullptr);
+  vkEnumerateDeviceExtensionProperties(physdev, nullptr, &exts_count, nullptr);
 
   std::vector<VkExtensionProperties> available_exts(exts_count);
-  vkEnumerateDeviceExtensionProperties(device, nullptr, &exts_count, &available_exts[0]);
+  vkEnumerateDeviceExtensionProperties(physdev, nullptr, &exts_count, &available_exts[0]);
 
   
   std::set<std::string> req_exts (&device_extensions[0], &device_extensions[device_extensions.size()]);
@@ -171,11 +171,10 @@ rokz::SwapchainSupportInfo& rokz::QuerySwapchainSupport (rokz::SwapchainSupportI
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev) {
+bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, VkPhysicalDeviceProperties& devprops, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev) {
 
   printf ("%s\n", __FUNCTION__); 
 
-  VkPhysicalDeviceProperties devprops{};
   VkPhysicalDeviceFeatures   devfeatures{}; 
 
   bool swapchain_adequate = false;
@@ -187,10 +186,9 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, const VkSurfaceKHR& sur
   }
   
   rokz::SwapchainSupportInfo swapchain_supp_info {};
-
-  // swapchain_supp_info.capabilities = {};
-  // swapchain_supp_info.formats = {};
-  // swapchain_supp_info.present_modes = {};
+  swapchain_supp_info.capabilities = {};
+  swapchain_supp_info.formats = {};
+  swapchain_supp_info.present_modes = {};
 
   bool all_queues_available =
     AllQueuesAvailable (rokz::FindQueueFamilies (outind, surf, physdev)); 
@@ -237,8 +235,9 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, const VkSurfaceKHR& sur
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::SelectPhysicalDevice (VkPhysicalDevice&         physdev,
-                                 rokz::QueueFamilyIndices& queueind,
+bool rokz::SelectPhysicalDevice (VkPhysicalDevice&           physdev,
+                                 VkPhysicalDeviceProperties& device_props, 
+                                 rokz::QueueFamilyIndices&   queueind,
                                  const VkSurfaceKHR&       surf,
                                  const VkInstance&         inst) {
   //
@@ -257,8 +256,8 @@ bool rokz::SelectPhysicalDevice (VkPhysicalDevice&         physdev,
   for (unsigned idev = 0; idev < device_count; ++idev) {
 
     rokz::QueueFamilyIndices curqueinds {}; 
-
-    if (IsDeviceSuitable (curqueinds, surf, physdevs[idev])) {
+    device_props = {}; 
+    if (IsDeviceSuitable (curqueinds,  device_props, surf, physdevs[idev])) {
       printf ("YES --> IsDeviceSuitable(%i)\n", idev); 
       // assert (curqueinds.present.has_value());
       // assert (curqueinds.graphics.has_value());

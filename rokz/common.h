@@ -12,10 +12,13 @@
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
 
-#include <vulkan/vulkan_core.h>
+// #include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
+
+// vulkan memo allocator
 #include "vk_mem_alloc.h"
 
-#include <vulkan/vulkan.hpp>
+//#include <vulkan/vulkan.hpp>
 
 #include <ctime>
 #include <cstdio>

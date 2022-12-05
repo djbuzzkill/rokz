@@ -1,20 +1,18 @@
-
 #include "rekz.h"              // 
 // #include "rokz/defaults.h"
 // //#include "rokz/rokz_funcs.h"
 // #include <glm/glm.hpp>
 // #include <glm/gtc/matrix_transform.hpp>
-
+#include <IL/il.h>
+#include <IL/ilu.h>
 
 const size_t kMaxFramesInFlight = 2; 
 
 
+const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
 // #include "rokz/rokz.h"
 // #include <GLFW/glfw3.h>
 // #include <vulkan/vulkan_core.h>
-
-
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -22,17 +20,22 @@ struct Vertex_simple {
 
   glm::vec2 pos; 
   glm::vec3 col; 
+  glm::vec2 txc0; 
 
 }; 
 
-
-
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 const VkVertexInputBindingDescription kSimpleVertexBindingDesc =  {
   0,                            // binding    
   sizeof (Vertex_simple),       // stride      
   VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
 }; 
 
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc =  {
 
   VkVertexInputAttributeDescription {
@@ -46,21 +49,29 @@ const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc
     0, 
     VK_FORMAT_R32G32B32_SFLOAT,
     offsetof(Vertex_simple, col), 
+  },
+  VkVertexInputAttributeDescription {
+    2,                             //
+    0, 
+    VK_FORMAT_R32G32_SFLOAT,
+    offsetof(Vertex_simple, txc0), 
   }
 
 }; 
 
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 const Vertex_simple simple_verts[] = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+  {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+  {{ 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+  {{ 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+  {{-0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 
 const uint16_t simple_indices[] = {
     0, 1, 2, 2, 3, 0
 };
-
 
 struct StandardTransform3D {
     glm::mat4 model;
@@ -69,8 +80,9 @@ struct StandardTransform3D {
 };
 
 const size_t kSizeOf_StandardTransform3D = sizeof (StandardTransform3D); 
-
-// --------------------------------------------------------
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 struct CreateInfo {
   VkInstanceCreateInfo                     instance; 
   VkDeviceCreateInfo                       device;
@@ -90,99 +102,32 @@ struct CreateInfo {
 };
 
 
-// --------------------------------------------------------
-VkImageCreateInfo& Init (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht, uint32_t dp){
 
-  ci = {};
-  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  ci.imageType     = VK_IMAGE_TYPE_2D;
-  ci.extent.width  = wd;
-  ci.extent.height = ht;
-  ci.extent.depth  = dp;
-  ci.mipLevels     = 1;
-  ci.arrayLayers   = 1;
+bool CreateTextureImageView (VkImageView& view, VkImageViewCreateInfo& ci, const rokz::Image& image, const VkDevice& device) {
 
+  ci =  {};
+  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.image = image.handle;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
   ci.format = VK_FORMAT_R8G8B8A8_SRGB;
-  ci.tiling = VK_IMAGE_TILING_OPTIMAL;
-  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-  ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  ci.samples = VK_SAMPLE_COUNT_1_BIT;
-  ci.flags = 0; // Optional
-  return ci; 
-}
+  ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  ci.subresourceRange.baseMipLevel = 0;
+  ci.subresourceRange.levelCount = 1;
+  ci.subresourceRange.baseArrayLayer = 0;
+  ci.subresourceRange.layerCount = 1;
 
-struct Image {
+  if (vkCreateImageView(device, &ci, nullptr, &view) != VK_SUCCESS) {
 
-  VkImage              handle;
-  VkImageCreateInfo    ci;
-  VkDeviceMemory       mem; 
-  VkMemoryAllocateInfo alloc_info;
-  
-}; 
-
-// --------------------------------------------------------
-bool AllocateImage (Image& image, const VkPhysicalDevice& physdev , const VkDevice& device) {
-
-
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, image.handle, &mem_reqs);
-
-  image.alloc_info = {};
-  image.alloc_info.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  image.alloc_info.allocationSize = mem_reqs.size;
-  rokz::FindMemoryType (image.alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, physdev) ;
-
-
-  if (vkAllocateMemory (device, &image.alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
-    printf ("failed to allocate image memory!");
+    printf ("[FAILED] %s create texture image view ", __FUNCTION__);
     return false;
   }
-
-  vkBindImageMemory (device, image.handle, image.mem, 0);
-  
-  return false;
-}
-
-// --------------------------------------------------------
-bool CreateImage (Image& image,
-                  uint32_t wd,
-                  uint32_t ht,
-                  const VkDevice& device) {
-
-  Init (image.ci, wd, ht, 1); 
-  
-  if (vkCreateImage (device, &image.ci,nullptr, &image.handle) != VK_SUCCESS) {
-    printf ("failed to create image!");
-
-    return false; 
-  }
-
-
   return true; 
+
 }
 
-
-
-
-// --------------------------------------------------------
-bool CreateTestTextureImage  (Image& image, const VkDevice& device) {
-
-  assert (false); 
-
-
-
-  TransitionImageLayout; // (image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-  CopyBufferToImage; // (stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-
-
-  
-  return CreateImage (image, 1024, 1024, device); 
-}
-
-
-// --------------------------------------------------------
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 struct Glob {
 
   Glob () = default;
@@ -191,6 +136,7 @@ struct Glob {
   VkInstance                   instance;
 
   VkPhysicalDevice             physical_device;
+  VkPhysicalDeviceProperties   phys_dev_props; 
   VkPhysicalDeviceFeatures     device_features;
   VkSwapchainKHR               swapchain;
 
@@ -199,45 +145,47 @@ struct Glob {
   std::vector<VkFramebuffer>   swapchain_framebuffers;
   //std::vector<VkShaderModule>  shader_modules; 
 
-
   std::vector<rokz::ShaderModule>  shader_modules; 
 
   VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
     
-  rokz::BufferStruc vertex_buffer_user; 
-  rokz::BufferStruc index_buffer_user;
+  rokz::BufferStruc            vertex_buffer_user; 
+  rokz::BufferStruc            index_buffer_user;
     
-  rokz::BufferStruc index_buffer_device; 
-  rokz::BufferStruc vertex_buffer_device; 
+  rokz::BufferStruc            index_buffer_device; 
+  rokz::BufferStruc            vertex_buffer_device; 
 
-    
   std::vector<VkDynamicState>  dynamic_states; 
   VkCommandPool                command_pool; 
   std::vector<VkCommandBuffer> command_buffer; 
   std::vector<rokz::SyncStruc> syncs; 
   rokz::RenderPass             render_pass; 
 
-
   // image/texture
-  VkImage         texture_image;
-  VkDeviceMemory  texture_image_memory;
-  VkImageCreateInfo image_create_info;
+  rokz::BufferStruc            texture_buff_stage; // mebe we should just make stack
+  rokz::Image                  texture_image; 
+  rokz::ImageView              texture_imageview; 
+  rokz::Sampler                sampler;
 
-
+  //VkImage         texture_image;
+  // VkDeviceMemory  texture_image_memory;
+  // VkImageCreateInfo image_create_info;
   std::vector<rokz::BufferStruc> uniform_buffers;
   std::vector<void*>             uniform_mapped_pointers; 
 
-  rokz::DescriptorPool           uniform_descriptor_pool;
-  rokz::DescriptorGroup          uniform_group; 
+  // mebe shouldnt b calld uniform_* anymore
+  rokz::DescriptorPool           descr_pool;
+  rokz::DescriptorGroup          descr_group; 
+  std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
   // std::vector<VkDescriptorSet>   desc_sets;
   // VkDescriptorSetAllocateInfo    desc_set_alloc_info;
   // rokz::DescriptorSetLayout      descriptor_set_layout;
-
   //VkWriteDescriptorSet         descriptor_write;     
-  std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
+
   //PipelineLayout              pipeline_layout; 
   rokz::Pipeline              pipeline; 
+
   // device + queues?
   GLFWwindow*                 glfwin;  // 
   VkSurfaceKHR                surface; // 
@@ -257,6 +205,181 @@ struct Glob {
 };
 
 
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+void SetupSampler (Glob& glob) {
+  printf ("%s \n", __FUNCTION__); 
+
+  rokz::Init (glob.sampler.ci, glob.phys_dev_props);
+  
+  rokz::CreateSampler (glob.sampler, glob.device);  
+}
+
+
+ // ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
+
+  printf ("%s \n", __FUNCTION__); 
+  // SetupCreateShaderModules (glob .shader_modules,
+  //                            glob.pipeline.state_ci.shader_stages,
+  //                            rokz_path,
+  //                            glob.device);
+
+  // std::vector<ShaderModule>&                    shader_modules,
+  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state_ci.shader_stages; 
+  // const VkDevice&                               device)
+  printf ("%s\n", __FUNCTION__); 
+
+  glob.shader_modules.resize            (2);
+  shader_stage_create_infos.resize (2);
+  
+  // VERT SHADER 
+  printf ("[2] B4 VERT %s:\n", __FUNCTION__); 
+  std::filesystem::path vert_file_path  =  fspath / "data/shader/basic3D_tx_vert.spv" ;
+
+  if (!rokz::CreateShaderModule (glob.shader_modules[0], vert_file_path.string(), glob.device))
+    return false; 
+  
+  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, glob.shader_modules[0].handle); 
+
+  
+  // FRAG SHADER
+  printf ("[3] B4 FRAG %s\n", __FUNCTION__); 
+  std::filesystem::path frag_file_path = fspath /  "data/shader/basic_tx_frag.spv" ;
+
+  if (!rokz::CreateShaderModule (glob.shader_modules[1], frag_file_path.string(), glob.device))
+    return false; 
+  
+  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, glob.shader_modules[1].handle); 
+  //
+
+  return true; 
+}
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+ 
+void TestCleanup (Glob& glob) {
+
+  printf ("%s \n", __FUNCTION__); 
+
+  // 
+  rokz::DestroyBuffer (glob.index_buffer_device, glob.device); 
+
+  for (auto& ub : glob.uniform_buffers) {
+    rokz::DestroyBuffer (ub, glob.device); 
+  }
+
+  printf ( "[TODO]:DESTROY DESCRIPTOR LAYOUT\n"); 
+  //vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
+  rokz::Destroy (glob.sampler, glob.device); 
+
+  rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
+                glob.vertex_buffer_device, // glob.vertex_buffer_user, 
+                glob.surface,
+                glob.command_pool,
+                glob.syncs, 
+                glob.shader_modules, glob.pipeline.layout.handle, glob.render_pass,
+                glob.swapchain_imageviews, glob.glfwin, glob.device,
+                glob.instance);
+
+  
+  glfwTerminate();
+
+
+}
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool SetupTestTexture (Glob& glob) {
+  
+  printf ("%s \n", __FUNCTION__); 
+
+  rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
+  "/home/djbuzzkill/owenslake/data/textures/out"; 
+
+   const char*  test_image_files[] = { 
+    "out_0_blue-texture-image-hd_rgba.png",
+    "out_1_abstract-texture-3_rgba.png",
+  };
+
+
+   rokz::BufferStruc stage_image; 
+
+   const std::string fq_test_file; 
+
+   ilInit ();
+   ilBindImage (ilGenImage ());
+
+   int image_width    = 0;
+   int image_height   = 0;
+   int image_depth    = 0;
+   int bytes_per_pixel= 0;
+   int image_bpp      = 0;
+   int image_type     = 0;
+   int image_format   = 0;
+
+   
+   if (ilLoadImage(fq_test_file.c_str())) {
+     
+     image_width    = ilGetInteger (IL_IMAGE_WIDTH); 
+     image_height   = ilGetInteger (IL_IMAGE_HEIGHT);
+     image_depth    = ilGetInteger (IL_IMAGE_DEPTH);
+     bytes_per_pixel= ilGetInteger (IL_IMAGE_BYTES_PER_PIXEL); 
+     image_bpp      = ilGetInteger (IL_IMAGE_BPP);
+     image_type     = ilGetInteger (IL_IMAGE_TYPE);
+     image_format   = ilGetInteger (IL_IMAGE_FORMAT); 
+
+     size_t image_size = image_width * image_height *  bytes_per_pixel; 
+     rokz::CreateByteBuffer_transfer (stage_image, image_size, glob.physical_device, glob.device); 
+
+     void* mapped = nullptr; 
+     rokz::MapBuffer (&mapped, stage_image, glob.device);
+
+     printf ( "image dim [w:%i, h:%i, d:%i | bpp:%i, bytes:%i, type:%x,ff format:%x]\n",
+              image_width, image_height, image_depth,
+              image_bpp, bytes_per_pixel, image_type, image_format); 
+
+     ILubyte* image_data = ilGetData (); 
+     std::copy (image_data, image_data + image_size, reinterpret_cast<unsigned char*> (mapped));
+     rokz::UnmapBuffer (stage_image, glob.device);
+     ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
+     
+   } // LoadImage
+   ilShutDown ();
+
+   rokz::Image& image = glob.texture_image; 
+   rokz::Init_2D_device (image.ci, image_width, image_height);
+   if (rokz::CreateImage (image, image.ci, glob.device)) {
+     printf ("[FAILED] %s setup test texture", __FUNCTION__); 
+   }
+
+
+   rokz::TransitionImageLayout (glob.texture_image.handle,
+                                VK_FORMAT_R8G8B8A8_SRGB,
+                                VK_IMAGE_LAYOUT_UNDEFINED,
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                glob.queues.graphics,
+                                glob.command_pool,
+                                glob.device);
+
+   
+   rokz::CopyBufferToImage; // (stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+
+
+
+   
+   return true; 
+}
+
+
+  
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -277,24 +400,33 @@ struct Glob {
 
 //   return true; 
 // }
-bool SetupUniformDescriptorSets (rokz::DescriptorGroup&                dg,
-                                 const std::vector<rokz::BufferStruc>& buffer_strucs, 
-                                 const VkDescriptorPool&               descriptor_pool,
-                                 const VkDevice&                       device)
-{
-  const size_t num_sets = buffer_strucs.size (); 
-  
+
+// bool SetupDescriptorSets (rokz::DescriptorGroup&                dg,
+//                                  const std::vector<rokz::BufferStruc>& buffer_strucs, 
+//                                  const VkDescriptorPool&               descriptor_pool,
+//                                  const VkDevice&                       device)
+
+bool SetupDescriptorSets (Glob& glob) {
+
+  printf ("%s \n", __FUNCTION__); 
+  // SetupDescriptorSets (glob.descr_group,
+  //                      glob.uniform_buffers,
+  //                      glob.descr_pool.handle, 
+  //                      glob.device);  
+  const size_t num_sets = glob.uniform_buffers.size (); 
+
+  rokz::DescriptorGroup& dg = glob.descr_group;
+
   std::vector<VkDescriptorSetLayout> desc_layouts (num_sets, dg.set_layout.handle);
   // use same layout for all allocations
-
   dg.alloc_info = {}; 
   dg.alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  dg.alloc_info.descriptorPool     = descriptor_pool; 
+  dg.alloc_info.descriptorPool     = glob.descr_pool.handle; 
   dg.alloc_info.descriptorSetCount = num_sets;
   dg.alloc_info.pSetLayouts        = &desc_layouts[0];
   
   //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
-  if (!rokz::AllocateDescriptorSets (dg.sets, dg.alloc_info, num_sets, device)) {
+  if (!rokz::AllocateDescriptorSets (dg.sets, dg.alloc_info, num_sets, glob.device)) {
     printf ("[FAILED] alloc desc sets %s", __FUNCTION__);
     return false;
   }
@@ -302,24 +434,37 @@ bool SetupUniformDescriptorSets (rokz::DescriptorGroup&                dg,
   for (uint32_t i = 0; i < num_sets; i++) {
     // wtf does this do
     VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer  = buffer_strucs[i].handle;
-    buffer_info.offset  = 0;
-    buffer_info.range   = buffer_strucs[i].create_info.size ;
+    buffer_info.buffer     = glob.uniform_buffers[i].handle;
+    buffer_info.offset     = 0;
+    buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
     //printf ( "%s [%u] buffer_info.range = %lu\n", __FUNCTION__, i, buffer_strucs[i].create_info.size); 
+    VkDescriptorImageInfo image_info {};
+    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+    image_info.imageView   = glob.texture_imageview.handle;
+    image_info.sampler     = glob.sampler.handle;
+    //
+    std::array<VkWriteDescriptorSet, 2>  descriptor_writes {};
+    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].dstSet           = dg.sets[i];
+    descriptor_writes[0].dstBinding       = 0;
+    descriptor_writes[0].dstArrayElement  = 0;
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = 1;
+    descriptor_writes[0].pBufferInfo      = &buffer_info;
+    descriptor_writes[0].pImageInfo       = nullptr; // Optional
+    descriptor_writes[0].pTexelBufferView = nullptr; // Optional}
 
-    VkWriteDescriptorSet descriptor_write {};
-    descriptor_write.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.dstSet           = dg.sets[i];
-    descriptor_write.dstBinding       = 0;
-    descriptor_write.dstArrayElement  = 0;
-    descriptor_write.descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_write.descriptorCount  = 1;
+    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[1].dstSet           = dg.sets[i];
+    descriptor_writes[1].dstBinding       = 1;
+    descriptor_writes[1].dstArrayElement  = 0;
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[1].descriptorCount  = 1;
+    descriptor_writes[1].pBufferInfo      = nullptr;
+    descriptor_writes[1].pImageInfo       = &image_info; // Optional
+    descriptor_writes[1].pTexelBufferView = nullptr; // Optional}
 
-    descriptor_write.pBufferInfo      = &buffer_info;
-    descriptor_write.pImageInfo       = nullptr; // Optional
-    descriptor_write.pTexelBufferView = nullptr; // Optional}
-
-    vkUpdateDescriptorSets (device, 1, &descriptor_write, 0, nullptr);
+    vkUpdateDescriptorSets (glob.device, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
   }
 
   return false;
@@ -327,8 +472,14 @@ bool SetupUniformDescriptorSets (rokz::DescriptorGroup&                dg,
 }  
 
 //VkDescriptorSetAllocateInfo
-bool CreateUniformDescriptorPool (rokz::DescriptorPool& dp, const VkDevice& device) {
+bool SetupDescriptorPool (Glob& glob) {
 
+  printf ("%s \n", __FUNCTION__); 
+
+
+  //SetupDescriptorPool (glob.descr_pool, glob.device);
+  rokz::DescriptorPool& dp = glob.descr_pool;
+  
   dp.sizes.resize (2); 
   dp.sizes[0] = {} ; //
   dp.sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -345,7 +496,7 @@ bool CreateUniformDescriptorPool (rokz::DescriptorPool& dp, const VkDevice& devi
   dp.ci.maxSets       = static_cast<uint32_t>(kMaxFramesInFlight);
   dp.ci.flags         = 0;
   
-  if (!rokz::CreateDescriptorPool (dp, device)) {
+  if (!rokz::CreateDescriptorPool (dp, glob.device)) {
     printf ("[FAILED] %s", __FUNCTION__);
     return false; 
   }
@@ -516,11 +667,10 @@ void UpdateUniformBuffer (Glob& glob, uint32_t current_frame, double dt) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool CreateDescriptorSet (VkDescriptorSetLayout&           desc_set_layout, 
-                          VkDescriptorSetLayoutCreateInfo& create_info,
-                          VkDescriptorSetLayoutBinding&    desc_set_layout_binding, 
-                          const VkDevice&                  device) {
-  
+bool CreateDescriptorSet (VkDescriptorSetLayout&              desc_set_layout, 
+                          VkDescriptorSetLayoutCreateInfo&    create_info,
+                          const VkDescriptorSetLayoutBinding& desc_set_layout_binding, 
+                          const VkDevice&                     device) {
 
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -616,7 +766,7 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
                             glob.pipeline,
-                            glob.uniform_group.sets[curr_frame], 
+                            glob.descr_group.sets[curr_frame], 
                             glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
                             glob.index_buffer_device.handle,
                             glob.create_info.swapchain.imageExtent,
@@ -688,8 +838,9 @@ int test_rokz (const std::vector<std::string>& args) {
   
   rokz::CreateInstance       (glob.instance, glob.app_info, glob.create_info.instance);
   rokz::CreateSurface        (&glob.surface, glob.glfwin , glob.instance);
-  rokz::SelectPhysicalDevice (glob.physical_device, glob.queue_fams, glob.surface, glob.instance);
+  rokz::SelectPhysicalDevice (glob.physical_device, glob.phys_dev_props, glob.queue_fams, glob.surface, glob.instance);
 
+  
   // queue info
   //rokz:: QueueFamilyIndices fam_inds;
 
@@ -707,6 +858,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   // device info
   rokz::Default (glob.create_info.device, &glob.create_info.queue, &glob.device_features); 
+  glob.device_features.samplerAnisotropy = VK_TRUE; 
 
   rokz::CreateLogicalDevice (&glob.device, &glob.create_info.device, glob.physical_device); 
   // get queue handle
@@ -728,10 +880,8 @@ int test_rokz (const std::vector<std::string>& args) {
                           glob.create_info.swapchain.imageFormat,
                           glob.device);
 
-  rokz::CreateShaderModules (glob.shader_modules,
-                             glob.pipeline.state_ci.shader_stages,
-                             rokz_path,
-                             glob.device);
+
+  SetupShaderModules (glob, rokz_path);
 
   rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
 
@@ -767,30 +917,29 @@ int test_rokz (const std::vector<std::string>& args) {
   //
 
   //  glob.uniform_group.
-  glob.desc_set_layout_bindings.resize (1); 
+  glob.desc_set_layout_bindings.resize (2); 
   rokz::Init (glob.desc_set_layout_bindings[0],
               0,
               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
               VK_SHADER_STAGE_VERTEX_BIT);
 
-  // rokz::Init (glob.desc_set_layout_bindings[1],
-  //             1,
-  //             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-  //             VK_SHADER_STAGE_FRAGMENT_BIT);
+  rokz::Init (glob.desc_set_layout_bindings[1],
+              1,
+              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+              VK_SHADER_STAGE_FRAGMENT_BIT);
 
-  rokz::CreateDescriptorSetLayout (glob.uniform_group.set_layout.handle,
-                                   glob.uniform_group.set_layout.ci,
+  rokz::CreateDescriptorSetLayout (glob.descr_group.set_layout.handle,
+                                   glob.descr_group.set_layout.ci,
                                    glob.desc_set_layout_bindings,
                                    glob.device); 
 
 
   rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
                                       glob.pipeline.layout.ci,
-                                      glob.uniform_group.set_layout.handle,
+                                      glob.descr_group.set_layout.handle,
                                       glob.device);
 
-  
-  bool pipeline_res =  CreateGraphicsPipeline (
+  bool pipeline_res = CreateGraphicsPipeline (
     glob.pipeline,
     //    glob.pipeline.layout, // const PipelineLayout&         pipeline_layout,
     glob.render_pass.handle,     // const VkRenderPass&           render_pass,
@@ -888,6 +1037,8 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::DestroyBuffer  (ib_transfer, glob.device); 
 
 
+  SetupSampler (glob); 
+
   
   CreateUniformBuffers (glob.uniform_buffers,
                         glob.uniform_mapped_pointers, 
@@ -897,14 +1048,20 @@ int test_rokz (const std::vector<std::string>& args) {
   // rokz::DescriptorPool           uniform_descriptor_pool;
   // rokz::DescriptorGroup          uniform_group; 
   //
-  CreateUniformDescriptorPool (glob.uniform_descriptor_pool, glob.device);
+  SetupTestTexture (glob); 
+
   
+  SetupDescriptorPool (glob);
 
-  SetupUniformDescriptorSets (glob.uniform_group,
-                              glob.uniform_buffers,
-                              glob.uniform_descriptor_pool.handle, 
-                              glob.device);  
 
+
+  SetupDescriptorSets (glob);  
+
+
+  // void createTextureImageView() {
+  //   textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+  // }
+  
   // std::vector<VkDescriptorSetLayout> 
   //   uniform_desc_layouts (kMaxFramesInFlight, glob.uniform_group.set_layout.handle);
   //   // use same layout for both allocations
@@ -1012,32 +1169,11 @@ int test_rokz (const std::vector<std::string>& args) {
 
   vkDeviceWaitIdle(glob.device);
 
-
-
   // end loop
   ShutdownScene();
-  // 
-  rokz::DestroyBuffer (glob.index_buffer_device, glob.device); 
-
-  for (auto& ub : glob.uniform_buffers) {
-    rokz::DestroyBuffer (ub, glob.device); 
-  }
-
-  printf ( "[TODO]:DESTROY DESCRIPTOR LAYOUT\n"); 
-  //vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-
 
   // CLEAN UP
-  rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
-                glob.vertex_buffer_device, // glob.vertex_buffer_user, 
-                glob.surface,
-                glob.command_pool,
-                glob.syncs, 
-                glob.shader_modules, glob.pipeline.layout.handle, glob.render_pass,
-                glob.swapchain_imageviews, glob.glfwin, glob.device,
-                glob.instance);
-
-  glfwTerminate();
+  TestCleanup (glob); 
   
   return 0;
 }

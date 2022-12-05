@@ -27,7 +27,7 @@ bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const 
 
   return true;
 }
-// ---------------------------------------------------------------------
+ // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModules (
@@ -43,7 +43,7 @@ bool rokz::CreateShaderModules (
   shader_stage_create_infos.resize (2);
   
   // VERT SHADER 
-  printf ("[2] B4 VERT %s:%i\n", __FUNCTION__, __LINE__); 
+  printf ("[2] B4 VERT %s:\n", __FUNCTION__, __LINE__); 
   std::filesystem::path vert_file_path  =  fspath / "data/shader/basic3D_vert.spv" ;
 
   if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device))
