@@ -7,13 +7,36 @@
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateImage (Image& image, const VkImageCreateInfo& ci, const VkDevice& device) {
-  
+bool rokz::CreateImage (Image& image, const VkImageCreateInfo& ci, const VkDevice& device, const VkPhysicalDevice& physdev) {
+  printf ("%s\n", __FUNCTION__);  
+
   if (vkCreateImage (device, &ci, nullptr, &image.handle) != VK_SUCCESS) {
     printf ("failed to create image!");
     return false;
   }
 
+
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(device, image.handle, &mem_reqs);
+
+  image.alloc_info = {};
+  image.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  image.alloc_info.allocationSize = mem_reqs.size;
+  rokz::FindMemoryType (image.alloc_info.memoryTypeIndex,
+                        mem_reqs.memoryTypeBits,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                        physdev);
+
+  if (vkAllocateMemory(device, &image.alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
+    printf ("[FAILED] %s allocate image memory", __FUNCTION__);
+    return false;
+  }
+
+  if (VK_SUCCESS != vkBindImageMemory (device, image.handle, image.mem, 0)) {
+    printf ("[FAILED] %s bind memory\n", __FUNCTION__);
+    return false; 
+  }
+  
   return true; 
 }
 
@@ -21,6 +44,8 @@ bool rokz::CreateImage (Image& image, const VkImageCreateInfo& ci, const VkDevic
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
+
+  printf ("%s\n", __FUNCTION__);  
 
   if (vkCreateImageView (device, &ci, nullptr, &iv.handle) != VK_SUCCESS) {
     printf ("[FAILED] %s  create image view!", __FUNCTION__);
@@ -33,13 +58,16 @@ bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, cons
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, const Image& image, VkFormat format) {
+VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, const Image& image) {
+
+  printf ("%s\n", __FUNCTION__);  
 
   ci = {}; 
-  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  ci.image = image.handle;
+  ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.image    = image.handle;
   ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.format = format;
+  ci.format   = image.ci.format; 
+
   ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   ci.subresourceRange.baseMipLevel = 0;
   ci.subresourceRange.levelCount = 1;
@@ -53,6 +81,8 @@ VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, const Image& image
 //
 // ---------------------------------------------------------------------
 bool rokz::AllocateImageMemory (Image& image, const VkImageCreateInfo& ci, const VkPhysicalDevice& physdev, const VkDevice& device) {
+
+  printf ("%s\n", __FUNCTION__);  
 
   VkMemoryRequirements mem_reqs;
   vkGetImageMemoryRequirements(device, image.handle, &mem_reqs);
@@ -128,6 +158,9 @@ void rokz::Destroy (ImageView& iv, const VkDevice& device) {
 // ---------------------------------------------------------------------
 VkImageCreateInfo& rokz::Init_2D_device ( VkImageCreateInfo& ci, uint32_t wd, uint32_t ht) {
 
+   printf ("%s\n", __FUNCTION__);  
+
+  ci = {}; 
   ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType     = VK_IMAGE_TYPE_2D;
   ci.extent.width  = wd;

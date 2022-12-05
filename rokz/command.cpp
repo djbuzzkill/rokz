@@ -88,13 +88,14 @@ void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::TransitionImageLayout (VkImage image, VkFormat _format,
+void rokz::TransitionImageLayout (VkImage image, VkFormat format,
                             const VkImageLayout& old_layout,
                             const VkImageLayout& new_layout,
                             const VkQueue&       queue,
                             const VkCommandPool& command_pool,
                             const VkDevice&      device) {
 
+  (void) format; // <-- for now
 
   VkCommandBuffer command_buffer  = BeginCommandList (command_pool, device); 
 
@@ -154,12 +155,15 @@ void  rokz::CopyBuffer (rokz::BufferStruc&       dst,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::CopyBufferToImage (VkImage& image,
-                        const VkBuffer buffer,
-                        uint32_t width, uint32_t height, 
-                        const VkQueue&       queue,
-                        const VkCommandPool& command_pool,
-                        const VkDevice&      device) {
+void rokz::CopyBufferToImage (VkImage&          image,
+                              const VkBuffer    buffer,
+                              uint32_t width,   uint32_t height, 
+                              const VkQueue&       queue,
+                              const VkCommandPool& command_pool,
+                              const VkDevice&      device) {
+
+  printf ("%s\n", __FUNCTION__); 
+
   VkCommandBuffer  command_buffer  = BeginCommandList (command_pool, device); 
 
   VkBufferImageCopy region{};

@@ -8,6 +8,8 @@ bool rokz::CreateBuffer (BufferStruc&            buffstruc,
                          const VkDevice&         device,
                          const VkPhysicalDevice& physdev) {
 
+  printf ("%s\n", __FUNCTION__); 
+
   if (vkCreateBuffer (device, &buffstruc.create_info, nullptr, &buffstruc.handle) != VK_SUCCESS) {
     printf ("failed to create buffer!");
     return false; 
@@ -40,7 +42,9 @@ bool rokz::CreateBuffer (BufferStruc&            buffstruc,
 bool rokz::CreateByteBuffer_transfer (BufferStruc& buffer, uint32_t  numbytes, 
                                       const VkPhysicalDevice& physdev, 
                                       const VkDevice& device ) { 
+  printf ("%s\n", __FUNCTION__); 
   
+  buffer.create_info = {};
   buffer.create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   buffer.create_info.size        = numbytes; 
   buffer.create_info.usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;

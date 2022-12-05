@@ -297,22 +297,24 @@ void TestCleanup (Glob& glob) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupTestTexture (Glob& glob) {
+bool SetupTexture (Glob& glob) {
   
   printf ("%s \n", __FUNCTION__); 
 
-  rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
-  "/home/djbuzzkill/owenslake/data/textures/out"; 
+  //rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
+
+  //const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
+
+  //j"/home/djbuzzkill/owenslake/data/textures/out"; 
 
    const char*  test_image_files[] = { 
     "out_0_blue-texture-image-hd_rgba.png",
     "out_1_abstract-texture-3_rgba.png",
   };
 
-
    rokz::BufferStruc stage_image; 
 
-   const std::string fq_test_file; 
+   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
 
    ilInit ();
    ilBindImage (ilGenImage ());
@@ -325,9 +327,9 @@ bool SetupTestTexture (Glob& glob) {
    int image_type     = 0;
    int image_format   = 0;
 
-   
+   printf ("loading.. %s ", fq_test_file.c_str()); 
    if (ilLoadImage(fq_test_file.c_str())) {
-     
+     printf ("succeeded\n"); 
      image_width    = ilGetInteger (IL_IMAGE_WIDTH); 
      image_height   = ilGetInteger (IL_IMAGE_HEIGHT);
      image_depth    = ilGetInteger (IL_IMAGE_DEPTH);
@@ -348,19 +350,26 @@ bool SetupTestTexture (Glob& glob) {
 
      ILubyte* image_data = ilGetData (); 
      std::copy (image_data, image_data + image_size, reinterpret_cast<unsigned char*> (mapped));
+
      rokz::UnmapBuffer (stage_image, glob.device);
      ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
-     
-   } // LoadImage
+   }
+   else {
+     printf ("failed\n"); 
+   }// LoadImage
+
    ilShutDown ();
 
+   printf ("363\n"); 
+
+   
    rokz::Image& image = glob.texture_image; 
    rokz::Init_2D_device (image.ci, image_width, image_height);
-   if (rokz::CreateImage (image, image.ci, glob.device)) {
-     printf ("[FAILED] %s setup test texture", __FUNCTION__); 
+   if (!rokz::CreateImage (image, image.ci, glob.device, glob.physical_device)) {
+     printf ("[FAILED] %s setup test texture", __FUNCTION__);
+     return false;
    }
-
-
+   
    rokz::TransitionImageLayout (glob.texture_image.handle,
                                 VK_FORMAT_R8G8B8A8_SRGB,
                                 VK_IMAGE_LAYOUT_UNDEFINED,
@@ -369,15 +378,29 @@ bool SetupTestTexture (Glob& glob) {
                                 glob.command_pool,
                                 glob.device);
 
+   printf ("381\n"); 
    
-   rokz::CopyBufferToImage; // (stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+   rokz::CopyBufferToImage (glob.texture_image.handle, stage_image.handle, image_width, image_height,
+                            glob.queues.graphics,
+                            glob.command_pool,
+                            glob.device);
 
-
-
-   
+  
+   printf ("385\n"); 
    return true; 
 }
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+void SetupTextureImageView (Glob& glob) {
+
+  rokz::Init (glob.texture_imageview.ci, glob.texture_image);  
+
+  if (vkCreateImageView(glob.device, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle) != VK_SUCCESS) {
+    printf ("failed to create texture image view!");
+  }
+}
 
   
 // ---------------------------------------------------------------------
@@ -1048,11 +1071,10 @@ int test_rokz (const std::vector<std::string>& args) {
   // rokz::DescriptorPool           uniform_descriptor_pool;
   // rokz::DescriptorGroup          uniform_group; 
   //
-  SetupTestTexture (glob); 
-
+  SetupTexture (glob); 
+  SetupTextureImageView (glob); 
   
   SetupDescriptorPool (glob);
-
 
 
   SetupDescriptorSets (glob);  
