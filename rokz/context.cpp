@@ -839,14 +839,19 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
   }
   // begin command list
   VkRenderPassBeginInfo pass_info{};
-  VkClearValue clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}}; 
+
+  VkClearValue clear_values[2] = {};
+  clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  clear_values[1].depthStencil = {1.0f, 0};
+
+
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   pass_info.renderPass = render_pass.handle; 
   pass_info.framebuffer = framebuffer; 
   pass_info.renderArea.offset = {0, 0};
   pass_info.renderArea.extent = ext2d;
-  pass_info.clearValueCount = 1; 
-  pass_info.pClearValues = &clear_color; 
+  pass_info.clearValueCount = 2; 
+  pass_info.pClearValues = clear_values; 
 
   vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
 

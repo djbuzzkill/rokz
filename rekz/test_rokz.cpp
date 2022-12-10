@@ -341,6 +341,9 @@ void TestCleanup (Glob& glob) {
   rokz::Destroy (glob.descr_group, glob.device); 
   rokz::Destroy (glob.texture_imageview, glob.device);
   rokz::Destroy (glob.texture_image, glob.device);
+
+  rokz::Destroy (glob.depth_image, glob.device); 
+  rokz::Destroy (glob.depth_imageview, glob.device); 
   
   rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
                 glob.vertex_buffer_device, // glob.vertex_buffer_user, 
@@ -441,13 +444,24 @@ bool SetupTexture (Glob& glob) {
                                 glob.queues.graphics,
                                 glob.command_pool,
                                 glob.device);
- 
+
+  
    rokz::CopyBufferToImage (glob.texture_image.handle, stage_image.handle, image_width, image_height,
                             glob.queues.graphics,
                             glob.command_pool,
                             glob.device);
 
-  
+   rokz::TransitionImageLayout (glob.texture_image.handle,
+                                VK_FORMAT_R8G8B8A8_SRGB,
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                glob.queues.graphics,
+                                glob.command_pool,
+                                glob.device);
+
+
+
+   
    DestroyBuffer (stage_image, glob.device); 
 
    printf ("385\n"); 
@@ -1150,49 +1164,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   SetupDescriptorSets (glob);  
 
-
-  // void createTextureImageView() {
-  //   textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
-  // }
-  
-  // std::vector<VkDescriptorSetLayout> 
-  //   uniform_desc_layouts (kMaxFramesInFlight, glob.uniform_group.set_layout.handle);
-  //   // use same layout for both allocations
-  
-  // glob.uniform_group.alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  // glob.uniform_group.alloc_info.descriptorPool     = glob.uniform_descriptor_pool.handle; 
-  // glob.uniform_group.alloc_info.descriptorSetCount = static_cast<uint32_t>(kMaxFramesInFlight);
-  // glob.uniform_group.alloc_info.pSetLayouts        = uniform_desc_layouts .data();
-  
-  // //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
-
-  // rokz::AllocateDescriptorSets (glob.uniform_group.sets,
-  //                               glob.uniform_group.alloc_info,
-  //                               kMaxFramesInFlight,
-  //                               glob.device); 
-  
-  // for (size_t i = 0; i < kMaxFramesInFlight; i++) {
-  //   // wtf does this do
-  //   VkDescriptorBufferInfo buffer_info{};
-  //   buffer_info.buffer = glob.uniform_buffers[0].handle;
-  //   buffer_info.offset = 0;
-  //   buffer_info.range = kSizeOf_StandardTransform3D;
-
-  //   VkWriteDescriptorSet descriptor_write {};
-  //   descriptor_write.sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  //   descriptor_write.dstSet           = glob.uniform_group.sets[i];
-  //   descriptor_write.dstBinding       = 0;
-  //   descriptor_write.dstArrayElement  = 0;
-  //   descriptor_write.descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  //   descriptor_write.descriptorCount  = 1;
-
-  //   descriptor_write.pBufferInfo      = &buffer_info;
-  //   descriptor_write.pImageInfo       = nullptr; // Optional
-  //   descriptor_write.pTexelBufferView = nullptr; // Optional}
-
-  //   vkUpdateDescriptorSets (glob.device, 1, &descriptor_write, 0, nullptr);
-  // }
-  
+ 
   
   // items per frames 
   glob.command_buffer.resize (kMaxFramesInFlight);
@@ -1225,7 +1197,7 @@ int test_rokz (const std::vector<std::string>& args) {
   bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int        countdown  = 60; 
+  int        countdown  = 60;
 
   //
   auto t0 = std::chrono::high_resolution_clock::now(); 
