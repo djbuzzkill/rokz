@@ -100,6 +100,18 @@ namespace rokz {
   bool                  FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
   std::vector<const char*>& GetRequiredExtensionNames   (std::vector<const char*>&  exts); 
 
+
+  bool FindSupportedFormat  (VkFormat& out, const std::vector<VkFormat>& candidates,
+                             VkImageTiling tiling,
+                             VkFormatFeatureFlags features, 
+                             const VkPhysicalDevice& physdev);
+
+  bool FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev);
+
+  bool HasStencilComponent(VkFormat format);
+
+
+  
 }
 
 

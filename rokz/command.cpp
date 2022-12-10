@@ -6,6 +6,12 @@
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
+   bool has_stencil_component(VkFormat format) {
+        return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+    }
+
+
+
 VkImageMemoryBarrier& transition_barrier_mask (
     VkPipelineStageFlags& dst_stage,
     VkPipelineStageFlags& src_stage,
@@ -13,6 +19,17 @@ VkImageMemoryBarrier& transition_barrier_mask (
     VkImageLayout new_layout,
     VkImageLayout old_layout) {
 
+  // if (new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+  //   barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+  //   if (hasStencilComponent(format)) {
+  //     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+  //   }
+  // } else {
+  //   barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  // }
+
+  
   if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
     barrier.srcAccessMask = 0;
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -26,6 +43,15 @@ VkImageMemoryBarrier& transition_barrier_mask (
 
     dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+  }
+
+  else if ( old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    dst_stage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
   }
   else {
      printf ("[ERROR] unknown layout transition\n");

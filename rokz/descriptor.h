@@ -54,6 +54,11 @@ namespace rokz {
                                uint32_t num_sets,
                                const VkDevice &device); 
 
+
+  void Destroy (DescriptorPool& dsl, const VkDevice& device) ;
+  void Destroy (DescriptorSetLayout& dsl, const VkDevice& device) ;
+  void Destroy (DescriptorGroup& dg, const VkDevice& device) ;
+  
 }
 
 

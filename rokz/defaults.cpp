@@ -114,6 +114,12 @@ VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCrea
 // ---------------------------------------------------------------------
 VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCreateInfo& ci) {
   ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  ci.depthTestEnable = VK_TRUE;
+  ci.depthWriteEnable = VK_TRUE;
+  ci.depthCompareOp = VK_COMPARE_OP_LESS;
+  ci.depthBoundsTestEnable = VK_FALSE;
+  ci.stencilTestEnable = VK_FALSE;
   return ci; 
 }
 
@@ -181,9 +187,6 @@ VkSwapchainCreateInfoKHR& rokz::Default (VkSwapchainCreateInfoKHR& create_info) 
   return create_info;
 }
 
-VkImageViewCreateInfo& rokz::Default (VkImageViewCreateInfo& create_info) {
-  return create_info;
-} 
 
 VkRenderPassCreateInfo& rokz::Default (VkRenderPassCreateInfo& create_info) {
   return create_info;

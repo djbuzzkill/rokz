@@ -5,39 +5,110 @@
 
 
 // ---------------------------------------------------------------------
-//
+// default values for device image
 // ---------------------------------------------------------------------
-bool rokz::CreateImage (Image& image, const VkImageCreateInfo& ci, const VkDevice& device, const VkPhysicalDevice& physdev) {
+VkImageCreateInfo& rokz::Init_2D_device ( VkImageCreateInfo& ci,
+                                          VkImageUsageFlags usage,
+                                          uint32_t wd, uint32_t ht) {
   printf ("%s\n", __FUNCTION__);  
 
-  if (vkCreateImage (device, &ci, nullptr, &image.handle) != VK_SUCCESS) {
-    printf ("failed to create image!");
+  ci = {}; 
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent.width  = wd;
+  ci.extent.height = ht;
+  ci.extent.depth  = 1;
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = 1;
+  ci.format        = VK_FORMAT_R8G8B8A8_SRGB;
+  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage         = usage; // VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
+  ci.samples       = VK_SAMPLE_COUNT_1_BIT;
+  ci.flags         = 0; 
+
+  return ci; 
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateImage (Image& image, const VkDevice& device) {
+  printf ("%s\n", __FUNCTION__);  
+
+  if (vkCreateImage (device, &image.ci, nullptr, &image.handle) != VK_SUCCESS) {
+    printf ("[FAILED] %s create image\n", __FUNCTION__);
     return false;
-  }
-
-
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, image.handle, &mem_reqs);
-
-  image.alloc_info = {};
-  image.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  image.alloc_info.allocationSize = mem_reqs.size;
-  rokz::FindMemoryType (image.alloc_info.memoryTypeIndex,
-                        mem_reqs.memoryTypeBits,
-                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                        physdev);
-
-  if (vkAllocateMemory(device, &image.alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
-    printf ("[FAILED] %s allocate image memory", __FUNCTION__);
-    return false;
-  }
-
-  if (VK_SUCCESS != vkBindImageMemory (device, image.handle, image.mem, 0)) {
-    printf ("[FAILED] %s bind memory\n", __FUNCTION__);
-    return false; 
   }
   
   return true; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkMemoryAllocateInfo& rokz::Init (VkMemoryAllocateInfo& alloc_info, VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev) {
+
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(device, image, &mem_reqs);
+ 
+  alloc_info = {};
+  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  alloc_info.allocationSize = mem_reqs.size;
+  rokz::FindMemoryType (alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+                        prop_flags, physdev);
+
+  return alloc_info; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
+
+  printf ("%s\n", __FUNCTION__);  
+
+  if (vkAllocateMemory (device, &image.alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
+    printf ("[FAILED] %s allocate memory\n", __FUNCTION__);
+    return false; 
+  }
+
+  if (VK_SUCCESS != vkBindImageMemory (device, image.handle, image.mem, 0)) {
+
+      printf ("[FAILED] %s bind memory\n", __FUNCTION__);
+      return false; 
+    }
+  
+  return true; 
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
+
+  printf ("%s\n", __FUNCTION__);  
+
+  ci = {}; 
+  ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.image    = image.handle;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  ci.format   = image.ci.format; 
+  ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+  ci.subresourceRange.aspectMask = aspect_flags; 
+  ci.subresourceRange.baseMipLevel = 0;
+  ci.subresourceRange.levelCount = 1;
+  ci.subresourceRange.baseArrayLayer = 0;
+  ci.subresourceRange.layerCount = 1;
+  
+  return ci; 
 }
 
 // ---------------------------------------------------------------------
@@ -55,58 +126,7 @@ bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, cons
   return true; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, const Image& image) {
 
-  printf ("%s\n", __FUNCTION__);  
-
-  ci = {}; 
-  ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  ci.image    = image.handle;
-  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.format   = image.ci.format; 
-
-  ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  ci.subresourceRange.baseMipLevel = 0;
-  ci.subresourceRange.levelCount = 1;
-  ci.subresourceRange.baseArrayLayer = 0;
-  ci.subresourceRange.layerCount = 1;
-  
-  return ci; 
-}
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::AllocateImageMemory (Image& image, const VkImageCreateInfo& ci, const VkPhysicalDevice& physdev, const VkDevice& device) {
-
-  printf ("%s\n", __FUNCTION__);  
-
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, image.handle, &mem_reqs);
-
-  VkMemoryAllocateInfo alloc_info {};
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.allocationSize = mem_reqs.size;
-  rokz::FindMemoryType (alloc_info.memoryTypeIndex,
-                        mem_reqs.memoryTypeBits,
-                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                        physdev);
-
-  if (vkAllocateMemory(device, &alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
-    throw std::runtime_error("failed to allocate image memory!");
-  }
-
-  if (VK_SUCCESS != vkBindImageMemory (device, image.handle, image.mem, 0)) {
-
-      printf ("[FAILED] %s bind memory\n", __FUNCTION__);
-      return false; 
-    }
-  
-  return true; 
-}
 
 
 // --------------------------------------------------------------------
@@ -126,55 +146,4 @@ void rokz::Destroy (ImageView& iv, const VkDevice& device) {
 
     vkDestroyImageView(device, iv.handle, nullptr);
 
-}
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-// VkImageCreateInfo& Init (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht, uint32_t dp){
-
-//   ci = {};
-//   ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-//   ci.imageType     = VK_IMAGE_TYPE_2D;
-//   ci.extent.width  = wd;
-//   ci.extent.height = ht;
-//   ci.extent.depth  = dp;
-//   ci.mipLevels     = 1;
-//   ci.arrayLayers   = 1;
-
-//   ci.format = VK_FORMAT_R8G8B8A8_SRGB;
-//   ci.tiling = VK_IMAGE_TILING_OPTIMAL;
-//   ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//   ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-//   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//   ci.samples = VK_SAMPLE_COUNT_1_BIT;
-//   ci.flags = 0; 
-//   return ci; 
-// }
-
-
-// ---------------------------------------------------------------------
-// default values for device image
-// ---------------------------------------------------------------------
-VkImageCreateInfo& rokz::Init_2D_device ( VkImageCreateInfo& ci, uint32_t wd, uint32_t ht) {
-
-   printf ("%s\n", __FUNCTION__);  
-
-  ci = {}; 
-  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  ci.imageType     = VK_IMAGE_TYPE_2D;
-  ci.extent.width  = wd;
-  ci.extent.height = ht;
-  ci.extent.depth  = 1;
-  ci.mipLevels     = 1;
-  ci.arrayLayers   = 1;
-  ci.format        = VK_FORMAT_R8G8B8A8_SRGB;
-  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
-  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  ci.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
-  ci.samples       = VK_SAMPLE_COUNT_1_BIT;
-  ci.flags         = 0; 
-
-  return ci; 
 }

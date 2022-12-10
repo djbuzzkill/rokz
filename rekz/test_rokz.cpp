@@ -1,3 +1,4 @@
+
 #include "rekz.h"              // 
 // #include "rokz/defaults.h"
 // //#include "rokz/rokz_funcs.h"
@@ -18,7 +19,7 @@ const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; //
 // --------------------------------------------------------------------
 struct Vertex_simple {
 
-  glm::vec2 pos; 
+  glm::vec3 pos; 
   glm::vec3 col; 
   glm::vec2 txc0; 
 
@@ -38,20 +39,20 @@ const VkVertexInputBindingDescription kSimpleVertexBindingDesc =  {
 // --------------------------------------------------------------------
 const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc =  {
 
-  VkVertexInputAttributeDescription {
-    0,                             //  .location 
-    0,                             //  .binding  
-    VK_FORMAT_R32G32_SFLOAT,       //  .format   
-    offsetof(Vertex_simple, pos),  //  .offset   
+  VkVertexInputAttributeDescription { // pos
+    0,                             // .location 
+    0,                             // .binding  
+    VK_FORMAT_R32G32B32_SFLOAT,    // .format   
+    offsetof(Vertex_simple, pos),  // .offset   
   },
-  VkVertexInputAttributeDescription {
-    1,                             //
+  VkVertexInputAttributeDescription { // color
+    1,                              
     0, 
     VK_FORMAT_R32G32B32_SFLOAT,
     offsetof(Vertex_simple, col), 
   },
-  VkVertexInputAttributeDescription {
-    2,                             //
+  VkVertexInputAttributeDescription { // tex coord
+    2,                             
     0, 
     VK_FORMAT_R32G32_SFLOAT,
     offsetof(Vertex_simple, txc0), 
@@ -63,14 +64,21 @@ const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc
 //
 // --------------------------------------------------------------------
 const Vertex_simple simple_verts[] = {
-  {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-  {{ 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-  {{ 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-  {{-0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+    {{-0.7f, -0.7f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{ 0.7f, -0.7f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{ 0.7f,  0.7f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.7f,  0.7f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+    {{ 0.0f, -1.0f, 0.2f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+    {{ 1.0f,  0.0f, 0.2f}, {0.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+    {{ 0.0f,  1.0f, 0.2f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{ -1.0f, 0.0f, 0.2f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 
+
 const uint16_t simple_indices[] = {
-    0, 1, 2, 2, 3, 0
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4
 };
 
 struct StandardTransform3D {
@@ -145,6 +153,9 @@ struct Glob {
   std::vector<VkFramebuffer>   swapchain_framebuffers;
   //std::vector<VkShaderModule>  shader_modules; 
 
+  rokz::Image                  depth_image;
+  rokz::ImageView              depth_imageview; 
+  
   std::vector<rokz::ShaderModule>  shader_modules; 
 
   VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
@@ -206,6 +217,51 @@ struct Glob {
 
 
 
+//
+void SetupDepthBuffer (Glob& glob) {
+
+ uint32_t wd = glob.create_info.swapchain.imageExtent.width; 
+ uint32_t ht = glob.create_info.swapchain.imageExtent.height;   
+ printf ("265 [%s]\n", __FUNCTION__); 
+
+  VkFormat depth_format;
+
+  if (rokz::FindDepthFormat (depth_format, glob.physical_device)) {
+
+ 
+    rokz::Init_2D_device (glob.depth_image.ci, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, wd, ht); 
+
+    glob.depth_image.ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    glob.depth_image.ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    rokz::CreateImage (glob.depth_image, glob.device);
+    // (swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+    rokz::Init (glob.depth_image.alloc_info,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                glob.depth_image.handle,
+                glob.device, glob.physical_device);
+
+    rokz::AllocateImageMemory (glob.depth_image,  glob.device); 
+
+    //VK_IMAGE_ASPECT_COLOR_BIT
+
+    rokz::Init (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
+    rokz::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device);
+    printf ("280 [%s]\n", __FUNCTION__); 
+
+
+    rokz::TransitionImageLayout; 
+    //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+    
+  } 
+
+  printf ("284 [%s]\n", __FUNCTION__); 
+  
+  // Glob::depth_image;
+  // Glob::depth_imageview; 
+  
+}
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -280,6 +336,12 @@ void TestCleanup (Glob& glob) {
 
   rokz::Destroy (glob.sampler, glob.device); 
 
+
+  rokz::Destroy (glob.descr_pool, glob.device); 
+  rokz::Destroy (glob.descr_group, glob.device); 
+  rokz::Destroy (glob.texture_imageview, glob.device);
+  rokz::Destroy (glob.texture_image, glob.device);
+  
   rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
                 glob.vertex_buffer_device, // glob.vertex_buffer_user, 
                 glob.surface,
@@ -297,24 +359,19 @@ void TestCleanup (Glob& glob) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
+
 bool SetupTexture (Glob& glob) {
   
   printf ("%s \n", __FUNCTION__); 
-
   //rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
-
-  //const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
-
-  //j"/home/djbuzzkill/owenslake/data/textures/out"; 
-
-   const char*  test_image_files[] = { 
+  const char*  test_image_files[] = { 
     "out_0_blue-texture-image-hd_rgba.png",
     "out_1_abstract-texture-3_rgba.png",
   };
 
    rokz::BufferStruc stage_image; 
-
-   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
+   //   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
+   const std::string fq_test_file = data_root + "/texture/out_0_blue-texture-image-hd_rgba.png";  
 
    ilInit ();
    ilBindImage (ilGenImage ());
@@ -358,18 +415,25 @@ bool SetupTexture (Glob& glob) {
      printf ("failed\n"); 
    }// LoadImage
 
+   
    ilShutDown ();
 
-   printf ("363\n"); 
-
-   
    rokz::Image& image = glob.texture_image; 
-   rokz::Init_2D_device (image.ci, image_width, image_height);
-   if (!rokz::CreateImage (image, image.ci, glob.device, glob.physical_device)) {
+   rokz::Init_2D_device (image.ci, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, image_width, image_height);
+
+   if (!rokz::CreateImage (image, glob.device)) {
      printf ("[FAILED] %s setup test texture", __FUNCTION__);
      return false;
    }
-   
+
+   rokz::Init (image.alloc_info, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+               image.handle, glob.device, glob.physical_device); 
+
+   if (!rokz::AllocateImageMemory (image, glob.device)) {
+     printf ("[FAILED] %s allocate memory\n", __FUNCTION__); 
+     return false; 
+   }
+
    rokz::TransitionImageLayout (glob.texture_image.handle,
                                 VK_FORMAT_R8G8B8A8_SRGB,
                                 VK_IMAGE_LAYOUT_UNDEFINED,
@@ -377,15 +441,15 @@ bool SetupTexture (Glob& glob) {
                                 glob.queues.graphics,
                                 glob.command_pool,
                                 glob.device);
-
-   printf ("381\n"); 
-   
+ 
    rokz::CopyBufferToImage (glob.texture_image.handle, stage_image.handle, image_width, image_height,
                             glob.queues.graphics,
                             glob.command_pool,
                             glob.device);
 
   
+   DestroyBuffer (stage_image, glob.device); 
+
    printf ("385\n"); 
    return true; 
 }
@@ -395,10 +459,9 @@ bool SetupTexture (Glob& glob) {
 // ---------------------------------------------------------------------
 void SetupTextureImageView (Glob& glob) {
 
-  rokz::Init (glob.texture_imageview.ci, glob.texture_image);  
-
+  rokz::Init (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
   if (vkCreateImageView(glob.device, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle) != VK_SUCCESS) {
-    printf ("failed to create texture image view!");
+    printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
   }
 }
 
@@ -675,12 +738,12 @@ void UpdateUniformBuffer (Glob& glob, uint32_t current_frame, double dt) {
 
   float sim_timef = glob.sim_time;
   
-  float asp =  (float)glob.create_info.swapchain.imageExtent.width /  (float)glob.create_info.swapchain.imageExtent.height;
+  float asp = (float)glob.create_info.swapchain.imageExtent.width / (float)glob.create_info.swapchain.imageExtent.height;
     
   StandardTransform3D mats; 
-  mats.model = glm::rotate(glm::mat4(1.0f), sim_timef * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-  mats.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 0.1f, 10.0f);
+  mats.model = glm::rotate(glm::mat4(1.0f), sim_timef * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  mats.view  = glm::lookAt(glm::vec3(0.0f, 1.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
   mats.proj[1][1] *= -1;
  
   memcpy (glob.uniform_mapped_pointers[current_frame], &mats, kSizeOf_StandardTransform3D); 
@@ -770,7 +833,8 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
     return rokz::RecreateSwapchain (
         glob.swapchain, glob.create_info.swapchain, glob.swapchain_images,
         glob.swapchain_framebuffers, glob.create_info.framebuffers,
-        glob.render_pass, glob.swapchain_imageviews, glob.surface,
+        glob.render_pass, glob.swapchain_imageviews,
+        glob.depth_imageview.handle, glob.surface,
         glob.physical_device, glob.device, glob.glfwin);
   } 
   else if (acquire_res != VK_SUCCESS) {
@@ -781,23 +845,21 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   
   vkResetFences (glob.device, 1, &syncs[curr_frame].in_flight_fen);
 
-
   UpdateUniformBuffer (glob, curr_frame, dt); 
 
   
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
-                            glob.pipeline,
-                            glob.descr_group.sets[curr_frame], 
-                            glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
-                            glob.index_buffer_device.handle,
-                            glob.create_info.swapchain.imageExtent,
-                            glob.swapchain_framebuffers[image_index],
-                            glob.render_pass,
+                                     glob.pipeline,
+                                     glob.descr_group.sets[curr_frame], 
+                                     glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
+                                     glob.index_buffer_device.handle,
+                                     glob.create_info.swapchain.imageExtent,
+                                     glob.swapchain_framebuffers[image_index],
+                                     glob.render_pass,
                                      glob.device);
 
-  //bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer &command_buffer,
 
   
   VkSubmitInfo submit_info {};
@@ -901,7 +963,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   rokz::CreateRenderPass (glob.render_pass,
                           glob.create_info.swapchain.imageFormat,
-                          glob.device);
+                          glob.device, glob.physical_device);
 
 
   SetupShaderModules (glob, rokz_path);
@@ -920,7 +982,6 @@ int test_rokz (const std::vector<std::string>& args) {
   //     glob.create_info,
   //     glob.create_info.swapchain.imageExtent,
   //     glob.device);
-  CreateGraphicsPipelineLayout_defaults;
   //glob.create_info.swapchain.imageExtent.width;
   rokz::Init (glob.viewport,
               glob.create_info.swapchain.imageExtent.width,
@@ -972,16 +1033,19 @@ int test_rokz (const std::vector<std::string>& args) {
     &sci.viewport_state, //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
     &sci.rasterizer, //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
     &sci.multisampling, //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-    nullptr, // &ci.depth_stencil_state,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+    &sci.depthstencil,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
     &sci.colorblend, //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
     &sci.dynamic_state,//const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
     glob.device);    //const VkDevice                           b          device)
 
+  
+  SetupDepthBuffer (glob);  
   rokz::CreateFramebuffers (glob.swapchain_framebuffers,
                             glob.create_info.framebuffers,
                             glob.render_pass,
                             glob.create_info.swapchain.imageExtent,
                             glob.swapchain_imageviews,
+                            glob.depth_imageview.handle,
                             glob.device); 
 
   rokz::CreateCommandPool (glob.command_pool,
@@ -990,12 +1054,14 @@ int test_rokz (const std::vector<std::string>& args) {
                            glob.device);
 
 
+
+  
   rokz::BufferStruc vb_transfer; 
   rokz::CreateVertexBuffer_transfer (vb_transfer,  
-                            sizeof(Vertex_simple),
-                            sizeof(simple_verts) / sizeof(Vertex_simple),
-                            glob.device, 
-                            glob.physical_device); 
+                                     sizeof(Vertex_simple),
+                                     8, //sizeof(simple_verts) / sizeof(Vertex_simple),
+                                     glob.device, 
+                                     glob.physical_device); 
   
 
   void* transfer_ptr = nullptr; 
@@ -1003,7 +1069,8 @@ int test_rokz (const std::vector<std::string>& args) {
     memcpy (transfer_ptr, simple_verts,  sizeof(simple_verts) ); 
     rokz::UnmapBuffer (vb_transfer, glob.device); 
   }
-
+  transfer_ptr = nullptr;
+ 
   // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
   //                           sizeof(Vertex_simple),
   //                           sizeof(simple_verts) / sizeof(Vertex_simple),
@@ -1015,10 +1082,10 @@ int test_rokz (const std::vector<std::string>& args) {
   //                              sizeof(simple_verts),
   //                              glob.device); 
   rokz::CreateVertexBuffer_device (glob.vertex_buffer_device, 
-                            sizeof(Vertex_simple),
-                            sizeof(simple_verts) / sizeof(Vertex_simple),
-                            glob.device, 
-                            glob.physical_device); 
+                                   sizeof(Vertex_simple),
+                                   8, // sizeof(simple_verts) / sizeof(Vertex_simple),
+                                   glob.device, 
+                                   glob.physical_device); 
 
   // TransferToDevice 
   rokz::MoveToBuffer_XB2DB  (glob.vertex_buffer_device, // device buffer
@@ -1034,18 +1101,19 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::BufferStruc ib_transfer;
   rokz::CreateIndexBuffer_transfer (ib_transfer,
                                     VK_INDEX_TYPE_UINT16,
-                                    6,
+                                    12,
                                     glob.device,
                                     glob.physical_device); 
 
   if (rokz::MapBuffer ( &transfer_ptr, ib_transfer, glob.device)) {
-    memcpy (transfer_ptr, simple_indices,  sizeof(simple_indices) ); 
+    printf ("sizeof simple_indices=%zu\n", sizeof(simple_indices)); 
+    memcpy (transfer_ptr, simple_indices, sizeof(simple_indices) ); 
     rokz::UnmapBuffer (ib_transfer, glob.device); 
   }
 
   rokz::CreateIndexBuffer_device (glob.index_buffer_device,
                                   VK_INDEX_TYPE_UINT16,
-                                  6,
+                                  12,
                                   glob.device,
                                   glob.physical_device); 
 
@@ -1073,6 +1141,9 @@ int test_rokz (const std::vector<std::string>& args) {
   //
   SetupTexture (glob); 
   SetupTextureImageView (glob); 
+
+
+
   
   SetupDescriptorPool (glob);
 
@@ -1222,8 +1293,9 @@ int  test_time () {
   size_t curr_frame = 0;   
   auto t0 = std::chrono::high_resolution_clock::now(); 
   auto then = t0; 
-  int countdown = 720; 
 
+
+  int countdown = 30; 
 
   double counter_f64 = 0.0;
   

@@ -208,6 +208,8 @@ bool rokz::MoveToBuffer_XB2DB  (BufferStruc& buff_dst, // device buffer
   VkBufferCopy copy_desc{};
   copy_desc.srcOffset = 0; 
   copy_desc.dstOffset = 0; 
+  printf (" ____ copy_desc.size = %zu\n", size); 
+
   copy_desc.size = size;
 
   vkCmdCopyBuffer(cmdbuf, buff_src.handle, buff_dst.handle, 1, &copy_desc);

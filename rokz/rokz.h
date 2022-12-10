@@ -13,6 +13,7 @@
 #include "command.h"
 #include "buffer.h"
 #include "image.h"
+#include "descriptor.h"
 #include "shader.h"
 #include "texture.h"
 #include "uniform.h"

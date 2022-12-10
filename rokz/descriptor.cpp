@@ -57,3 +57,20 @@ bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSe
 //                                 VkDescriptorSetLayoutCreateInfo&    ci,
 //                                 const VkDescriptorSetLayoutBinding& binding,
 //                                 const VkDevice&                     device) {
+
+void rokz::Destroy (DescriptorPool& dsl, const VkDevice& device) {
+  vkDestroyDescriptorPool(device, dsl.handle, nullptr);
+  
+}
+
+void rokz::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
+
+  vkDestroyDescriptorSetLayout (device, dsl.handle, nullptr);
+}
+
+
+void rokz::Destroy (DescriptorGroup& dg, const VkDevice& device) {
+
+  Destroy (dg.set_layout, device); 
+}
+  

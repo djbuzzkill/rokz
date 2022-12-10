@@ -317,3 +317,47 @@ bool rokz::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryP
   printf ("[%s] find memory type failed", __FUNCTION__);
   return false; 
 }
+
+
+//
+bool rokz::FindSupportedFormat  (VkFormat& out, const std::vector<VkFormat>& candidates,
+                           VkImageTiling tiling,
+                           VkFormatFeatureFlags features, 
+                           const VkPhysicalDevice& physdev) {
+
+
+  for (VkFormat format : candidates) {
+    VkFormatProperties props;
+    vkGetPhysicalDeviceFormatProperties(physdev, format, &props);
+
+    if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+      out = format;
+      return true;
+
+    } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+      out = format;
+      return true; 
+    }  
+  }
+
+  printf ("[FAILED] %s find supported format", __FUNCTION__);
+  return false; 
+}
+
+bool rokz::FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev) {
+
+  std::vector<VkFormat> candidates = 
+    {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
+  
+  return  FindSupportedFormat  ( outfmt,
+                                 candidates,
+                                 VK_IMAGE_TILING_OPTIMAL,
+                                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+                                 physdev) ; 
+  
+}
+
+
+bool rokz::HasStencilComponent(VkFormat format) {
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
