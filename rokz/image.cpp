@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------
 VkImageCreateInfo& rokz::Init_2D_device ( VkImageCreateInfo& ci,
                                           VkImageUsageFlags usage,
+                                          VkSampleCountFlagBits num_samples, 
                                           uint32_t wd, uint32_t ht) {
   printf ("%s\n", __FUNCTION__);  
 
@@ -20,12 +21,12 @@ VkImageCreateInfo& rokz::Init_2D_device ( VkImageCreateInfo& ci,
   ci.extent.depth  = 1;
   ci.mipLevels     = 1;
   ci.arrayLayers   = 1;
-  ci.format        = VK_FORMAT_R8G8B8A8_SRGB;
+  ci.format        = VK_FORMAT_B8G8R8A8_SRGB; // VK_FORMAT_R8G8B8A8_SRGB;
   ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
   ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
   ci.usage         = usage; // VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
   ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
-  ci.samples       = VK_SAMPLE_COUNT_1_BIT;
+  ci.samples       = num_samples;
   ci.flags         = 0; 
 
   return ci; 

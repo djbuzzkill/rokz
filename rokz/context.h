@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "buffer.h"
+#include "image.h"
 #include "shader.h"
 #include "descriptor.h"
 #include "defaults.h"
@@ -23,7 +24,7 @@ namespace rokz {
     enum AttachmentIndex {
       COLOR = 0, 
       DEPTHSTENCIL = 1, 
-      UNUSED_1 = 2,
+      CORESOLV = 2,
       UNUSED_2 = 3,
       ATTACHMENT_INDEX_MAX
     }; 
@@ -99,7 +100,14 @@ namespace rokz {
                                         std::vector<VkFramebufferCreateInfo>& create_infos,
                                         RenderPass&                           render_pass, 
                                         std::vector<VkImageView>&             image_views, 
-                                        VkImageView&                          depth_imageview, 
+
+                                        Image&      depth_image, 
+                                        ImageView&  depth_imageview,
+
+                                        Image&      multisamp_color_image, 
+                                        ImageView&  multisamp_color_imageview,
+
+
                                         VkSurfaceKHR&                         surf,
                                         VkPhysicalDevice&                     physdev,
                                         VkDevice& dev, GLFWwindow*            glfwin); 
@@ -112,8 +120,14 @@ namespace rokz {
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
   bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
-  bool               CreateRenderPass (RenderPass &render_pass, VkFormat swapchain_format, const VkDevice &device, const VkPhysicalDevice& physdev);
+  bool               CreateRenderPass (RenderPass&             render_pass,
+                                       VkFormat                swapchain_format,
+                                       VkSampleCountFlagBits   msaa_samples, 
+                                       const VkDevice &device, const VkPhysicalDevice& physdev);
 
+
+
+  
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -128,6 +142,7 @@ namespace rokz {
                            const RenderPass&                   render_pass, 
                            const VkExtent2D                      swapchain_ext, 
                            const std::vector<VkImageView>&       image_views, 
+                           const VkImageView&                    msaa_color_imageview, 
                            const VkImageView&                    depth_imageview, 
                            const VkDevice&                       device); 
 
@@ -169,6 +184,13 @@ namespace rokz {
   
   void CleanupSwapchain (std::vector<VkFramebuffer>& framebuffers, 
                          std::vector<VkImageView>&   image_views,
+                         
+                         Image&      depth_image, 
+                         ImageView&  depth_imageview,
+
+                         Image&      multisamp_color_image, 
+                         ImageView&  multisamp_color_imageview,
+
                          VkSwapchainKHR&             swapchain,
                          const VkDevice&             device); 
 
@@ -187,6 +209,14 @@ namespace rokz {
                 VkPipelineLayout&           pipeline_layout,
                 RenderPass&                 render_pass,
                 std::vector<VkImageView>&  image_views,
+
+                Image&      depth_image, 
+                ImageView&  depth_imageview,
+
+                Image&      multisamp_color_image, 
+                ImageView&  multisamp_color_imageview,
+
+                
                 GLFWwindow* w,
                 VkDevice& dev,
                 VkInstance &inst);

@@ -110,35 +110,11 @@ struct CreateInfo {
 };
 
 
-
-bool CreateTextureImageView (VkImageView& view, VkImageViewCreateInfo& ci, const rokz::Image& image, const VkDevice& device) {
-
-  ci =  {};
-  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  ci.image = image.handle;
-  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.format = VK_FORMAT_R8G8B8A8_SRGB;
-  ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  ci.subresourceRange.baseMipLevel = 0;
-  ci.subresourceRange.levelCount = 1;
-  ci.subresourceRange.baseArrayLayer = 0;
-  ci.subresourceRange.layerCount = 1;
-
-  if (vkCreateImageView(device, &ci, nullptr, &view) != VK_SUCCESS) {
-
-    printf ("[FAILED] %s create texture image view ", __FUNCTION__);
-    return false;
-  }
-  return true; 
-
-}
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 struct Glob {
 
-  Glob () = default;
   
   VkApplicationInfo            app_info; // {};
   VkInstance                   instance;
@@ -155,6 +131,12 @@ struct Glob {
 
   rokz::Image                  depth_image;
   rokz::ImageView              depth_imageview; 
+
+  rokz::Image                  multisamp_color_image;
+  rokz::ImageView              multisamp_color_imageview; 
+  
+  VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
+
   
   std::vector<rokz::ShaderModule>  shader_modules; 
 
@@ -219,21 +201,25 @@ struct Glob {
 
 //
 void SetupDepthBuffer (Glob& glob) {
+  printf ("[%s]\n", __FUNCTION__); 
 
- uint32_t wd = glob.create_info.swapchain.imageExtent.width; 
- uint32_t ht = glob.create_info.swapchain.imageExtent.height;   
- printf ("265 [%s]\n", __FUNCTION__); 
+  uint32_t wd = glob.create_info.swapchain.imageExtent.width; 
+  uint32_t ht = glob.create_info.swapchain.imageExtent.height;   
 
   VkFormat depth_format;
 
   if (rokz::FindDepthFormat (depth_format, glob.physical_device)) {
 
  
-    rokz::Init_2D_device (glob.depth_image.ci, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, wd, ht); 
+    rokz::Init_2D_device (glob.depth_image.ci,
+                          VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                          glob.msaa_samples,
+                          wd, ht); 
 
     glob.depth_image.ci.tiling = VK_IMAGE_TILING_OPTIMAL;
     glob.depth_image.ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
+    glob.depth_image.ci.format = depth_format;
+    
     rokz::CreateImage (glob.depth_image, glob.device);
     // (swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
     rokz::Init (glob.depth_image.alloc_info,
@@ -253,10 +239,8 @@ void SetupDepthBuffer (Glob& glob) {
     rokz::TransitionImageLayout; 
     //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-    
   } 
 
-  printf ("284 [%s]\n", __FUNCTION__); 
   
   // Glob::depth_image;
   // Glob::depth_imageview; 
@@ -319,6 +303,50 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
+void SetupMutisampleColorResource (Glob& glob) {
+
+  printf ("[%s]\n", __FUNCTION__); 
+
+  VkExtent2D& swapchain_ext    = glob.create_info.swapchain.imageExtent;
+  VkFormat    swapchain_format = glob.create_info.swapchain.imageFormat; //;
+
+
+  rokz::Init_2D_device (glob.multisamp_color_image.ci, 
+                        VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                        glob.msaa_samples, swapchain_ext.width, swapchain_ext.height);
+  
+  rokz::CreateImage (glob.multisamp_color_image, glob.device); 
+
+
+ /* rokz::Init (VkMemoryAllocateInfo& alloc_info, */
+ /*             VkMemoryPropertyFlags prop_flags, */
+ /*             const VkImage& image, */
+ /*             const VkDevice& device, */
+ /*             const VkPhysicalDevice& physdev) { */
+
+
+  
+  rokz::Init (glob.multisamp_color_image.alloc_info,
+              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+              glob.multisamp_color_image.handle,
+              glob.device, glob.physical_device); 
+  rokz::AllocateImageMemory (glob.multisamp_color_image, glob.device);  
+
+
+  //VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
+  //bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
+  rokz::Init (glob.multisamp_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.multisamp_color_image);
+  
+  rokz::CreateImageView (glob.multisamp_color_imageview,
+                         glob.multisamp_color_imageview.ci,
+                         glob.device);
+
+}
+
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
  
 void TestCleanup (Glob& glob) {
 
@@ -342,8 +370,11 @@ void TestCleanup (Glob& glob) {
   rokz::Destroy (glob.texture_imageview, glob.device);
   rokz::Destroy (glob.texture_image, glob.device);
 
-  rokz::Destroy (glob.depth_image, glob.device); 
-  rokz::Destroy (glob.depth_imageview, glob.device); 
+  /* rokz::Destroy (glob.depth_image, glob.device);  */
+  /* rokz::Destroy (glob.depth_imageview, glob.device);  */
+
+  /* rokz::Destroy (glob.multisamp_color_image, glob.device);  */
+  /* rokz::Destroy (glob.multisamp_color_imageview, glob.device);  */
   
   rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
                 glob.vertex_buffer_device, // glob.vertex_buffer_user, 
@@ -351,7 +382,16 @@ void TestCleanup (Glob& glob) {
                 glob.command_pool,
                 glob.syncs, 
                 glob.shader_modules, glob.pipeline.layout.handle, glob.render_pass,
-                glob.swapchain_imageviews, glob.glfwin, glob.device,
+                glob.swapchain_imageviews,
+
+                glob.depth_image,
+                glob.depth_imageview,
+
+                glob.multisamp_color_image,
+                glob.multisamp_color_imageview,
+                
+
+                glob.glfwin, glob.device,
                 glob.instance);
 
   
@@ -422,7 +462,9 @@ bool SetupTexture (Glob& glob) {
    ilShutDown ();
 
    rokz::Image& image = glob.texture_image; 
-   rokz::Init_2D_device (image.ci, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, image_width, image_height);
+   rokz::Init_2D_device (image.ci, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                         VK_SAMPLE_COUNT_1_BIT, 
+                         image_width, image_height);
 
    if (!rokz::CreateImage (image, glob.device)) {
      printf ("[FAILED] %s setup test texture", __FUNCTION__);
@@ -445,7 +487,6 @@ bool SetupTexture (Glob& glob) {
                                 glob.command_pool,
                                 glob.device);
 
-  
    rokz::CopyBufferToImage (glob.texture_image.handle, stage_image.handle, image_width, image_height,
                             glob.queues.graphics,
                             glob.command_pool,
@@ -459,9 +500,6 @@ bool SetupTexture (Glob& glob) {
                                 glob.command_pool,
                                 glob.device);
 
-
-
-   
    DestroyBuffer (stage_image, glob.device); 
 
    printf ("385\n"); 
@@ -472,6 +510,8 @@ bool SetupTexture (Glob& glob) {
 //
 // ---------------------------------------------------------------------
 void SetupTextureImageView (Glob& glob) {
+
+  printf ("[%s]\n", __FUNCTION__); 
 
   rokz::Init (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
   if (vkCreateImageView(glob.device, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle) != VK_SUCCESS) {
@@ -575,8 +615,6 @@ bool SetupDescriptorSets (Glob& glob) {
 bool SetupDescriptorPool (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
-
-
   //SetupDescriptorPool (glob.descr_pool, glob.device);
   rokz::DescriptorPool& dp = glob.descr_pool;
   
@@ -701,8 +739,11 @@ Glob& Default (Glob& g) {
   g.queue_fams.graphics.reset();
   g.queue_fams.present.reset();
 
+  g.msaa_samples = VK_SAMPLE_COUNT_1_BIT;
+
   g.sim_time = 0.0; 
   return g; 
+
 }
 
 
@@ -711,10 +752,10 @@ Glob& Default (Glob& g) {
 //
 // --------------------------------------------------------------------
 void look_at_this_shhhhi () {
+
   // auto tup = std::tuple{ 420, "wtf", 3.15f}; 
   // auto& [a1, b1, c1] = tup; 
 
-  glm::vec3 pos; 
 }
 
 
@@ -848,7 +889,11 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
         glob.swapchain, glob.create_info.swapchain, glob.swapchain_images,
         glob.swapchain_framebuffers, glob.create_info.framebuffers,
         glob.render_pass, glob.swapchain_imageviews,
-        glob.depth_imageview.handle, glob.surface,
+
+        glob.depth_image, glob.depth_imageview,
+        glob.multisamp_color_image, glob.multisamp_color_imageview,
+        
+        glob.surface,
         glob.physical_device, glob.device, glob.glfwin);
   } 
   else if (acquire_res != VK_SUCCESS) {
@@ -913,6 +958,7 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
 }
 
 
+
             
 // --------------------------------------------------------------------
 //
@@ -939,6 +985,7 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::CreateSurface        (&glob.surface, glob.glfwin , glob.instance);
   rokz::SelectPhysicalDevice (glob.physical_device, glob.phys_dev_props, glob.queue_fams, glob.surface, glob.instance);
 
+  glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device); 
   
   // queue info
   //rokz:: QueueFamilyIndices fam_inds;
@@ -977,6 +1024,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   rokz::CreateRenderPass (glob.render_pass,
                           glob.create_info.swapchain.imageFormat,
+                          glob.msaa_samples,
                           glob.device, glob.physical_device);
 
 
@@ -1009,7 +1057,7 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::Init (sci.viewport_state, glob.viewport, glob.scissor);
   rokz::Init (sci.rasterizer); 
   //rokz::Init (sci.colorblend);
-  rokz::Init (sci.multisampling); 
+  rokz::Init (sci.multisampling, glob.msaa_samples); 
   rokz::Init (sci.depthstencil); 
 
   //
@@ -1052,13 +1100,15 @@ int test_rokz (const std::vector<std::string>& args) {
     &sci.dynamic_state,//const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
     glob.device);    //const VkDevice                           b          device)
 
-  
+  SetupMutisampleColorResource (glob);
+
   SetupDepthBuffer (glob);  
   rokz::CreateFramebuffers (glob.swapchain_framebuffers,
                             glob.create_info.framebuffers,
                             glob.render_pass,
                             glob.create_info.swapchain.imageExtent,
                             glob.swapchain_imageviews,
+                            glob.multisamp_color_imageview.handle,
                             glob.depth_imageview.handle,
                             glob.device); 
 

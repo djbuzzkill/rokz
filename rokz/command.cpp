@@ -114,7 +114,8 @@ void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::TransitionImageLayout (VkImage image, VkFormat format,
+void rokz::TransitionImageLayout (VkImage image,
+                                  VkFormat format,
                             const VkImageLayout& old_layout,
                             const VkImageLayout& new_layout,
                             const VkQueue&       queue,

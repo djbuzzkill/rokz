@@ -110,6 +110,8 @@ namespace rokz {
 
   bool HasStencilComponent(VkFormat format);
 
+  VkSampleCountFlagBits MaxUsableSampleCount  (VkPhysicalDevice physdev); 
+
 
   
 }

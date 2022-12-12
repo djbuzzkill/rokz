@@ -164,7 +164,7 @@ rokz::SwapchainSupportInfo& rokz::QuerySwapchainSupport (rokz::SwapchainSupportI
     vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surf, &present_mode_count, &deets.present_modes[0]);
   }
 
-  printf ("LEAVING:%s", __FUNCTION__);
+  printf ("LEAVING:%s\n", __FUNCTION__);
   return deets;
 }
 
@@ -236,7 +236,7 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, VkPhysicalDevicePropert
 //
 // ---------------------------------------------------------------------
 bool rokz::SelectPhysicalDevice (VkPhysicalDevice&           physdev,
-                                 VkPhysicalDeviceProperties& device_props, 
+                                 VkPhysicalDeviceProperties& device_props,
                                  rokz::QueueFamilyIndices&   queueind,
                                  const VkSurfaceKHR&       surf,
                                  const VkInstance&         inst) {
@@ -265,6 +265,7 @@ bool rokz::SelectPhysicalDevice (VkPhysicalDevice&           physdev,
       queueind = curqueinds; 
       printf ("found PHYSICAL DEVICE\n");
       physdev = physdevs[idev];
+      
       printf ("found PHYSICAL DEVICE\n");
       return true; 
     }
@@ -344,20 +345,42 @@ bool rokz::FindSupportedFormat  (VkFormat& out, const std::vector<VkFormat>& can
   return false; 
 }
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 bool rokz::FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev) {
 
   std::vector<VkFormat> candidates = 
     {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
   
-  return  FindSupportedFormat  ( outfmt,
-                                 candidates,
-                                 VK_IMAGE_TILING_OPTIMAL,
-                                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-                                 physdev) ; 
-  
+  return FindSupportedFormat (outfmt,
+                              candidates,
+                              VK_IMAGE_TILING_OPTIMAL,
+                              VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+                              physdev) ; 
 }
 
-
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
 bool rokz::HasStencilComponent(VkFormat format) {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkSampleCountFlagBits rokz::MaxUsableSampleCount  (VkPhysicalDevice physdev) {
+    VkPhysicalDeviceProperties phys_dev_props;
+    vkGetPhysicalDeviceProperties (physdev, &phys_dev_props);
+
+    VkSampleCountFlags counts = phys_dev_props.limits.framebufferColorSampleCounts & phys_dev_props.limits.framebufferDepthSampleCounts;
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+    return VK_SAMPLE_COUNT_1_BIT;
 }

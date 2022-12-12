@@ -94,13 +94,14 @@ VkPipelineRasterizationStateCreateInfo & rokz::Init (VkPipelineRasterizationStat
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
+  ;
 
-VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCreateInfo& ci) { 
+VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits  msaa_samples) { 
   // MULTI SAMPLING
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   ci.sampleShadingEnable = VK_FALSE;
-  ci.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  ci.rasterizationSamples = msaa_samples;
   ci.minSampleShading = 1.0f;          
   ci.pSampleMask = nullptr;            
   ci.alphaToCoverageEnable = VK_FALSE; 

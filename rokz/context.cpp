@@ -1,6 +1,5 @@
 
 #include "context.h"
-#include "image.h"
 
 
 const bool kEnableValidationLayers = true;
@@ -30,9 +29,9 @@ int rokz::CreateInstance (VkInstance& instance, VkApplicationInfo& app_info, VkI
 
   // VkApplicationInfo
   app_info.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  app_info.pApplicationName = "Hello Triangle";
+  app_info.pApplicationName = "ROKZ";
   app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-  app_info.pEngineName      = "No Engine";
+  app_info.pEngineName      = "no_engine";
   app_info.engineVersion    = VK_MAKE_VERSION(1, 1, 0);
   app_info.apiVersion       = VK_API_VERSION_1_1;
   //glob.app_info.pNext = nullptr; 
@@ -167,12 +166,15 @@ bool rokz::CreateSurface (VkSurfaceKHR* surf, GLFWwindow* glfwin, const VkInstan
 //
 // ---------------------------------------------------------------------
 VkSurfaceFormatKHR rokz::ChooseSwapSurfaceFormat (const std::vector<VkSurfaceFormatKHR>& available_formats) {
+  
   for (const auto& f : available_formats) {
     if (f.format == VK_FORMAT_B8G8R8A8_SRGB && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+      printf ("%s return [f]\n", __FUNCTION__);
       return f;
     }
   }
 
+  printf ("%s return [0]\n", __FUNCTION__);
   return available_formats[0]; 
 }
 
@@ -230,7 +232,7 @@ bool rokz::CreateSwapchain (VkSwapchainKHR& swapchain,
   QuerySwapchainSupport (swapchain_supp_info, surf, physdev); 
   
   Default (swapchaincreateinfo, surf); 
-  VkSurfaceFormatKHR surface_format = ChooseSwapSurfaceFormat (swapchain_supp_info.formats);
+  VkSurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat (swapchain_supp_info.formats);
   VkPresentModeKHR   present_mode   = ChooseSwapPresentMode   (swapchain_supp_info.present_modes);
   VkExtent2D         extent         = ChooseSwapExtent        (swapchain_supp_info.capabilities, glfwin);
   
@@ -241,8 +243,8 @@ bool rokz::CreateSwapchain (VkSwapchainKHR& swapchain,
   }
 
   swapchaincreateinfo.minImageCount = image_count;
-  swapchaincreateinfo.imageFormat = surface_format.format;
-  swapchaincreateinfo.imageColorSpace = surface_format.colorSpace;
+  swapchaincreateinfo.imageFormat = swap_surface_format.format;
+  swapchaincreateinfo.imageColorSpace = swap_surface_format.colorSpace;
   swapchaincreateinfo.imageExtent = extent;
   swapchaincreateinfo.imageArrayLayers = 1;
   swapchaincreateinfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -356,23 +358,27 @@ bool rokz::CreateImageViews (std::vector<VkImageView>&  swapchain_imageviews,
   swapchain_imageviews.resize (swapchain_images.size()); 
   
   for (size_t i = 0; i < swapchain_imageviews.size(); i++) {
-
-    VkImageViewCreateInfo ci = {};
-
     //Init (createinfo, VK_IMAGE_ASPECT_COLOR_BIT, swapchain_images[i] ); 
     //    Default (createinfo, swapchain_images[i], surf_fmt); 
     rokz::Image image_temp {};
-
     image_temp.handle = swapchain_images[i];
     image_temp.ci.format = surf_fmt;
     
-    Init (ci, VK_IMAGE_ASPECT_COLOR_BIT, image_temp); 
+    ImageView imagev = {};
+    imagev.handle = swapchain_imageviews[i];
+    Init (imagev.ci, VK_IMAGE_ASPECT_COLOR_BIT, image_temp); 
     
-    VkResult res = vkCreateImageView (dev, &ci, nullptr, &swapchain_imageviews[i]);
-    if (res != VK_SUCCESS) {
-      printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
-      return false; 
+    if (!CreateImageView (imagev, imagev.ci, dev)) {
+       printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
     }
+
+    swapchain_imageviews[i] = imagev.handle;
+    
+    // VkResult res = vkCreateImageView (dev, &ci, nullptr, &swapchain_imageviews[i]);
+    // if (res != VK_SUCCESS) {
+    //   printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
+    //   return false; 
+    // }
   }
 
   printf ("BAI %s\n", __FUNCTION__); 
@@ -431,57 +437,77 @@ bool rokz::CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_ble
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateRenderPass (RenderPass &render_pass, VkFormat swapchain_format, const VkDevice &device, const VkPhysicalDevice& physdev) {
+bool rokz::CreateRenderPass (RenderPass&             render_pass,
+                             VkFormat                swapchain_format,
+                             VkSampleCountFlagBits   msaa_samples, 
+                             const VkDevice&         device,
+                             const VkPhysicalDevice& physdev) {
   //printf ("%s\n", __FUNCTION__); 
 
-  // COLOR ATTACHMENT
+  // COLOR ATTACHMENT | VkAttachmentDescription 
   auto co_in = RenderPass::COLOR; 
   render_pass.attach_desc[co_in] = {}; 
-  render_pass.attach_desc[co_in].format = swapchain_format ;
-  render_pass.attach_desc[co_in].samples = VK_SAMPLE_COUNT_1_BIT;
-  render_pass.attach_desc[co_in].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  render_pass.attach_desc[co_in].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  render_pass.attach_desc[co_in].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  render_pass.attach_desc[co_in].format         = swapchain_format ;
+  render_pass.attach_desc[co_in].samples        = msaa_samples, // VK_SAMPLE_COUNT_1_BIT; // msaa samples
+  render_pass.attach_desc[co_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  render_pass.attach_desc[co_in].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  render_pass.attach_desc[co_in].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   render_pass.attach_desc[co_in].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[co_in].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  render_pass.attach_desc[co_in].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  render_pass.attach_desc[co_in].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  render_pass.attach_desc[co_in].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
 
+  // DEPTHSTENCIL ATTACHMENT | VkAttachmentDescription 
   auto dp_in = RenderPass::DEPTHSTENCIL;
   VkFormat depth_format; 
-  rokz::FindDepthFormat (depth_format ,  physdev); 
+  rokz::FindDepthFormat (depth_format, physdev); 
   render_pass.attach_desc[dp_in] = {}; 
-  render_pass.attach_desc[dp_in].format = depth_format;
-  render_pass.attach_desc[dp_in].samples = VK_SAMPLE_COUNT_1_BIT;
-  render_pass.attach_desc[dp_in].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  render_pass.attach_desc[dp_in].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[dp_in].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  render_pass.attach_desc[dp_in].format         = depth_format;
+  render_pass.attach_desc[dp_in].samples        = msaa_samples; // VK_SAMPLE_COUNT_1_BIT;
+  render_pass.attach_desc[dp_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  render_pass.attach_desc[dp_in].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  render_pass.attach_desc[dp_in].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   render_pass.attach_desc[dp_in].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[dp_in].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  render_pass.attach_desc[dp_in].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  render_pass.attach_desc[dp_in].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  render_pass.attach_desc[dp_in].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  // COLOR RESOLVE ATTACHMENT | VkAttachmentDescription 
+  auto cr_in = RenderPass::CORESOLV; 
+  render_pass.attach_desc[cr_in] = {}; 
+  render_pass.attach_desc[cr_in].format         = swapchain_format ;
+  render_pass.attach_desc[cr_in].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
+  render_pass.attach_desc[cr_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  render_pass.attach_desc[cr_in].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  render_pass.attach_desc[cr_in].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  render_pass.attach_desc[cr_in].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  render_pass.attach_desc[cr_in].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  render_pass.attach_desc[cr_in].finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 
   //VkAttachmentReference color_attachment_ref{};
   render_pass.attach_ref[co_in] = {};
   render_pass.attach_ref[co_in].attachment = co_in; // index
-  render_pass.attach_ref[co_in].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
+  render_pass.attach_ref[co_in].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  // depth
   render_pass.attach_ref[dp_in] = {};
   render_pass.attach_ref[dp_in].attachment = dp_in;
-  render_pass.attach_ref[dp_in].layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-
+  render_pass.attach_ref[dp_in].layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  // not used yet
+  render_pass.attach_ref[cr_in] = {};
+  render_pass.attach_ref[cr_in].attachment = cr_in; // index
+  render_pass.attach_ref[cr_in].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  
   // SUBPASS,  VkSubpassDescription                 
   render_pass.subpass_descs.resize (1);
   render_pass.subpass_descs[0] = {};
   render_pass.subpass_descs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
   render_pass.subpass_descs[0].colorAttachmentCount    = 1;
-  render_pass.subpass_descs[0].pColorAttachments       = &render_pass.attach_ref[co_in] ;
+  render_pass.subpass_descs[0].pColorAttachments       = &render_pass.attach_ref[co_in];  // co_in, [cr_in] for msaa
   render_pass.subpass_descs[0].inputAttachmentCount    = 0;
   render_pass.subpass_descs[0].pInputAttachments       = nullptr;
   render_pass.subpass_descs[0].pDepthStencilAttachment = &render_pass.attach_ref[dp_in]; //nullptr;
   render_pass.subpass_descs[0].preserveAttachmentCount = 0;
   render_pass.subpass_descs[0].pPreserveAttachments    = nullptr;
-  render_pass.subpass_descs[0].pResolveAttachments     = nullptr;
+  render_pass.subpass_descs[0].pResolveAttachments     = &render_pass.attach_ref[cr_in];
   render_pass.subpass_descs[0].flags = 0 ;
   //
   render_pass.dependancy = {};
@@ -495,7 +521,7 @@ bool rokz::CreateRenderPass (RenderPass &render_pass, VkFormat swapchain_format,
   // CREATEINFO. gets passed back out
   render_pass.create_info = {}; 
   render_pass.create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  render_pass.create_info.attachmentCount = 2; // color + depthstencil
+  render_pass.create_info.attachmentCount = 3; // color + depthstencil + color resolv
   render_pass.create_info.pAttachments = render_pass.attach_desc;
   render_pass.create_info.subpassCount = 1;
   render_pass.create_info.pSubpasses = &render_pass.subpass_descs[0];
@@ -607,9 +633,12 @@ bool rokz::CreateFramebuffers (
     std::vector<VkFramebufferCreateInfo>& create_infos,
     const RenderPass&                   render_pass, 
     const VkExtent2D                      swapchain_ext, 
-    const std::vector<VkImageView>&       image_views, 
+    const std::vector<VkImageView>&       image_views,
+    const VkImageView&                    msaa_color_imageview, 
     const VkImageView&                    depth_imageview, 
     const VkDevice&                       device) {
+
+  printf ("[%s]\n", __FUNCTION__);
 
   framebuffers.resize (image_views.size()); 
   create_infos.resize (image_views.size()); 
@@ -617,19 +646,20 @@ bool rokz::CreateFramebuffers (
 
   for (size_t i = 0; i < image_views.size(); i++) {
 
-    VkImageView attachments[] = {image_views[i], depth_imageview};
+    VkImageView attachments[] = {msaa_color_imageview, depth_imageview, image_views[i] };
 
     create_infos[i]  = {}; 
     create_infos[i].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     create_infos[i].renderPass = render_pass.handle;
-    create_infos[i].attachmentCount = 2; // color + depthstencil
+    create_infos[i].attachmentCount = 3; // color + depthstencil + colresolv
     create_infos[i].pAttachments = attachments;
     create_infos[i].width = swapchain_ext.width;
     create_infos[i].height = swapchain_ext.height;
     create_infos[i].layers = 1;
 
     if (vkCreateFramebuffer(device, &create_infos[i], nullptr, &framebuffers[i]) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create framebuffer!");
+      printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
+      return false;
     }
   }
 
@@ -768,6 +798,7 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
   VkClearValue clear_values[2] = {};
   clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   clear_values[1].depthStencil = {1.0f, 0};
+  //clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   pass_info.renderPass = render_pass.handle; 
@@ -840,9 +871,10 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
   // begin command list
   VkRenderPassBeginInfo pass_info{};
 
-  VkClearValue clear_values[2] = {};
+  VkClearValue clear_values[3] = {};
   clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   clear_values[1].depthStencil = {1.0f, 0};
+  clear_values[2].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
 
 
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -850,7 +882,7 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
   pass_info.framebuffer = framebuffer; 
   pass_info.renderArea.offset = {0, 0};
   pass_info.renderArea.extent = ext2d;
-  pass_info.clearValueCount = 2; 
+  pass_info.clearValueCount = 3; 
   pass_info.pClearValues = clear_values; 
 
   vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -943,17 +975,26 @@ void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& devic
 //
 // ---------------------------------------------------------------------
 bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
-                       VkSwapchainCreateInfoKHR &swapchaincreateinfo,
-                       std::vector<VkImage> &swapchain_images,
-                       std::vector<VkFramebuffer> &framebuffers,
-                       std::vector<VkFramebufferCreateInfo> &create_infos,
-                       RenderPass &render_pass,
-                       std::vector<VkImageView> &image_views,
-                       VkImageView& depth_imageview,
-                       VkSurfaceKHR &surf,
-                       VkPhysicalDevice &physdev,
-                       VkDevice &dev,
-                       GLFWwindow *glfwin) {
+                             VkSwapchainCreateInfoKHR &swapchaincreateinfo,
+                             std::vector<VkImage> &swapchain_images,
+                             std::vector<VkFramebuffer> &framebuffers,
+                             std::vector<VkFramebufferCreateInfo> &create_infos,
+                             RenderPass &render_pass,
+                             std::vector<VkImageView> &image_views,
+                             //VkImageView& depth_imageview,
+
+                Image&      depth_image, 
+                ImageView&  depth_imageview,
+
+                Image&      multisamp_color_image, 
+                ImageView&  multisamp_color_imageview,
+
+
+                             
+                             VkSurfaceKHR &surf,
+                             VkPhysicalDevice &physdev,
+                             VkDevice &dev,
+                             GLFWwindow *glfwin) {
 
   int width = 0, height = 0;
   glfwGetFramebufferSize(glfwin, &width, &height);
@@ -965,10 +1006,22 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
   
   vkDeviceWaitIdle (dev);
 
-  CleanupSwapchain (framebuffers, image_views, swapchain, dev);
-  bool swapchain_res = CreateSwapchain (swapchain, swapchaincreateinfo, surf, physdev, dev, glfwin); 
-  bool imageviews_res = CreateImageViews (image_views, swapchain_images, swapchaincreateinfo.imageFormat, dev);
-  bool framebuffers_res = CreateFramebuffers (framebuffers, create_infos, render_pass, swapchaincreateinfo.imageExtent, image_views, depth_imageview,  dev);
+  CleanupSwapchain (framebuffers, image_views,
+
+                depth_image, 
+                depth_imageview,
+
+                multisamp_color_image, 
+                multisamp_color_imageview,
+
+                    swapchain, dev);
+  bool swapchain_res    = CreateSwapchain (swapchain, swapchaincreateinfo, surf, physdev, dev, glfwin); 
+  bool imageviews_res   = CreateImageViews (image_views, swapchain_images, swapchaincreateinfo.imageFormat, dev);
+  bool framebuffers_res = CreateFramebuffers (framebuffers, create_infos, render_pass, swapchaincreateinfo.imageExtent, image_views,
+
+                                              multisamp_color_imageview.handle,
+                                              depth_imageview.handle,  dev);
+
   return (swapchain_res &&imageviews_res && framebuffers_res); 
 }
 
@@ -980,6 +1033,14 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
 // ---------------------------------------------------------------------
 void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
                             std::vector<VkImageView> &image_views,
+
+                            Image&      depth_image, 
+                            ImageView&  depth_imageview,
+
+                            Image&      multisamp_color_image, 
+                            ImageView&  multisamp_color_imageview,
+
+                            
                             VkSwapchainKHR &swapchain,
                             const VkDevice& device) {
 
@@ -991,6 +1052,13 @@ void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
     vkDestroyImageView(device, imageview, nullptr);
   }
 
+  Destroy (depth_image, device);
+  Destroy (depth_imageview, device);
+
+  Destroy (multisamp_color_image, device);
+  Destroy (multisamp_color_imageview, device);
+
+  
   vkDestroySwapchainKHR(device, swapchain, nullptr);
   
 }
@@ -1010,13 +1078,26 @@ void rokz::Cleanup(VkPipeline &pipeline,
                    VkPipelineLayout &pipeline_layout,
                    RenderPass &render_pass,
                    std::vector<VkImageView> &image_views,
+                Image&      depth_image, 
+                ImageView&  depth_imageview,
+
+                Image&      multisamp_color_image, 
+                ImageView&  multisamp_color_imageview,
+
                    GLFWwindow *w,
                    VkDevice &dev, VkInstance &inst) {
 
 
   //    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-  CleanupSwapchain (framebuffers, image_views, swapchain, dev);
+  CleanupSwapchain (framebuffers, image_views,
+                    depth_image, 
+                    depth_imageview,
+
+                    multisamp_color_image, 
+                    multisamp_color_imageview,
+
+                    swapchain, dev);
 
   
   DestroyBuffer (vbstruc, dev); 

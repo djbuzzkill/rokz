@@ -21,7 +21,7 @@ namespace rokz {
   // ---------------------------------------------------------------------
   VkRect2D&                               Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext); 
   VkViewport&                             Init (VkViewport& vp, float wd, float  ht, float dp); 
-  VkPipelineMultisampleStateCreateInfo&   Init (VkPipelineMultisampleStateCreateInfo& ci);
+  VkPipelineMultisampleStateCreateInfo&   Init (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits msaa_samples = VK_SAMPLE_COUNT_1_BIT);
   VkPipelineInputAssemblyStateCreateInfo& Init (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
 
 
