@@ -16,9 +16,25 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-//#include <vulkan/vulkan.hpp>  // not yet
+#include <vulkan/vulkan.hpp>  // not yet
 // vulkan memo allocator
+
+
+// !!! In exactly one CPP file define following macro before this
+// include. It enables also internal definitions.
+//#define VMA_IMPLEMENTATION
+#define ROKZ_USE_VMA_ALLOCATOR 1
+
 #include "vk_mem_alloc.h"       // mem alloc sucks
+
+
+
+// To initialize the allocator with support for higher Vulkan version,
+// you need to set member VmaAllocatorCreateInfo::vulkanApiVersion
+// to an appropriate value, e.g. using constants like VK_API_VERSION_1_2.
+// See code sample below.
+
+
 
 #include <ctime>
 #include <cstdio>

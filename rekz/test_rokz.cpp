@@ -7,6 +7,10 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+//#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+ 
+
 const size_t kMaxFramesInFlight = 2; 
 
 
@@ -14,6 +18,10 @@ const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; //
 // #include "rokz/rokz.h"
 // #include <GLFW/glfw3.h>
 // #include <vulkan/vulkan_core.h>
+
+
+
+#define ROKZ_USE_VMA_ALLOCATION 1
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -124,6 +132,8 @@ struct Glob {
   VkPhysicalDeviceFeatures     device_features;
   VkSwapchainKHR               swapchain;
 
+  VmaAllocator                 allocator;
+  
   std::vector<VkImage>         swapchain_images;
   std::vector<VkImageView>     swapchain_imageviews;
   std::vector<VkFramebuffer>   swapchain_framebuffers;
@@ -368,13 +378,17 @@ void TestCleanup (Glob& glob) {
   rokz::Destroy (glob.descr_pool, glob.device); 
   rokz::Destroy (glob.descr_group, glob.device); 
   rokz::Destroy (glob.texture_imageview, glob.device);
-  rokz::Destroy (glob.texture_image, glob.device);
+
+
+  rokz::Destroy (glob.texture_image, glob.allocator);
 
   /* rokz::Destroy (glob.depth_image, glob.device);  */
   /* rokz::Destroy (glob.depth_imageview, glob.device);  */
 
   /* rokz::Destroy (glob.multisamp_color_image, glob.device);  */
   /* rokz::Destroy (glob.multisamp_color_imageview, glob.device);  */
+
+  vmaDestroyAllocator(glob.allocator);
   
   rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
                 glob.vertex_buffer_device, // glob.vertex_buffer_user, 
@@ -427,6 +441,7 @@ bool SetupTexture (Glob& glob) {
    int image_type     = 0;
    int image_format   = 0;
 
+   
    printf ("loading.. %s ", fq_test_file.c_str()); 
    if (ilLoadImage(fq_test_file.c_str())) {
      printf ("succeeded\n"); 
@@ -441,6 +456,8 @@ bool SetupTexture (Glob& glob) {
      size_t image_size = image_width * image_height *  bytes_per_pixel; 
      rokz::CreateByteBuffer_transfer (stage_image, image_size, glob.physical_device, glob.device); 
 
+
+     
      void* mapped = nullptr; 
      rokz::MapBuffer (&mapped, stage_image, glob.device);
 
@@ -448,9 +465,22 @@ bool SetupTexture (Glob& glob) {
               image_width, image_height, image_depth,
               image_bpp, bytes_per_pixel, image_type, image_format); 
 
-     ILubyte* image_data = ilGetData (); 
+     ILubyte* image_data = ilGetData ();
+
      std::copy (image_data, image_data + image_size, reinterpret_cast<unsigned char*> (mapped));
 
+     struct rgba { ILubyte r, g, b, a; }; 
+     const int numpixs = image_width  * image_height; 
+     ILubyte _; 
+     rgba* rgba_mapped = reinterpret_cast<rgba*> (mapped); 
+     // swizzle
+     for (int i = 0; i < numpixs; ++i) {
+       _ = rgba_mapped[i].r;
+       rgba_mapped[i].r = rgba_mapped[i].b;
+       rgba_mapped[i].b = _;       
+     }
+       
+     
      rokz::UnmapBuffer (stage_image, glob.device);
      ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
    }
@@ -462,6 +492,43 @@ bool SetupTexture (Glob& glob) {
    ilShutDown ();
 
    rokz::Image& image = glob.texture_image; 
+
+
+  // { // TEST 
+  //   VkBufferCreateInfo buffer_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+  //   buffer_info.pNext = nullptr;
+    
+  //   buffer_info.size = 65536;
+  //   buffer_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+ 
+  //   VmaAllocationCreateInfo allocInfo = {};
+  //   allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+ 
+  //   VkBuffer buffer;
+  //   VmaAllocation allocation;
+  //   vmaCreateBuffer(glob.allocator, &buffer_info, &allocInfo, &buffer, &allocation, nullptr);
+
+  //   vmaDestroyBuffer(glob.allocator, buffer, allocation);
+    
+  // }
+  
+#if ROKZ_USE_VMA_ALLOCATION
+
+  
+   rokz::Init_2D_dev (image.ci, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                         VK_SAMPLE_COUNT_1_BIT, 
+                         image_width, image_height);
+  
+
+   rokz::Init (image.alloc_ci);
+   
+   if (!rokz::CreateImage (image, glob.allocator)) {
+     printf ("[FAILED] %s setup test texture", __FUNCTION__);
+     return false;
+   }
+
+#else
+  
    rokz::Init_2D_device (image.ci, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                          VK_SAMPLE_COUNT_1_BIT, 
                          image_width, image_height);
@@ -479,6 +546,8 @@ bool SetupTexture (Glob& glob) {
      return false; 
    }
 
+#endif
+   
    rokz::TransitionImageLayout (glob.texture_image.handle,
                                 VK_FORMAT_R8G8B8A8_SRGB,
                                 VK_IMAGE_LAYOUT_UNDEFINED,
@@ -985,6 +1054,9 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::CreateSurface        (&glob.surface, glob.glfwin , glob.instance);
   rokz::SelectPhysicalDevice (glob.physical_device, glob.phys_dev_props, glob.queue_fams, glob.surface, glob.instance);
 
+
+
+  
   glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device); 
   
   // queue info
@@ -1011,6 +1083,20 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::GetDeviceQueue (&glob.queues.graphics, glob.queue_fams.graphics.value(), glob.device);
   rokz::GetDeviceQueue (&glob.queues.present, glob.queue_fams.present.value(), glob.device);
 
+  // VMA SECTION
+  // VmaVulkanFunctions vulkanFunctions = {};
+  // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+  // vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+  VmaAllocatorCreateInfo allocatorCreateInfo = {};
+  allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+  allocatorCreateInfo.physicalDevice   = glob.physical_device;
+  allocatorCreateInfo.device           = glob.device;
+  allocatorCreateInfo.instance         = glob.instance;
+ 
+  vmaCreateAllocator(&allocatorCreateInfo, &glob.allocator);
+  // ------------------------------------------ VMA 
+
+  
   rokz::CreateSwapchain (glob.swapchain, glob.create_info.swapchain,
                          glob.surface, glob.physical_device,
                          glob.device,  glob.glfwin);

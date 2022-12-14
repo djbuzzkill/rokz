@@ -85,7 +85,6 @@ bool rokz::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
   return true; 
 }
 
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -147,4 +146,67 @@ void rokz::Destroy (ImageView& iv, const VkDevice& device) {
 
     vkDestroyImageView(device, iv.handle, nullptr);
 
+}
+
+
+// ---------------------------------------------------------------------
+// VMA
+// ---------------------------------------------------------------------
+bool rokz::CreateImage (Image& image, VmaAllocator const& allocator) {
+
+
+  image.alloc_ci = {};
+  image.alloc_ci.usage = VMA_MEMORY_USAGE_AUTO;
+
+  printf ("%s VMA\n", __FUNCTION__); 
+  if( VK_SUCCESS != vmaCreateImage (allocator, &image.ci, &image.alloc_ci, &image.handle, &image.allocation, &image.alloc_info_)) {
+    printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
+    return false; 
+  }
+  
+  return true; 
+}
+
+// ---------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------
+void rokz::Destroy (Image& image, VmaAllocator const& allocator) {
+  vmaDestroyImage (allocator, image.handle, image.allocation); 
+}
+
+// ---------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------
+VmaAllocationCreateInfo& rokz::Init (VmaAllocationCreateInfo& alloc_info) {
+  alloc_info = {};
+  alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+  return alloc_info;
+}
+
+// ---------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------
+VkImageCreateInfo& rokz::Init_2D_dev (VkImageCreateInfo&       ci,
+                                         VkImageUsageFlags        usage,
+                                         VkSampleCountFlagBits    num_samples,
+                                         uint32_t wd, uint32_t ht) {
+  printf ("%s VMA\n", __FUNCTION__); 
+
+  ci = {}; 
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent.width  = wd;
+  ci.extent.height = ht;
+  ci.extent.depth  = 1;
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = 1;
+  ci.format        = VK_FORMAT_B8G8R8A8_SRGB; // VK_FORMAT_R8G8B8A8_SRGB;
+  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage         = usage; // VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
+  ci.samples       = num_samples;
+  ci.flags         = 0; 
+
+  return ci; 
 }
