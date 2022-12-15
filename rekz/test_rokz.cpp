@@ -206,7 +206,7 @@ struct Glob {
 
 
 //
-void SetupDepthBuffer (Glob& glob) {
+void SetupDepthBuffer_ (Glob& glob) {
   printf ("[%s]\n", __FUNCTION__); 
 
   uint32_t wd = glob.create_info.swapchain.imageExtent.width; 
@@ -216,7 +216,6 @@ void SetupDepthBuffer (Glob& glob) {
 
   if (rokz::FindDepthFormat (depth_format, glob.physical_device)) {
 
- 
     rokz::Init_2D_device (glob.depth_image.ci,
                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                           glob.msaa_samples,
@@ -247,11 +246,42 @@ void SetupDepthBuffer (Glob& glob) {
 
   } 
 
+}
+
+//
+void SetupDepthBuffer (Glob& glob) {
+  printf ("[%s]\n", __FUNCTION__); 
+
+  uint32_t wd = glob.create_info.swapchain.imageExtent.width; 
+  uint32_t ht = glob.create_info.swapchain.imageExtent.height;   
+
+  VkFormat depth_format;
+
+  if (rokz::FindDepthFormat (depth_format, glob.physical_device)) {
+
+    rokz::CreateInfo_2D_depthstencil (glob.depth_image.ci,
+                                      depth_format, 
+                                      glob.msaa_samples,
+                                      wd, ht);
+    rokz::AllocCreateInfo_device (glob.depth_image.alloc_ci); 
+    rokz::CreateImage (glob.depth_image, glob.allocator);
+
+    rokz::Init (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
+    rokz::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device);
+    printf ("280 [%s]\n", __FUNCTION__); 
+
+
+    rokz::TransitionImageLayout; 
+    //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+  } 
+
   
   // Glob::depth_image;
   // Glob::depth_imageview; 
   
 }
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -373,6 +403,7 @@ void TestCleanup (Glob& glob) {
   rokz::Destroy (glob.texture_imageview, glob.device);
 
 
+  rokz::Destroy (glob.depth_image, glob.allocator);
   rokz::Destroy (glob.texture_image, glob.allocator);
   rokz::Destroy (glob.vma_vb_device, glob.allocator);
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
@@ -388,15 +419,13 @@ void TestCleanup (Glob& glob) {
                 glob.syncs, 
                 glob.shader_modules, glob.pipeline.layout.handle, glob.render_pass,
                 glob.swapchain_imageviews,
-
-                glob.depth_image,
+                glob.depth_image, 
                 glob.depth_imageview,
-
                 glob.multisamp_color_image,
                 glob.multisamp_color_imageview,
-                
-
-                glob.glfwin, glob.device,
+                glob.glfwin,
+                glob.device,
+                glob.allocator, 
                 glob.instance);
 
   
@@ -484,7 +513,7 @@ bool SetupTexture (Glob& glob) {
 
    rokz::Image& image = glob.texture_image; 
 
-   rokz::CreateInfo_2D_sample_device  (image.ci, VK_SAMPLE_COUNT_1_BIT, image_width, image_height);
+   rokz::CreateInfo_2D_sample  (image.ci, VK_SAMPLE_COUNT_1_BIT, image_width, image_height);
    rokz::AllocCreateInfo_device (image.alloc_ci);
    if (!rokz::CreateImage (image, glob.allocator)) {
      printf ("[FAILED] %s setup test texture", __FUNCTION__);
@@ -943,11 +972,14 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
         glob.swapchain_framebuffers, glob.create_info.framebuffers,
         glob.render_pass, glob.swapchain_imageviews,
 
-        glob.depth_image, glob.depth_imageview,
+        glob.depth_image,
+        glob.depth_imageview,
         glob.multisamp_color_image, glob.multisamp_color_imageview,
         
         glob.surface,
-        glob.physical_device, glob.device, glob.glfwin);
+        glob.physical_device, glob.device,
+        glob.allocator,
+        glob.glfwin);
   } 
   else if (acquire_res != VK_SUCCESS) {
     printf("failed to acquire swap chain image!");

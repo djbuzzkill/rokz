@@ -176,7 +176,7 @@ void rokz::Destroy (Image& image, VmaAllocator const& allocator) {
 
 
 // VMA
-VkImageCreateInfo& rokz::CreateInfo_2D_sample_device (VkImageCreateInfo& ci, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht) {
+VkImageCreateInfo& rokz::CreateInfo_2D_sample (VkImageCreateInfo& ci, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht) {
   printf ("%s VMA\n", __FUNCTION__); 
   ci = {}; 
   ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -197,7 +197,32 @@ VkImageCreateInfo& rokz::CreateInfo_2D_sample_device (VkImageCreateInfo& ci, VkS
   return ci;
 }
 
-
+VkImageCreateInfo& rokz::CreateInfo_2D_depthstencil (VkImageCreateInfo& ci,
+                                                     VkFormat format, 
+                                                     VkSampleCountFlagBits num_samples,
+                                                     uint32_t wd, uint32_t ht) {
+    // rokz::Init_2D_device (glob.depth_image.ci,
+    //                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+    //                       glob.msaa_samples,
+    //                       wd, ht); 
+  printf ("%s VMA\n", __FUNCTION__); 
+  ci = {}; 
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent.width  = wd;
+  ci.extent.height = ht;
+  ci.extent.depth  = 1;
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = 1;
+  ci.format        = format; // 
+  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage         = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;  // VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
+  ci.samples       = num_samples;
+  ci.flags         = 0; 
+  return ci;
+}
 
 
 VkImageCreateInfo&  rokz::CreateInfo_2D_device (VkImageCreateInfo& ci) {

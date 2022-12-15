@@ -994,6 +994,8 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
                              VkSurfaceKHR &surf,
                              VkPhysicalDevice &physdev,
                              VkDevice &dev,
+                             VmaAllocator const& allocator,
+
                              GLFWwindow *glfwin) {
 
   int width = 0, height = 0;
@@ -1013,8 +1015,10 @@ bool rokz::RecreateSwapchain(VkSwapchainKHR &swapchain,
 
                 multisamp_color_image, 
                 multisamp_color_imageview,
-
-                    swapchain, dev);
+                    swapchain,
+                    dev,
+                    allocator
+                    );
   bool swapchain_res    = CreateSwapchain (swapchain, swapchaincreateinfo, surf, physdev, dev, glfwin); 
   bool imageviews_res   = CreateImageViews (image_views, swapchain_images, swapchaincreateinfo.imageFormat, dev);
   bool framebuffers_res = CreateFramebuffers (framebuffers, create_infos, render_pass, swapchaincreateinfo.imageExtent, image_views,
@@ -1042,7 +1046,8 @@ void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
 
                             
                             VkSwapchainKHR &swapchain,
-                            const VkDevice& device) {
+                            const VkDevice& device,
+                            VmaAllocator const& allocator) {
 
   for (auto fb : framebuffers) {
     vkDestroyFramebuffer (device, fb, nullptr); 
@@ -1052,7 +1057,7 @@ void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
     vkDestroyImageView(device, imageview, nullptr);
   }
 
-  Destroy (depth_image, device);
+  Destroy (depth_image, allocator);
   Destroy (depth_imageview, device);
 
   Destroy (multisamp_color_image, device);
@@ -1077,27 +1082,33 @@ void rokz::Cleanup(VkPipeline &pipeline,
                    VkPipelineLayout &pipeline_layout,
                    RenderPass &render_pass,
                    std::vector<VkImageView> &image_views,
-                Image&      depth_image, 
-                ImageView&  depth_imageview,
+                   Image&      depth_image, 
+                   ImageView&  depth_imageview,
 
-                Image&      multisamp_color_image, 
-                ImageView&  multisamp_color_imageview,
+                   Image&      multisamp_color_image, 
+                   ImageView&  multisamp_color_imageview,
 
                    GLFWwindow *w,
-                   VkDevice &dev, VkInstance &inst) {
+                   VkDevice &dev,
+                   VmaAllocator const& allocator, 
+                   VkInstance &inst) {
 
 
   //    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-  CleanupSwapchain (framebuffers, image_views,
+  CleanupSwapchain (framebuffers,
+                    image_views,
+
                     depth_image, 
                     depth_imageview,
 
                     multisamp_color_image, 
                     multisamp_color_imageview,
 
-                    swapchain, dev);
-
+                    swapchain,
+                    dev, 
+                    allocator
+                    );
    
   vkDestroyPipeline (dev, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);

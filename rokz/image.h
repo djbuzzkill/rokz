@@ -57,7 +57,18 @@ namespace rokz {
 
   // VMA ----------->
   // VkImageCreateInfo&       Init_2D_dev (VkImageCreateInfo& ci, VkImageUsageFlags usage, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
-  VkImageCreateInfo&       CreateInfo_2D_sample_device  (VkImageCreateInfo& ci, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
+  VkImageCreateInfo&       CreateInfo_2D_sample  (VkImageCreateInfo& ci,
+                                                  VkSampleCountFlagBits num_samples,
+                                                  uint32_t wd, uint32_t ht);
+
+  VkImageCreateInfo&       CreateInfo_2D_depthstencil (VkImageCreateInfo& ci,
+                                                       VkFormat format, 
+                                                       VkSampleCountFlagBits num_samples,
+                                                       uint32_t wd, uint32_t ht);
+
+
+
+  
   //VmaAllocationCreateInfo& Init        (VmaAllocationCreateInfo& alloc_info); 
   bool                CreateImage (Image& image, VmaAllocator const& allocator);
 

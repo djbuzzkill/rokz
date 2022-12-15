@@ -101,16 +101,17 @@ namespace rokz {
                                         RenderPass&                           render_pass, 
                                         std::vector<VkImageView>&             image_views, 
 
-                                        Image&      depth_image, 
-                                        ImageView&  depth_imageview,
+                                        Image&                                depth_image, 
+                                        ImageView&                            depth_imageview,
 
-                                        Image&      multisamp_color_image, 
-                                        ImageView&  multisamp_color_imageview,
-
+                                        Image&                                multisamp_color_image, 
+                                        ImageView&                            multisamp_color_imageview,
 
                                         VkSurfaceKHR&                         surf,
                                         VkPhysicalDevice&                     physdev,
-                                        VkDevice& dev, GLFWwindow*            glfwin); 
+                                        VkDevice&                             dev,
+                                        VmaAllocator const&                   allocator,
+                                        GLFWwindow*                           glfwin); 
 
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const VkDevice& dev); 
@@ -192,7 +193,9 @@ namespace rokz {
                          ImageView&  multisamp_color_imageview,
 
                          VkSwapchainKHR&             swapchain,
-                         const VkDevice&             device); 
+                         const VkDevice&             device,
+                         VmaAllocator const& allocator
+                         ); 
 
 
   // ---------------------------------------------------------------------
@@ -204,20 +207,17 @@ namespace rokz {
                 VkSurfaceKHR&               surf,
                 VkCommandPool&              command_pool, 
                 std::vector<SyncStruc>&     syncs, 
-                std::vector<ShaderModule>& shader_modules,
+                std::vector<ShaderModule>&  shader_modules,
                 VkPipelineLayout&           pipeline_layout,
                 RenderPass&                 render_pass,
-                std::vector<VkImageView>&  image_views,
-
-                Image&      depth_image, 
-                ImageView&  depth_imageview,
-
-                Image&      multisamp_color_image, 
-                ImageView&  multisamp_color_imageview,
-
-                
+                std::vector<VkImageView>&   image_views,
+                Image&                      depth_image, 
+                ImageView&                  depth_imageview,
+                Image&                      multisamp_color_image, 
+                ImageView&                  multisamp_color_imageview,
                 GLFWwindow* w,
                 VkDevice& dev,
+                VmaAllocator const& allocator, 
                 VkInstance &inst);
 
 

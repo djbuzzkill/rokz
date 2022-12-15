@@ -268,8 +268,6 @@ VkBufferCreateInfo& rokz::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t siz
   return ci; 
 }
 
-
-
                                        
 // bool rokz::CreateUniformBuffer (BufferStruc& buffstruc, 
 //                                 size_t sizeof_elem,
