@@ -201,7 +201,6 @@ namespace rokz {
   void Cleanup (VkPipeline&                 pipeline,
                 std::vector<VkFramebuffer>& framebuffers, 
                 VkSwapchainKHR&             swapchain,
-                BufferStruc&                vb_struc, 
                 VkSurfaceKHR&               surf,
                 VkCommandPool&              command_pool, 
                 std::vector<SyncStruc>&     syncs, 

@@ -36,13 +36,13 @@ namespace rokz {
   VkBufferCreateInfo& CreateInfo_IB_16_stage  (VkBufferCreateInfo& ci, uint32_t num_elem); 
   VkBufferCreateInfo& CreateInfo_IB_16_local  (VkBufferCreateInfo& ci, uint32_t num_elem); 
 
-  VkBufferCreateInfo&      CreateInfo_VB_device   (VkBufferCreateInfo&);
-  VkBufferCreateInfo&      CreateInfo_VB_local     (VkBufferCreateInfo&);
+  VkBufferCreateInfo& CreateInfo_VB_device    (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv);
+  VkBufferCreateInfo& CreateInfo_VB_stage     (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv);
 
-  VkBufferCreateInfo&      CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes);
-  
-  VkBufferCreateInfo&      CreateInfo_uniform   (VkBufferCreateInfo&);
-  bool                     CreateBuffer         (Buffer&, VmaAllocator const& allocator);
+  VkBufferCreateInfo& CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes);
+  VkBufferCreateInfo& CreateInfo_uniform      (VkBufferCreateInfo& ci, size_t size_e, size_t num_e); 
+
+  bool                CreateBuffer         (Buffer&, VmaAllocator const& allocator);
 
   // <-------- nu 
   // ---------------------------------------------------------------------
@@ -81,19 +81,6 @@ namespace rokz {
                                   size_t num_elem, 
                                   const VkDevice& device,
                                   const VkPhysicalDevice& physdev); 
-  // 
-  bool CreateIndexBuffer_transfer (BufferStruc& buffstruc, 
-                                   VkIndexType index_type, // VK_INDEX_TYPE_UINT16
-                                   size_t num_elem, 
-                                   const VkDevice& device,
-                                   const VkPhysicalDevice& physdev); 
-
-  bool CreateIndexBuffer_device (BufferStruc& buffstruc, 
-                                 VkIndexType index_type, // VK_INDEX_TYPE_UINT16
-                                 size_t num_elem, 
-                                 const VkDevice& device,
-                                 const VkPhysicalDevice& physdev); 
-
   //
   // lock user memory vb
   bool MapBuffer   (void** mappedmem, BufferStruc& vb, const VkDevice& device);

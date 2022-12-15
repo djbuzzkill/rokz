@@ -8,9 +8,10 @@
 namespace rokz { 
 
   // VMA
-  VmaAllocationCreateInfo& AllocCreateInfo_local    (VmaAllocationCreateInfo& alloc_info); 
-  VmaAllocationCreateInfo& AllocCreateInfo_stage   (VmaAllocationCreateInfo& alloc_info); 
-  VmaAllocationCreateInfo& AllocCreateInfo_device   (VmaAllocationCreateInfo& alloc_info); 
+  VmaAllocationCreateInfo& AllocCreateInfo_local  (VmaAllocationCreateInfo& ci); 
+  VmaAllocationCreateInfo& AllocCreateInfo_stage  (VmaAllocationCreateInfo& ci); 
+  VmaAllocationCreateInfo& AllocCreateInfo_device (VmaAllocationCreateInfo& ci); 
+  VmaAllocationCreateInfo& AllocCreateInfo_mapped (VmaAllocationCreateInfo& ci); 
 
   void UnmapMemory (VmaAllocation const& allocation, VmaAllocator const& allocator);
   bool MapMemory (void** pmapped, VmaAllocation const& allocation,  VmaAllocator const& allocator);

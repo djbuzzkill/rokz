@@ -146,20 +146,14 @@ struct Glob {
   rokz::ImageView              multisamp_color_imageview; 
   
   VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
-
   
   std::vector<rokz::ShaderModule>  shader_modules; 
 
   VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
-    
-  rokz::BufferStruc            vertex_buffer_user; 
-  rokz::BufferStruc            index_buffer_user;
-    
-  rokz::BufferStruc            index_buffer_device; 
-  rokz::Buffer                 vma_ib_device;
-  rokz::BufferStruc            vertex_buffer_device; 
 
+  rokz::Buffer                 vma_ib_device;
+  rokz::Buffer                 vma_vb_device;
   std::vector<VkDynamicState>  dynamic_states; 
   VkCommandPool                command_pool; 
   std::vector<VkCommandBuffer> command_buffer; 
@@ -167,7 +161,7 @@ struct Glob {
   rokz::RenderPass             render_pass; 
 
   // image/texture
-  rokz::BufferStruc            texture_buff_stage; // mebe we should just make stack
+  //rokz::BufferStruc            texture_buff_stage; // mebe we should just make stack
   rokz::Image                  texture_image; 
   rokz::ImageView              texture_imageview; 
   rokz::Sampler                sampler;
@@ -175,7 +169,8 @@ struct Glob {
   //VkImage         texture_image;
   // VkDeviceMemory  texture_image_memory;
   // VkImageCreateInfo image_create_info;
-  std::vector<rokz::BufferStruc> uniform_buffers;
+  //  std::vector<rokz::BufferStruc> uniform_buffers;
+  std::vector<rokz::Buffer>      vma_uniform_buffs;
   std::vector<void*>             uniform_mapped_pointers; 
 
   // mebe shouldnt b calld uniform_* anymore
@@ -363,13 +358,10 @@ void TestCleanup (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
 
-  // 
-  rokz::DestroyBuffer (glob.index_buffer_device, glob.device); 
-
-  for (auto& ub : glob.uniform_buffers) {
-    rokz::DestroyBuffer (ub, glob.device); 
+  for (auto& ub : glob.vma_uniform_buffs) {
+    rokz::Destroy (ub, glob.allocator); 
   }
-
+  
   printf ( "[TODO]:DESTROY DESCRIPTOR LAYOUT\n"); 
   //vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
@@ -382,17 +374,15 @@ void TestCleanup (Glob& glob) {
 
 
   rokz::Destroy (glob.texture_image, glob.allocator);
+  rokz::Destroy (glob.vma_vb_device, glob.allocator);
+  rokz::Destroy (glob.vma_ib_device, glob.allocator);
 
-  /* rokz::Destroy (glob.depth_image, glob.device);  */
-  /* rokz::Destroy (glob.depth_imageview, glob.device);  */
-
-  /* rokz::Destroy (glob.multisamp_color_image, glob.device);  */
-  /* rokz::Destroy (glob.multisamp_color_imageview, glob.device);  */
-
+  
   vmaDestroyAllocator(glob.allocator);
   
-  rokz::Cleanup(glob.pipeline.handle, glob.swapchain_framebuffers, glob.swapchain,
-                glob.vertex_buffer_device, // glob.vertex_buffer_user, 
+  rokz::Cleanup(glob.pipeline.handle,
+                glob.swapchain_framebuffers,
+                glob.swapchain,
                 glob.surface,
                 glob.command_pool,
                 glob.syncs, 
@@ -428,8 +418,7 @@ bool SetupTexture (Glob& glob) {
   };
 
    rokz::Buffer stage_image; 
-
-   //   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
+  //   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
    const std::string fq_test_file = data_root + "/texture/out_0_blue-texture-image-hd_rgba.png";  
 
    ilInit ();
@@ -461,7 +450,6 @@ bool SetupTexture (Glob& glob) {
      rokz::AllocCreateInfo_stage (stage_image.alloc_ci);
      rokz::CreateBuffer   (stage_image, glob.allocator); 
 
-     
      void* mapped = nullptr; 
      rokz::MapMemory (&mapped, stage_image.allocation, glob.allocator);
 
@@ -578,7 +566,7 @@ bool SetupDescriptorSets (Glob& glob) {
   //                      glob.uniform_buffers,
   //                      glob.descr_pool.handle, 
   //                      glob.device);  
-  const size_t num_sets = glob.uniform_buffers.size (); 
+  const size_t num_sets = glob.vma_uniform_buffs.size (); 
 
   rokz::DescriptorGroup& dg = glob.descr_group;
 
@@ -599,9 +587,10 @@ bool SetupDescriptorSets (Glob& glob) {
   for (uint32_t i = 0; i < num_sets; i++) {
     // wtf does this do
     VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer     = glob.uniform_buffers[i].handle;
+    buffer_info.buffer     = glob.vma_uniform_buffs[i].handle;
     buffer_info.offset     = 0;
-    buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
+    buffer_info.range      = glob.vma_uniform_buffs[i].ci.size ;
+    //buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
     //printf ( "%s [%u] buffer_info.range = %lu\n", __FUNCTION__, i, buffer_strucs[i].create_info.size); 
     VkDescriptorImageInfo image_info {};
     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
@@ -787,7 +776,7 @@ void look_at_this_shhhhi () {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
+bool SetupUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
                            std::vector<void*>& mapped_uniform_pointers, 
                            const VkDevice& device,
                            const VkPhysicalDevice& physdev) {
@@ -807,6 +796,45 @@ bool CreateUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
 
   return true; 
 }
+
+
+bool SetupUniformBuffers (Glob& glob) {
+
+
+  std::vector<void*>             uniform_mapped_pointers; 
+
+  std::vector<rokz::Buffer>& uniform_buffs = glob.vma_uniform_buffs;
+  std::vector<void*>&        mapped_ptrs = glob.uniform_mapped_pointers; 
+  VkDevice const&          device = glob.device;
+  VkPhysicalDevice const&  physdev = glob.physical_device;
+
+  
+  uniform_buffs.resize (kMaxFramesInFlight);
+  mapped_ptrs.resize (kMaxFramesInFlight); 
+
+  for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
+
+    rokz::CreateInfo_uniform (uniform_buffs[i].ci, kSizeOf_StandardTransform3D, 1); 
+    rokz::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
+
+    if (!rokz::CreateBuffer  (uniform_buffs[i], glob.allocator)) {
+      printf (" [FAIL] CreateUniformbuffer in  CreateUniformbuffers\n"); 
+      return false; 
+    }
+    
+    // if (!rokz::CreateUniformBuffer (uniform_buffs[i], kSizeOf_StandardTransform3D, 1, device, physdev)) {
+    //   printf (" [FAIL] CreateUniformbuffer in  CreateUniformbuffers\n"); 
+    //   return false; 
+    // }
+    mapped_ptrs[i] = uniform_buffs[i].alloc_info.pMappedData;
+    
+    //rokz::MapBuffer (&mapped_uniform_pointers[i], uniform_buffers[i], device); 
+  }
+
+  return true; 
+}
+
+  
 
 // --------------------------------------------------------------------
 //
@@ -937,7 +965,7 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
                                      glob.pipeline,
                                      glob.descr_group.sets[curr_frame], 
-                                     glob.vertex_buffer_device.handle, //glob.vertex_buffer_user.handle, 
+                                     glob.vma_vb_device.handle, 
                                      glob.vma_ib_device.handle,
                                      glob.create_info.swapchain.imageExtent,
                                      glob.swapchain_framebuffers[image_index],
@@ -1144,7 +1172,8 @@ int test_rokz (const std::vector<std::string>& args) {
 
   SetupMutisampleColorResource (glob);
 
-  SetupDepthBuffer (glob);  
+  SetupDepthBuffer (glob);
+  
   rokz::CreateFramebuffers (glob.swapchain_framebuffers,
                             glob.create_info.framebuffers,
                             glob.render_pass,
@@ -1160,59 +1189,41 @@ int test_rokz (const std::vector<std::string>& args) {
                            glob.device);
 
 
+  void* pmapped  = nullptr;
 
-  
-  rokz::BufferStruc vb_transfer; 
-  rokz::CreateVertexBuffer_transfer (vb_transfer,  
-                                     sizeof(Vertex_simple),
-                                     8, //sizeof(simple_verts) / sizeof(Vertex_simple),
-                                     glob.device, 
-                                     glob.physical_device); 
-  
-
-  void* transfer_ptr = nullptr; 
-  if (rokz::MapBuffer ( &transfer_ptr, vb_transfer, glob.device)) {
-    memcpy (transfer_ptr, simple_verts,  sizeof(simple_verts) ); 
-    rokz::UnmapBuffer (vb_transfer, glob.device); 
+  rokz::Buffer vb_x; 
+  rokz::CreateInfo_VB_stage (vb_x.ci, sizeof(Vertex_simple), 8);
+  rokz::AllocCreateInfo_stage (vb_x.alloc_ci);
+  rokz::CreateBuffer (vb_x, glob.allocator);
+  if (rokz::MapMemory (&pmapped, vb_x.allocation, glob.allocator)) {
+    memcpy (pmapped, simple_verts,  sizeof(simple_verts) ); 
+    rokz::UnmapMemory (vb_x.allocation, glob.allocator); 
   }
-  transfer_ptr = nullptr;
- 
-  // rokz::CreateVertexBuffer (glob.vertex_buffer_user,  // glob.vertex_buffer_user
-  //                           sizeof(Vertex_simple),
-  //                           sizeof(simple_verts) / sizeof(Vertex_simple),
-  //                           glob.device, 
-  //                           glob.physical_device); 
-  
-  // rokz::MoveToBuffer_user_mem (glob.vertex_buffer_user, // glob.vertex_buffer_user
-  //                               simple_verts,
-  //                              sizeof(simple_verts),
-  //                              glob.device); 
-  rokz::CreateVertexBuffer_device (glob.vertex_buffer_device, 
-                                   sizeof(Vertex_simple),
-                                   8, // sizeof(simple_verts) / sizeof(Vertex_simple),
-                                   glob.device, 
-                                   glob.physical_device); 
 
-  // TransferToDevice 
-  rokz::MoveToBuffer_XB2DB  (glob.vertex_buffer_device, // device buffer
-                             vb_transfer, // user buffer, 
+  rokz::CreateInfo_VB_device (glob.vma_vb_device.ci, sizeof(Vertex_simple), 8);
+  rokz::AllocCreateInfo_device (glob.vma_vb_device.alloc_ci); 
+  rokz::CreateBuffer (glob.vma_vb_device, glob.allocator); 
+
+  rokz::MoveToBuffer_XB2DB  (glob.vma_vb_device, // device buffer
+                             vb_x, // user buffer, 
                              sizeof(simple_verts),
                              glob.command_pool, 
                              glob.queues.graphics,
-                             glob. device); 
+                             glob.device); 
 
-  rokz::DestroyBuffer  (vb_transfer, glob.device); 
-
+  rokz::Destroy  (vb_x, glob.allocator); 
+  
+  
   // INDEX BUFF
-  rokz::Buffer vma_ib_transfer;
-  rokz::CreateInfo_IB_16_stage (vma_ib_transfer.ci, 12); 
-  rokz::AllocCreateInfo_stage (vma_ib_transfer.alloc_ci);
-  rokz::CreateBuffer (vma_ib_transfer, glob.allocator);
+  rokz::Buffer ib_x;
+  rokz::CreateInfo_IB_16_stage (ib_x.ci, 12); 
+  rokz::AllocCreateInfo_stage (ib_x.alloc_ci);
+  rokz::CreateBuffer (ib_x, glob.allocator);
 
-  if  (rokz::MapMemory (&transfer_ptr, vma_ib_transfer.allocation, glob.allocator)) {
+  if  (rokz::MapMemory (&pmapped, ib_x.allocation, glob.allocator)) {
     printf ("sizeof simple_indices=%zu\n", sizeof(simple_indices)); 
-    memcpy (transfer_ptr, simple_indices, sizeof(simple_indices) ); 
-    rokz::UnmapMemory (vma_ib_transfer.allocation, glob.allocator); 
+    memcpy (pmapped, simple_indices, sizeof(simple_indices) ); 
+    rokz::UnmapMemory (ib_x.allocation, glob.allocator); 
   }
   
   rokz::CreateInfo_IB_16_device (glob.vma_ib_device.ci, 12); 
@@ -1220,22 +1231,24 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::CreateBuffer (glob.vma_ib_device, glob.allocator);
 
   rokz::MoveToBuffer_XB2DB  (glob.vma_ib_device, // device buffer
-                             vma_ib_transfer, // user buffer, 
+                             ib_x, // user buffer, 
                              sizeof(simple_indices),
                              glob.command_pool, 
                              glob.queues.graphics,
                              glob.device); 
-  rokz::Destroy  (vma_ib_transfer, glob.allocator); 
+  rokz::Destroy  (ib_x, glob.allocator); 
   
   
   //
   SetupSampler (glob); 
   
-  CreateUniformBuffers (glob.uniform_buffers,
-                        glob.uniform_mapped_pointers, 
-                        glob.device,
-                        glob.physical_device); 
+  // SetupUniformBuffers (glob.uniform_buffers,
+  //                      glob.uniform_mapped_pointers, 
+  //                      glob.device,
+  //                      glob.physical_device); 
+  SetupUniformBuffers (glob);
 
+  
   // rokz::DescriptorPool           uniform_descriptor_pool;
   // rokz::DescriptorGroup          uniform_group; 
   SetupTexture (glob); 

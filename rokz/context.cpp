@@ -1070,7 +1070,6 @@ void rokz::CleanupSwapchain(std::vector<VkFramebuffer> &framebuffers,
 void rokz::Cleanup(VkPipeline &pipeline,
                    std::vector<VkFramebuffer> &framebuffers,
                    VkSwapchainKHR &swapchain,
-                   BufferStruc&        vbstruc, 
                    VkSurfaceKHR &surf,
                    VkCommandPool &command_pool,
                    std::vector<SyncStruc>& syncs, 
@@ -1099,9 +1098,7 @@ void rokz::Cleanup(VkPipeline &pipeline,
 
                     swapchain, dev);
 
-  
-  DestroyBuffer (vbstruc, dev); 
-  
+   
   vkDestroyPipeline (dev, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);
   vkDestroyCommandPool ( dev, command_pool, nullptr);

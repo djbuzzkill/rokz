@@ -1,6 +1,9 @@
 #include "allocation.h"
 
 
+// ---------------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------------
 VmaAllocationCreateInfo& AllocCreateInfo_local    (VmaAllocationCreateInfo& ci){
 
   ci = {};
@@ -8,9 +11,9 @@ VmaAllocationCreateInfo& AllocCreateInfo_local    (VmaAllocationCreateInfo& ci){
   return ci;
 }
 
-
-
-// VMA
+// ---------------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------------
 VmaAllocationCreateInfo& rokz::AllocCreateInfo_stage (VmaAllocationCreateInfo& alloc_info) {
   
   alloc_info = {};
@@ -20,8 +23,9 @@ VmaAllocationCreateInfo& rokz::AllocCreateInfo_stage (VmaAllocationCreateInfo& a
   //alloc_info.priority = 1.0f;
   return alloc_info; 
 }
-
+// ---------------------------------------------------------------------------
 // VMA 
+// ---------------------------------------------------------------------------
 VmaAllocationCreateInfo& rokz::AllocCreateInfo_device (VmaAllocationCreateInfo& alloc_info) {
   
   alloc_info = {};
@@ -31,7 +35,24 @@ VmaAllocationCreateInfo& rokz::AllocCreateInfo_device (VmaAllocationCreateInfo& 
   return alloc_info; 
 }
 
+// ---------------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------------
+VmaAllocationCreateInfo& rokz::AllocCreateInfo_mapped (VmaAllocationCreateInfo& ci) {
+  ci = {}; 
 
+  ci.usage = VMA_MEMORY_USAGE_AUTO;
+  ci.flags  = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+            | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT
+            | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  
+  return ci;
+
+}
+
+// ---------------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------------
 void rokz::UnmapMemory (VmaAllocation const& allocation, VmaAllocator const& allocator) {
 
   vmaUnmapMemory (allocator, allocation); 
