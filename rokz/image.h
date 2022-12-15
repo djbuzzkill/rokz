@@ -67,16 +67,17 @@ namespace rokz {
                                                        uint32_t wd, uint32_t ht);
 
 
-
+  VkImageCreateInfo&       CreateInfo_2D_color  (VkImageCreateInfo& ci,
+                                                 VkFormat format, 
+                                                 VkSampleCountFlagBits num_samples,
+                                                 uint32_t wd, uint32_t ht);
+                                                 
   
   //VmaAllocationCreateInfo& Init        (VmaAllocationCreateInfo& alloc_info); 
   bool                CreateImage (Image& image, VmaAllocator const& allocator);
 
   void                Destroy       (Image& image, VmaAllocator const& allocator); 
 
-  VkImageCreateInfo&  CreateInfo_2D_device (VkImageCreateInfo& ci);
-  VkImageCreateInfo&  CreateInfo_2D_host   (VkImageCreateInfo& ci);
-  VkImageCreateInfo&  CreateInfo_2D_stage  (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht);
   // <----------- VMA
 }
 

@@ -204,50 +204,6 @@ struct Glob {
 };
 
 
-
-//
-void SetupDepthBuffer_ (Glob& glob) {
-  printf ("[%s]\n", __FUNCTION__); 
-
-  uint32_t wd = glob.create_info.swapchain.imageExtent.width; 
-  uint32_t ht = glob.create_info.swapchain.imageExtent.height;   
-
-  VkFormat depth_format;
-
-  if (rokz::FindDepthFormat (depth_format, glob.physical_device)) {
-
-    rokz::Init_2D_device (glob.depth_image.ci,
-                          VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                          glob.msaa_samples,
-                          wd, ht); 
-
-    glob.depth_image.ci.tiling = VK_IMAGE_TILING_OPTIMAL;
-    glob.depth_image.ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    glob.depth_image.ci.format = depth_format;
-    
-    rokz::CreateImage (glob.depth_image, glob.device);
-    // (swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-    rokz::Init (glob.depth_image.alloc_info,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                glob.depth_image.handle,
-                glob.device, glob.physical_device);
-
-    rokz::AllocateImageMemory (glob.depth_image,  glob.device); 
-
-    //VK_IMAGE_ASPECT_COLOR_BIT
-
-    rokz::Init (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
-    rokz::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device);
-    printf ("280 [%s]\n", __FUNCTION__); 
-
-
-    rokz::TransitionImageLayout; 
-    //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-  } 
-
-}
-
 //
 void SetupDepthBuffer (Glob& glob) {
   printf ("[%s]\n", __FUNCTION__); 
@@ -275,10 +231,6 @@ void SetupDepthBuffer (Glob& glob) {
     //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
   } 
-
-  
-  // Glob::depth_image;
-  // Glob::depth_imageview; 
   
 }
 
@@ -339,7 +291,7 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void SetupMutisampleColorResource (Glob& glob) {
+void SetupMutisampleColorResource_old (Glob& glob) {
 
   printf ("[%s]\n", __FUNCTION__); 
 
@@ -352,14 +304,6 @@ void SetupMutisampleColorResource (Glob& glob) {
                         glob.msaa_samples, swapchain_ext.width, swapchain_ext.height);
   
   rokz::CreateImage (glob.multisamp_color_image, glob.device); 
-
-
- /* rokz::Init (VkMemoryAllocateInfo& alloc_info, */
- /*             VkMemoryPropertyFlags prop_flags, */
- /*             const VkImage& image, */
- /*             const VkDevice& device, */
- /*             const VkPhysicalDevice& physdev) { */
-
 
   
   rokz::Init (glob.multisamp_color_image.alloc_info,
@@ -379,6 +323,31 @@ void SetupMutisampleColorResource (Glob& glob) {
 
 }
 
+// --------------------------------------------------------------------
+// VMA
+// --------------------------------------------------------------------
+void SetupMutisampleColorResource (Glob& glob) {
+
+  printf ("[%s]\n", __FUNCTION__); 
+
+  VkExtent2D& swapchain_ext    = glob.create_info.swapchain.imageExtent;
+  VkFormat    swapchain_format = glob.create_info.swapchain.imageFormat; 
+
+  rokz::CreateInfo_2D_color (glob.multisamp_color_image.ci, 
+                             swapchain_format, // 
+                             glob.msaa_samples,
+                             swapchain_ext.width, swapchain_ext.height);
+
+  rokz::AllocCreateInfo_device (glob.multisamp_color_image.alloc_ci);
+  rokz::CreateImage (glob.multisamp_color_image, glob.allocator);
+
+  // imageview 
+  rokz::Init (glob.multisamp_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.multisamp_color_image);
+  rokz::CreateImageView (glob.multisamp_color_imageview,
+                         glob.multisamp_color_imageview.ci,
+                         glob.device);
+
+}
 
 // --------------------------------------------------------------------
 //

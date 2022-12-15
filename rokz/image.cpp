@@ -197,6 +197,9 @@ VkImageCreateInfo& rokz::CreateInfo_2D_sample (VkImageCreateInfo& ci, VkSampleCo
   return ci;
 }
 
+// ---------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------
 VkImageCreateInfo& rokz::CreateInfo_2D_depthstencil (VkImageCreateInfo& ci,
                                                      VkFormat format, 
                                                      VkSampleCountFlagBits num_samples,
@@ -225,15 +228,35 @@ VkImageCreateInfo& rokz::CreateInfo_2D_depthstencil (VkImageCreateInfo& ci,
 }
 
 
-VkImageCreateInfo&  rokz::CreateInfo_2D_device (VkImageCreateInfo& ci) {
+// ---------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------
+VkImageCreateInfo& rokz::CreateInfo_2D_color  (VkImageCreateInfo&    ci,
+                                               VkFormat              format, 
+                                               VkSampleCountFlagBits num_samples,
+                                               uint32_t wd, uint32_t ht) {
+  // rokz:: ( glob.multisamp_color_image.ci, 
+  //                             ,
+  //                             glob.msaa_samples, swapchain_ext.width, swapchain_ext.height);
+  printf ("%s\n", __FUNCTION__);  
+
+  ci = {}; 
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent.width  = wd;
+  ci.extent.height = ht;
+  ci.extent.depth  = 1;
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = 1;
+  ci.format        = format; // VK_FORMAT_B8G8R8A8_SRGB; 
+  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage         = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
+  ci.samples       = num_samples;
+  ci.flags         = 0; 
   return ci;
+  
 }
 
-VkImageCreateInfo& rokz::CreateInfo_2D_host (VkImageCreateInfo& ci) {
-  return ci;
-}
-
-VkImageCreateInfo& rokz::CreateInfo_2D_stage (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht ) {
-  return ci;
-}
 
