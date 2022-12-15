@@ -30,8 +30,15 @@ namespace rokz {
 
     VkImageView           handle;
     VkImageViewCreateInfo ci; 
+
+    VmaAllocationCreateInfo alloc_ci; 
+    VmaAllocation           allocation;
+    VmaAllocationInfo       alloc_info_;
   };
   
+
+
+
   
   // ------------------------------------------------------------------
   VkImageCreateInfo& Init_2D_device (VkImageCreateInfo& ci, VkImageUsageFlags usage, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
@@ -46,15 +53,20 @@ namespace rokz {
  
   void Destroy (Image& image, const VkDevice& device);
   void Destroy (ImageView& image, const VkDevice& device);
-
   
-  // VMA 
-  VkImageCreateInfo& Init_2D_dev (VkImageCreateInfo& ci, VkImageUsageFlags usage, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
-  VmaAllocationCreateInfo& Init (VmaAllocationCreateInfo& alloc_info); 
 
-  bool CreateImage (Image& image, VmaAllocator const& allocator);
-  void Destroy (Image& image, VmaAllocator const& allocator); 
-  
+  // VMA ----------->
+  // VkImageCreateInfo&       Init_2D_dev (VkImageCreateInfo& ci, VkImageUsageFlags usage, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
+  VkImageCreateInfo&       CreateInfo_2D_sample_device  (VkImageCreateInfo& ci, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
+  //VmaAllocationCreateInfo& Init        (VmaAllocationCreateInfo& alloc_info); 
+  bool                CreateImage (Image& image, VmaAllocator const& allocator);
+
+  void                Destroy       (Image& image, VmaAllocator const& allocator); 
+
+  VkImageCreateInfo&  CreateInfo_2D_device (VkImageCreateInfo& ci);
+  VkImageCreateInfo&  CreateInfo_2D_host   (VkImageCreateInfo& ci);
+  VkImageCreateInfo&  CreateInfo_2D_stage  (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht);
+  // <----------- VMA
 }
 
 #endif

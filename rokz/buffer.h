@@ -19,8 +19,32 @@ namespace rokz {
     VkMemoryAllocateInfo  alloc_info;
     VkIndexType           index_type;
   }; 
-  
 
+
+  
+  // nu -------> 
+  struct Buffer {
+    VkBuffer                handle;
+    VkBufferCreateInfo      ci; 
+    VmaAllocationCreateInfo alloc_ci; 
+    VmaAllocation           allocation;
+    VmaAllocationInfo       alloc_info;
+  }; 
+
+
+  VkBufferCreateInfo& CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem); 
+  VkBufferCreateInfo& CreateInfo_IB_16_stage  (VkBufferCreateInfo& ci, uint32_t num_elem); 
+  VkBufferCreateInfo& CreateInfo_IB_16_local  (VkBufferCreateInfo& ci, uint32_t num_elem); 
+
+  VkBufferCreateInfo&      CreateInfo_VB_device   (VkBufferCreateInfo&);
+  VkBufferCreateInfo&      CreateInfo_VB_local     (VkBufferCreateInfo&);
+
+  VkBufferCreateInfo&      CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes);
+  
+  VkBufferCreateInfo&      CreateInfo_uniform   (VkBufferCreateInfo&);
+  bool                     CreateBuffer         (Buffer&, VmaAllocator const& allocator);
+
+  // <-------- nu 
   // ---------------------------------------------------------------------
   // 
   // ---------------------------------------------------------------------
@@ -30,9 +54,9 @@ namespace rokz {
   // ---------------------------------------------------------------------
   // 
   // ---------------------------------------------------------------------
-  bool CreateByteBuffer_transfer (BufferStruc& buffer, uint32_t  numbytes, 
-                                  const VkPhysicalDevice& physdev, 
-                                  const VkDevice& device ); 
+  // bool CreateByteBuffer_transfer (BufferStruc& buffer, uint32_t  numbytes, 
+  //                                 const VkPhysicalDevice& physdev, 
+  //                                 const VkDevice& device ); 
 
   
   // simple vb in user memory 
@@ -42,6 +66,9 @@ namespace rokz {
                            const VkDevice& device,
                            const VkPhysicalDevice& physdev); 
 
+
+  
+  
   //  transfer buffer
   bool CreateVertexBuffer_transfer (BufferStruc& buffstruc, 
                                     size_t sizeof_elem,
@@ -85,8 +112,17 @@ namespace rokz {
                            const VkCommandPool& command_pool, 
                            const VkQueue&       que, 
                            const VkDevice&      device); 
+
+  bool MoveToBuffer_XB2DB (Buffer&         buff_dst, // device buffer
+                           Buffer&         buff_src, // user buffer, 
+                           size_t               size,
+                           const VkCommandPool& command_pool, 
+                           const VkQueue&       que, 
+                           const VkDevice&      device); 
+
   // 
   void DestroyBuffer (BufferStruc& buf, const VkDevice &device); 
+  void Destroy (Buffer& image, VmaAllocator const& allocator); 
 
   
 }

@@ -11,6 +11,7 @@
 
 #include "context.h"
 #include "command.h"
+#include "allocation.h"
 #include "buffer.h"
 #include "image.h"
 #include "descriptor.h"

@@ -174,24 +174,10 @@ void rokz::Destroy (Image& image, VmaAllocator const& allocator) {
   vmaDestroyImage (allocator, image.handle, image.allocation); 
 }
 
-// ---------------------------------------------------------------------
-// VMA 
-// ---------------------------------------------------------------------
-VmaAllocationCreateInfo& rokz::Init (VmaAllocationCreateInfo& alloc_info) {
-  alloc_info = {};
-  alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-  return alloc_info;
-}
 
-// ---------------------------------------------------------------------
-// VMA 
-// ---------------------------------------------------------------------
-VkImageCreateInfo& rokz::Init_2D_dev (VkImageCreateInfo&       ci,
-                                         VkImageUsageFlags        usage,
-                                         VkSampleCountFlagBits    num_samples,
-                                         uint32_t wd, uint32_t ht) {
+// VMA
+VkImageCreateInfo& rokz::CreateInfo_2D_sample_device (VkImageCreateInfo& ci, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht) {
   printf ("%s VMA\n", __FUNCTION__); 
-
   ci = {}; 
   ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType     = VK_IMAGE_TYPE_2D;
@@ -203,10 +189,26 @@ VkImageCreateInfo& rokz::Init_2D_dev (VkImageCreateInfo&       ci,
   ci.format        = VK_FORMAT_B8G8R8A8_SRGB; // VK_FORMAT_R8G8B8A8_SRGB;
   ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
   ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  ci.usage         = usage; // VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  ci.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
   ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
   ci.samples       = num_samples;
   ci.flags         = 0; 
 
-  return ci; 
+  return ci;
 }
+
+
+
+
+VkImageCreateInfo&  rokz::CreateInfo_2D_device (VkImageCreateInfo& ci) {
+  return ci;
+}
+
+VkImageCreateInfo& rokz::CreateInfo_2D_host (VkImageCreateInfo& ci) {
+  return ci;
+}
+
+VkImageCreateInfo& rokz::CreateInfo_2D_stage (VkImageCreateInfo& ci, uint32_t wd, uint32_t ht ) {
+  return ci;
+}
+

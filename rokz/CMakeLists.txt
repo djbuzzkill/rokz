@@ -11,6 +11,7 @@ set (ROKZ_HEADER_FILES
   rokz.h
   context.h
   descriptor.h
+  allocation.h
   buffer.h
   image.h
   command.h
@@ -39,6 +40,7 @@ set (ROKZ_SOURCE_FILES
   context.cpp
   command.cpp
   descriptor.cpp
+  allocation.cpp
   buffer.cpp
   image.cpp
   shader.cpp
