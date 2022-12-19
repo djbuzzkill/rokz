@@ -185,29 +185,15 @@ namespace rokz {
 
 
 
+  // -------------------------------------------------------------------------
+  //
+  // -------------------------------------------------------------------------
 
   bool CreateSwapchain (Swapchain& swapchain, const Device& device);
   
-  void CleanupSwapchain (std::vector<VkFramebuffer>& framebuffers, 
-                         std::vector<VkImageView>&   image_views,
-                         
-                         Image&                      depth_image, 
-                         ImageView&                  depth_imageview,
-
-                         Image&                      multisamp_color_image, 
-                         ImageView&                  multisamp_color_imageview,
-
-                         Swapchain&                  swapchain,
-                         const Device&               device,
-                         const VmaAllocator&         allocator
-                         ); 
-
-  // bool               CreateSwapchain (VkSwapchainKHR& swapchain,
-  //                                     VkSwapchainCreateInfoKHR& swapchaincreateinfo,
-  //                                     const VkSurfaceKHR& surf,
-  //                                     const VkPhysicalDevice& physdev,
-  //                                     const VkDevice& dev,
-  //                                     GLFWwindow* glfwin);
+  // -------------------------------------------------------------------------
+  //
+  // -------------------------------------------------------------------------
   bool               RecreateSwapchain (Swapchain&                            swapchain,
                                         std::vector<VkImage>&                 swapchain_images, 
                                         std::vector<VkFramebuffer>&           framebuffers,
@@ -240,10 +226,6 @@ namespace rokz {
                                        VkFormat                swapchain_format,
                                        VkSampleCountFlagBits   msaa_samples, 
                                        const VkDevice &device, const VkPhysicalDevice& physdev);
-
-
-
-  
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -300,36 +282,48 @@ namespace rokz {
                                     const VkDevice&        device); 
 
   
+  // -------------------------------------------------------------------------
+  //
+  // -------------------------------------------------------------------------
   bool CreateSyncObjs (SyncStruc& sync, SyncCreateInfo& create_info, const VkDevice& device);
-
-
-
-
-  
 
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  void Cleanup (VkPipeline&                 pipeline,
-                std::vector<VkFramebuffer>& framebuffers, 
-                Swapchain&                  swapchain,
-                VkSurfaceKHR&               surf,
-                VkCommandPool&              command_pool, 
-                std::vector<SyncStruc>&     syncs, 
-                std::vector<ShaderModule>&  shader_modules,
-                VkPipelineLayout&           pipeline_layout,
-                RenderPass&                 render_pass,
-                std::vector<VkImageView>&   image_views,
-                Image&                      depth_image, 
-                ImageView&                  depth_imageview,
-                Image&                      multisamp_color_image, 
-                ImageView&                  multisamp_color_imageview,
+  void CleanupSwapchain (std::vector<VkFramebuffer>& framebuffers,
+                         std::vector<VkImageView>&   fb_image_views,
 
-                GLFWwindow*                 w,
-                Device&                     device,
-                VmaAllocator&               allocator, 
-                VkInstance&                 inst);
+                         rokz::Image&                msaa_color_image,
+                         rokz::ImageView&            msaa_color_imageview,
 
+                         rokz::Image&                depth_image,
+                         rokz::ImageView&            depth_imageview,
+
+                         rokz::Swapchain&            swapchain,
+                         const rokz::Device&         device,
+                         const VmaAllocator&         allocator); 
+
+  void Cleanup (VkPipeline&                       pipeline,
+                std::vector<VkFramebuffer>&       framebuffers,
+                std::vector<VkImageView>&         image_views,
+
+                rokz::Swapchain&                  swapchain,
+                VkSurfaceKHR&                     surf,
+                VkCommandPool&                    command_pool,
+                std::vector<rokz::SyncStruc>&     syncs, 
+                std::vector<rokz::ShaderModule>&  shader_modules,
+                VkPipelineLayout&                 pipeline_layout,
+                rokz::RenderPass&                 render_pass,
+                rokz::Image&                      msaa_color_image,
+                rokz::ImageView&                  msaa_color_imageview,
+
+                rokz::Image&                      depth_image,
+                rokz::ImageView&                  depth_imageview,
+
+                GLFWwindow*                       w,
+                rokz::Device&                     device,
+                VmaAllocator&                     allocator, 
+                VkInstance&                       inst);
 
   // moved 
   bool CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 

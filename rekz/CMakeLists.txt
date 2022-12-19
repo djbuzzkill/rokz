@@ -11,6 +11,7 @@ set (REKZ_HEADER_FILES
 	
 set (REKZ_SOURCE_FILES
   texture_tool.cpp
+  test_rokz_hpp.cpp
   test_rokz.cpp
   rekz.cpp
 )

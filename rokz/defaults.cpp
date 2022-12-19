@@ -201,10 +201,6 @@ VkPipelineViewportStateCreateInfo& rokz::Default (VkPipelineViewportStateCreateI
   return create_info;
 }    //    viewport_state_create_info{};
 
-VkPipelineRasterizationStateCreateInfo& rokz::Default (VkPipelineRasterizationStateCreateInfo& create_info) {
-  return create_info;
-}//  rasterizer{};
-
 VkPipelineMultisampleStateCreateInfo& rokz::Default (VkPipelineMultisampleStateCreateInfo& create_info)  {
   return create_info;
 } //   multisampling{};
