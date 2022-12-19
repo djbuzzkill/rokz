@@ -28,16 +28,6 @@ namespace rokz {
   // ---------------------------------------------------
   typedef std::optional<uint32_t> MaybeIndex;
 
-  // --------------------------------------------------------
-  struct QueueFamilyIndices {
-
-    QueueFamilyIndices () : graphics(), present () {
-    }
-    
-    MaybeIndex graphics;
-    MaybeIndex present; 
-  };
-
 
   // ---------------------------------------------------
   //

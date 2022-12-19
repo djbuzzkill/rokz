@@ -78,26 +78,12 @@ namespace rokz {
   // ----------------------------------------------------------
   //
   // ----------------------------------------------------------
-  struct SwapchainSupportInfo {
-    VkSurfaceCapabilitiesKHR        capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR>   present_modes;    
-  };
-  // ----------------------------------------------------------
-  //
-  // ----------------------------------------------------------
 
   const std::vector<const char*>& GetDeviceExtensionNames (); 
+  bool                      CheckValidationSupport      (const std::vector<const char*>& validation_layers);
+  bool                      FindMemoryType              (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
 
-  bool                  CheckValidationSupport (const std::vector<const char*>& val_layers); 
 
-  bool SelectPhysicalDevice (VkPhysicalDevice& physdev, VkPhysicalDeviceProperties& device_props, rokz::QueueFamilyIndices& queueind, const VkSurfaceKHR& surf, const VkInstance& inst); 
-
-  QueueFamilyIndices&   FindQueueFamilies (QueueFamilyIndices& queue_fams, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev);
-  SwapchainSupportInfo& QuerySwapchainSupport (SwapchainSupportInfo& deets, const VkSurfaceKHR& surf, const VkPhysicalDevice& dev); 
-  bool                  CheckValidationSupport (const std::vector<const char*>& validation_layers);
-  bool                  CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
-  bool                  FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
   std::vector<const char*>& GetRequiredExtensionNames   (std::vector<const char*>&  exts); 
 
 

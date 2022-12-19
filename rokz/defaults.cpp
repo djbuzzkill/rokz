@@ -172,19 +172,11 @@ VkDescriptorSetLayoutBinding& rokz::Init (VkDescriptorSetLayoutBinding& ds, uint
 
 
 
-VkInstanceCreateInfo& rokz::Default (VkInstanceCreateInfo& create_info) {
-  return create_info;
-}
-
 VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo& create_info) {
   return create_info;
 }
 
 VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& create_info) {
-  return create_info;
-}
-
-VkSwapchainCreateInfoKHR& rokz::Default (VkSwapchainCreateInfoKHR& create_info) {
   return create_info;
 }
 

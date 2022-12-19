@@ -10,6 +10,9 @@
 
 namespace rokz {
 
+  constexpr VkImageUsageFlags kSamplingUsage     = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  constexpr VkImageUsageFlags kDepthStencilUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; 
+  constexpr VkImageUsageFlags kColorTargetUsage  = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; 
   // ------------------------------------------------------------------
   struct Image {
 
@@ -36,10 +39,6 @@ namespace rokz {
     VmaAllocationInfo       alloc_info_;
   };
   
-
-
-
-  
   // ------------------------------------------------------------------
   VkImageCreateInfo& Init_2D_device (VkImageCreateInfo& ci, VkImageUsageFlags usage, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
   bool CreateImage (Image& image, const VkDevice& device); 
@@ -54,28 +53,44 @@ namespace rokz {
   void Destroy (Image& image, const VkDevice& device);
   void Destroy (ImageView& image, const VkDevice& device);
   
-
   // VMA ----------->
-  // VkImageCreateInfo&       Init_2D_dev (VkImageCreateInfo& ci, VkImageUsageFlags usage, VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
-  VkImageCreateInfo&       CreateInfo_2D_sample  (VkImageCreateInfo& ci,
-                                                  VkSampleCountFlagBits num_samples,
-                                                  uint32_t wd, uint32_t ht);
+  VkImageCreateInfo& CreateInfo_2D (VkImageCreateInfo&    ci,
+                                    VkFormat              format,
+                                    VkImageUsageFlags     usage_flags, 
+                                    VkSampleCountFlagBits num_samples,
+                                    uint32_t wd, uint32_t ht);
 
-  VkImageCreateInfo&       CreateInfo_2D_depthstencil (VkImageCreateInfo& ci,
+  // 
+  //
+  inline VkImageCreateInfo&CreateInfo_2D_color_sampling (VkImageCreateInfo& ci,
+                                                         VkSampleCountFlagBits num_samples,
+                                                         uint32_t wd, uint32_t ht) {
+    return CreateInfo_2D (ci, VK_FORMAT_B8G8R8A8_SRGB,  kSamplingUsage, num_samples, wd, ht); 
+  }
+  
+  // 
+  //
+  inline VkImageCreateInfo& CreateInfo_2D_depthstencil (VkImageCreateInfo& ci,
                                                        VkFormat format, 
                                                        VkSampleCountFlagBits num_samples,
-                                                       uint32_t wd, uint32_t ht);
+                                                        uint32_t wd, uint32_t ht) {
+    return CreateInfo_2D (ci, format, kDepthStencilUsage, num_samples, wd, ht); 
+  }
 
-
-  VkImageCreateInfo&       CreateInfo_2D_color  (VkImageCreateInfo& ci,
-                                                 VkFormat format, 
-                                                 VkSampleCountFlagBits num_samples,
-                                                 uint32_t wd, uint32_t ht);
+  // 
+  //
+  inline VkImageCreateInfo& CreateInfo_2D_color_target (VkImageCreateInfo& ci,
+                                                        VkFormat format, 
+                                                        VkSampleCountFlagBits num_samples,
+                                                        uint32_t wd, uint32_t ht) {
+    return CreateInfo_2D (ci, format, kColorTargetUsage, num_samples, wd, ht); 
+  }
                                                  
-  
-  //VmaAllocationCreateInfo& Init        (VmaAllocationCreateInfo& alloc_info); 
-  bool                CreateImage (Image& image, VmaAllocator const& allocator);
-
+  // 
+  //
+  bool                CreateImage   (Image& image, VmaAllocator const& allocator);
+  // 
+  //
   void                Destroy       (Image& image, VmaAllocator const& allocator); 
 
   // <----------- VMA
