@@ -3,16 +3,11 @@
 #define ROKZ_WINDOW_H
 
 #include "common.h"
+#include "shared_types.h"
 
 namespace rokz {
 
 
-  // ----------------------------------------------------------
-  //
-  // ----------------------------------------------------------
-  struct Window {
-    GLFWwindow*  glfw_window;
-  };
 
   GLFWwindow* CreateWindow_glfw (GLFWwindow*& w); 
 

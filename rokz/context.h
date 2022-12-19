@@ -4,112 +4,19 @@
 
 
 #include "common.h"
-#include "buffer.h"
-#include "image.h"
-#include "shader.h"
-#include "window.h"
-#include "descriptor.h"
+#include "shared_types.h"
+
 #include "defaults.h"
+
 
 
 namespace rokz {
 
-  // --------------------------------------------------------
-  struct SyncStruc  {
-    VkSemaphore image_available_sem;
-    VkSemaphore render_fnished_sem;
-    VkFence     in_flight_fen;
-  };
-  
-  // --------------------------------------------------------
-  struct RenderPass {
-    enum AttachmentIndex {
-      COLOR = 0, 
-      DEPTHSTENCIL = 1, 
-      CORESOLV = 2,
-      UNUSED_2 = 3,
-      ATTACHMENT_INDEX_MAX
-    }; 
-  
-    VkRenderPass            handle; 
-    VkRenderPassCreateInfo  create_info;
-
-    VkAttachmentDescription attach_desc[ATTACHMENT_INDEX_MAX];
-    VkAttachmentReference   attach_ref[ATTACHMENT_INDEX_MAX];
-    std::vector<VkSubpassDescription> subpass_descs;
-
-    VkSubpassDependency dependancy;
-  };
-
-  // --------------------------------------------------------
-  struct SyncCreateInfo {
-    VkSemaphoreCreateInfo  semaphore;
-    VkFenceCreateInfo      fence;
-  }; 
-
-  // --------------------------------------------------------
-  struct PipelineLayout { 
-    VkPipelineLayout            handle;
-    VkPipelineLayoutCreateInfo  ci;
-  };
-
-
-
-  // --------------------------------------------------------
-  struct QueueFamilyIndices {
-
-    QueueFamilyIndices () : graphics(), present () {
-    }
-    
-    MaybeIndex graphics;
-    MaybeIndex present; 
-  };
 
 
   QueueFamilyIndices&   FindQueueFamilies (QueueFamilyIndices& queue_fams, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev);
   
-  // --------------------------------------------------------
-  struct PhysicalDevice {
-    VkPhysicalDevice           handle;
-    VkPhysicalDeviceProperties properties;
-    VkPhysicalDeviceFeatures   features;
-    QueueFamilyIndices         family_indices;
-  }; 
 
-  // --------------------------------------------------------
-  struct Device {
-    VkDevice                handle;
-    VkDeviceCreateInfo      ci;
-    std::vector<VkDeviceQueueCreateInfo>  queue_ci;
-  }; 
-  
-  // --------------------------------------------------------
-  struct Instance {
-    VkInstance handle;
-    VkInstanceCreateInfo ci;
-
-    std::vector<const char*> required_extensions;
-    VkApplicationInfo app_info;
-  };
-
-  // ----------------------------------------------------------
-  //
-  // ----------------------------------------------------------
-  struct SwapchainSupportInfo {
-    VkSurfaceCapabilitiesKHR        capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR>   present_modes;    
-  };
-
-  // ----------------------------------------------------------
-  //
-  // ----------------------------------------------------------
-  struct Swapchain {
-    VkSwapchainKHR           handle;
-    VkSwapchainCreateInfoKHR ci;
-    std::vector<uint32_t>    family_indices; 
-    //SwapchainSupportInfo     swapchain_support_info;
-  }; 
   
   // ----------------------------------------------------------------------
   //
@@ -124,27 +31,6 @@ namespace rokz {
   //
   // ----------------------------------------------------------------------
   bool SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR& surf, const VkInstance& inst); 
-
-  // --------------------------------------------------------
-  struct PipelineStateCreateInfo {
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages; 
-    VkPipelineInputAssemblyStateCreateInfo      input_assembly; 
-    VkPipelineVertexInputStateCreateInfo        vertex_input_state;
-    VkPipelineViewportStateCreateInfo           viewport_state;
-    VkPipelineRasterizationStateCreateInfo      rasterizer;
-    VkPipelineMultisampleStateCreateInfo        multisampling;
-    VkPipelineDepthStencilStateCreateInfo       depthstencil;
-    VkPipelineColorBlendStateCreateInfo         colorblend; 
-    VkPipelineDynamicStateCreateInfo            dynamic_state;
-  };
-
-  // --------------------------------------------------------
-  struct Pipeline { 
-    VkPipeline                   handle; 
-    VkGraphicsPipelineCreateInfo ci;
-    PipelineLayout               layout; 
-    PipelineStateCreateInfo      state_ci;
-  };
 
 
 
@@ -194,31 +80,32 @@ namespace rokz {
   // -------------------------------------------------------------------------
   //
   // -------------------------------------------------------------------------
-  bool               RecreateSwapchain (Swapchain&                            swapchain,
-                                        std::vector<VkImage>&                 swapchain_images, 
-                                        std::vector<VkFramebuffer>&           framebuffers,
-                                        std::vector<VkFramebufferCreateInfo>& create_infos,
-                                        RenderPass&                           render_pass, 
-                                        std::vector<VkImageView>&             image_views, 
+  bool               RecreateSwapchain (Swapchain&                          swapchain,
+                                        std::vector<Image>&                 swapchain_images, 
+                                        std::vector<Framebuffer>&           framebuffers,
+                                        std::vector<ImageView>&             image_views, 
 
-                                        Image&                                depth_image, 
-                                        ImageView&                            depth_imageview,
+                                        RenderPass&                         render_pass, 
+                                        Image&                              depth_image, 
+                                        ImageView&                          depth_imageview,
 
-                                        Image&                                multisamp_color_image, 
-                                        ImageView&                            multisamp_color_imageview,
+                                        Image&                              multisamp_color_image, 
+                                        ImageView&                          multisamp_color_imageview,
 
-                                        //VkSurfaceKHR&                         surface,
-                                        //VkPhysicalDevice&                     physdev,
-                                        // const SwapchainSupportInfo&           swapchain_support_info,
                                         const Device&                         device,
                                         const VmaAllocator&                   allocator,
                                         GLFWwindow*                           glfwin); 
 
+
+
+
+
+
+  
+
   bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
-  bool               CreateImageViews(std::vector<VkImageView> &swapchain_imageviews, const std::vector<VkImage> &swapchain_images, VkFormat surf_fmt, const Device& device); 
-
-
-
+  bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
+  
   bool               CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
   bool               CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
@@ -229,29 +116,7 @@ namespace rokz {
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
-                                     VkPipelineLayoutCreateInfo&  create_info, 
-                                     const VkDescriptorSetLayout& desc_set_layout, 
-                                     const VkDevice&              device); 
 
-
-  bool CreateFramebuffers (std::vector<VkFramebuffer>&           framebuffers,
-                           std::vector<VkFramebufferCreateInfo>& create_infos,
-                           const RenderPass&                     render_pass, 
-                           const VkExtent2D                      swapchain_ext, 
-                           const std::vector<VkImageView>&       image_views, 
-                           const VkImageView&                    msaa_color_imageview, 
-                           const VkImageView&                    depth_imageview, 
-                           const Device&                         device); 
-
-  bool CreateFramebuffer (VkFramebuffer&           framebuffers,
-                          VkFramebufferCreateInfo& create_infos,
-                          const RenderPass&        render_pass, 
-                          const VkExtent2D         swapchain_ext, 
-                          VkImageView&             image_views, 
-                          const VkImageView&       msaa_color_imageview, 
-                          const VkImageView&       depth_imageview, 
-                          const VkDevice&          device);
 
   bool CreateCommandPool (VkCommandPool&            command_pool,
                           VkCommandPoolCreateInfo&  create_info,
@@ -290,8 +155,8 @@ namespace rokz {
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  void CleanupSwapchain (std::vector<VkFramebuffer>& framebuffers,
-                         std::vector<VkImageView>&   fb_image_views,
+  void CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
+                         std::vector<ImageView>&     fb_image_views,
 
                          rokz::Image&                msaa_color_image,
                          rokz::ImageView&            msaa_color_imageview,
@@ -304,8 +169,9 @@ namespace rokz {
                          const VmaAllocator&         allocator); 
 
   void Cleanup (VkPipeline&                       pipeline,
-                std::vector<VkFramebuffer>&       framebuffers,
-                std::vector<VkImageView>&         image_views,
+
+                std::vector<Framebuffer>&         framebuffers,
+                std::vector<ImageView>&           fb_image_views,
 
                 rokz::Swapchain&                  swapchain,
                 VkSurfaceKHR&                     surf,

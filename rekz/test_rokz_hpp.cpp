@@ -111,7 +111,7 @@ struct CreateInfo {
   std::vector<VkCommandBufferAllocateInfo> command_buffer; 
 
   VkGraphicsPipelineCreateInfo             pipeline;
-  std::vector<VkFramebufferCreateInfo>     framebuffers; 
+  //std::vector<VkFramebufferCreateInfo>     framebuffers; 
   //
 
   std::vector<rokz::SyncCreateInfo> syncs; 
@@ -134,9 +134,9 @@ struct Glob {
   
   VmaAllocator                 allocator;
   
-  std::vector<VkImage>         swapchain_images;
-  std::vector<VkImageView>     swapchain_imageviews;
-  std::vector<VkFramebuffer>   swapchain_framebuffers;
+  std::vector<rokz::Image>           swapchain_images;
+  std::vector<rokz::ImageView>       swapchain_imageviews;
+  std::vector<rokz::Framebuffer>     swapchain_framebuffers;
   //std::vector<VkShaderModule>  shader_modules; 
 
   rokz::Image                  depth_image;
@@ -220,7 +220,7 @@ void setup_depth_buffer (Glob& glob) {
     rokz::AllocCreateInfo_device (glob.depth_image.alloc_ci); 
     rokz::CreateImage (glob.depth_image, glob.allocator);
 
-    rokz::Init (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
+    rokz::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
     rokz::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
     printf ("280 [%s]\n", __FUNCTION__); 
 
@@ -305,7 +305,7 @@ void setup_mutisample_color_resource (Glob& glob) {
   rokz::CreateImage (glob.multisamp_color_image, glob.allocator);
 
   // imageview 
-  rokz::Init (glob.multisamp_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.multisamp_color_image);
+  rokz::CreateInfo (glob.multisamp_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.multisamp_color_image);
   rokz::CreateImageView (glob.multisamp_color_imageview,
                          glob.multisamp_color_imageview.ci,
                          glob.device.handle);
@@ -370,7 +370,8 @@ void test_cleanup (Glob& glob) {
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
 
   Cleanup (glob.pipeline.handle,
-           glob.swapchain_framebuffers, glob.swapchain_imageviews,
+           glob.swapchain_framebuffers,
+           glob.swapchain_imageviews,
 
            glob.swapchain,
            glob.surface,
@@ -379,9 +380,7 @@ void test_cleanup (Glob& glob) {
            glob.shader_modules,
            glob.pipeline.layout.handle, 
            glob.render_pass,
-
            glob.multisamp_color_image, glob.multisamp_color_imageview,
-
            glob.depth_image, glob.depth_imageview,
 
            glob.window.glfw_window,
@@ -513,7 +512,7 @@ void setup_texture_imageview (Glob& glob) {
 
   printf ("[%s]\n", __FUNCTION__); 
 
-  rokz::Init (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
+  rokz::CreateInfo (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
   if (vkCreateImageView(glob.device.handle, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle) != VK_SUCCESS) {
     printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
   }
@@ -900,9 +899,10 @@ bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>
     return rokz::RecreateSwapchain (glob.swapchain, 
                                     glob.swapchain_images,
 
-                                    glob.swapchain_framebuffers, glob.create_info.framebuffers,
+                                    glob.swapchain_framebuffers,
+                                    glob.swapchain_imageviews,
 
-                                    glob.render_pass, glob.swapchain_imageviews,
+                                    glob.render_pass, 
 
                                     glob.depth_image, glob.depth_imageview,
 
@@ -932,7 +932,7 @@ bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>
                                      glob.vma_vb_device.handle, 
                                      glob.vma_ib_device.handle,
                                      glob.swapchain.ci.imageExtent,
-                                     glob.swapchain_framebuffers[image_index],
+                                     glob.swapchain_framebuffers[image_index].handle,
                                      glob.render_pass,
                                      glob.device.handle);
 
@@ -1102,12 +1102,9 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
 
   rokz::CreateSwapchain (glob.swapchain, glob.device); 
 
-  rokz::GetSwapChainImages (glob.swapchain_images, glob.swapchain.handle, glob.device.handle); 
+  rokz::GetSwapChainImages (glob.swapchain_images, glob.swapchain, glob.device.handle); 
 
-  rokz::CreateImageViews (glob.swapchain_imageviews,
-                          glob.swapchain_images,
-                          glob.swapchain.ci.imageFormat, 
-                          glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rokz::CreateImageViews (glob.swapchain_imageviews, glob.swapchain_images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
   rokz::CreateRenderPass (glob.render_pass,
                           glob.swapchain.ci.imageFormat,
@@ -1183,10 +1180,9 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
   setup_depth_buffer (glob);
   
   rokz::CreateFramebuffers (glob.swapchain_framebuffers,
-                            glob.create_info.framebuffers,
+                            glob.swapchain_imageviews,
                             glob.render_pass,
                             glob.swapchain.ci.imageExtent,
-                            glob.swapchain_imageviews,
                             glob.multisamp_color_imageview.handle,
                             glob.depth_imageview.handle,
                             glob.device); 
@@ -1337,5 +1333,90 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
   printf ("[EXIT] %s\n", __FUNCTION__);
   return 0;
 }
+
+
+
+
+int  test_time () {
+
+  double dt = 0.0;
+
+  const double time_per_frame_sec = 1.0 / 60.0;
+  dt = time_per_frame_sec; // just do this for now
+  
+  std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
+  
+  std::chrono::duration<size_t, std::chrono::microseconds::period>
+    time_per_frame(time_per_frame_us);
+
+  Glob fake;
+  //  Default (fake);
+
+  
+  size_t curr_frame = 0;   
+  auto t0 = std::chrono::high_resolution_clock::now(); 
+  auto then = t0; 
+
+
+  int countdown = 30; 
+
+  double counter_f64 = 0.0;
+  
+  while (countdown) {
+
+    //start = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::high_resolution_clock::now();
+
+    //  std::chrono::milliseconds
+    //dt =
+    //std::cout << "microseconds: " << time_per_frame_us << std::endl;
+    //    auto auto_dt = -0.000001 *std::chrono::duration_cast<std::chrono::milliseconds> (then - now);
+
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds> (then - now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds> (then - now);
+    auto us = std::chrono::duration_cast<std::chrono::microseconds> (then - now);
+    std::cout << "ms: " << -ms.count () << std::endl ;
+    std::cout << "us: " << us.count () << std::endl ;
+    // auto auto_dt =  -0.000001 * us.count ();    
+    // << "secs: " << seconds.count () << std::endl;
+    //auto_dt
+    dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds> (then - now).count ();     
+
+    counter_f64 += dt ;
+    if (counter_f64 += 60.0) {
+      counter_f64 = counter_f64 - 60.0;
+    }
+      
+    
+    std::cout << "us: " << us.count () << std::endl ;
+
+    //    UpdateScene (fake, dt); 
+
+    //std::chrono::duration<std::chrono::seconds>;
+    //dt =     std::chrono::duration< double>  (then - now); 
+    //dt = ;
+
+    double _ = 0.0;
+    for (int i = 0; i < 373511; ++i) {
+      _ += std::sqrt ( std::cos (i * 0.0123) * std::cos (i * 0.0123) + std::sin (i * 0.0123) * std::sin (i * 0.0123) );
+    }
+    
+    // how long did we take
+    // auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+    // if (time_to_make_frame < time_per_frame) {
+    //   auto sleep_time = time_per_frame - time_to_make_frame;
+    //   std::this_thread::sleep_for(sleep_time);
+    // }
+    // curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
+
+    then = now; // std::chrono::high_resolution_clock::now(); 
+
+    countdown--; 
+  }
+
+  return 0; 
+}
+
+
 
 

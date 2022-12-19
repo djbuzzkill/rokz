@@ -14,6 +14,8 @@
 #include "allocation.h"
 #include "buffer.h"
 #include "image.h"
+#include "framebuffer.h"
+#include "pipeline.h"
 #include "descriptor.h"
 #include "shader.h"
 #include "texture.h"

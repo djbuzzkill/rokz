@@ -15,6 +15,8 @@ set (ROKZ_HEADER_FILES
   buffer.h
   image.h
   command.h
+  pipeline.h
+  framebuffer.h
   shader.h
   texture.h
   uniform.h
@@ -39,6 +41,8 @@ set (ROKZ_SOURCE_FILES
 
   context.cpp
   command.cpp
+  pipeline.cpp
+  framebuffer.cpp
   descriptor.cpp
   allocation.cpp
   buffer.cpp

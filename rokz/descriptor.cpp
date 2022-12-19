@@ -53,6 +53,30 @@ bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSe
     return true;
 }
 
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+bool CreateDescriptorSet (VkDescriptorSetLayout&              desc_set_layout, 
+                          VkDescriptorSetLayoutCreateInfo&    create_info,
+                          const VkDescriptorSetLayoutBinding& desc_set_layout_binding, 
+                          const VkDevice&                     device) {
+
+  create_info = {};
+  create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  create_info.bindingCount = 1;
+  create_info.pBindings = &desc_set_layout_binding;
+
+  if (vkCreateDescriptorSetLayout(device, &create_info, nullptr, &desc_set_layout) != VK_SUCCESS) {
+    printf ("FAILED create descriptor set layout\n");
+    return true; 
+  }
+
+  return true; 
+}
+
+
+
 // bool CreateDescriptorSetLayout (VkDescriptorSetLayout&              descriptor_set_layout,
 //                                 VkDescriptorSetLayoutCreateInfo&    ci,
 //                                 const VkDescriptorSetLayoutBinding& binding,

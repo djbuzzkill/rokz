@@ -8,14 +8,6 @@
 namespace rokz {
 
 
-  // --------------------------------------------------------
-  struct ShaderModule {
-    VkShaderModule                 handle; 
-    rokz::bytearray                bin; 
-    VkShaderModuleCreateInfo       ci;
-  };
-  
-
   
   bool               CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev);
   bool               CreateShaderModules (std::vector<ShaderModule>&                    shader_modules,

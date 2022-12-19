@@ -85,10 +85,95 @@ bool rokz::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
   return true; 
 }
 
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
+bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
+
+  printf ("%s\n", __FUNCTION__);  
+
+  if (vkCreateImageView (device, &ci, nullptr, &iv.handle) != VK_SUCCESS) {
+    printf ("[FAILED] %s  create image view!", __FUNCTION__);
+    return false;
+  }
+  
+  return true; 
+}
+
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateImageViews (std::vector<VkImageView>&  imageviews,
+                            const std::vector<VkImage>& images,
+                            VkFormat                    surf_fmt, 
+                            const Device&               device) {
+
+  printf ("%s\n", __FUNCTION__); 
+  
+  imageviews.resize (images.size()); 
+  
+  for (size_t i = 0; i < imageviews.size(); i++) {
+    //Init (createinfo, VK_IMAGE_ASPECT_COLOR_BIT, swapchain_images[i] ); 
+    //    Default (createinfo, swapchain_images[i], surf_fmt); 
+    rokz::Image image_temp {};
+    image_temp.handle = images[i];
+    image_temp.ci.format = surf_fmt;
+    
+    ImageView imagev = {};
+    imagev.handle = imageviews[i];
+
+    // CREATEINFO for imageviews from swapchain images
+    CreateInfo (imagev.ci, VK_IMAGE_ASPECT_COLOR_BIT, image_temp); 
+    
+    if (!CreateImageView (imagev, imagev.ci, device.handle)) {
+       printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
+    }
+
+    imageviews[i] = imagev.handle;
+    
+    // VkResult res = vkCreateImageView (dev, &ci, nullptr, &swapchain_imageviews[i]);
+    // if (res != VK_SUCCESS) {
+    //   printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
+    //   return false; 
+    // }
+  }
+
+  printf ("BAI %s\n", __FUNCTION__); 
+  return true;   
+}
+
+// ---------------------------------------------------------------------
+// CreateInfo for images from swapchain
+// ---------------------------------------------------------------------
+VkImageCreateInfo& rokz::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci) {
+  printf ("%s VMA\n", __FUNCTION__); 
+  ci = {}; 
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent.width  = swapchain_ci.imageExtent.width;
+  ci.extent.height = swapchain_ci.imageExtent.height;
+  ci.extent.depth  = 1;
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = 1;
+  ci.format        = swapchain_ci.imageFormat; 
+  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage         = swapchain_ci.imageUsage;
+  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
+  ci.samples       = VK_SAMPLE_COUNT_1_BIT; // ??is it  always 1 ??
+  ci.flags         = 0; 
+  return ci;
+
+
+}
+
+// ---------------------------------------------------------------------
+// CreateINFO for imageview from image 
+// ---------------------------------------------------------------------
+VkImageViewCreateInfo& rokz::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
 
   printf ("%s\n", __FUNCTION__);  
 
@@ -107,26 +192,33 @@ VkImageViewCreateInfo& rokz::Init (VkImageViewCreateInfo& ci, VkImageAspectFlags
   ci.subresourceRange.levelCount = 1;
   ci.subresourceRange.baseArrayLayer = 0;
   ci.subresourceRange.layerCount = 1;
-  
   return ci; 
 }
 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
+bool rokz::CreateImageViews (std::vector<ImageView>&   imageviews,
+                            const std::vector<Image>&  images,
+                            const Device&              device) {
 
-  printf ("%s\n", __FUNCTION__);  
-
-  if (vkCreateImageView (device, &ci, nullptr, &iv.handle) != VK_SUCCESS) {
-    printf ("[FAILED] %s  create image view!", __FUNCTION__);
-    return false;
-  }
+  printf ("%s\n", __FUNCTION__); 
   
-  return true; 
+  imageviews.resize (images.size()); 
+  
+  for (size_t i = 0; i < images.size(); i++) {
+    // CREATEINFO for imageviews from swapchain images
+    CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
+    
+    if (!CreateImageView (imageviews[i], imageviews[i].ci, device.handle)) {
+       printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
+    }
+
+  }
+
+  printf ("BAI %s\n", __FUNCTION__); 
+  return true;   
 }
-
-
 
 
 // --------------------------------------------------------------------
