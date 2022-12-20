@@ -28,11 +28,10 @@ namespace rokz {
   // ---------------------------------------------------
   typedef std::optional<uint32_t> MaybeIndex;
 
-
   // --------------------------------------------------------
   struct QueueFamilyIndices {
 
-    QueueFamilyIndices () : graphics(), present () {
+    QueueFamilyIndices () : graphics (), present () {
     }
     
     MaybeIndex graphics;
@@ -44,20 +43,32 @@ namespace rokz {
   // ----------------------------------------------------------
 
   struct Window {
+    Window () : glfw_window (nullptr) {
+    }
+    
     GLFWwindow*  glfw_window;
   };
 
   // --------------------------------------------------------
   struct Instance {
+
+    Instance () : handle (VK_NULL_HANDLE), ci(), required_extensions (), app_info () {
+    }
+    
     VkInstance handle;
     VkInstanceCreateInfo ci;
 
     std::vector<const char*> required_extensions;
-    VkApplicationInfo app_info;
+    std::vector<std::string> extension_strings; 
+    VkApplicationInfo        app_info;
   };
 
   // --------------------------------------------------------
   struct PhysicalDevice {
+    PhysicalDevice () : handle (VK_NULL_HANDLE),
+      properties (),  features (), family_indices () {}
+    
+    
     VkPhysicalDevice           handle;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceFeatures   features;
@@ -66,15 +77,21 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct Device {
-    VkDevice                handle;
-    VkDeviceCreateInfo      ci;
-    std::vector<VkDeviceQueueCreateInfo>  queue_ci;
+
+    Device () : handle (VK_NULL_HANDLE) , ci (), queue_ci () {
+    }
+      
+    VkDevice                             handle;
+    VkDeviceCreateInfo                   ci;
+    std::vector<VkDeviceQueueCreateInfo> queue_ci;
   }; 
   
-
-
   // --------------------------------------------------------
   struct ShaderModule {
+
+    ShaderModule () : handle (VK_NULL_HANDLE), bin (), ci () {
+    }
+    
     VkShaderModule                 handle; 
     rokz::bytearray                bin; 
     VkShaderModuleCreateInfo       ci;
@@ -82,6 +99,9 @@ namespace rokz {
 
   // ------------------------------------------------------------------
   struct Image {
+
+    Image () : handle (VK_NULL_HANDLE), ci (), mem (), alloc_info (), 
+               alloc_ci (), allocation (),alloc_info_ () {}
 
     VkImage              handle;
     VkImageCreateInfo    ci;
@@ -97,44 +117,55 @@ namespace rokz {
 
   // ------------------------------------------------------------------
   struct ImageView {
+    ImageView() : handle (VK_NULL_HANDLE), ci () { 
+    }
 
-    VkImageView           handle;
-    VkImageViewCreateInfo ci; 
-
-    VmaAllocationCreateInfo alloc_ci; 
-    VmaAllocation           allocation;
-    VmaAllocationInfo       alloc_info_;
+    VkImageView             handle;
+    VkImageViewCreateInfo   ci; 
   };
   
   // ---------------------------------------------------------------------
   struct Framebuffer {
-    VkFramebuffer           handle; 
-    VkFramebufferCreateInfo ci;
+    Framebuffer () : handle (VK_NULL_HANDLE), ci (), attachments () {
+    }
+    
+    VkFramebuffer            handle; 
+    VkFramebufferCreateInfo  ci;
     std::vector<VkImageView> attachments; 
   };
 
   // --------------------------------------------------------
   struct PipelineStateCreateInfo {
+    PipelineStateCreateInfo () : shader_stages (), input_assembly (), vertex_input_state (), viewport_state (),
+                                 rasterizer (), multisampling (), depthstencil (), colorblend (), dynamic_state () {
+    }
+
     std::vector<VkPipelineShaderStageCreateInfo> shader_stages; 
-    VkPipelineInputAssemblyStateCreateInfo      input_assembly; 
-    VkPipelineVertexInputStateCreateInfo        vertex_input_state;
-    VkPipelineViewportStateCreateInfo           viewport_state;
-    VkPipelineRasterizationStateCreateInfo      rasterizer;
-    VkPipelineMultisampleStateCreateInfo        multisampling;
-    VkPipelineDepthStencilStateCreateInfo       depthstencil;
-    VkPipelineColorBlendStateCreateInfo         colorblend; 
-    VkPipelineDynamicStateCreateInfo            dynamic_state;
+    VkPipelineInputAssemblyStateCreateInfo       input_assembly; 
+    VkPipelineVertexInputStateCreateInfo         vertex_input_state;
+    VkPipelineViewportStateCreateInfo            viewport_state;
+    VkPipelineRasterizationStateCreateInfo       rasterizer;
+    VkPipelineMultisampleStateCreateInfo         multisampling;
+    VkPipelineDepthStencilStateCreateInfo        depthstencil;
+    VkPipelineColorBlendStateCreateInfo          colorblend; 
+    VkPipelineDynamicStateCreateInfo             dynamic_state;
   };
 
   // --------------------------------------------------------
-  struct PipelineLayout { 
+  struct PipelineLayout {
+    PipelineLayout () : handle (VK_NULL_HANDLE) , ci () {
+    }
+    
     VkPipelineLayout            handle;
     VkPipelineLayoutCreateInfo  ci;
   };
 
 
   // --------------------------------------------------------
-  struct Pipeline { 
+  struct Pipeline {
+    Pipeline () : handle (VK_NULL_HANDLE), ci (), layout (), state_ci () {
+    }
+    
     VkPipeline                   handle; 
     VkGraphicsPipelineCreateInfo ci;
     PipelineLayout               layout; 
@@ -143,6 +174,9 @@ namespace rokz {
 
   // ----------------------------------------------------------
   struct SwapchainSupportInfo {
+    SwapchainSupportInfo () : capabilities (), formats (), present_modes () {
+    }
+      
     VkSurfaceCapabilitiesKHR        capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR>   present_modes;    
@@ -150,6 +184,9 @@ namespace rokz {
 
   // ----------------------------------------------------------
   struct Swapchain {
+    Swapchain () : handle (VK_NULL_HANDLE), ci (), family_indices () {
+    }
+    
     VkSwapchainKHR           handle;
     VkSwapchainCreateInfoKHR ci;
     std::vector<uint32_t>    family_indices; 
@@ -157,49 +194,51 @@ namespace rokz {
   }; 
   // --------------------------------------------------------
   struct SyncStruc  {
+
+    SyncStruc () :image_available_sem (), render_fnished_sem (), in_flight_fen () {
+    }
+      
     VkSemaphore image_available_sem;
     VkSemaphore render_fnished_sem;
     VkFence     in_flight_fen;
   };
   
+
+  enum AttachmentIndex {
+    ATTACH_COLOR = 0, 
+    ATTACH_DEPTHSTENCIL = 1, 
+    ATTACH_COLRESOLV = 2,
+    ATTACH_UNUSED_2 = 3,
+    ATTACHMENT_INDEX_MAX
+  }; 
+
   // --------------------------------------------------------
   struct RenderPass {
-    enum AttachmentIndex {
-      COLOR = 0, 
-      DEPTHSTENCIL = 1, 
-      CORESOLV = 2,
-      UNUSED_2 = 3,
-      ATTACHMENT_INDEX_MAX
-    }; 
-  
+
+    RenderPass () : handle (VK_NULL_HANDLE), create_info(), attach_desc (),
+                    attach_ref (), subpass_descs(), dependancy () {
+    }
+    
     VkRenderPass            handle; 
     VkRenderPassCreateInfo  create_info;
 
-    VkAttachmentDescription attach_desc[ATTACHMENT_INDEX_MAX];
-    VkAttachmentReference   attach_ref[ATTACHMENT_INDEX_MAX];
-    std::vector<VkSubpassDescription> subpass_descs;
-
-    VkSubpassDependency dependancy;
+    std::array<VkAttachmentDescription, ATTACHMENT_INDEX_MAX> attach_desc;
+    std::array<VkAttachmentReference, ATTACHMENT_INDEX_MAX>   attach_ref;
+    std::vector<VkSubpassDescription>                         subpass_descs;
+    VkSubpassDependency                                       dependancy;
   };
 
   // --------------------------------------------------------
   struct SyncCreateInfo {
+
+    SyncCreateInfo () : semaphore (), fence () {
+    }
+    
     VkSemaphoreCreateInfo  semaphore;
     VkFenceCreateInfo      fence;
   }; 
 
   
-  // ---------------------------------------------------
-  //
-  // ---------------------------------------------------
-  struct destructor {
-    
-    virtual ~destructor () = default;
-
-  protected:
-    destructor () = default;
-  }; 
-
 
 
 }

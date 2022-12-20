@@ -1029,9 +1029,15 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
   glfwSetFramebufferSizeCallback (glob.window.glfw_window, resize_CB); 
   glfwSetWindowUserPointer (glob.window.glfw_window, &fb_resize); 
 
+  std::vector<const char*> vls0;
+  std::vector<std::string> vstrs0;
+  
   rokz::AppInfo_default (glob.instance.app_info);
   rokz::CreateInfo      (glob.instance.ci,
+
                          glob.instance.required_extensions, 
+                         glob.instance.extension_strings, 
+                         vls0, vstrs0, 
                          glob.instance.app_info); 
 
   rokz::CreateInstance  (glob.instance.handle, glob.instance.ci);
@@ -1062,7 +1068,11 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
   // device info
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   glob.physical_device.features.samplerAnisotropy = VK_TRUE;
-  rokz::CreateInfo (glob.device.ci, glob.device.queue_ci, &glob.physical_device.features);
+
+  std::vector<const char*> vls;
+  std::vector<std::string> vstrs;
+  
+  rokz::CreateInfo (glob.device.ci, vls, vstrs, glob.device.queue_ci, &glob.physical_device.features);
   //   glob.device_features.samplerAnisotropy = ; 
 
   //rokz::Default (glob.create_info.device, &glob.create_info.queue, &glob.physical_device.features); 

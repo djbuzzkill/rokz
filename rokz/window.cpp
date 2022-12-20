@@ -24,19 +24,20 @@ GLFWwindow* rokz::CreateWindow_glfw (GLFWwindow*& w) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateWindow(Window& wnd, uint32_t w, uint32_t h, const std::string& title) {
+bool rokz::CreateWindow (Window& wnd, uint32_t w, uint32_t h, const std::string& title) {
   printf ("%s\n", __FUNCTION__); 
 
   if (wnd.glfw_window) {
     printf ("%s [Window::glfw_window] NOT NULL \n", __FUNCTION__); 
   }
 
-  wnd.glfw_window = nullptr;
-
+  //wnd.glfw_window = nullptr;
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
+  
   wnd.glfw_window = glfwCreateWindow(w, h, title.c_str (), nullptr, nullptr); 
+
   if (wnd.glfw_window != nullptr)  {
     return true; 
   }

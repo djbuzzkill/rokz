@@ -43,41 +43,41 @@
 
 
 
-bool rokz::CreateFramebuffers (
-    std::vector<VkFramebuffer>&           framebuffers,
-    std::vector<VkFramebufferCreateInfo>& create_infos,
-    const RenderPass&                     render_pass, 
-    const VkExtent2D                      swapchain_ext, 
-    const std::vector<VkImageView>&       image_views,
-    const VkImageView&                    msaa_color_imageview, 
-    const VkImageView&                    depth_imageview, 
-    const Device&                         device) {
+// bool rokz::CreateFramebuffers (
+//     std::vector<VkFramebuffer>&           framebuffers,
+//     std::vector<VkFramebufferCreateInfo>& create_infos,
+//     const RenderPass&                     render_pass, 
+//     const VkExtent2D                      swapchain_ext, 
+//     const std::vector<VkImageView>&       image_views,
+//     const VkImageView&                    msaa_color_imageview, 
+//     const VkImageView&                    depth_imageview, 
+//     const Device&                         device) {
 
-  printf ("[%s]\n", __FUNCTION__);
-  framebuffers.resize (image_views.size()); 
-  create_infos.resize (image_views.size()); 
+//   printf ("[%s]\n", __FUNCTION__);
+//   framebuffers.resize (image_views.size()); 
+//   create_infos.resize (image_views.size()); 
   
-  for (size_t i = 0; i < image_views.size(); i++) {
+//   for (size_t i = 0; i < image_views.size(); i++) {
 
-    VkImageView attachments[] = {msaa_color_imageview, depth_imageview, image_views[i] };
+//     VkImageView attachments[] = {msaa_color_imageview, depth_imageview, image_views[i] };
 
-    create_infos[i] = {}; 
-    create_infos[i].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    create_infos[i].renderPass = render_pass.handle;
-    create_infos[i].attachmentCount = 3; // color + depthstencil + colresolv
-    create_infos[i].pAttachments = attachments;
-    create_infos[i].width = swapchain_ext.width;
-    create_infos[i].height = swapchain_ext.height;
-    create_infos[i].layers = 1;
+//     create_infos[i] = {}; 
+//     create_infos[i].sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+//     create_infos[i].renderPass = render_pass.handle;
+//     create_infos[i].attachmentCount = 3; // color + depthstencil + colresolv
+//     create_infos[i].pAttachments = attachments;
+//     create_infos[i].width = swapchain_ext.width;
+//     create_infos[i].height = swapchain_ext.height;
+//     create_infos[i].layers = 1;
 
-    if (vkCreateFramebuffer(device.handle, &create_infos[i], nullptr, &framebuffers[i]) != VK_SUCCESS) {
-      printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
-      return false;
-    }
-  }
+//     if (vkCreateFramebuffer(device.handle, &create_infos[i], nullptr, &framebuffers[i]) != VK_SUCCESS) {
+//       printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
+//       return false;
+//     }
+//   }
 
-  return true; 
-}
+//   return true; 
+// }
 
 // rokz::CreateFramebuffers(std::vector<rokz::Framebuffer,std::allocator<rokz::Framebuffer> >&,
 //                          std::vector<rokz::ImageView, std::allocator<rokz::ImageView> > const&,
@@ -95,10 +95,11 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
                                const VkImageView&              depth_imageview, 
                                const Device&                   device) {
     
-  printf ("[%s]\n", __FUNCTION__);
-  framebuffers.resize (imageviews.size()); 
-  for (size_t i = 0; i < imageviews.size(); i++) {
+  printf ("%s\n", __FUNCTION__);
 
+  framebuffers.resize (imageviews.size()); 
+
+  for (size_t i = 0; i < imageviews.size(); i++) {
 
     framebuffers[i].attachments.clear ();
     framebuffers[i].attachments.push_back (msaa_color_imageview);

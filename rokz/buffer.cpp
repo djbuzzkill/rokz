@@ -50,30 +50,9 @@ bool rokz::CreateBuffer (Buffer& buffer, VmaAllocator const& allocator) {
   return true; 
 }
 
-
-
-
 // ---------------------------------------------------------------------
 // transfer buffer
 // ---------------------------------------------------------------------
-// bool rokz::CreateVertexBuffer_transfer (BufferStruc& buffstruc, 
-//                                size_t sizeof_elem,
-//                                size_t num_elem, 
-//                                const VkDevice& device,
-//                                const VkPhysicalDevice& physdev) {
-//   //
-//   buffstruc.create_info = {};
-//   buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-//   buffstruc.create_info.size  = sizeof_elem * num_elem; 
-//   buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
-//   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  
-//   buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
-//   //
-//   return rokz::CreateBuffer (buffstruc, device, physdev); 
-// }
-
-
 VkBufferCreateInfo& rokz::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -132,14 +111,12 @@ bool rokz::CreateVertexBuffer (BufferStruc& buffstruc,
 }
 
 
-
-
 // ---------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------
 VkBufferCreateInfo& rokz::CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes) {
-
-  ci = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO; 
   ci.pNext = nullptr;
   ci.size = sizebytes;
   ci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
@@ -153,7 +130,8 @@ VkBufferCreateInfo& rokz::CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint3
 // ---------------------------------------------------------------------
 VkBufferCreateInfo& CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizebytes) {
 
-  ci = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+  ci = { };
+  ci.sType =  VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO; 
   ci.pNext = nullptr;
   ci.size = sizebytes;
   ci.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; 

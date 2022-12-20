@@ -44,7 +44,7 @@ namespace rokz {
   VkDeviceCreateInfo&                      Default (VkDeviceCreateInfo& create_info);
   VkDeviceQueueCreateInfo&                 Default (VkDeviceQueueCreateInfo& create_info);    
   VkSwapchainCreateInfoKHR&                Default (VkSwapchainCreateInfoKHR& create_info);  
-  VkImageViewCreateInfo&                   Default (VkImageViewCreateInfo& create_info);  
+  //VkImageViewCreateInfo&                   Default (VkImageViewCreateInfo& create_info);  
   VkRenderPassCreateInfo&                  Default (VkRenderPassCreateInfo& create_info); 
   VkGraphicsPipelineCreateInfo&            Default (VkGraphicsPipelineCreateInfo& create_info); 
   VkPipelineInputAssemblyStateCreateInfo&  Default (VkPipelineInputAssemblyStateCreateInfo& create_info);       //      ateInfo input_assembly{};

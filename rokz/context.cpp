@@ -27,13 +27,17 @@ const std::vector<const char*> kDeviceExtensions = {
 // }
 
 
-const std::vector<const char*> validation_layers  = {
-  "VK_LAYER_KHRONOS_validation"
+static const  std::vector<std::string> kValidationLayers  = {
+  "VK_LAYER_KHRONOS_validation",
 };
 
 
-const std::vector<const char*>& GetValidationLayers () {
-  return validation_layers; 
+std::vector<std::string>& GetValidationLayers (std::vector<std::string>& vstrs) {
+  vstrs.clear ();
+  for  (size_t i = 0; i < kValidationLayers.size (); ++i  ) {
+    vstrs.push_back (kValidationLayers [i] ); 
+  }
+  return vstrs; 
 }
 
 // ---------------------------------------------------------------------
@@ -46,29 +50,22 @@ rokz::SwapchainSupportInfo& rokz::QuerySwapchainSupport (rokz::SwapchainSupportI
 
   uint32_t format_count;
   vkGetPhysicalDeviceSurfaceFormatsKHR(device, surf, &format_count, nullptr);
-
-  printf ("fmt_count[%u]\n", format_count); 
+  printf ("surface format count [%u]\n", format_count); 
   
   if (format_count != 0) {
     si.formats.resize(format_count);
-  printf (" after [a] \n"); 
-    VkResult res = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surf, &format_count, &si.formats[0]);
-  printf (" after [b] \n"); 
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surf, &format_count, &si.formats[0]);
   }
-  printf (" after [] \n"); 
-
   
   uint32_t present_mode_count;
   vkGetPhysicalDeviceSurfacePresentModesKHR(device, surf, &present_mode_count,  nullptr);
-  printf ("present_mode_count[%u]\n", present_mode_count); 
+  printf ("present mode count [%u]\n", present_mode_count); 
 
-  printf (" after [] \n"); 
   if (present_mode_count != 0) {
     si.present_modes.resize(present_mode_count);
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, surf, &present_mode_count, &si.present_modes[0]);
   }
 
-  printf (" after [] \n"); 
   return si;
 }
 
@@ -78,10 +75,14 @@ rokz::SwapchainSupportInfo& rokz::QuerySwapchainSupport (rokz::SwapchainSupportI
 // ---------------------------------------------------------------------
 
 VkApplicationInfo& rokz::AppInfo_default (VkApplicationInfo& app_info) {
+
+  static const char* kAppName  = "ROKZ";
+  static const char* kEngineName = "null";
+
   app_info.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  app_info.pApplicationName = "ROKZ";
+  app_info.pApplicationName = kAppName;
   app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-  app_info.pEngineName      = "null";
+  app_info.pEngineName      = kEngineName;
   app_info.engineVersion    = VK_MAKE_VERSION(1, 3, 0);
   app_info.apiVersion       = VK_API_VERSION_1_3;
   return app_info;
@@ -92,30 +93,33 @@ VkApplicationInfo& rokz::AppInfo_default (VkApplicationInfo& app_info) {
 // ---------------------------------------------------------------------
 
 VkInstanceCreateInfo& rokz::CreateInfo (VkInstanceCreateInfo& ci,
-                                        std::vector<const char*>& required_extensions, 
+                                        std::vector<const char*>& required_extensions,
+                                        std::vector<std::string>& extstrs,
+                                        std::vector<const char*>& vls,
+                                        std::vector<std::string>& vstrs,
                                         const VkApplicationInfo&  app_info) {
 
-
   printf ("%s VkInstanceCreateInfo \n", __FUNCTION__); 
-  printf ( "REQUIRED EXTENSIONS:\n");
   
-  rokz::GetRequiredExtensionNames (required_extensions);  
-  for (size_t i = 0; i < required_extensions.size (); ++i)
-    printf  ("  %s\n", required_extensions[i]);
+  required_extensions.clear (); 
+  for (auto& xs : GetRequiredExtensionNames (extstrs))
+    required_extensions.push_back (xs.c_str());
 
+  ci = {}; 
   ci.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+  ci.pNext            = nullptr; 
   ci.pApplicationInfo = &app_info;
 
-  ci.enabledExtensionCount = required_extensions.size();
+  ci.enabledExtensionCount   = required_extensions.size();
   ci.ppEnabledExtensionNames = &required_extensions[0];
-  ci.pNext = nullptr; 
 
-  printf  ("ED E\n"); 
-  
-  if (kEnableValidationLayers && CheckValidationSupport (validation_layers)) {
+  vls.clear (); 
+  for (auto& vs : GetValidationLayers (vstrs)) vls.push_back ( vs.c_str()); 
+
+  if (kEnableValidationLayers && rokz::CheckValidationSupport (vstrs)) {
     printf ("ENABLE VALIDATION LAYERS\n"); 
-    ci.enabledLayerCount   = validation_layers.size(); 
-    ci.ppEnabledLayerNames = &validation_layers[0]; 
+    ci.enabledLayerCount   = vls.size(); 
+    ci.ppEnabledLayerNames = &vls[0]; 
     // !! SETUP up additional output cb handling...
   }
   else {
@@ -123,7 +127,6 @@ VkInstanceCreateInfo& rokz::CreateInfo (VkInstanceCreateInfo& ci,
     ci.enabledLayerCount   = 0;
     ci.ppEnabledLayerNames = nullptr;
   }
-  printf  ("SDRGED E\n"); 
   // 
   return ci;
 }
@@ -133,28 +136,25 @@ VkInstanceCreateInfo& rokz::CreateInfo (VkInstanceCreateInfo& ci,
 //
 //
 int rokz::CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& ci) {
-  using namespace rokz;
-  // 
-
   // CREATEINSTANCE
-  printf ("vkCreateInstance() \n"); 
+  printf (" -> %s...", __FUNCTION__); 
+
   if (vkCreateInstance (&ci, nullptr, &instance) != VK_SUCCESS) {
-    printf("failed to create instance!");
+    printf("[FAILED] create instance\n");
     return __LINE__;
   }
-  
+ 
   printf("WoooooOOOooooOoooooooOOoOoOOOoooOoOOOOOOO!!!1\n");
   // ENUMERATEINSTANCEEXTENSIONPROPERTIES
   uint32_t ext_count = 0;
   vkEnumerateInstanceExtensionProperties (nullptr, &ext_count, nullptr);
 
-  printf("   num extensions[%u]\n", ext_count);
+  printf("Number of Available Extensions[%u]\n", ext_count);
   std::vector<VkExtensionProperties> extensions(ext_count);
-  vkEnumerateInstanceExtensionProperties(nullptr, &ext_count, extensions.data());
+  vkEnumerateInstanceExtensionProperties(nullptr, &ext_count, &extensions[0]);
 
-  std::cout << "available extensions:\n";
   for (const auto &extension : extensions) {
-    std::cout << '\t' << extension.extensionName << '\n';
+    printf ("  %s\n", extension.extensionName); 
   }
   
   return 0;
@@ -183,12 +183,17 @@ VkDeviceQueueCreateInfo& rokz::CreateInfo (VkDeviceQueueCreateInfo& info,
 //
 // -------------------------------------------------------------------------
 VkDeviceCreateInfo& rokz::CreateInfo (VkDeviceCreateInfo&       info,
+                                      std::vector<const char*>& vls,
+                                      std::vector<std::string>& vstrs,
                                       const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
                                       VkPhysicalDeviceFeatures* devfeats) {
 
   printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
 
   const std::vector<const char*>& device_extensions = kDeviceExtensions;
+
+  vls.clear ();
+  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
   
   info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   info.enabledExtensionCount = static_cast<uint32_t> (device_extensions.size ());
@@ -196,8 +201,8 @@ VkDeviceCreateInfo& rokz::CreateInfo (VkDeviceCreateInfo&       info,
   info.queueCreateInfoCount  = queuecreateinfos.size();   
   info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
   info.pEnabledFeatures      = devfeats; // &glob.device_features;
-  info.enabledLayerCount     = validation_layers.size();   
-  info.ppEnabledLayerNames   = &validation_layers[0]; 
+  info.enabledLayerCount     = vls.size();   
+  info.ppEnabledLayerNames   = &vls[0]; 
   return info;
 }
 
@@ -438,29 +443,29 @@ bool rokz::GetSwapChainImages (std::vector<Image> &swapchain_images,
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VkImageViewCreateInfo Default (VkImageViewCreateInfo& createinfo, 
-                               const VkImage&         image,
-                               VkFormat               fmt) {
+// VkImageViewCreateInfo Default (VkImageViewCreateInfo& createinfo, 
+//                                const VkImage&         image,
+//                                VkFormat               fmt) {
   
-  printf ("[TODO] use -> image.cpp::Init (VkImageViewCreateInfo&\n"); 
-  createinfo = {}; 
-  createinfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  createinfo.image = image;
-  createinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  createinfo.format = fmt; 
-  createinfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-  createinfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-  createinfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-  createinfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   printf ("[TODO] use -> image.cpp::Init (VkImageViewCreateInfo&\n"); 
+//   createinfo = {}; 
+//   createinfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+//   createinfo.image = image;
+//   createinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+//   createinfo.format = fmt; 
+//   createinfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   createinfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   createinfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   createinfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
-  createinfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  createinfo.subresourceRange.baseMipLevel = 0;
-  createinfo.subresourceRange.levelCount = 1;
-  createinfo.subresourceRange.baseArrayLayer = 0;
-  createinfo.subresourceRange.layerCount = 1;
+//   createinfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+//   createinfo.subresourceRange.baseMipLevel = 0;
+//   createinfo.subresourceRange.levelCount = 1;
+//   createinfo.subresourceRange.baseArrayLayer = 0;
+//   createinfo.subresourceRange.layerCount = 1;
 
-  return createinfo; 
-}
+//   return createinfo; 
+// }
 
 // ---------------------------------------------------------------------
 //
@@ -522,7 +527,7 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   //printf ("%s\n", __FUNCTION__); 
 
   // COLOR ATTACHMENT | VkAttachmentDescription 
-  auto co_in = RenderPass::COLOR; 
+  auto co_in = ATTACH_COLOR; 
   render_pass.attach_desc[co_in] = {}; 
   render_pass.attach_desc[co_in].format         = swapchain_format ;
   render_pass.attach_desc[co_in].samples        = msaa_samples, // VK_SAMPLE_COUNT_1_BIT; // msaa samples
@@ -534,11 +539,12 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   render_pass.attach_desc[co_in].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
 
   // DEPTHSTENCIL ATTACHMENT | VkAttachmentDescription 
-  auto dp_in = RenderPass::DEPTHSTENCIL;
-  VkFormat depth_format; 
-  rokz::FindDepthFormat (depth_format, physdev); 
+  auto dp_in = ATTACH_DEPTHSTENCIL;
+  //VkFormat depth_format; 
+  //rokz::FindDepthFormat (depth_format, physdev); 
   render_pass.attach_desc[dp_in] = {}; 
-  render_pass.attach_desc[dp_in].format         = depth_format;
+  // render_pass.attach_desc[dp_in].format         = depth_format;
+  rokz::FindDepthFormat (render_pass.attach_desc[dp_in].format, physdev);
   render_pass.attach_desc[dp_in].samples        = msaa_samples; // VK_SAMPLE_COUNT_1_BIT;
   render_pass.attach_desc[dp_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
   render_pass.attach_desc[dp_in].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -548,7 +554,7 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   render_pass.attach_desc[dp_in].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
   // COLOR RESOLVE ATTACHMENT | VkAttachmentDescription 
-  auto cr_in = RenderPass::CORESOLV; 
+  auto cr_in = ATTACH_COLRESOLV; 
   render_pass.attach_desc[cr_in] = {}; 
   render_pass.attach_desc[cr_in].format         = swapchain_format ;
   render_pass.attach_desc[cr_in].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
@@ -599,7 +605,7 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   render_pass.create_info = {}; 
   render_pass.create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   render_pass.create_info.attachmentCount = 3; // color + depthstencil + color resolv
-  render_pass.create_info.pAttachments = render_pass.attach_desc;
+  render_pass.create_info.pAttachments = &render_pass.attach_desc[0];
   render_pass.create_info.subpassCount = 1;
   render_pass.create_info.pSubpasses = &render_pass.subpass_descs[0];
   render_pass.create_info.dependencyCount = 1;
@@ -1121,14 +1127,14 @@ bool AllQueuesAvailable (const rokz::QueueFamilyIndices& inds) {
 rokz::QueueFamilyIndices& rokz::FindQueueFamilies (rokz::QueueFamilyIndices& inds, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev) {
   printf ("%s\n", __FUNCTION__); 
 
-  uint32_t que_count  = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(physdev, &que_count, nullptr);
+  uint32_t qcount  = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(physdev, &qcount, nullptr);
 
-  std::vector<VkQueueFamilyProperties> que_fam_props (que_count);
+  std::vector<VkQueueFamilyProperties> qfam_props (qcount);
 
-  vkGetPhysicalDeviceQueueFamilyProperties (physdev, &que_count, &que_fam_props[0]);
+  vkGetPhysicalDeviceQueueFamilyProperties (physdev, &qcount, &qfam_props[0]);
 
-  for (uint32_t ique = 0; ique < que_count; ++ique) {
+  for (uint32_t ique = 0; ique < qcount; ++ique) {
 
     rokz::QueueFamilyIndices cur_inds;
     VkBool32 present_support = VK_FALSE;
@@ -1140,7 +1146,7 @@ rokz::QueueFamilyIndices& rokz::FindQueueFamilies (rokz::QueueFamilyIndices& ind
       printf ("found PRESENT queue;\n"); 
     }
       
-    if (que_fam_props[ique].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    if (qfam_props[ique].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
       inds.graphics = ique;
       assert (inds.graphics.has_value()); 
       printf ("found GRAPHICS queue;\n");
@@ -1164,7 +1170,6 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, VkPhysicalDevicePropert
   using namespace rokz;
   printf ("%s\n", __FUNCTION__); 
 
-  VkPhysicalDeviceFeatures   devfeatures{}; 
 
   bool swapchain_adequate = false;
   bool exts_supported = CheckDeviceExtensionSupport (physdev);
@@ -1204,6 +1209,8 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, VkPhysicalDevicePropert
   vkGetPhysicalDeviceProperties(physdev, &devprops);
 
   // FORCE ANISTOTROPY
+  VkPhysicalDeviceFeatures devfeatures {};
+  //
   devfeatures.samplerAnisotropy = VK_TRUE;
   vkGetPhysicalDeviceFeatures  (physdev, &devfeatures);
   // bool device_is_suitable =
@@ -1233,7 +1240,7 @@ bool rokz::SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR& su
   //
   printf ("%s\n", __FUNCTION__); 
 
-  unsigned device_count = 0;
+  uint32_t device_count = 0;
   vkEnumeratePhysicalDevices (inst, &device_count, nullptr);
   if (device_count == 0) {
     printf ("..0 devices\n");
@@ -1265,106 +1272,4 @@ bool rokz::SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR& su
   return false; 
 }
 
-
-// ---------------------------------------------------------------------
-// old
-// ---------------------------------------------------------------------
-// void rokz::CleanupSwapchain (std::vector<VkFramebuffer> &framebuffers,
-//                              std::vector<VkImageView> &image_views,
-
-//                              Image&          depth_image, 
-//                              ImageView&      depth_imageview,
-
-//                              Image&          multisamp_color_image, 
-//                              ImageView&      multisamp_color_imageview,
-
-//                              Swapchain&          swapchain,
-//                              const Device&       device,
-//                              const VmaAllocator& allocator) {
-
-//   for (auto fb : framebuffers) {
-//     vkDestroyFramebuffer (device.handle, fb, nullptr); 
-//   }
-
-//   for (auto imageview : image_views) {
-//     vkDestroyImageView(device.handle, imageview, nullptr);
-//   }
-
-//   Destroy (depth_image, allocator);
-//   Destroy (depth_imageview, device.handle);
-
-//   Destroy (multisamp_color_image, allocator);
-//   Destroy (multisamp_color_imageview, device.handle);
-
-//   vkDestroySwapchainKHR(device.handle, swapchain.handle, nullptr);
-  
-// }
-
-// ---------------------------------------------------------------------
-// DESTROY ALL THE THINGS
-// ---------------------------------------------------------------------
-// void rokz::Cleanup(VkPipeline &pipeline,
-
-//                    std::vector<VkFramebuffer> &framebuffers,
-
-//                    Swapchain&                  swapchain,
-//                    VkSurfaceKHR&               surf,
-//                    VkCommandPool&              command_pool,
-//                    std::vector<SyncStruc>&     syncs, 
-//                    std::vector<ShaderModule>&  shader_modules,
-//                    VkPipelineLayout&           pipeline_layout,
-//                    RenderPass&                 render_pass,
-//                    std::vector<VkImageView>&   image_views,
-
-//                    Image&      depth_image, 
-//                    ImageView&  depth_imageview,
-
-//                    Image&      multisamp_color_image, 
-//                    ImageView&  multisamp_color_imageview,
-
-//                    GLFWwindow*   w,
-//                    Device&       device,
-//                    VmaAllocator& allocator, 
-//                    VkInstance&   inst) {
-
-
-//   //    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-
-//   CleanupSwapchain (framebuffers,
-//                     image_views,
-
-//                     depth_image, 
-//                     depth_imageview,
-
-//                     multisamp_color_image, 
-//                     multisamp_color_imageview,
-
-//                     swapchain,
-//                     device, 
-//                     allocator
-//                     );
-   
-//   vkDestroyPipeline (device.handle, pipeline, nullptr);
-//   vkDestroySurfaceKHR (inst, surf, nullptr);
-//   vkDestroyCommandPool (device.handle, command_pool, nullptr);
-
-//   for (size_t i = 0; i < syncs.size (); ++i) {
-//     vkDestroySemaphore(device.handle, syncs[i].image_available_sem, nullptr);
-//     vkDestroySemaphore(device.handle, syncs[i].render_fnished_sem, nullptr);
-//     vkDestroyFence (device.handle, syncs[i].in_flight_fen, nullptr);
-//   }
-
-//   for (auto shmod : shader_modules) {
-//     vkDestroyShaderModule (device.handle, shmod.handle, nullptr); 
-//   }
-
-//   vkDestroyPipelineLayout (device.handle, pipeline_layout, nullptr);
-//   vkDestroyRenderPass (device.handle, render_pass.handle, nullptr); 
-  
-//   vkDestroyDevice (device.handle, nullptr); 
-//   vkDestroyInstance(inst, nullptr);
-
-  
-//   glfwDestroyWindow(w);
-// }
 

@@ -44,6 +44,8 @@ namespace rokz {
   
   VkDeviceQueueCreateInfo&  CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
   VkDeviceCreateInfo&       CreateInfo (VkDeviceCreateInfo& info,
+                                        std::vector<const char*>& vls, 
+                                        std::vector<std::string>& vstrs, 
                                         const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
                                         VkPhysicalDeviceFeatures* devfeats); 
   // ------------------------------------------------------------------
@@ -52,7 +54,9 @@ namespace rokz {
   VkApplicationInfo&    AppInfo_default (VkApplicationInfo& app_info); 
   VkInstanceCreateInfo& CreateInfo      (VkInstanceCreateInfo& ci,
                                          std::vector<const char*>& required_extensions, 
-
+                                         std::vector<std::string>& extstrs, 
+                                         std::vector<const char*>& vls, 
+                                         std::vector<std::string>& vstrs, 
                                          const VkApplicationInfo&  app_info); 
   //int                CreateInstance (VkInstance& instance, VkApplicationInfo& app_info, VkInstanceCreateInfo& inst_info);  
   int CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& ci); 

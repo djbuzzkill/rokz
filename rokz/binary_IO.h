@@ -1,8 +1,10 @@
+
 #ifndef ROKZ_BINARY_IO_H
 #define ROKZ_BINARY_IO_H
 
 
 #include "common.h"
+#include "utility.h"
 #include "shared_types.h"
 
 namespace rokz {

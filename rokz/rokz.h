@@ -12,6 +12,7 @@
 #include "context.h"
 #include "command.h"
 #include "allocation.h"
+#include "file.h"
 #include "buffer.h"
 #include "image.h"
 #include "framebuffer.h"

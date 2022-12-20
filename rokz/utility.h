@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include "shared_types.h"
-#include "binary_IO.h"
+//#include "binary_IO.h"
 
 namespace rokz {
 
@@ -15,6 +15,17 @@ namespace rokz {
   typedef std::array<unsigned char, 4> rgba8;
   typedef std::array<unsigned char, 3> rgb8; 
 
+
+  // ---------------------------------------------------
+  //
+  // ---------------------------------------------------
+  struct destructor {
+    
+    virtual ~destructor () = default;
+
+  protected:
+    destructor () = default;
+  }; 
 
   // ---------------------------------------------------
   //
@@ -41,51 +52,16 @@ namespace rokz {
     return (val > minval && val < maxval);
   }    
 
-  // ---------------------------------------------------
-  //
-  // ---------------------------------------------------
-  inline size_t SizeOf_file (const std::string& fn) {
-    //printf  ( "%s[%s]\n", __FUNCTION__, fn.c_str());    
-    if (std::FILE* f = std::fopen (fn.c_str(), "r")) {
-      //printf  ( "[f is good]\n" );    
-      std::shared_ptr<std::FILE> sp (f, std::fclose); 
-      if (0 == std::fseek (sp.get(), 0, SEEK_END)) 
-	return  std::ftell (sp.get()); 
-    }
-    return 0; 
-  }
-
   // ----------------------------------------------------------
   //
   // ----------------------------------------------------------
-  template<typename Seq>
-  inline Seq& From_file (Seq& out, const std::string& fname) {
-
-    if (auto sizeOf_file = SizeOf_file (fname)) {
-
-      out.resize (sizeOf_file); 
-
-      ReadStreamRef rs = CreateReadFileStream (fname);
-
-      if (rs) {
-	rs->Read (&out[0], sizeOf_file); 
-      }
-    }
-    return out; 
-  } 
-
-
-  // ----------------------------------------------------------
-  //
-  // ----------------------------------------------------------
-
   const std::vector<const char*>& GetDeviceExtensionNames (); 
-  bool                      CheckValidationSupport      (const std::vector<const char*>& validation_layers);
-  bool                      FindMemoryType              (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
+  //bool CheckValidationSupport (const std::vector<const char*>& validation_layers);
+  bool CheckValidationSupport (const std::vector<std::string>& val_layers); 
+  bool FindMemoryType         (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
 
 
-  std::vector<const char*>& GetRequiredExtensionNames   (std::vector<const char*>&  exts); 
-
+  std::vector<std::string>& GetRequiredExtensionNames (std::vector<std::string>& extstrs); 
 
   bool FindSupportedFormat  (VkFormat& out, const std::vector<VkFormat>& candidates,
                              VkImageTiling tiling,
@@ -97,6 +73,7 @@ namespace rokz {
   bool HasStencilComponent(VkFormat format);
 
   VkSampleCountFlagBits MaxUsableSampleCount  (VkPhysicalDevice physdev); 
+
 
 
   

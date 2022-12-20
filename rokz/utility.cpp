@@ -8,7 +8,36 @@ using namespace rokz;
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CheckValidationSupport (const std::vector<const char*>& val_layers) {
+// bool rokz::CheckValidationSupport (const std::vector<const char*>& val_layers) {
+
+//   printf ("%s\n", __FUNCTION__); 
+
+//   uint32_t layer_count  = 0;
+//   vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
+  
+//   std::vector<VkLayerProperties> available_layers(layer_count);
+
+//   vkEnumerateInstanceLayerProperties(&layer_count, &available_layers[0]);
+
+//   for (const char* layer_name : val_layers) {
+//     printf ("   LOOKING FOR[%s]\n", layer_name);
+//     bool layer_found = false;
+
+//     for (const auto& layerProperties : available_layers) {
+//       if (strcmp(layer_name, layerProperties.layerName) == 0) {
+//         layer_found = true;
+//         break;
+//       }
+//     }
+//     if (!layer_found)
+//       return false; 
+//   }
+
+//   printf ("..ALL LAYERS FOUND\n"); 
+//   return true ;
+// }
+
+bool rokz::CheckValidationSupport (const std::vector<std::string>& vlayers) {
 
   printf ("%s\n", __FUNCTION__); 
 
@@ -19,12 +48,12 @@ bool rokz::CheckValidationSupport (const std::vector<const char*>& val_layers) {
 
   vkEnumerateInstanceLayerProperties(&layer_count, &available_layers[0]);
 
-  for (const char* layer_name : val_layers) {
-    printf ("   LOOKING FOR[%s]\n", layer_name);
+  for (const std::string&  lname : vlayers) {
+    printf ("   LOOKING FOR[%s]\n", lname.c_str());
     bool layer_found = false;
 
     for (const auto& layerProperties : available_layers) {
-      if (strcmp(layer_name, layerProperties.layerName) == 0) {
+      if (strcmp(lname.c_str(), layerProperties.layerName) == 0) {
         layer_found = true;
         break;
       }
@@ -40,25 +69,24 @@ bool rokz::CheckValidationSupport (const std::vector<const char*>& val_layers) {
 
 
 
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-std::vector<const char*>& rokz::GetRequiredExtensionNames (std::vector<const char*>&  exts) {
+std::vector<std::string>& rokz::GetRequiredExtensionNames (std::vector<std::string>& extstrs) {
 
-  exts.clear ();
 
   // GLFW REQ'D EXTENSIONS
-  uint32_t glfw_ext_count = 0;
-  const char **glfw_exts;
-  glfw_exts = glfwGetRequiredInstanceExtensions(&glfw_ext_count);
-  printf ("glfw_ext_count[%u]\n" , glfw_ext_count); 
+  uint32_t extcount = 0;
+  const char **glfw_exts; 
+  glfw_exts = glfwGetRequiredInstanceExtensions (&extcount);
+  printf ("num glfw extensions[%u]\n" , extcount); 
 
-  for  (uint32_t  i = 0; i < glfw_ext_count; ++i) {
+  extstrs.clear ();
+  for (uint32_t  i = 0; i < extcount; ++i) {
     printf ("req_extent(%i)[%s]\n", i, glfw_exts[i] );
-    exts.push_back ( glfw_exts[i] ); 
+    extstrs.push_back (glfw_exts[i]); 
   }
-  return exts; 
+  return extstrs;
 }
 
 

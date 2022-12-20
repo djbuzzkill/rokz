@@ -23,8 +23,6 @@ namespace rokz {
   VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image); 
   // ------------------------------------------------------------------
 
-
-
   bool CreateImage (Image& image, const VkDevice& device); 
   
   VkMemoryAllocateInfo& Init (VkMemoryAllocateInfo& alloc_info,  VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev); 

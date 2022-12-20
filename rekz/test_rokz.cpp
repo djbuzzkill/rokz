@@ -110,7 +110,7 @@ struct CreateInfo {
 //
 // --------------------------------------------------------------------
 struct Glob {
-  
+  Glob ();
   //VkApplicationInfo            app_info; // {};
   rokz::Instance                   instance;
   rokz::PhysicalDevice             physical_device;
@@ -121,7 +121,7 @@ struct Glob {
 
   rokz::Swapchain                  swapchain;
   
-  VmaAllocator                 allocator;
+  VmaAllocator                     allocator;
   
   std::vector<rokz::Image>         swapchain_images;
   std::vector<rokz::ImageView>     swapchain_imageviews;
@@ -150,7 +150,6 @@ struct Glob {
   rokz::RenderPass             render_pass; 
 
   // image/texture
-  //rokz::BufferStruc            texture_buff_stage; // mebe we should just make stack
   rokz::Image                  texture_image; 
   rokz::ImageView              texture_imageview; 
   rokz::Sampler                sampler;
@@ -189,33 +188,122 @@ struct Glob {
   CreateInfo                 create_info;
 
   double                      sim_time; 
+  float                       dt;
   // bool               enable_validation;
 };
 
-
+Glob::Glob () :
+  instance(),
+  physical_device(),
+  device (),
+  swapchain_support_info(),
+  swapchain(),
+  allocator(),
+  swapchain_images(),
+  swapchain_imageviews(),
+  swapchain_framebuffers(),
+  depth_image(),
+  depth_imageview(),
+  multisamp_color_image(),
+  multisamp_color_imageview(),
+  msaa_samples (),
+  shader_modules (),
+  color_blend_attachment_state(),
+  vma_ib_device(),
+  vma_vb_device(),
+  dynamic_states(),
+  command_pool(),
+  command_buffer(),  
+  syncs(),
+  render_pass(),
+  texture_image(),
+  texture_imageview(),
+  sampler(),
+  vma_uniform_buffs(),
+  uniform_mapped_pointers(),
+  descr_pool(),
+  descr_group(),
+  desc_set_layout_bindings(),
+  pipeline(),
+  window(),
+  surface(nullptr),     
+  viewport(),
+  scissor(),
+  queue_priority(),
+  create_info(),
+  sim_time(), 
+  dt ()
+{
+  queues.graphics = {};
+  queues.present = {}; 
+}
 // ------------------------------------------------------------------
 //
 // ------------------------------------------------------------------
 
 Glob& Default (Glob& g) {
   g.queue_priority = 1.0f;
-  //  g.app_info            = {};
+
+  g.swapchain_support_info = {};
+  g.swapchain = {};
+  g.allocator = {};
+
+  g.instance = {};
+  g.physical_device = {};
+  g.device = {}; 
+
+
+  g.swapchain_images = {};
+  g.swapchain_imageviews = {};
+  g.swapchain_framebuffers = {};
+
+
+  g.depth_image = {};
+  g.depth_imageview = {}; 
+  g.multisamp_color_image = {};
+  g.multisamp_color_imageview = {}; 
+
+  g.shader_modules = {}; 
+
+  g.color_blend_attachment_state = {};     
+
+  g.vma_ib_device = {};
+  g.vma_vb_device = {};
+  g.dynamic_states = {}; 
+  g.command_pool = {}; 
+  g.command_buffer = {}; 
+  g.syncs = {}; 
+  g.render_pass = {}; 
+
+  //g.texture_buff_stage = {}; // mebe we should just make stack
+  g.texture_image = {}; 
+  g.texture_imageview = {}; 
+  g.sampler = {};
+
+  g.vma_uniform_buffs = {};
+  g.uniform_mapped_pointers = {}; 
+  g.descr_pool = {};
+  g.descr_group = {}; 
+  g.desc_set_layout_bindings = {}; 
   g.physical_device.features     = {};
+
   //  g.create_info.instance= {};
   g.device.ci  = {};
   g.device.queue_ci = {}; 
   //g.create_info.queue   = {};
   g.swapchain.ci= {};
-  //  g.create_info.imageview = {}; 
-  //g.create_info.renderpass = {};
-  //  g.create_info.pipeline = {}; 
 
+  g.texture_image = {}; 
+  g.texture_imageview = {}; 
+  g.sampler = {};
+
+  g.pipeline = {}; 
+  g.window = {};
+  
   g.swapchain_support_info = {}; 
 
   g.physical_device.family_indices.graphics.reset();
   g.physical_device.family_indices.present.reset();
-  // g.queue_fams.graphics.reset();
-  // g.queue_fams.present.reset();
 
   g.msaa_samples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -231,7 +319,7 @@ Glob& Default (Glob& g) {
 //
 void SetupDepthBuffer (Glob& glob) {
 
-  printf ("[%s]\n", __FUNCTION__); 
+  printf (" ++%s\n", __FUNCTION__); 
 
   uint32_t wd = glob.swapchain.ci.imageExtent.width; 
   uint32_t ht = glob.swapchain.ci.imageExtent.height;   
@@ -249,7 +337,6 @@ void SetupDepthBuffer (Glob& glob) {
 
     rokz::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
     rokz::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
-    printf ("280 [%s]\n", __FUNCTION__); 
 
 
     rokz::TransitionImageLayout; 
@@ -318,7 +405,7 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
 // --------------------------------------------------------------------
 void SetupMutisampleColorResource (Glob& glob) {
 
-  printf ("[%s]\n", __FUNCTION__); 
+  printf ("%s\n", __FUNCTION__); 
 
   VkExtent2D& swapchain_ext    = glob.swapchain.ci.imageExtent;
   VkFormat    swapchain_format = glob.swapchain.ci.imageFormat; 
@@ -364,7 +451,6 @@ void TestCleanup (Glob& glob) {
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
 
   
-  printf ( "[TODO]:DESTROY DESCRIPTOR LAYOUT\n"); 
   Cleanup (glob.pipeline.handle,
            glob.swapchain_framebuffers, glob.swapchain_imageviews,
 
@@ -385,7 +471,6 @@ void TestCleanup (Glob& glob) {
            glob.allocator, 
            glob.instance.handle);
 
-  printf ( "[TODO]:DESTROY DESCRIPTOR LAYOUT\n"); 
   glfwTerminate();
 }
  
@@ -521,29 +606,6 @@ void SetupTextureImageView (Glob& glob) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-// bool CreateDescriptorSetLayout (VkDescriptorSetLayout&              descriptor_set_layout,
-//                                 VkDescriptorSetLayoutCreateInfo&    ci,
-//                                 const VkDescriptorSetLayoutBinding& binding,
-//                                 const VkDevice&                     device) {
-
-//   ci = {};
-//   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-//   ci.bindingCount = 1;
-//   ci.pBindings = &binding;
-
-//   if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &descriptor_set_layout) != VK_SUCCESS) {
-//     printf ("failed to create descriptor set layout!");
-//     return false; 
-//   }
-
-//   return true; 
-// }
-
-// bool SetupDescriptorSets (rokz::DescriptorGroup&                dg,
-//                                  const std::vector<rokz::BufferStruc>& buffer_strucs, 
-//                                  const VkDescriptorPool&               descriptor_pool,
-//                                  const VkDevice&                       device)
-
 bool SetupDescriptorSets (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
@@ -754,7 +816,7 @@ bool SetupUniformBuffers (Glob& glob) {
 void UpdateUniformBuffer (Glob& glob, uint32_t current_frame, double dt) {
   //static auto startTime = std::chrono::high_resolution_clock::now();
   glob.sim_time += dt;
-  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
+  //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
 
   float sim_timef = glob.sim_time;
   
@@ -867,7 +929,6 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
                                      glob.render_pass,
                                      glob.device.handle);
 
-
   
   VkSubmitInfo submit_info {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -907,6 +968,7 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
 
 
 
+static Glob glob; ; // *globmem; // something representing the app state
             
 // --------------------------------------------------------------------
 //
@@ -915,14 +977,14 @@ int test_rokz (const std::vector<std::string>& args) {
 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
-  double      dt = 0.0;
+    glob.dt = 0.0;
 
 
-  std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
-  Glob& glob = *globmem; // something representing the app state
+  //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
+
 
   auto rokz_path = std::filesystem::path ( "/home/djbuzzkill/owenslake");
-  Default (glob); 
+  //Default (glob); 
   
   glfwInit();
 
@@ -935,8 +997,15 @@ int test_rokz (const std::vector<std::string>& args) {
   glfwSetWindowUserPointer (glob.window.glfw_window, &fb_resize); 
 
   rokz::AppInfo_default (glob.instance.app_info);
+
+  std::vector<const char*> vls;
+  std::vector<std::string> vstrs;
+
+  
   rokz::CreateInfo      (glob.instance.ci,
-                         glob.instance.required_extensions, 
+                         glob.instance.required_extensions,
+                         glob.instance.extension_strings,
+                         vls, vstrs, 
                          glob.instance.app_info); 
 
   rokz::CreateInstance  (glob.instance.handle, glob.instance.ci);
@@ -947,18 +1016,11 @@ int test_rokz (const std::vector<std::string>& args) {
 
   glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device.handle); 
 
-  // queue info
-  //rokz:: QueueFamilyIndices fam_inds;
-  //fam_inds.graphics =  glob.queue_fams.graphics;
-  //fam_inds.present =  glob.queue_fams.present;
 
   glob.queue_priority = 1.0f;
-  if (glob.physical_device.family_indices.graphics.has_value()) {
-
+  if (glob.physical_device.family_indices.graphics.has_value ()) {
     printf ("HAS_VALUE:TRUE\n"); 
-    printf ("  graphics[%u]\n", glob.physical_device.family_indices.graphics.value()); 
-    printf ("  present [%u]\n", glob.physical_device.family_indices.present.value()); 
-
+    printf ("  graphics[%u]\n", glob.physical_device.family_indices.graphics.value ()); 
   }
   else  {
     printf ("HAS_VALUE:FALSE\n"); 
@@ -966,16 +1028,19 @@ int test_rokz (const std::vector<std::string>& args) {
 
   glob.device.queue_ci.resize  (2); 
   // VkQueueCreateInfo
-  rokz::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value() , &glob.queue_priority);
-  rokz::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value() , &glob.queue_priority);
+  rokz::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.queue_priority);
+  rokz::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.queue_priority);
   
   // device info
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   glob.physical_device.features.samplerAnisotropy = VK_TRUE;
-  rokz::CreateInfo (glob.device.ci, glob.device.queue_ci, &glob.physical_device.features);
-  //   glob.device_features.samplerAnisotropy = ; 
 
-  //rokz::Default (glob.create_info.device, &glob.create_info.queue, &glob.physical_device.features); 
+  std::vector<const char*> vls0;
+  std::vector<std::string> vstrs0;
+
+  rokz::CreateInfo (glob.device.ci,
+                    vls0, vstrs0, 
+                    glob.device.queue_ci, &glob.physical_device.features);
 
   rokz::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
 
@@ -1005,11 +1070,11 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::QuerySwapchainSupport (glob.swapchain_support_info,
                                glob.surface,
                                glob.physical_device.handle);
-  printf ("1004\n");
+
+
 
   glob.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
   glob.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
-  printf ("1071\n");
   
   rokz::CreateInfo_default (glob.swapchain.ci,  
                             glob.swapchain.family_indices,
@@ -1026,6 +1091,10 @@ int test_rokz (const std::vector<std::string>& args) {
   //                        glob.device.handle,
   //                        glob.window.glfw_window);
 
+  // printf (" B4  GLOB RESET\n"); 
+  // globmem.reset ();
+  // printf (" AFTER GLOB RESET\n"); 
+  
   rokz::GetSwapChainImages (glob.swapchain_images, glob.swapchain, glob.device.handle); 
 
   rokz::CreateImageViews (glob.swapchain_imageviews,
@@ -1070,8 +1139,6 @@ int test_rokz (const std::vector<std::string>& args) {
   //rokz::Init (sci.colorblend);
   rokz::Init (sci.multisampling, glob.msaa_samples); 
   rokz::Init (sci.depthstencil); 
-
-  //
 
   //  glob.uniform_group.
   glob.desc_set_layout_bindings.resize (2); 
@@ -1160,8 +1227,7 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::AllocCreateInfo_stage (ib_x.alloc_ci);
   rokz::CreateBuffer (ib_x, glob.allocator);
 
-  if  (rokz::MapMemory (&pmapped, ib_x.allocation, glob.allocator)) {
-    printf ("sizeof simple_indices=%zu\n", sizeof(simple_indices)); 
+  if (rokz::MapMemory (&pmapped, ib_x.allocation, glob.allocator)) {
     memcpy (pmapped, simple_indices, sizeof(simple_indices) ); 
     rokz::UnmapMemory (ib_x.allocation, glob.allocator); 
   }
@@ -1191,7 +1257,7 @@ int test_rokz (const std::vector<std::string>& args) {
   
   // rokz::DescriptorPool           uniform_descriptor_pool;
   // rokz::DescriptorGroup          uniform_group; 
-  SetupTexturse (glob); 
+  SetupTexture (glob); 
   SetupTextureImageView (glob); 
   
   SetupDescriptorPool (glob);
@@ -1218,10 +1284,10 @@ int test_rokz (const std::vector<std::string>& args) {
   }
 
   //
-  SetupScene();
+  SetupScene ();
   //
   const double time_per_frame_sec = 1.0 / 60.0;
-  dt = time_per_frame_sec; // just do this for now
+  glob.dt = time_per_frame_sec; // just do this for now
   
   std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
   
@@ -1234,6 +1300,7 @@ int test_rokz (const std::vector<std::string>& args) {
   bool       result     = false;
   int        countdown  = 60;
 
+  printf ( "Begin run  for [%i] frames.. \n", countdown); 
   //
   auto t0 = std::chrono::high_resolution_clock::now(); 
 
@@ -1244,13 +1311,13 @@ int test_rokz (const std::vector<std::string>& args) {
     //start = std::chrono::high_resolution_clock::now();
     auto now = std::chrono::high_resolution_clock::now();    
     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
-    dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
+    glob.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
     
-    UpdateInput(glob, dt);
+    UpdateInput(glob, glob.dt);
     
-    UpdateScene(glob, dt);
+    UpdateScene(glob, glob.dt);
 
-    result = RenderFrame (glob, curr_frame, glob.syncs, fb_resize, dt);
+    result = RenderFrame (glob, curr_frame, glob.syncs, fb_resize, glob.dt);
 
     if (result == false)
       run = false;
@@ -1274,11 +1341,9 @@ int test_rokz (const std::vector<std::string>& args) {
 
   // CLEAN UP
   TestCleanup (glob); 
-
-
-  printf ("%s [Glob:%zu]\n", __FUNCTION__ ,   sizeof(Glob)); 
+  //intf ("%s [Glob:%zu]\n", __FUNCTION__ ,   sizeof(Glob)); 
   
-  globmem.reset ();
+  //  globmem.reset ();
   return 0;
 }
 

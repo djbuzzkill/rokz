@@ -91,7 +91,7 @@ bool rokz::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
 // ---------------------------------------------------------------------
 bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
 
-  printf ("%s\n", __FUNCTION__);  
+  //printf ("%s\n", __FUNCTION__);  
 
   if (vkCreateImageView (device, &ci, nullptr, &iv.handle) != VK_SUCCESS) {
     printf ("[FAILED] %s  create image view!", __FUNCTION__);
@@ -149,7 +149,7 @@ bool rokz::CreateImageViews (std::vector<VkImageView>&  imageviews,
 // CreateInfo for images from swapchain
 // ---------------------------------------------------------------------
 VkImageCreateInfo& rokz::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci) {
-  printf ("%s VMA\n", __FUNCTION__); 
+  // printf ("%s VMA\n", __FUNCTION__); 
   ci = {}; 
   ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType     = VK_IMAGE_TYPE_2D;
@@ -175,7 +175,7 @@ VkImageCreateInfo& rokz::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCre
 // ---------------------------------------------------------------------
 VkImageViewCreateInfo& rokz::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
 
-  printf ("%s\n", __FUNCTION__);  
+  // printf ("%s\n", __FUNCTION__);  
 
   ci = {}; 
   ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
