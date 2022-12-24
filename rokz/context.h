@@ -124,16 +124,22 @@ namespace rokz {
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
+  VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info,
+                                             const VkCommandPool& commandpool); 
 
 
   bool CreateCommandPool (VkCommandPool&            command_pool,
                           VkCommandPoolCreateInfo&  create_info,
                           const QueueFamilyIndices& queue_family_inds, const VkDevice& device);
   
-  bool CreateCommandBuffer(VkCommandBuffer &command_buffer,
-                           VkCommandBufferAllocateInfo& create_info, 
-                           const VkCommandPool &command_pool,
-                           const VkDevice &device); 
+  
+  bool CreateCommandBuffers (std::vector<VkCommandBuffer>&      commandbuffers,
+                             const VkCommandBufferAllocateInfo& alloc_info, 
+                             const VkDevice&                    device); 
+  
+  bool CreateCommandBuffer(VkCommandBuffer&                   command_buffer,
+                           const VkCommandBufferAllocateInfo& create_info, 
+                           const VkDevice&                    device); 
 
 
   bool RecordCommandBuffer(VkCommandBuffer &command_buffer,

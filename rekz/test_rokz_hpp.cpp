@@ -113,8 +113,8 @@ struct CreateInfo {
   VkImageViewCreateInfo                    imageview; 
   VkRenderPassCreateInfo                   renderpass; 
 
-  VkCommandPoolCreateInfo                  command_pool; 
-  std::vector<VkCommandBufferAllocateInfo> command_buffer; 
+  //VkCommandPoolCreateInfo                  command_pool; 
+  //std::vector<VkCommandBufferAllocateInfo> command_buffer; 
 
   VkGraphicsPipelineCreateInfo             pipeline;
   //std::vector<VkFramebufferCreateInfo>     framebuffers; 
@@ -161,8 +161,11 @@ struct Glob {
   rokz::Buffer                 vma_ib_device;
   rokz::Buffer                 vma_vb_device;
   std::vector<VkDynamicState>  dynamic_states; 
-  VkCommandPool                command_pool; 
-  std::vector<VkCommandBuffer> command_buffer; 
+
+  rokz::CommandBufferGroup     command_buffer_group; 
+  rokz::CommandPool            command_pool; 
+
+
   std::vector<rokz::SyncStruc> syncs; 
   rokz::RenderPass             render_pass; 
 
@@ -381,7 +384,7 @@ void test_cleanup (Glob& glob) {
 
            glob.swapchain,
            glob.surface,
-           glob.command_pool,
+           glob.command_pool.handle,
            glob.syncs, 
            glob.shader_modules,
            glob.pipeline.layout.handle, 
@@ -488,12 +491,12 @@ bool setup_texture (Glob& glob) {
                                 VK_IMAGE_LAYOUT_UNDEFINED,
                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                 glob.queues.graphics,
-                                glob.command_pool,
+                                glob.command_pool.handle,
                                 glob.device.handle);
 
    rokz::CopyBufferToImage (glob.texture_image.handle, stage_image.handle, image_width, image_height,
                             glob.queues.graphics,
-                            glob.command_pool,
+                            glob.command_pool.handle,
                             glob.device.handle);
 
    rokz::TransitionImageLayout (glob.texture_image.handle,
@@ -501,7 +504,7 @@ bool setup_texture (Glob& glob) {
                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                 glob.queues.graphics,
-                                glob.command_pool,
+                                glob.command_pool.handle,
                                 glob.device.handle);
 
 
@@ -930,9 +933,9 @@ bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>
   update_uniform_buffer (glob, curr_frame, dt); 
 
   
-  vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
+  vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
 
-  rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
+  rokz::RecordCommandBuffer_indexed (glob.command_buffer_group.buffers[curr_frame],
                                      glob.pipeline,
                                      glob.descr_group.desc_sets[curr_frame], 
                                      glob.vma_vb_device.handle, 
@@ -958,7 +961,7 @@ bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>
 
   submit_info.pWaitDstStageMask  = wait_stages;
   submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers    = &glob.command_buffer[curr_frame];
+  submit_info.pCommandBuffers    = &glob.command_buffer_group.buffers[curr_frame];
   
   if (vkQueueSubmit (glob.queues.graphics, 1, &submit_info, syncs[curr_frame].in_flight_fen) != VK_SUCCESS) {
     printf("failed to submit draw command buffer!");
@@ -1194,8 +1197,8 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
                             glob.depth_imageview.handle,
                             glob.device); 
 
-  rokz::CreateCommandPool (glob.command_pool,
-                           glob.create_info.command_pool,
+  rokz::CreateCommandPool (glob.command_pool.handle,
+                           glob.command_pool.ci,
                            glob.physical_device.family_indices,
                            glob.device.handle);
 
@@ -1218,7 +1221,7 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
   rokz::MoveToBuffer_XB2DB  (glob.vma_vb_device, // device buffer
                              vb_x, // user buffer, 
                              sizeof(simple_verts),
-                             glob.command_pool, 
+                             glob.command_pool.handle, 
                              glob.queues.graphics,
                              glob.device.handle); 
 
@@ -1244,7 +1247,7 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
   rokz::MoveToBuffer_XB2DB  (glob.vma_ib_device, // device buffer
                              ib_x, // user buffer, 
                              sizeof(simple_indices),
-                             glob.command_pool, 
+                             glob.command_pool.handle, 
                              glob.queues.graphics,
                              glob.device.handle); 
   rokz::Destroy  (ib_x, glob.allocator); 
@@ -1262,19 +1265,19 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
   setup_descriptorsets (glob);  
 
  
-  
   // items per frames 
-  glob.command_buffer.resize (kMaxFramesInFlight);
+  glob.create_info.syncs.resize (kMaxFramesInFlight);
   glob.syncs.resize (kMaxFramesInFlight);
 
-  glob.create_info.command_buffer.resize (kMaxFramesInFlight);
-  glob.create_info.syncs.resize (kMaxFramesInFlight);
-
+  //glob.create_info.command_buffer.resize (kMaxFramesInFlight);
+  glob.command_buffer_group.buffers.resize (kMaxFramesInFlight);
+  rokz::AllocateInfo (glob.command_buffer_group.alloc_info, glob.command_pool.handle);
+  
   for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
     // sep
-    rokz::CreateCommandBuffer(glob.command_buffer[i],
-                              glob.create_info.command_buffer[i],
-                              glob.command_pool, glob.device.handle);
+    rokz::CreateCommandBuffer(glob.command_buffer_group.buffers[i],
+                              glob.command_buffer_group.alloc_info,
+                              glob.device.handle);
 
     rokz::CreateSyncObjs(glob.syncs[i], glob.create_info.syncs[i], glob.device.handle);
   }

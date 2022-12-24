@@ -236,7 +236,21 @@ namespace rokz {
     VkSubpassDependency                  dependancy;
   };
 
-  
+
+  // --------------------------------------------------------
+  struct CommandPool {
+    VkCommandPool           handle;
+    VkCommandPoolCreateInfo ci; 
+  };
+
+  // --------------------------------------------------------
+  struct CommandBufferGroup {
+
+    std::vector<VkCommandBuffer> buffers; 
+    VkCommandBufferAllocateInfo  alloc_info;
+
+  };
+
   // --------------------------------------------------------
   struct SyncCreateInfo {
 

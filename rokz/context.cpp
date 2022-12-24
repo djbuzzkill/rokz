@@ -696,19 +696,41 @@ bool rokz::CreateCommandPool (VkCommandPool&            command_pool,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
-                               VkCommandBufferAllocateInfo& create_info, 
-                               const VkCommandPool &command_pool,
+VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool) 
+{
+  alloc_info = {};
+  alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  alloc_info.pNext = nullptr;
+  alloc_info.commandPool = commandpool;
+  alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  alloc_info.commandBufferCount = 1;
+  return alloc_info;
+}
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateCommandBuffers (std::vector<VkCommandBuffer>& commandbuffers,
+                               const VkCommandBufferAllocateInfo& alloc_info, 
                                const VkDevice &device) {
 
-  create_info = {};
-  create_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  create_info.pNext = nullptr;
-  create_info.commandPool = command_pool;
-  create_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  create_info.commandBufferCount = 1;
+  if (vkAllocateCommandBuffers(device, &alloc_info, &commandbuffers[0]) != VK_SUCCESS) {
+    printf ("failed to allocate command buffers!");
+    return false; 
+  }
+  printf ("BAI %s\n", __FUNCTION__); 
+  return true; 
 
-  if (vkAllocateCommandBuffers(device, &create_info, &command_buffer) != VK_SUCCESS) {
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
+                               const VkCommandBufferAllocateInfo& alloc_info, 
+                               const VkDevice &device) {
+
+  if (vkAllocateCommandBuffers(device, &alloc_info, &command_buffer) != VK_SUCCESS) {
     printf ("failed to allocate command buffers!");
     return false; 
   }
