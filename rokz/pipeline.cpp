@@ -33,15 +33,12 @@ bool rokz::CreateGraphicsPipelineLayout (
 
   return true;
 }
-
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateGraphicsPipeline (
-    rokz::Pipeline&             pipeline,
-    //const PipelineLayout&       pipeline_layout,
-    const VkRenderPass&         render_pass,
+    rokz::Pipeline&                                    pipeline,
+    const VkRenderPass&                                render_pass,
     const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
     const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
     const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
@@ -80,4 +77,56 @@ bool rokz::CreateGraphicsPipeline (
   return true; 
   
 }
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
+                                                const VkPipelineLayout&                            pipeline_layout,
+                                                const VkRenderPass&                                render_pass,
+                                                const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
+                                                const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                                                const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                                                const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                                                const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                                                const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                                                const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                                                const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                                                const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state)
+{
+  ci.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+  ci.pNext               = nullptr;
+  ci.flags               = 0x0; 
+  ci.stageCount          = ci_shader_stages.size();
+  ci.pStages             = &ci_shader_stages[0]; 
+  ci.pVertexInputState   = ci_vertex_input_state; ;
+  ci.pInputAssemblyState = ci_input_assembly;
+  ci.pViewportState      = ci_viewport_state;
+  ci.pRasterizationState = ci_rasterizer;
+  ci.pMultisampleState   = ci_multisampling;
+  ci.pDepthStencilState  = ci_depthstencil; 
+  ci.pColorBlendState    = ci_colorblend; 
+  ci.pDynamicState       = ci_dynamic_state; 
+  ci.layout              = pipeline_layout; 
+  ci.renderPass          = render_pass;
+  ci.subpass             = 0;
+  ci.basePipelineHandle  = VK_NULL_HANDLE; 
+  ci.basePipelineIndex   = -1;              
+
+  return ci; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice device) {
+
+  if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline.ci, nullptr, &pipeline.handle) != VK_SUCCESS) {
+    printf("failed to create graphics pipeline!");
+    return false;
+  }
+
+  return true; 
+
+  }
 

@@ -173,10 +173,11 @@ namespace rokz {
     Pipeline () : handle (VK_NULL_HANDLE), ci (), layout (), state_ci () {
     }
     
-    VkPipeline                   handle; 
-    VkGraphicsPipelineCreateInfo ci;
-    PipelineLayout               layout; 
-    PipelineStateCreateInfo      state_ci;
+    VkPipeline                       handle; 
+    VkGraphicsPipelineCreateInfo     ci;
+    PipelineLayout                   layout; 
+    PipelineStateCreateInfo          state_ci;
+    std::vector<rokz::ShaderModule>  shader_modules; 
   };
 
   // ----------------------------------------------------------

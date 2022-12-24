@@ -460,7 +460,7 @@ bool rokz::GetSwapChainImages (std::vector<Image> &swapchain_images,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info) {
+bool rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info) {
 
   // DYNAMIC STATE
   dynamic_states.clear ();
@@ -479,7 +479,7 @@ bool rokz::CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkP
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_blend_attachment_state,
+bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state,
                                   VkPipelineColorBlendStateCreateInfo& color_blending_create_info) {
   // COLOR BLENDING
   color_blend_attachment_state = {};

@@ -8,27 +8,11 @@
 
 namespace rokz {
 
-
-
-
-  // bool CreateFramebuffers (std::vector<VkFramebuffer>&           framebuffers,
-  //                          std::vector<VkFramebufferCreateInfo>& create_infos,
-  //                          const RenderPass&                     render_pass,
-  //                          const VkExtent2D                      swapchain_ext,
-  //                          const std::vector<VkImageView>&       image_views,
-  //                          const VkImageView&                    msaa_color_imageview,
-  //                          const VkImageView&                    depth_imageview,
-  //                          const Device&                         device);
-
-  // bool CreateFramebuffer (VkFramebuffer&           framebuffers,
-  //                         VkFramebufferCreateInfo& create_infos,
-  //                         const RenderPass&        render_pass, 
-  //                         const VkExtent2D         swapchain_ext, 
-  //                         VkImageView&             image_views, 
-  //                         const VkImageView&       msaa_color_imageview, 
-  //                         const VkImageView&       depth_imageview, 
-  //                         const VkDevice&          device);
-
+  
+  VkFramebufferCreateInfo& CreateInfo (VkFramebufferCreateInfo& ci,
+                                       const VkExtent2D&               swapchain_ext, 
+                                       const RenderPass&               render_pass,
+                                       const std::vector<VkImageView>& attachments); 
   // ---------------------------------------------------------------------
   bool CreateFramebuffer (VkFramebuffer&           framebuffers,
                           VkFramebufferCreateInfo& create_infos,

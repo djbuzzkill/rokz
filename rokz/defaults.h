@@ -11,51 +11,38 @@ namespace rokz {
 
 
 
-  VkPipelineVertexInputStateCreateInfo& Init (VkPipelineVertexInputStateCreateInfo& create_info,
-                                              const VkVertexInputBindingDescription& binding_desc, 
-                                              const std::vector<VkVertexInputAttributeDescription>& attrib_desc); 
+  VkPipelineVertexInputStateCreateInfo& VertexInputState (VkPipelineVertexInputStateCreateInfo& create_info,
+                                                          const VkVertexInputBindingDescription& binding_desc, 
+                                                          const std::vector<VkVertexInputAttributeDescription>& attrib_desc); 
 
 
 // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  VkRect2D&                               Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext); 
-  VkViewport&                             Init (VkViewport& vp, float wd, float  ht, float dp); 
-  VkPipelineMultisampleStateCreateInfo&   Init (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits msaa_samples = VK_SAMPLE_COUNT_1_BIT);
-  VkPipelineInputAssemblyStateCreateInfo& Init (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  VkRect2D&                               Rect2D (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext); 
+  //  VkViewport&                             Viewport (VkViewport& vp, float wd, float  ht, float dp); 
+
+
+  VkPipelineMultisampleStateCreateInfo&   CreateInfo (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits msaa_samples = VK_SAMPLE_COUNT_1_BIT);
+  VkPipelineInputAssemblyStateCreateInfo& CreateInfo  (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
 
 
   VkPipelineShaderStageCreateInfo&        Init (VkPipelineShaderStageCreateInfo& ci,
                                                 VkShaderStageFlagBits stage_flags,
                                                 const VkShaderModule& module); 
 
-  VkPipelineRasterizationStateCreateInfo& Init (VkPipelineRasterizationStateCreateInfo& ci);
-  VkPipelineDepthStencilStateCreateInfo&  Init (VkPipelineDepthStencilStateCreateInfo& ci);
+  VkPipelineRasterizationStateCreateInfo& CreateInfo (VkPipelineRasterizationStateCreateInfo& ci);
+
+  VkPipelineDepthStencilStateCreateInfo&  CreateInfo (VkPipelineDepthStencilStateCreateInfo& ci);
   VkDescriptorSetLayoutBinding&           Init (VkDescriptorSetLayoutBinding& ds, uint32_t index, VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags); 
 
   
-  VkPipelineViewportStateCreateInfo&      Init (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor); 
+  VkViewport&                             Viewport (VkViewport& vp, float x, float y, float wd, float ht, float dp); 
+  VkPipelineViewportStateCreateInfo&      CreateInfo (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor); 
 
   VkDescriptorSetLayoutCreateInfo&        Init (VkDescriptorSetLayoutCreateInfo& ci);
 
   
-  
-  VkInstanceCreateInfo&                    Default (VkInstanceCreateInfo& create_info); // 
-  VkDeviceCreateInfo&                      Default (VkDeviceCreateInfo& create_info);
-  VkDeviceQueueCreateInfo&                 Default (VkDeviceQueueCreateInfo& create_info);    
-  VkSwapchainCreateInfoKHR&                Default (VkSwapchainCreateInfoKHR& create_info);  
-  //VkImageViewCreateInfo&                   Default (VkImageViewCreateInfo& create_info);  
-  VkRenderPassCreateInfo&                  Default (VkRenderPassCreateInfo& create_info); 
-  VkGraphicsPipelineCreateInfo&            Default (VkGraphicsPipelineCreateInfo& create_info); 
-  VkPipelineInputAssemblyStateCreateInfo&  Default (VkPipelineInputAssemblyStateCreateInfo& create_info);       //      ateInfo input_assembly{};
-  VkPipelineDynamicStateCreateInfo&        Default (VkPipelineDynamicStateCreateInfo& create_info); //         dynamic_state_create_info {};
-  VkPipelineViewportStateCreateInfo&       Default (VkPipelineViewportStateCreateInfo& create_info);    //    viewport_state_create_info{};
-  VkPipelineRasterizationStateCreateInfo&  Default (VkPipelineRasterizationStateCreateInfo& create_info);//  rasterizer{};
-  VkPipelineMultisampleStateCreateInfo&    Default (VkPipelineMultisampleStateCreateInfo& create_info);  //   multisampling{};
-  VkPipelineDepthStencilStateCreateInfo&   Default (VkPipelineDepthStencilStateCreateInfo& create_info);  //    pipeline_depth_stencil_create_info {};
-  VkPipelineColorBlendStateCreateInfo&     Default (VkPipelineColorBlendStateCreateInfo& create_info);    //    color_blending_create_info{};
-  VkPipelineLayoutCreateInfo&              Default (VkPipelineLayoutCreateInfo& create_info);
-  VkPipelineShaderStageCreateInfo&         Default (VkPipelineShaderStageCreateInfo& create_info); //      vert_shader_stage_info {};
 
   
 }                                                                                 

@@ -196,7 +196,7 @@ struct Glob {
   rokz::Device                device;
 
   VkViewport                  viewport;
-  VkRect2D                    scissor; 
+  VkRect2D                    scissor_rect; 
     
 
   float                      queue_priority;
@@ -662,14 +662,14 @@ bool create_graphicspipelinelayout_defaults (
     const VkExtent2D&                  swapchain_extent,
     const VkDevice&                    device)
 {
-  rokz::Init (viewport, swapchain_extent.width, swapchain_extent.height, 1.0f);
-  rokz::Init (scissor,  VkOffset2D {0, 0}, swapchain_extent);
-  rokz::Init (sci.viewport_state, viewport, scissor);
+  rokz::Viewport  (viewport, 0, 0, swapchain_extent.width, swapchain_extent.height, 1.0f);
+  rokz::Rect2D (scissor,  VkOffset2D {0, 0}, swapchain_extent);
+  rokz::CreateInfo (sci.viewport_state, viewport, scissor);
 
-  rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::Init (sci.rasterizer); 
-  rokz::Init (sci.multisampling); 
-  rokz::Init (sci.depthstencil); 
+  rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (sci.rasterizer); 
+  rokz::CreateInfo (sci.multisampling); 
+  rokz::CreateInfo (sci.depthstencil); 
 
   if (vkCreatePipelineLayout (device, &pipeline_layout.ci, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
     printf("failed to create pipeline layout!\n");
@@ -1118,28 +1118,32 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
 
   setup_shader_modules (glob, rokz_path);
 
-  rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
+  rokz::ColorBlendState_default (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
 
-  rokz::CreateDynamicStates (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
+  rokz::DynamicState_default (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
 
   // 
-  rokz::Init (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
+  rokz::VertexInputState (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
 
+
+  const VkOffset2D offs0 {0, 0}; 
   //glob.create_info.swapchain.imageExtent.width;
-  rokz::Init (glob.viewport,
-              glob.swapchain.ci.imageExtent.width,
-              glob.swapchain.ci.imageExtent.height,
-              1.0f);
+  rokz::Viewport  (glob.viewport,
+                   offs0.x, offs0.y, 
+                   glob.swapchain.ci.imageExtent.width,
+                   glob.swapchain.ci.imageExtent.height,
+                   1.0f);
 
-  rokz::Init (glob.scissor, VkOffset2D {0, 0}, glob.swapchain.ci.imageExtent);
+  rokz::Rect2D  (glob.scissor_rect, offs0, glob.swapchain.ci.imageExtent);
 
   rokz::PipelineStateCreateInfo& sci = glob.pipeline.state_ci;
-  rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::Init (sci.viewport_state, glob.viewport, glob.scissor);
-  rokz::Init (sci.rasterizer); 
+  rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (sci.viewport_state, glob.viewport, glob.scissor_rect);
+
+  rokz::CreateInfo (sci.rasterizer); 
   //rokz::Init (sci.colorblend);
-  rokz::Init (sci.multisampling, glob.msaa_samples); 
-  rokz::Init (sci.depthstencil); 
+  rokz::CreateInfo (sci.multisampling, glob.msaa_samples); 
+  rokz::CreateInfo (sci.depthstencil); 
 
   //  glob.uniform_group.
   glob.desc_set_layout_bindings.resize (2); 

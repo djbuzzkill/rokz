@@ -139,7 +139,6 @@ struct Glob {
   
   VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
   
-  std::vector<rokz::ShaderModule>  shader_modules; 
 
   VkPipelineColorBlendAttachmentState color_blend_attachment_state;     
 
@@ -184,7 +183,7 @@ struct Glob {
 
 
   VkViewport                  viewport;
-  VkRect2D                    scissor; 
+  VkRect2D                    scissor_rect; 
     
 
   float                      queue_priority;
@@ -215,7 +214,7 @@ Glob::Glob () :
   multisamp_color_image(),
   multisamp_color_imageview(),
   msaa_samples (),
-  shader_modules (),
+  //  shader_modules (),
   color_blend_attachment_state(),
   vma_ib_device(),
   vma_vb_device(),
@@ -236,7 +235,7 @@ Glob::Glob () :
   window(),
   surface(nullptr),     
   viewport(),
-  scissor(),
+  //  scissor(),
   queue_priority(),
   create_info(),
   sim_time(), 
@@ -307,31 +306,52 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
   std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state_ci.shader_stages; 
   // const VkDevice&                               device)
 
-  glob.shader_modules.resize            (2);
-  shader_stage_create_infos.resize (2);
-  
+  glob.pipeline.shader_modules.resize (2);
+  shader_stage_create_infos.resize    (2);
+  std::vector<rokz::ShaderModule>& shader_modules = glob.pipeline.shader_modules;
   // VERT SHADER 
   std::filesystem::path vert_file_path  =  fspath / "data/shader/basic3D_tx_vert.spv" ;
 
-  if (!rokz::CreateShaderModule (glob.shader_modules[0], vert_file_path.string(), glob.device.handle))
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), glob.device.handle))
     return false; 
   
-  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, glob.shader_modules[0].handle); 
+  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
 
   
   // FRAG SHADER
   std::filesystem::path frag_file_path = fspath /  "data/shader/basic_tx_frag.spv" ;
 
-  if (!rokz::CreateShaderModule (glob.shader_modules[1], frag_file_path.string(), glob.device.handle))
+  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), glob.device.handle))
     return false; 
   
-  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, glob.shader_modules[1].handle); 
+  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
   //
 
   return true; 
 }
 
+// --------------------------------------------------------------------
+// 
+// --------------------------------------------------------------------
+void SetupDescriptorSetLayout (Glob& glob)  {
+  glob.descr_group.set_layout.bindings.resize (2); 
+  //rokz::Init (glob.desc_set_layout_bindings[0],
+  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[0],
+                                    0,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    VK_SHADER_STAGE_VERTEX_BIT);
 
+  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[1],
+                                    1,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+
+  rokz::CreateDescriptorSetLayout (glob.descr_group.set_layout.handle,
+                                   glob.descr_group.set_layout.ci,
+                                   glob.descr_group.set_layout.bindings,
+                                   glob.device.handle); 
+
+}
 // --------------------------------------------------------------------
 // VMA
 // --------------------------------------------------------------------
@@ -390,7 +410,7 @@ void TestCleanup (Glob& glob) {
            glob.surface,
            glob.command_pool,
            glob.syncs, 
-           glob.shader_modules,
+           glob.pipeline.shader_modules,
            glob.pipeline.layout.handle, 
            glob.render_pass,
 
@@ -652,14 +672,14 @@ bool CreateGraphicsPipelineLayout_defaults (
     const VkExtent2D&                  swapchain_extent,
     const VkDevice&                    device)
 {
-  rokz::Init (viewport, swapchain_extent.width, swapchain_extent.height, 1.0f);
-  rokz::Init (scissor,  VkOffset2D {0, 0}, swapchain_extent);
-  rokz::Init (sci.viewport_state, viewport, scissor);
+  rokz::Viewport (viewport, 0, 0, swapchain_extent.width, swapchain_extent.height, 1.0f);
+  rokz::Rect2D (scissor,  VkOffset2D {0, 0}, swapchain_extent);
 
-  rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::Init (sci.rasterizer); 
-  rokz::Init (sci.multisampling); 
-  rokz::Init (sci.depthstencil); 
+  rokz::CreateInfo (sci.viewport_state, viewport, scissor);
+  rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (sci.rasterizer); 
+  rokz::CreateInfo (sci.multisampling); 
+  rokz::CreateInfo (sci.depthstencil); 
 
   if (vkCreatePipelineLayout (device, &pipeline_layout.ci, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
     printf("failed to create pipeline layout!\n");
@@ -1042,13 +1062,14 @@ int test_rokz (const std::vector<std::string>& args) {
                           glob.physical_device.handle);
 
   
+  // SetupShaderModules also sets up Pipeline Shader State CreateInfo's
   SetupShaderModules (glob, rokz_path);
 
-  rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
+  rokz::ColorBlendState_default (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
 
-  rokz::CreateDynamicStates (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
+  rokz::DynamicState_default (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
   // 
-  rokz::Init (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
+  rokz::VertexInputState (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
   
   // CreateGraphicsPipelineLayout(
   //     glob.pipeline_layout,
@@ -1058,64 +1079,43 @@ int test_rokz (const std::vector<std::string>& args) {
   //     glob.create_info.swapchain.imageExtent,
   //     glob.device);
   //glob.create_info.swapchain.imageExtent.width;
-  rokz::Init (glob.viewport,
-              glob.swapchain.ci.imageExtent.width,
-              glob.swapchain.ci.imageExtent.height,
-              1.0f);
+  const VkOffset2D offs0 {0, 0}; 
 
-  rokz::Init (glob.scissor, VkOffset2D {0, 0}, glob.swapchain.ci.imageExtent);
+  rokz::Viewport (glob.viewport, offs0.x, offs0.y,
+                  glob.swapchain.ci.imageExtent.width, glob.swapchain.ci.imageExtent.height,
+                  1.0f);
 
-  rokz::PipelineStateCreateInfo& sci = glob.pipeline.state_ci;
-  rokz::Init (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::Init (sci.viewport_state, glob.viewport, glob.scissor);
-  rokz::Init (sci.rasterizer); 
-  //rokz::Init (sci.colorblend);
-  rokz::Init (sci.multisampling, glob.msaa_samples); 
-  rokz::Init (sci.depthstencil); 
   
-  // VkDescriptorSetLayoutBinding dslb0;
-  // dslb0.stageFlags     = VK_SHADER_STAGE_VERTEX_BIT;
-  // dslb0.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ; 
-  // dslb0.binding        = 0; 
+rokz::PipelineStateCreateInfo& ps_ci = glob.pipeline.state_ci;
 
-  //  glob.uniform_group.
-  // glob.desc_set_layout_bindings.resize (2); 
-  glob.descr_group.set_layout.bindings.resize (2); 
-  //rokz::Init (glob.desc_set_layout_bindings[0],
-  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[0],
-                                    0,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-
-  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[1],
-                                    1,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
-
-  rokz::CreateDescriptorSetLayout (glob.descr_group.set_layout.handle,
-                                   glob.descr_group.set_layout.ci,
-                                   glob.descr_group.set_layout.bindings,
-                                   glob.device.handle); 
-
+ rokz::CreateInfo (ps_ci.viewport_state, glob.viewport,
+                      rokz::Rect2D (glob.scissor_rect, offs0,
+                                    glob.swapchain.ci.imageExtent));
+  rokz::CreateInfo (ps_ci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (ps_ci.rasterizer); 
+  rokz::CreateInfo (ps_ci.multisampling, glob.msaa_samples); 
+  rokz::CreateInfo (ps_ci.depthstencil); 
+  SetupDescriptorSetLayout (glob); 
+  //
   rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
                                       glob.pipeline.layout.ci,
                                       glob.descr_group.set_layout.handle,
                                       glob.device.handle);
-  
-  bool pipeline_res = CreateGraphicsPipeline (
-    glob.pipeline,
-    //    glob.pipeline.layout, // const PipelineLayout&         pipeline_layout,
-    glob.render_pass.handle,     // const VkRenderPass&           render_pass,
-    sci.shader_stages, //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
-    &sci.input_assembly, //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-    &sci.vertex_input_state, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-    &sci.viewport_state, //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-    &sci.rasterizer, //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-    &sci.multisampling, //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-    &sci.depthstencil,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-    &sci.colorblend, //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-    &sci.dynamic_state,//const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
-    glob.device.handle);    //const VkDevice                           b          device)
+
+  rokz::CreateInfo (glob.pipeline.ci,
+                    glob.pipeline.layout.handle,
+                    glob.render_pass.handle,                    
+                    ps_ci.shader_stages, //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+                    &ps_ci.input_assembly, //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                    &ps_ci.vertex_input_state, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                    &ps_ci.viewport_state, //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                    &ps_ci.rasterizer, //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                    &ps_ci.multisampling, //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                    &ps_ci.depthstencil,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                    &ps_ci.colorblend, //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                    &ps_ci.dynamic_state);  // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+
+  bool pipeline_res = rokz::CreateGraphicsPipeline (glob.pipeline, glob.device.handle);    //const VkDevice                           b          device)
 
   SetupMutisampleColorResource (glob);
 

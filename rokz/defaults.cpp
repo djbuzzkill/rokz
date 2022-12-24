@@ -7,7 +7,7 @@ using namespace rokz;
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkPipelineVertexInputStateCreateInfo& rokz::Init ( 
+VkPipelineVertexInputStateCreateInfo& rokz::VertexInputState ( 
     VkPipelineVertexInputStateCreateInfo&                 create_info,
     const VkVertexInputBindingDescription&                binding_desc, 
     const std::vector<VkVertexInputAttributeDescription>& attrib_desc)
@@ -27,11 +27,11 @@ VkPipelineVertexInputStateCreateInfo& rokz::Init (
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkViewport& rokz::Init (VkViewport& vp, float wd, float ht, float dp) {
+VkViewport& rokz::Viewport (VkViewport& vp, float x, float y, float wd, float ht, float dp) {
   // VIEWPORT 
   vp = {};
-  vp.x = 0.0f;
-  vp.y = 0.0f;
+  vp.x = x;
+  vp.y = y;
   vp.width = wd;
   vp.height = ht;
   vp.minDepth = 0.0f;
@@ -43,7 +43,7 @@ VkViewport& rokz::Init (VkViewport& vp, float wd, float ht, float dp) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkRect2D& rokz::Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext) { 
+VkRect2D& rokz::Rect2D (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& ext) { 
   // SCISSOR RECT
   rect = {}; 
   rect.offset = offs;
@@ -54,7 +54,7 @@ VkRect2D& rokz::Init (VkRect2D& rect, const VkOffset2D& offs, const VkExtent2D& 
 //---------------------------------------------------------------------
 //
 //---------------------------------------------------------------------
-VkPipelineViewportStateCreateInfo& rokz::Init (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor) { 
+VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor) { 
   // VkPipelineViewportStateCreateInfo
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -71,7 +71,7 @@ VkPipelineViewportStateCreateInfo& rokz::Init (VkPipelineViewportStateCreateInfo
 //---------------------------------------------------------------------
 //
 //---------------------------------------------------------------------
-VkPipelineRasterizationStateCreateInfo & rokz::Init (VkPipelineRasterizationStateCreateInfo& ci) {
+VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizationStateCreateInfo& ci) {
   // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -98,7 +98,7 @@ VkPipelineRasterizationStateCreateInfo & rokz::Init (VkPipelineRasterizationStat
 // ---------------------------------------------------------------------
   ;
 
-VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits  msaa_samples) { 
+VkPipelineMultisampleStateCreateInfo& rokz::CreateInfo (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits  msaa_samples) { 
   // MULTI SAMPLING
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -116,7 +116,7 @@ VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCrea
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCreateInfo& ci) {
+VkPipelineDepthStencilStateCreateInfo& rokz::CreateInfo (VkPipelineDepthStencilStateCreateInfo& ci) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
   ci.pNext = nullptr;
@@ -131,7 +131,7 @@ VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCr
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkPipelineInputAssemblyStateCreateInfo& rokz::Init (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim) { 
+VkPipelineInputAssemblyStateCreateInfo& rokz::CreateInfo (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim) { 
   // INPUT ASSEMBLY STATE
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -173,54 +173,4 @@ VkPipelineShaderStageCreateInfo& rokz::Init (VkPipelineShaderStageCreateInfo& ci
 //   ds.pImmutableSamplers = nullptr; 
 //   return ds;
 // }
-
-VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo& create_info) {
-  return create_info;
-}
-
-VkDeviceQueueCreateInfo& rokz::Default (VkDeviceQueueCreateInfo& create_info) {
-  return create_info;
-}
-
-
-VkRenderPassCreateInfo& rokz::Default (VkRenderPassCreateInfo& create_info) {
-  return create_info;
-}
-
-VkGraphicsPipelineCreateInfo& rokz::Default (VkGraphicsPipelineCreateInfo& create_info) {
-  return create_info;
-}
-
-VkPipelineInputAssemblyStateCreateInfo&  rokz::Default (VkPipelineInputAssemblyStateCreateInfo& create_info) {
-  return create_info;
-}       //      ateInfo input_assembly{};
-
-VkPipelineDynamicStateCreateInfo& rokz::Default (VkPipelineDynamicStateCreateInfo& create_info) {
-  return create_info;
-} //         dynamic_state_create_info {};
-
-VkPipelineViewportStateCreateInfo& rokz::Default (VkPipelineViewportStateCreateInfo& create_info) {
-  return create_info;
-}    //    viewport_state_create_info{};
-
-VkPipelineMultisampleStateCreateInfo& rokz::Default (VkPipelineMultisampleStateCreateInfo& create_info)  {
-  return create_info;
-} //   multisampling{};
-
-VkPipelineDepthStencilStateCreateInfo& rokz::Default (VkPipelineDepthStencilStateCreateInfo& create_info)  {
-  return create_info;
-} //    pipeline_depth_stencil_create_info {};
-
-VkPipelineColorBlendStateCreateInfo& rokz::Default (VkPipelineColorBlendStateCreateInfo& create_info) {
-  return create_info;
-}   //    color_blending_create_info{};
-
-VkPipelineLayoutCreateInfo&  rokz::Default (VkPipelineLayoutCreateInfo& create_info) {
-  return create_info;
-}
-
-VkPipelineShaderStageCreateInfo& rokz::Default (VkPipelineShaderStageCreateInfo& create_info) {
-  return create_info;
-} //      vert_shader_stage_info {};
-
 
