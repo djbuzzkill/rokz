@@ -36,10 +36,6 @@ set (ROKZ_HEADER_FILES
 #
 set (ROKZ_SOURCE_FILES
 
-
-
-
-
   context.cpp
   command.cpp
   pipeline.cpp

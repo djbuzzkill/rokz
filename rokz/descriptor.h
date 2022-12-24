@@ -20,19 +20,26 @@ namespace rokz {
 
   // ---------------------------------------------------------------------
   struct DescriptorSetLayout { 
-    VkDescriptorSetLayout           handle;    
-    VkDescriptorSetLayoutCreateInfo ci;
+    VkDescriptorSetLayout                     handle;    
+    VkDescriptorSetLayoutCreateInfo           ci;
+    std::vector<VkDescriptorSetLayoutBinding> bindings; 
+    
   }; 
 
   // ---------------------------------------------------------------------
   struct DescriptorGroup {
     
-    std::vector<VkDescriptorSet>   sets;
+    std::vector<VkDescriptorSet>   desc_sets;
     rokz::DescriptorSetLayout      set_layout;
     VkDescriptorSetAllocateInfo    alloc_info;
 
   }; 
 
+  // ---------------------------------------------------------------------
+  VkDescriptorSetLayoutBinding&
+  DescriptorSetLayoutBinding (VkDescriptorSetLayoutBinding& out, uint32_t binding,
+                             VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags, 
+                             const VkSampler* pImmutableSamplers = nullptr)  ; 
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -50,7 +57,6 @@ namespace rokz {
                             VkDescriptorSetLayoutCreateInfo&    create_info,
                             const VkDescriptorSetLayoutBinding& desc_set_layout_binding, 
                             const VkDevice&                     device); 
-
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------

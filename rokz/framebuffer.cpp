@@ -108,6 +108,8 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
     
     framebuffers[i].ci = {}; 
     framebuffers[i].ci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebuffers[i].ci.pNext = nullptr;
+
     framebuffers[i].ci.renderPass = render_pass.handle;
     framebuffers[i].ci.attachmentCount = framebuffers[i].attachments.size(); // color + depthstencil + colresolv
     framebuffers[i].ci.pAttachments = &framebuffers[i].attachments[0]; // attachments;

@@ -29,7 +29,7 @@ void rokz::Destroy (Sampler& sampler, const VkDevice& device) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkSamplerCreateInfo& rokz::Init (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
+VkSamplerCreateInfo& rokz::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
 
   printf ("%s SamplerCreateInfo \n", __FUNCTION__); 
 
@@ -58,7 +58,6 @@ VkSamplerCreateInfo& rokz::Init (VkSamplerCreateInfo& ci, const VkPhysicalDevice
   ci.mipLodBias = 0.0f;
   ci.minLod = 0.0f;
   ci.maxLod = 0.0f;
-
 
   return ci;
 }

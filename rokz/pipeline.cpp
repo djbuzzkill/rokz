@@ -15,11 +15,10 @@ bool rokz::CreateGraphicsPipelineLayout (
   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  create_info.pNext = nullptr;
 
   create_info.setLayoutCount         = 1;            
   create_info.pSetLayouts            = &desc_set_layout;         
-
-
   create_info.setLayoutCount         = 1;            
   create_info.pSetLayouts            = &desc_set_layout;         
   //printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 

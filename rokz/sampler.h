@@ -14,10 +14,10 @@ namespace rokz {
   };
 
   
-  VkSamplerCreateInfo& Init (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
+  VkSamplerCreateInfo& CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
   bool                 CreateSampler (Sampler& sampler, const VkDevice& device); 
   void                 Destroy (Sampler& sampler, const VkDevice& device); 
-  
+
 }
     
 

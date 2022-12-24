@@ -103,14 +103,17 @@ struct CreateInfo {
 
   VkCommandPoolCreateInfo                  command_pool; 
   std::vector<VkCommandBufferAllocateInfo> command_buffer; 
-  std::vector<rokz::SyncCreateInfo> syncs; 
+  std::vector<rokz::SyncCreateInfo>        syncs; 
 };
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 struct Glob {
+
+  //#ifdef GLOB_COMMENT_OUT   
   Glob ();
+
   //VkApplicationInfo            app_info; // {};
   rokz::Instance                   instance;
   rokz::PhysicalDevice             physical_device;
@@ -164,7 +167,7 @@ struct Glob {
   // mebe shouldnt b calld uniform_* anymore
   rokz::DescriptorPool           descr_pool;
   rokz::DescriptorGroup          descr_group; 
-  std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
+  //std::vector<VkDescriptorSetLayoutBinding> desc_set_layout_bindings; 
   // std::vector<VkDescriptorSet>   desc_sets;
   // VkDescriptorSetAllocateInfo    desc_set_alloc_info;
   // rokz::DescriptorSetLayout      descriptor_set_layout;
@@ -189,8 +192,13 @@ struct Glob {
 
   double                      sim_time; 
   float                       dt;
+
+  // #endif
+
   // bool               enable_validation;
 };
+
+
 
 Glob::Glob () :
   instance(),
@@ -223,7 +231,7 @@ Glob::Glob () :
   uniform_mapped_pointers(),
   descr_pool(),
   descr_group(),
-  desc_set_layout_bindings(),
+  //  desc_set_layout_bindings(),
   pipeline(),
   window(),
   surface(nullptr),     
@@ -237,80 +245,7 @@ Glob::Glob () :
   queues.graphics = {};
   queues.present = {}; 
 }
-// ------------------------------------------------------------------
-//
-// ------------------------------------------------------------------
 
-Glob& Default (Glob& g) {
-  g.queue_priority = 1.0f;
-
-  g.swapchain_support_info = {};
-  g.swapchain = {};
-  g.allocator = {};
-
-  g.instance = {};
-  g.physical_device = {};
-  g.device = {}; 
-
-
-  g.swapchain_images = {};
-  g.swapchain_imageviews = {};
-  g.swapchain_framebuffers = {};
-
-
-  g.depth_image = {};
-  g.depth_imageview = {}; 
-  g.multisamp_color_image = {};
-  g.multisamp_color_imageview = {}; 
-
-  g.shader_modules = {}; 
-
-  g.color_blend_attachment_state = {};     
-
-  g.vma_ib_device = {};
-  g.vma_vb_device = {};
-  g.dynamic_states = {}; 
-  g.command_pool = {}; 
-  g.command_buffer = {}; 
-  g.syncs = {}; 
-  g.render_pass = {}; 
-
-  //g.texture_buff_stage = {}; // mebe we should just make stack
-  g.texture_image = {}; 
-  g.texture_imageview = {}; 
-  g.sampler = {};
-
-  g.vma_uniform_buffs = {};
-  g.uniform_mapped_pointers = {}; 
-  g.descr_pool = {};
-  g.descr_group = {}; 
-  g.desc_set_layout_bindings = {}; 
-  g.physical_device.features     = {};
-
-  //  g.create_info.instance= {};
-  g.device.ci  = {};
-  g.device.queue_ci = {}; 
-  //g.create_info.queue   = {};
-  g.swapchain.ci= {};
-
-  g.texture_image = {}; 
-  g.texture_imageview = {}; 
-  g.sampler = {};
-
-  g.pipeline = {}; 
-  g.window = {};
-  
-  g.swapchain_support_info = {}; 
-
-  g.physical_device.family_indices.graphics.reset();
-  g.physical_device.family_indices.present.reset();
-
-  g.msaa_samples = VK_SAMPLE_COUNT_1_BIT;
-
-  g.sim_time = 0.0; 
-  return g; 
-
-}
 
 // --------------------------------------------------------------------
 //
@@ -351,7 +286,7 @@ void SetupDepthBuffer (Glob& glob) {
 void SetupSampler (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
-  rokz::Init (glob.sampler.ci, glob.physical_device.properties);
+  rokz::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
   
   rokz::CreateSampler (glob.sampler, glob.device.handle);  
 }
@@ -371,13 +306,11 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
   // std::vector<ShaderModule>&                    shader_modules,
   std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state_ci.shader_stages; 
   // const VkDevice&                               device)
-  printf ("%s\n", __FUNCTION__); 
 
   glob.shader_modules.resize            (2);
   shader_stage_create_infos.resize (2);
   
   // VERT SHADER 
-  printf ("[2] B4 VERT %s:\n", __FUNCTION__); 
   std::filesystem::path vert_file_path  =  fspath / "data/shader/basic3D_tx_vert.spv" ;
 
   if (!rokz::CreateShaderModule (glob.shader_modules[0], vert_file_path.string(), glob.device.handle))
@@ -387,7 +320,6 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
 
   
   // FRAG SHADER
-  printf ("[3] B4 FRAG %s\n", __FUNCTION__); 
   std::filesystem::path frag_file_path = fspath /  "data/shader/basic_tx_frag.spv" ;
 
   if (!rokz::CreateShaderModule (glob.shader_modules[1], frag_file_path.string(), glob.device.handle))
@@ -613,25 +545,28 @@ bool SetupDescriptorSets (Glob& glob) {
   //                      glob.uniform_buffers,
   //                      glob.descr_pool.handle, 
   //                      glob.device);  
-  const size_t num_sets = glob.vma_uniform_buffs.size (); 
+  //  const size_t num_sets = kMaxFramesInFlight; // glob.vma_uniform_buffs.size (); 
 
   rokz::DescriptorGroup& dg = glob.descr_group;
 
-  std::vector<VkDescriptorSetLayout> desc_layouts (num_sets, dg.set_layout.handle);
-  // use same layout for all allocations
+  // use same layout for both allocations
+  std::vector<VkDescriptorSetLayout> desc_layouts (kMaxFramesInFlight, dg.set_layout.handle);
+  // could have also said: 
+  //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
+  // but that wouldnt work
   dg.alloc_info = {}; 
   dg.alloc_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
   dg.alloc_info.descriptorPool     = glob.descr_pool.handle; 
-  dg.alloc_info.descriptorSetCount = num_sets;
+  dg.alloc_info.descriptorSetCount = kMaxFramesInFlight; // num_sets;
   dg.alloc_info.pSetLayouts        = &desc_layouts[0];
   
   //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
-  if (!rokz::AllocateDescriptorSets (dg.sets, dg.alloc_info, num_sets, glob.device.handle)) {
+  if (!rokz::AllocateDescriptorSets (dg.desc_sets, dg.alloc_info,  kMaxFramesInFlight, glob.device.handle)) {
     printf ("[FAILED] alloc desc sets %s", __FUNCTION__);
     return false;
   }
   
-  for (uint32_t i = 0; i < num_sets; i++) {
+  for (uint32_t i = 0; i < kMaxFramesInFlight; i++) {
     // wtf does this do
     VkDescriptorBufferInfo buffer_info{};
     buffer_info.buffer     = glob.vma_uniform_buffs[i].handle;
@@ -646,7 +581,7 @@ bool SetupDescriptorSets (Glob& glob) {
     //
     std::array<VkWriteDescriptorSet, 2>  descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet           = dg.sets[i];
+    descriptor_writes[0].dstSet           = dg.desc_sets[i];
     descriptor_writes[0].dstBinding       = 0;
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -656,7 +591,7 @@ bool SetupDescriptorSets (Glob& glob) {
     descriptor_writes[0].pTexelBufferView = nullptr; // Optional}
 
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].dstSet           = dg.sets[i];
+    descriptor_writes[1].dstSet           = dg.desc_sets[i];
     descriptor_writes[1].dstBinding       = 1;
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
@@ -915,13 +850,12 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
   vkResetFences (glob.device.handle, 1, &syncs[curr_frame].in_flight_fen);
 
   UpdateUniformBuffer (glob, curr_frame, dt); 
-
   
   vkResetCommandBuffer (glob.command_buffer[curr_frame], 0);
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
                                      glob.pipeline,
-                                     glob.descr_group.sets[curr_frame], 
+                                     glob.descr_group.desc_sets[curr_frame], 
                                      glob.vma_vb_device.handle, 
                                      glob.vma_ib_device.handle,
                                      glob.swapchain.ci.imageExtent,
@@ -967,27 +901,26 @@ bool RenderFrame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>&
 }
 
 
-
-static Glob glob; ; // *globmem; // something representing the app state
-            
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-int test_rokz (const std::vector<std::string>& args) {
 
+int test_rokz (const std::vector<std::string>& args) {
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
-    glob.dt = 0.0;
 
+  Glob glob; // *globmem; // something representing the app state
 
+  
+  glob.dt = 0.0;
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
-
 
   auto rokz_path = std::filesystem::path ( "/home/djbuzzkill/owenslake");
   //Default (glob); 
   
   glfwInit();
 
+  
   bool fb_resize = false; 
   
   //rokz::CreateWindow_glfw (glob.glfwin);
@@ -1000,6 +933,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   std::vector<const char*> vls;
   std::vector<std::string> vstrs;
+
 
   
   rokz::CreateInfo      (glob.instance.ci,
@@ -1016,7 +950,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device.handle); 
 
-
+  
   glob.queue_priority = 1.0f;
   if (glob.physical_device.family_indices.graphics.has_value ()) {
     printf ("HAS_VALUE:TRUE\n"); 
@@ -1035,11 +969,9 @@ int test_rokz (const std::vector<std::string>& args) {
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   glob.physical_device.features.samplerAnisotropy = VK_TRUE;
 
-  std::vector<const char*> vls0;
-  std::vector<std::string> vstrs0;
-
   rokz::CreateInfo (glob.device.ci,
-                    vls0, vstrs0, 
+                    glob.device.vals, glob.device.valstrs, 
+                    glob.device.dxs, glob.device.dxstrs, 
                     glob.device.queue_ci, &glob.physical_device.features);
 
   rokz::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
@@ -1047,6 +979,8 @@ int test_rokz (const std::vector<std::string>& args) {
   // get queue handle
   rokz::GetDeviceQueue (&glob.queues.graphics, glob.physical_device.family_indices.graphics.value(), glob.device.handle);
   rokz::GetDeviceQueue (&glob.queues.present,  glob.physical_device.family_indices.present.value(), glob.device.handle);
+
+
 
   // VMA SECTION
   // VmaVulkanFunctions vulkanFunctions = {};
@@ -1059,6 +993,8 @@ int test_rokz (const std::vector<std::string>& args) {
   allocatorCreateInfo.instance         = glob.instance.handle;
  
   vmaCreateAllocator(&allocatorCreateInfo, &glob.allocator);
+
+
   // ------------------------------------------ VMA 
 
   // VkSwapchainCreateInfoKHR& CreateInfo_default (VkSwapchainCreateInfoKHR&   ci, 
@@ -1072,7 +1008,6 @@ int test_rokz (const std::vector<std::string>& args) {
                                glob.physical_device.handle);
 
 
-
   glob.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
   glob.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
   
@@ -1084,7 +1019,6 @@ int test_rokz (const std::vector<std::string>& args) {
                             glob.physical_device);
 
   rokz::CreateSwapchain (glob.swapchain, glob.device); 
-
   //bool CreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const Device& device);
   // rokz::CreateSwapchain (glob.swapchain, glob.create_info.swapchain,
   //                        glob.surface, glob.physical_device.handle,
@@ -1107,13 +1041,12 @@ int test_rokz (const std::vector<std::string>& args) {
                           glob.device.handle,
                           glob.physical_device.handle);
 
-
+  
   SetupShaderModules (glob, rokz_path);
 
   rokz::CreateColorBlendState (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
 
   rokz::CreateDynamicStates (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
-
   // 
   rokz::Init (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
   
@@ -1139,30 +1072,36 @@ int test_rokz (const std::vector<std::string>& args) {
   //rokz::Init (sci.colorblend);
   rokz::Init (sci.multisampling, glob.msaa_samples); 
   rokz::Init (sci.depthstencil); 
+  
+  // VkDescriptorSetLayoutBinding dslb0;
+  // dslb0.stageFlags     = VK_SHADER_STAGE_VERTEX_BIT;
+  // dslb0.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ; 
+  // dslb0.binding        = 0; 
 
   //  glob.uniform_group.
-  glob.desc_set_layout_bindings.resize (2); 
-  rokz::Init (glob.desc_set_layout_bindings[0],
-              0,
-              VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-              VK_SHADER_STAGE_VERTEX_BIT);
+  // glob.desc_set_layout_bindings.resize (2); 
+  glob.descr_group.set_layout.bindings.resize (2); 
+  //rokz::Init (glob.desc_set_layout_bindings[0],
+  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[0],
+                                    0,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    VK_SHADER_STAGE_VERTEX_BIT);
 
-  rokz::Init (glob.desc_set_layout_bindings[1],
-              1,
-              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-              VK_SHADER_STAGE_FRAGMENT_BIT);
+  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[1],
+                                    1,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
 
   rokz::CreateDescriptorSetLayout (glob.descr_group.set_layout.handle,
                                    glob.descr_group.set_layout.ci,
-                                   glob.desc_set_layout_bindings,
+                                   glob.descr_group.set_layout.bindings,
                                    glob.device.handle); 
-
 
   rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
                                       glob.pipeline.layout.ci,
                                       glob.descr_group.set_layout.handle,
                                       glob.device.handle);
-
+  
   bool pipeline_res = CreateGraphicsPipeline (
     glob.pipeline,
     //    glob.pipeline.layout, // const PipelineLayout&         pipeline_layout,
@@ -1218,8 +1157,7 @@ int test_rokz (const std::vector<std::string>& args) {
                              glob.queues.graphics,
                              glob.device.handle); 
 
-  rokz::Destroy  (vb_x, glob.allocator); 
-  
+  rokz::Destroy (vb_x, glob.allocator); 
   
   // INDEX BUFF
   rokz::Buffer ib_x;
@@ -1243,17 +1181,13 @@ int test_rokz (const std::vector<std::string>& args) {
                              glob.queues.graphics,
                              glob.device.handle); 
   rokz::Destroy  (ib_x, glob.allocator); 
-  
-  
   //
   SetupSampler (glob); 
-  
   // SetupUniformBuffers (glob.uniform_buffers,
   //                      glob.uniform_mapped_pointers, 
   //                      glob.device,
   //                      glob.physical_device); 
   SetupUniformBuffers (glob);
-
   
   // rokz::DescriptorPool           uniform_descriptor_pool;
   // rokz::DescriptorGroup          uniform_group; 
@@ -1262,10 +1196,7 @@ int test_rokz (const std::vector<std::string>& args) {
   
   SetupDescriptorPool (glob);
 
-
   SetupDescriptorSets (glob);  
-
- 
   
   // items per frames 
   glob.command_buffer.resize (kMaxFramesInFlight);
@@ -1334,6 +1265,8 @@ int test_rokz (const std::vector<std::string>& args) {
     countdown--; 
   }
 
+
+  
   vkDeviceWaitIdle(glob.device.handle);
 
   // end loop
@@ -1341,6 +1274,12 @@ int test_rokz (const std::vector<std::string>& args) {
 
   // CLEAN UP
   TestCleanup (glob); 
+
+
+
+
+  //#endif
+
   //intf ("%s [Glob:%zu]\n", __FUNCTION__ ,   sizeof(Glob)); 
   
   //  globmem.reset ();
@@ -1348,3 +1287,4 @@ int test_rokz (const std::vector<std::string>& args) {
 }
 
 
+//#endif // HIDE_TEST_ROKZ

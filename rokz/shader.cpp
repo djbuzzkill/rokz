@@ -17,6 +17,7 @@ bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const 
   From_file (shm.bin, fsrc);
 
   shm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  shm.ci.pNext = nullptr;
   shm.ci.codeSize = shm.bin.size();
   shm.ci.pCode = reinterpret_cast<const uint32_t*>(&shm.bin[0]);
 
@@ -77,6 +78,7 @@ VkShaderModule& rokz::CreateShaderModule (VkShaderModule& shader_module,
   
   VkShaderModuleCreateInfo create_info {};
   create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  create_info.pNext = nullptr;
   create_info.codeSize = code.size();
   create_info.pCode = reinterpret_cast<const uint32_t *>(&code[0]);
 
@@ -115,6 +117,7 @@ bool rokz::CreateShaderModules (
   VkPipelineShaderStageCreateInfo& vert_shader_stage_info = shader_stage_create_infos[0];
   vert_shader_stage_info = {};   
   vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  vert_shader_stage_info.pNext = nullptr;
   vert_shader_stage_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
   vert_shader_stage_info.module = vertmod;
   vert_shader_stage_info.pSpecializationInfo = nullptr; 
@@ -134,6 +137,7 @@ bool rokz::CreateShaderModules (
   VkPipelineShaderStageCreateInfo& frag_shader_stage_info  = shader_stage_create_infos[1];
   frag_shader_stage_info = {}; 
   frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  frag_shader_stage_info.pNext = nullptr;
   frag_shader_stage_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
   frag_shader_stage_info.module = fragmod;
   frag_shader_stage_info.pSpecializationInfo = nullptr; 

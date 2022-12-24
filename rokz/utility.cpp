@@ -3,40 +3,9 @@
 
 
 using namespace rokz; 
-
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-// bool rokz::CheckValidationSupport (const std::vector<const char*>& val_layers) {
-
-//   printf ("%s\n", __FUNCTION__); 
-
-//   uint32_t layer_count  = 0;
-//   vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-  
-//   std::vector<VkLayerProperties> available_layers(layer_count);
-
-//   vkEnumerateInstanceLayerProperties(&layer_count, &available_layers[0]);
-
-//   for (const char* layer_name : val_layers) {
-//     printf ("   LOOKING FOR[%s]\n", layer_name);
-//     bool layer_found = false;
-
-//     for (const auto& layerProperties : available_layers) {
-//       if (strcmp(layer_name, layerProperties.layerName) == 0) {
-//         layer_found = true;
-//         break;
-//       }
-//     }
-//     if (!layer_found)
-//       return false; 
-//   }
-
-//   printf ("..ALL LAYERS FOUND\n"); 
-//   return true ;
-// }
-
 bool rokz::CheckValidationSupport (const std::vector<std::string>& vlayers) {
 
   printf ("%s\n", __FUNCTION__); 
@@ -66,15 +35,10 @@ bool rokz::CheckValidationSupport (const std::vector<std::string>& vlayers) {
   return true ;
 }
 
-
-
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
 std::vector<std::string>& rokz::GetRequiredExtensionNames (std::vector<std::string>& extstrs) {
-
-
   // GLFW REQ'D EXTENSIONS
   uint32_t extcount = 0;
   const char **glfw_exts; 
@@ -86,6 +50,7 @@ std::vector<std::string>& rokz::GetRequiredExtensionNames (std::vector<std::stri
     printf ("req_extent(%i)[%s]\n", i, glfw_exts[i] );
     extstrs.push_back (glfw_exts[i]); 
   }
+
   return extstrs;
 }
 
@@ -113,11 +78,11 @@ bool rokz::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryP
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-bool rokz::FindSupportedFormat (VkFormat& out, const std::vector<VkFormat>& candidates,
-                           VkImageTiling tiling,
-                           VkFormatFeatureFlags features, 
-                           const VkPhysicalDevice& physdev) {
-
+bool rokz::FindSupportedFormat (VkFormat&                    out,
+                                const std::vector<VkFormat>& candidates,
+                                VkImageTiling                tiling,
+                                VkFormatFeatureFlags         features, 
+                                const VkPhysicalDevice&      physdev) {
 
   for (VkFormat format : candidates) {
     VkFormatProperties props;

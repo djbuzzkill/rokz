@@ -15,6 +15,7 @@ VkPipelineVertexInputStateCreateInfo& rokz::Init (
   // VERTEX INPUT
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  create_info.pNext = nullptr;
   create_info.vertexBindingDescriptionCount = 1;
   create_info.pVertexBindingDescriptions = &binding_desc; 
   create_info.vertexAttributeDescriptionCount = attrib_desc.size(); 
@@ -57,7 +58,7 @@ VkPipelineViewportStateCreateInfo& rokz::Init (VkPipelineViewportStateCreateInfo
   // VkPipelineViewportStateCreateInfo
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-
+  ci.pNext = nullptr;
   ci.viewportCount = 1;
   ci.pViewports = &vp; 
 
@@ -74,6 +75,7 @@ VkPipelineRasterizationStateCreateInfo & rokz::Init (VkPipelineRasterizationStat
   // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.depthClampEnable = VK_FALSE;
   ci.rasterizerDiscardEnable = VK_FALSE;
   ci.polygonMode = VK_POLYGON_MODE_FILL;
@@ -100,6 +102,7 @@ VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCrea
   // MULTI SAMPLING
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.sampleShadingEnable = VK_FALSE;
   ci.rasterizationSamples = msaa_samples;
   ci.minSampleShading = 1.0f;          
@@ -116,6 +119,7 @@ VkPipelineMultisampleStateCreateInfo& rokz::Init (VkPipelineMultisampleStateCrea
 VkPipelineDepthStencilStateCreateInfo& rokz::Init (VkPipelineDepthStencilStateCreateInfo& ci) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.depthTestEnable = VK_TRUE;
   ci.depthWriteEnable = VK_TRUE;
   ci.depthCompareOp = VK_COMPARE_OP_LESS;
@@ -149,28 +153,26 @@ VkPipelineShaderStageCreateInfo& rokz::Init (VkPipelineShaderStageCreateInfo& ci
 {
   ci = {};   
   ci.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.stage  = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT;
   ci.module = module;
   ci.pSpecializationInfo = nullptr; 
   ci.pName = "main";
   return ci; 
 }
-                                             
-                                             
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-VkDescriptorSetLayoutBinding& rokz::Init (VkDescriptorSetLayoutBinding& ds, uint32_t index, VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags) {
-  ds =  {};
-  ds.binding = index;
-  ds.descriptorType = desc_type ;
-  ds.descriptorCount = 1;
-  ds.stageFlags = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_ALL_GRAPHICS
-  ds.pImmutableSamplers = nullptr; 
-  return ds;
-}
 
-
+// ---------------------------------------------------------------------
+// DesciptorSetLayoutBinding
+// ---------------------------------------------------------------------
+// VkDescriptorSetLayoutBinding& rokz::Init (VkDescriptorSetLayoutBinding& ds, uint32_t binding, VkDescriptorType desc_type, VkShaderStageFlagBits stage_flags) {
+//   ds =  {};
+//   ds.binding            = binding;
+//   ds.descriptorType     = desc_type ; //VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+//   ds.descriptorCount    = 1; 
+//   ds.stageFlags         = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_ALL_GRAPHICS
+//   ds.pImmutableSamplers = nullptr; 
+//   return ds;
+// }
 
 VkDeviceCreateInfo& rokz::Default (VkDeviceCreateInfo& create_info) {
   return create_info;

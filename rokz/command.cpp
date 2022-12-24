@@ -78,6 +78,7 @@ void rokz::TransitionImageLayout (VkImage image,
 
   VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barrier.pNext = nullptr;
   barrier.oldLayout = old_layout;
   barrier.newLayout = new_layout;
   barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -117,6 +118,7 @@ VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
 
   VkCommandBufferAllocateInfo alloc_info {};
   alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  alloc_info.pNext = nullptr;
   alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   alloc_info.commandPool = command_pool;
   alloc_info.commandBufferCount = 1;
@@ -126,6 +128,7 @@ VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
 
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  begin_info.pNext = nullptr;
   begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
   if (VK_SUCCESS != vkBeginCommandBuffer(command_buffer, &begin_info)) {
@@ -149,6 +152,7 @@ void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
 
   VkSubmitInfo submit_info {};
   submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.pNext              = nullptr;
   submit_info.commandBufferCount = 1;
   submit_info.pCommandBuffers    = &command_buffer;
 

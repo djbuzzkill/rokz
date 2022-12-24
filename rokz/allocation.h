@@ -6,8 +6,9 @@
 
 
 namespace rokz { 
-
-  // VMA
+  // -----------------------------------------------------------------------
+  //  all VMA in here 
+  // -----------------------------------------------------------------------
   VmaAllocationCreateInfo& AllocCreateInfo_local  (VmaAllocationCreateInfo& ci); 
   VmaAllocationCreateInfo& AllocCreateInfo_stage  (VmaAllocationCreateInfo& ci); 
   VmaAllocationCreateInfo& AllocCreateInfo_device (VmaAllocationCreateInfo& ci); 

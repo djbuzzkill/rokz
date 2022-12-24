@@ -33,6 +33,25 @@ bool rokz::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
   return true; 
 }
 
+
+
+// ---------------------------------------------------------------------
+// DesciptorSetLayoutBinding
+// ---------------------------------------------------------------------
+VkDescriptorSetLayoutBinding& rokz::DescriptorSetLayoutBinding (VkDescriptorSetLayoutBinding& out,
+                                                               uint32_t                      binding,
+                                                               VkDescriptorType              desc_type,
+                                                               VkShaderStageFlagBits         stage_flags,
+                                                               const VkSampler*              p_immu) {
+  out = {};
+  out.binding            = binding;
+  out.descriptorType     = desc_type ; //VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+  out.descriptorCount    = 1; 
+  out.stageFlags         = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT,  VK_SHADER_STAGE_ALL_GRAPHICS
+  out.pImmutableSamplers = p_immu;
+  return out;
+}
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -42,6 +61,7 @@ bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSe
     
     ci = {};
     ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    ci.pNext = nullptr;
     ci.bindingCount = bindings.size();
     ci.pBindings = &bindings[0];
 
@@ -57,23 +77,24 @@ bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSe
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool CreateDescriptorSet (VkDescriptorSetLayout&              desc_set_layout, 
-                          VkDescriptorSetLayoutCreateInfo&    create_info,
-                          const VkDescriptorSetLayoutBinding& desc_set_layout_binding, 
-                          const VkDevice&                     device) {
+// bool CreateDescriptorSet (VkDescriptorSetLayout&              desc_set_layout, 
+//                           VkDescriptorSetLayoutCreateInfo&    create_info,
+//                           const VkDescriptorSetLayoutBinding& desc_set_layout_binding, 
+//                           const VkDevice&                     device) {
 
-  create_info = {};
-  create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  create_info.bindingCount = 1;
-  create_info.pBindings = &desc_set_layout_binding;
+//   create_info = {};
+//   create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+//   create_info.pNext = nullptr;
+//   create_info.bindingCount = 1;
+//   create_info.pBindings = &desc_set_layout_binding;
 
-  if (vkCreateDescriptorSetLayout(device, &create_info, nullptr, &desc_set_layout) != VK_SUCCESS) {
-    printf ("FAILED create descriptor set layout\n");
-    return true; 
-  }
+//   if (vkCreateDescriptorSetLayout(device, &create_info, nullptr, &desc_set_layout) != VK_SUCCESS) {
+//     printf ("FAILED create descriptor set layout\n");
+//     return true; 
+//   }
 
-  return true; 
-}
+//   return true; 
+// }
 
 
 

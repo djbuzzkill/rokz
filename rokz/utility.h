@@ -55,12 +55,9 @@ namespace rokz {
   // ----------------------------------------------------------
   //
   // ----------------------------------------------------------
-  const std::vector<const char*>& GetDeviceExtensionNames (); 
   //bool CheckValidationSupport (const std::vector<const char*>& validation_layers);
   bool CheckValidationSupport (const std::vector<std::string>& val_layers); 
   bool FindMemoryType         (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 
-
-
   std::vector<std::string>& GetRequiredExtensionNames (std::vector<std::string>& extstrs); 
 
   bool FindSupportedFormat  (VkFormat& out, const std::vector<VkFormat>& candidates,
@@ -68,15 +65,9 @@ namespace rokz {
                              VkFormatFeatureFlags features, 
                              const VkPhysicalDevice& physdev);
 
-  bool FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev);
-
-  bool HasStencilComponent(VkFormat format);
-
-  VkSampleCountFlagBits MaxUsableSampleCount  (VkPhysicalDevice physdev); 
-
-
-
-  
+  bool                  FindDepthFormat      (VkFormat& outfmt, const VkPhysicalDevice& physdev);
+  bool                  HasStencilComponent  (VkFormat format);
+  VkSampleCountFlagBits MaxUsableSampleCount (VkPhysicalDevice physdev); 
 }
 
 

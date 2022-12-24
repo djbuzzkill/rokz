@@ -84,6 +84,13 @@ namespace rokz {
     VkDevice                             handle;
     VkDeviceCreateInfo                   ci;
     std::vector<VkDeviceQueueCreateInfo> queue_ci;
+    // device extensions strings
+    std::vector<const char*> dxs; 
+    std::vector<std::string> dxstrs; 
+    // validation layers
+    std::vector<const char*> vals; 
+    std::vector<std::string> valstrs; 
+
   }; 
   
   // --------------------------------------------------------
@@ -214,7 +221,7 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct RenderPass {
-
+    
     RenderPass () : handle (VK_NULL_HANDLE), create_info(), attach_desc (),
                     attach_ref (), subpass_descs(), dependancy () {
     }
@@ -224,10 +231,11 @@ namespace rokz {
 
     std::array<VkAttachmentDescription, ATTACHMENT_INDEX_MAX> attach_desc;
     std::array<VkAttachmentReference, ATTACHMENT_INDEX_MAX>   attach_ref;
-    std::vector<VkSubpassDescription>                         subpass_descs;
-    VkSubpassDependency                                       dependancy;
+    std::vector<VkSubpassDescription>    subpass_descs;
+    VkSubpassDependency                  dependancy;
   };
 
+  
   // --------------------------------------------------------
   struct SyncCreateInfo {
 

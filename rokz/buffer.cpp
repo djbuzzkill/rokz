@@ -36,6 +36,18 @@ bool rokz::CreateBuffer (BufferStruc&            buffstruc,
   return true; 
 } 
 
+void rokz::DestroyBuffer (BufferStruc& buf, const VkDevice &device) {
+
+  vkDestroyBuffer (device, buf.handle, nullptr); 
+  vkFreeMemory (device, buf.mem, nullptr);
+}
+
+
+
+
+
+
+
 // ---------------------------------------------------------------------
 // VMA
 // ---------------------------------------------------------------------
@@ -53,66 +65,27 @@ bool rokz::CreateBuffer (Buffer& buffer, VmaAllocator const& allocator) {
 // ---------------------------------------------------------------------
 // transfer buffer
 // ---------------------------------------------------------------------
-VkBufferCreateInfo& rokz::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv) {
+VkBufferCreateInfo& rokz::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  ci.size  = vsize * numv; 
+  ci.size  = sizeOf_vert * numv; 
   ci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   return ci;
 }
 
-VkBufferCreateInfo& rokz::CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv) {
+VkBufferCreateInfo& rokz::CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  ci.size  = vsize * numv; 
+  ci.size  = sizeOf_vert * numv; 
   ci.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
   return ci;
 }
-// ---------------------------------------------------------------------
-//   device buffer
-// ---------------------------------------------------------------------
-// bool rokz::CreateVertexBuffer_device (BufferStruc& buffstruc, 
-//                                       size_t sizeof_elem,
-//                                       size_t num_elem, 
-//                                       const VkDevice& device,
-//                                       const VkPhysicalDevice& physdev) {
-//   //
-//   buffstruc.create_info = {};
-//   buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-//   buffstruc.create_info.size  = sizeof_elem * num_elem; 
-//   buffstruc.create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-//   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  
-//   buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; 
-//   //
-//   return rokz::CreateBuffer (buffstruc, device, physdev); 
-// }
-
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateVertexBuffer (BufferStruc& buffstruc, 
-                               size_t sizeof_elem,
-                               size_t num_elem, 
-                               const VkDevice& device,
-                               const VkPhysicalDevice& physdev) {
-  //
-  buffstruc.create_info = {};
-  buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buffstruc.create_info.size  = sizeof_elem * num_elem; 
-  buffstruc.create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; 
-  buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  
-  buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
-  //
-  return rokz::CreateBuffer (buffstruc, device, physdev); 
-}
-
 
 // ---------------------------------------------------------------------
-// VMA 
+// 4 transfer
 // ---------------------------------------------------------------------
 VkBufferCreateInfo& rokz::CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes) {
   ci = {};
@@ -126,7 +99,7 @@ VkBufferCreateInfo& rokz::CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint3
 }
 
 // ---------------------------------------------------------------------
-// VMA 
+// VB in device 
 // ---------------------------------------------------------------------
 VkBufferCreateInfo& CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizebytes) {
 
@@ -142,7 +115,7 @@ VkBufferCreateInfo& CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizeb
 
 
 // ---------------------------------------------------------------------
-// VMA 
+// transfer
 // ---------------------------------------------------------------------
 VkBufferCreateInfo& rokz::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, uint32_t num_elem) {
 
@@ -158,7 +131,7 @@ VkBufferCreateInfo& rokz::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, uint32
 }
 
 // ---------------------------------------------------------------------
-// VMA 
+// in device
 // ---------------------------------------------------------------------
 VkBufferCreateInfo& rokz::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem) {
 
@@ -174,7 +147,7 @@ VkBufferCreateInfo& rokz::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint3
 
 
 // ---------------------------------------------------------------------
-// VMA 
+// 
 // ---------------------------------------------------------------------
 bool rokz::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
                                 Buffer& buff_src, // user buffer, 
@@ -235,11 +208,11 @@ void rokz::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
 }
 
 
-VkBufferCreateInfo& rokz::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t size_e, size_t num_e) {
+VkBufferCreateInfo& rokz::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t sizeOf_elem, size_t num_e) {
 
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  ci.size  = size_e * num_e; 
+  ci.size  = sizeOf_elem * num_e; 
   ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -297,13 +270,6 @@ void rokz::UnmapBuffer (BufferStruc& vb, const VkDevice& device) {
 //   }
 //   return false;
 // }
-
-void rokz::DestroyBuffer (BufferStruc& buf, const VkDevice &device) {
-
-  vkDestroyBuffer (device, buf.handle, nullptr); 
-  vkFreeMemory (device, buf.mem, nullptr);
-}
-
 
 
 

@@ -14,6 +14,7 @@
 const bool kEnableValidationLayers = true;
   //#endif
 
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -22,12 +23,20 @@ const std::vector<const char*> kDeviceExtensions = {
 };
 
 
+std::vector<std::string>& GetDeviceExtensionNames (std::vector<std::string>& dxstrs){
+
+  dxstrs.clear (); 
+  for (auto s : kDeviceExtensions) 
+    dxstrs.push_back (s); 
+    
+  return dxstrs; 
+}
 // const std::vector<const char*>& rokz::GetDeviceExtensionNames () {
 //   return kDeviceExtensions; 
 // }
 
 
-static const  std::vector<std::string> kValidationLayers  = {
+static const std::vector<std::string> kValidationLayers  = {
   "VK_LAYER_KHRONOS_validation",
 };
 
@@ -80,6 +89,7 @@ VkApplicationInfo& rokz::AppInfo_default (VkApplicationInfo& app_info) {
   static const char* kEngineName = "null";
 
   app_info.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  app_info.pNext = nullptr;
   app_info.pApplicationName = kAppName;
   app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
   app_info.pEngineName      = kEngineName;
@@ -114,7 +124,7 @@ VkInstanceCreateInfo& rokz::CreateInfo (VkInstanceCreateInfo& ci,
   ci.ppEnabledExtensionNames = &required_extensions[0];
 
   vls.clear (); 
-  for (auto& vs : GetValidationLayers (vstrs)) vls.push_back ( vs.c_str()); 
+  for (auto& vs : GetValidationLayers (vstrs)) vls.push_back (vs.c_str()); 
 
   if (kEnableValidationLayers && rokz::CheckValidationSupport (vstrs)) {
     printf ("ENABLE VALIDATION LAYERS\n"); 
@@ -170,6 +180,7 @@ VkDeviceQueueCreateInfo& rokz::CreateInfo (VkDeviceQueueCreateInfo& info,
   printf ("%s VkDeviceQueueCreateInfo [%u]\n", __FUNCTION__, que_fam_index);
   
   info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO; 
+  info.pNext = nullptr;
   info.flags            = 0; 
   info.queueFamilyIndex = que_fam_index ; // glob.queue_fams.graphics.value();
 
@@ -183,21 +194,24 @@ VkDeviceQueueCreateInfo& rokz::CreateInfo (VkDeviceQueueCreateInfo& info,
 //
 // -------------------------------------------------------------------------
 VkDeviceCreateInfo& rokz::CreateInfo (VkDeviceCreateInfo&       info,
-                                      std::vector<const char*>& vls,
-                                      std::vector<std::string>& vstrs,
+                                      std::vector<const char*>& vls, std::vector<std::string>& vstrs,
+                                      std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
                                       const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
                                       VkPhysicalDeviceFeatures* devfeats) {
 
   printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
 
-  const std::vector<const char*>& device_extensions = kDeviceExtensions;
-
+  dxstrs.clear (); 
+  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
+    
   vls.clear ();
   for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
   
   info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  info.enabledExtensionCount = static_cast<uint32_t> (device_extensions.size ());
-  info.ppEnabledExtensionNames= &device_extensions[0]; 
+  info.pNext                 = nullptr;
+  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
+  info.ppEnabledExtensionNames= &dxs[0]; 
+
   info.queueCreateInfoCount  = queuecreateinfos.size();   
   info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
   info.pEnabledFeatures      = devfeats; // &glob.device_features;
@@ -213,13 +227,16 @@ bool rokz::CreateLogicalDevice (
     VkDevice*                 device,
     const VkDeviceCreateInfo* createinfo,
     const VkPhysicalDevice&   physdev) {
+
   printf ("%s", __FUNCTION__);
+  
+  if (VK_SUCCESS == vkCreateDevice (physdev, createinfo, nullptr, device)) {
+    printf ("...SUCCESS \n"); 
+    return true; 
+  }
 
-  VkResult res = vkCreateDevice (physdev, createinfo, nullptr, device);
-
-  printf ("...%s\n", VK_SUCCESS == res ? "SUCCESS" : "FAILED"); 
-
-  return VK_SUCCESS == res; 
+  printf ("...FAILED \n"); 
+  return false; 
 }
 
 // ---------------------------------------------------------------------
@@ -231,13 +248,11 @@ bool rokz::CreateSurface (VkSurfaceKHR* surf, GLFWwindow* glfwin, const VkInstan
   if (glfwCreateWindowSurface (inst, glfwin, nullptr, surf) != VK_SUCCESS) {
     printf ("...FAILED\n"); 
     return false; 
-    //throw std::runtime_error("failed to create window surface!");
   }
 
   printf ("...SUCCESS\n"); 
   return true; 
 }
-
 
 // ---------------------------------------------------------------------
 //
@@ -258,16 +273,16 @@ VkSurfaceFormatKHR rokz::ChooseSwapSurfaceFormat (const std::vector<VkSurfaceFor
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkPresentModeKHR rokz::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available_modes) {
-
-
-  printf ("%s return [0]\n", __FUNCTION__);
+VkPresentModeKHR rokz::ChooseSwapPresentMode (const std::vector<VkPresentModeKHR> &available_modes) {
+  printf ("%s using ", __FUNCTION__);
   for (const auto& mode : available_modes) {
     if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+      printf ("VK_PRESENT_MODE_MAILBOX_KHR \n");
       return mode;
     }
   }
   
+  printf ("VK_PRESENT_MODE_FIFO_KHR \n");
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -288,7 +303,7 @@ VkExtent2D rokz::ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities,
       static_cast<uint32_t>(height)
     };
     
-    actual_extent.width = std::clamp(actual_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+    actual_extent.width  = std::clamp(actual_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
     actual_extent.height = std::clamp(actual_extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
     
     return actual_extent;
@@ -320,6 +335,7 @@ VkSwapchainCreateInfoKHR& rokz::CreateInfo_default (VkSwapchainCreateInfoKHR&   
 
   ci = {};
   ci.sType         = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  ci.pNext         = nullptr;
   ci.surface       = surface;
   ci.minImageCount = image_count;
   ci.imageFormat   = swap_surface_format.format;
@@ -440,32 +456,6 @@ bool rokz::GetSwapChainImages (std::vector<Image> &swapchain_images,
   printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
   return true;
 }
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
-// VkImageViewCreateInfo Default (VkImageViewCreateInfo& createinfo, 
-//                                const VkImage&         image,
-//                                VkFormat               fmt) {
-  
-//   printf ("[TODO] use -> image.cpp::Init (VkImageViewCreateInfo&\n"); 
-//   createinfo = {}; 
-//   createinfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-//   createinfo.image = image;
-//   createinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-//   createinfo.format = fmt; 
-//   createinfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-//   createinfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-//   createinfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-//   createinfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-//   createinfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//   createinfo.subresourceRange.baseMipLevel = 0;
-//   createinfo.subresourceRange.levelCount = 1;
-//   createinfo.subresourceRange.baseArrayLayer = 0;
-//   createinfo.subresourceRange.layerCount = 1;
-
-//   return createinfo; 
-// }
 
 // ---------------------------------------------------------------------
 //
@@ -479,6 +469,7 @@ bool rokz::CreateDynamicStates (std::vector<VkDynamicState>& dynamic_states, VkP
   
   dynamic_state_create_info =  {};
   dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  dynamic_state_create_info.pNext = nullptr;
   dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
   dynamic_state_create_info.pDynamicStates = &dynamic_states[0];
 
@@ -505,6 +496,7 @@ bool rokz::CreateColorBlendState (VkPipelineColorBlendAttachmentState& color_ble
   // Create Info
   color_blending_create_info = {};
   color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  color_blending_create_info.pNext = nullptr;
   color_blending_create_info.logicOpEnable = VK_FALSE;
   color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
   color_blending_create_info.attachmentCount = 1;
@@ -689,6 +681,7 @@ bool rokz::CreateCommandPool (VkCommandPool&            command_pool,
   // 
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  create_info.pNext = nullptr;
   create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   create_info.queueFamilyIndex = queue_family_inds.graphics.value ();
 
@@ -710,6 +703,7 @@ bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
 
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  create_info.pNext = nullptr;
   create_info.commandPool = command_pool;
   create_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   create_info.commandBufferCount = 1;
@@ -735,7 +729,8 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
 
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.flags = 0;                  // 
+  begin_info.pNext = nullptr;
+ begin_info.flags = 0;                  // 
   begin_info.pInheritanceInfo = nullptr; // 
 
   if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
@@ -750,6 +745,7 @@ bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
   //clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  pass_info.pNext = nullptr;
   pass_info.renderPass = render_pass.handle; 
   pass_info.framebuffer = framebuffer; 
   pass_info.renderArea.offset = {0, 0};
@@ -810,6 +806,7 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
 
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  begin_info.pNext = nullptr;
   begin_info.flags = 0;                  // 
   begin_info.pInheritanceInfo = nullptr; // 
 
@@ -827,7 +824,8 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
 
 
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  pass_info.renderPass = render_pass.handle; 
+  pass_info.pNext = nullptr;
+ pass_info.renderPass = render_pass.handle; 
   pass_info.framebuffer = framebuffer; 
   pass_info.renderArea.offset = {0, 0};
   pass_info.renderArea.extent = ext2d;
@@ -894,7 +892,7 @@ bool rokz::CreateSyncObjs (SyncStruc&      sync,
   create_info.semaphore.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   create_info.semaphore.pNext = nullptr;
   
-  create_info.fence.sType ={}; 
+  create_info.fence ={}; 
   create_info.fence.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   create_info.fence.flags = VK_FENCE_CREATE_SIGNALED_BIT;
   create_info.fence.pNext = nullptr;
@@ -916,9 +914,9 @@ bool rokz::CreateSyncObjs (SyncStruc&      sync,
 //
 // ---------------------------------------------------------------------
 void rokz::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& device) { 
-  printf ("%s\n", __FUNCTION__);
+  //  printf ("%s\n", __FUNCTION__);
   const uint32_t que_index = 0; // diffrnt than que_fam_ind
-  printf ("%s EXIT\n", __FUNCTION__);
+  //  printf ("%s EXIT\n", __FUNCTION__);
   return vkGetDeviceQueue (device, fam_ind, que_index, que);
 }
 

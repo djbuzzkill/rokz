@@ -11,10 +11,16 @@
 #include <vulkan/vulkan_raii.hpp>
 
 //#define VMA_IMPLEMENTATION
+#include "rokz/descriptor.h"
 #include "vk_mem_alloc.h"
  
 
+namespace  {
+
+
+  
 const size_t kMaxFramesInFlight = 2; 
+
 
 
 const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
@@ -237,7 +243,7 @@ void setup_depth_buffer (Glob& glob) {
 void setup_sampler (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
-  rokz::Init (glob.sampler.ci, glob.physical_device.properties);
+  rokz::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
   
   rokz::CreateSampler (glob.sampler, glob.device.handle);  
 }
@@ -565,7 +571,7 @@ bool setup_descriptorsets (Glob& glob) {
   dg.alloc_info.pSetLayouts        = &desc_layouts[0];
   
   //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
-  if (!rokz::AllocateDescriptorSets (dg.sets, dg.alloc_info, num_sets, glob.device.handle)) {
+  if (!rokz::AllocateDescriptorSets (dg.desc_sets, dg.alloc_info, num_sets, glob.device.handle)) {
     printf ("[FAILED] alloc desc sets %s", __FUNCTION__);
     return false;
   }
@@ -585,7 +591,7 @@ bool setup_descriptorsets (Glob& glob) {
     //
     std::array<VkWriteDescriptorSet, 2>  descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet           = dg.sets[i];
+    descriptor_writes[0].dstSet           = dg.desc_sets[i];
     descriptor_writes[0].dstBinding       = 0;
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -595,7 +601,7 @@ bool setup_descriptorsets (Glob& glob) {
     descriptor_writes[0].pTexelBufferView = nullptr; // Optional}
 
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].dstSet           = dg.sets[i];
+    descriptor_writes[1].dstSet           = dg.desc_sets[i];
     descriptor_writes[1].dstBinding       = 1;
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
@@ -928,7 +934,7 @@ bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>
 
   rokz::RecordCommandBuffer_indexed (glob.command_buffer[curr_frame],
                                      glob.pipeline,
-                                     glob.descr_group.sets[curr_frame], 
+                                     glob.descr_group.desc_sets[curr_frame], 
                                      glob.vma_vb_device.handle, 
                                      glob.vma_ib_device.handle,
                                      glob.swapchain.ci.imageExtent,
@@ -988,27 +994,12 @@ struct Glop {
   
 }; 
 
-int test_rokz_hpp (const std::vector<std::string>& args) {
-    // the very beginning: instantiate a context
-    vk::raii::Context context;
-
-    // initialize the vk::ApplicationInfo structure
-    vk::ApplicationInfo applicationInfo( kAppName.c_str(), 1, kEngineName.c_str(), 1, VK_API_VERSION_1_1 );
-
-    // initialize the vk::InstanceCreateInfo
-    vk::InstanceCreateInfo instanceCreateInfo( {}, &applicationInfo );
-
-    
-    // create an Instance
-    vk::raii::Instance instance( context, instanceCreateInfo );
-
-    return 0; 
-}
-
+} // namespace; so no stack smashing 
+  
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-int test_rokz_hpp_ (const std::vector<std::string>& args) {
+int test_rokz_hpp (const std::vector<std::string>& args) {
 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
@@ -1069,10 +1060,12 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   glob.physical_device.features.samplerAnisotropy = VK_TRUE;
 
-  std::vector<const char*> vls;
-  std::vector<std::string> vstrs;
-  
-  rokz::CreateInfo (glob.device.ci, vls, vstrs, glob.device.queue_ci, &glob.physical_device.features);
+  rokz::CreateInfo (glob.device.ci,
+                    glob.device.vals,
+                    glob.device.valstrs,
+                    glob.device.dxs,
+                    glob.device.dxstrs,
+                    glob.device.queue_ci, &glob.physical_device.features);
   //   glob.device_features.samplerAnisotropy = ; 
 
   //rokz::Default (glob.create_info.device, &glob.create_info.queue, &glob.physical_device.features); 
@@ -1150,12 +1143,12 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
 
   //  glob.uniform_group.
   glob.desc_set_layout_bindings.resize (2); 
-  rokz::Init (glob.desc_set_layout_bindings[0],
+  rokz::DescriptorSetLayoutBinding (glob.desc_set_layout_bindings[0],
               0,
               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
               VK_SHADER_STAGE_VERTEX_BIT);
 
-  rokz::Init (glob.desc_set_layout_bindings[1],
+  rokz::DescriptorSetLayoutBinding (glob.desc_set_layout_bindings[1],
               1,
               VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
               VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -1344,9 +1337,9 @@ int test_rokz_hpp_ (const std::vector<std::string>& args) {
   return 0;
 }
 
-
-
-
+// ------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------
 int  test_time () {
 
   double dt = 0.0;
@@ -1426,7 +1419,5 @@ int  test_time () {
 
   return 0; 
 }
-
-
 
 
