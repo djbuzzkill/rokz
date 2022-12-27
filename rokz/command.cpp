@@ -91,7 +91,9 @@ void rokz::TransitionImageLayout (VkImage image,
   barrier.subresourceRange.baseArrayLayer = 0;
   barrier.subresourceRange.layerCount = 1;
 
-
+  // VkBufferMemoryBarrier _buffmem_barr;
+  // VkMemoryBarrier       _mem_barr;
+  
   VkPipelineStageFlags dst_stage, src_stage;  
   transition_barrier_mask (dst_stage, src_stage, barrier , new_layout , old_layout); 
   // barrier.srcAccessMask = 0;  printf ("[TODO] (%i)\n", __LINE__);

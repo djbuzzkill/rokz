@@ -60,6 +60,10 @@ namespace rokz {
 
     std::vector<const char*> required_extensions;
     std::vector<std::string> extension_strings; 
+
+    std::vector<std::string> validation_strings; 
+    std::vector<const char*> vals;
+
     VkApplicationInfo        app_info;
   };
 
@@ -130,6 +134,31 @@ namespace rokz {
     VkImageView             handle;
     VkImageViewCreateInfo   ci; 
   };
+
+
+  // --------------------------------------------------------
+  struct RenderSyncCreateInfo {
+
+    RenderSyncCreateInfo () : semaphore (), fence () {
+    }
+    
+    VkSemaphoreCreateInfo  semaphore;
+    VkFenceCreateInfo      fence;
+
+  }; 
+  // --------------------------------------------------------
+  struct RenderSync {
+
+    RenderSync () :image_available_sem (), render_finished_sem (), in_flight_fen () {
+    }
+      
+    VkSemaphore image_available_sem;
+    VkSemaphore render_finished_sem;
+    VkFence     in_flight_fen;
+
+    RenderSyncCreateInfo ci;
+
+  };
   
   // ---------------------------------------------------------------------
   struct Framebuffer {
@@ -143,20 +172,29 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct PipelineStateCreateInfo {
-    PipelineStateCreateInfo () : shader_stages (), input_assembly (), vertex_input_state (), viewport_state (),
-                                 rasterizer (), multisampling (), depthstencil (), colorblend (), dynamic_state () {
+    PipelineStateCreateInfo () : shader_stages (), input_assembly (), vertexinputstate (), viewport_state (),
+                                 rasterizer (), multisampling (), depthstencilstate (), colorblendstate (), dynamicstate () {
     }
 
     std::vector<VkPipelineShaderStageCreateInfo> shader_stages; 
     VkPipelineInputAssemblyStateCreateInfo       input_assembly; 
-    VkPipelineVertexInputStateCreateInfo         vertex_input_state;
+    VkPipelineVertexInputStateCreateInfo         vertexinputstate;
     VkPipelineViewportStateCreateInfo            viewport_state;
     VkPipelineRasterizationStateCreateInfo       rasterizer;
     VkPipelineMultisampleStateCreateInfo         multisampling;
-    VkPipelineDepthStencilStateCreateInfo        depthstencil;
-    VkPipelineColorBlendStateCreateInfo          colorblend; 
-    VkPipelineDynamicStateCreateInfo             dynamic_state;
+    VkPipelineDepthStencilStateCreateInfo        depthstencilstate;
+    VkPipelineColorBlendStateCreateInfo          colorblendstate; 
+    VkPipelineDynamicStateCreateInfo             dynamicstate;
   };
+
+
+  // --------------------------------------------------------
+  struct PipelineState {
+
+    VkPipelineColorBlendAttachmentState color_blend_attachment;     
+
+    PipelineStateCreateInfo ci;
+  }; 
 
   // --------------------------------------------------------
   struct PipelineLayout {
@@ -170,14 +208,15 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct Pipeline {
-    Pipeline () : handle (VK_NULL_HANDLE), ci (), layout (), state_ci () {
+    Pipeline () : handle (VK_NULL_HANDLE), ci (), layout (), state () {
     }
     
     VkPipeline                       handle; 
     VkGraphicsPipelineCreateInfo     ci;
     PipelineLayout                   layout; 
-    PipelineStateCreateInfo          state_ci;
+    PipelineState                    state;
     std::vector<rokz::ShaderModule>  shader_modules; 
+    std::vector<VkDynamicState>      dynamic_states; 
   };
 
   // ----------------------------------------------------------
@@ -200,40 +239,33 @@ namespace rokz {
     std::vector<uint32_t>    family_indices; 
     //SwapchainSupportInfo     swapchain_support_info;
   }; 
-  // --------------------------------------------------------
-  struct SyncStruc  {
 
-    SyncStruc () :image_available_sem (), render_fnished_sem (), in_flight_fen () {
-    }
-      
-    VkSemaphore image_available_sem;
-    VkSemaphore render_fnished_sem;
-    VkFence     in_flight_fen;
-  };
-  
 
   enum AttachmentIndex {
     ATTACH_COLOR = 0, 
     ATTACH_DEPTHSTENCIL = 1, 
     ATTACH_COLRESOLV = 2,
-    ATTACH_UNUSED_2 = 3,
+    ATTACH_UNUSED_3 = 3,
+    ATTACH_UNUSED_4 = 4,
+    ATTACH_UNUSED_5 = 5,
     ATTACHMENT_INDEX_MAX
   }; 
 
+  
   // --------------------------------------------------------
   struct RenderPass {
     
-    RenderPass () : handle (VK_NULL_HANDLE), create_info(), attach_desc (),
-                    attach_ref (), subpass_descs(), dependancy () {
+    RenderPass () : handle (VK_NULL_HANDLE), ci(), attach_desc (),
+                    attach_ref (), subpass_descs(), dependencies () {
     }
     
     VkRenderPass            handle; 
-    VkRenderPassCreateInfo  create_info;
+    VkRenderPassCreateInfo  ci;
 
     std::array<VkAttachmentDescription, ATTACHMENT_INDEX_MAX> attach_desc;
     std::array<VkAttachmentReference, ATTACHMENT_INDEX_MAX>   attach_ref;
-    std::vector<VkSubpassDescription>    subpass_descs;
-    VkSubpassDependency                  dependancy;
+    std::vector<VkSubpassDescription>                         subpass_descs;
+    std::vector<VkSubpassDependency>                          dependencies;
   };
 
 
@@ -248,18 +280,24 @@ namespace rokz {
 
     std::vector<VkCommandBuffer> buffers; 
     VkCommandBufferAllocateInfo  alloc_info;
-
   };
 
-  // --------------------------------------------------------
-  struct SyncCreateInfo {
 
-    SyncCreateInfo () : semaphore (), fence () {
-    }
-    
-    VkSemaphoreCreateInfo  semaphore;
-    VkFenceCreateInfo      fence;
+  // --------------------------------------------------------
+  struct FrameGroup {
+    rokz::Swapchain                swapchain              ;// = glob.swapchain; 
+    //  #image_views
+    std::vector<rokz::Image>       swapchain_images       ;// = glob.swapchain_images; 
+    std::vector<rokz::ImageView>   swapchain_imageviews   ;//= glob.swapchain_imageviews; 
+    std::vector<rokz::Framebuffer> swapchain_framebuffers ;//= glob.swapchain_framebuffers; 
+
+    VkCommandBufferAllocateInfo    command_buffer_alloc_info;
+    rokz::RenderSyncCreateInfo     render_sync_create_info;
+    // kMaxFramesInFlight
+    std::vector<rokz::RenderSync> syncs;
+    std::vector<VkCommandBuffer>  command_buffers;
   }; 
+
 
   
 

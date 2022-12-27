@@ -33,7 +33,6 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
                                const VkImageView&              msaa_color_imageview, 
                                const VkImageView&              depth_imageview, 
                                const Device&                   device) {
-    
   printf ("%s\n", __FUNCTION__);
 
   framebuffers.resize (imageviews.size()); 
@@ -41,9 +40,11 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
   for (size_t i = 0; i < imageviews.size(); i++) {
 
     framebuffers[i].attachments.clear ();
+
+    // does this match renderpass 
     framebuffers[i].attachments.push_back (msaa_color_imageview);
     framebuffers[i].attachments.push_back (depth_imageview );
-    framebuffers[i].attachments.push_back (imageviews[i].handle );
+    framebuffers[i].attachments.push_back (imageviews[i].handle);
 
     CreateInfo (framebuffers[i].ci, swapchain_ext, render_pass, framebuffers[i].attachments); 
     
@@ -51,6 +52,7 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
       printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
       return false;
     }
+
   }
 
   return true; 

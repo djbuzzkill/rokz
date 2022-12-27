@@ -16,6 +16,8 @@
 #include "buffer.h"
 #include "image.h"
 #include "framebuffer.h"
+#include "renderpass.h"
+#include "render.h"
 #include "pipeline.h"
 #include "descriptor.h"
 #include "shader.h"

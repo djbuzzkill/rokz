@@ -110,17 +110,17 @@ const size_t kSizeOf_StandardTransform3D = sizeof (StandardTransform3D);
 // --------------------------------------------------------------------
 struct CreateInfo {
 
-  VkImageViewCreateInfo                    imageview; 
-  VkRenderPassCreateInfo                   renderpass; 
+  // VkImageViewCreateInfo                    imageview; 
+  // VkRenderPassCreateInfo                   renderpass; 
 
   //VkCommandPoolCreateInfo                  command_pool; 
   //std::vector<VkCommandBufferAllocateInfo> command_buffer; 
 
-  VkGraphicsPipelineCreateInfo             pipeline;
+  //  VkGraphicsPipelineCreateInfo             pipeline;
   //std::vector<VkFramebufferCreateInfo>     framebuffers; 
   //
 
-  std::vector<rokz::SyncCreateInfo> syncs; 
+  //  std::vector<rokz::SyncCreateInfo> syncs; 
 };
 
 // --------------------------------------------------------------------
@@ -166,7 +166,7 @@ struct Glob {
   rokz::CommandPool            command_pool; 
 
 
-  std::vector<rokz::SyncStruc> syncs; 
+  std::vector<rokz::RenderSync> syncs; 
   rokz::RenderPass             render_pass; 
 
   // image/texture
@@ -264,7 +264,7 @@ bool setup_shader_modules (Glob& glob, const std::filesystem::path& fspath) {
   //                            glob.device);
 
   // std::vector<ShaderModule>&                    shader_modules,
-  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state_ci.shader_stages; 
+  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state.ci.shader_stages; 
   // const VkDevice&                               device)
   printf ("%s\n", __FUNCTION__); 
 
@@ -278,7 +278,7 @@ bool setup_shader_modules (Glob& glob, const std::filesystem::path& fspath) {
   if (!rokz::CreateShaderModule (glob.shader_modules[0], vert_file_path.string(), glob.device.handle))
     return false; 
   
-  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, glob.shader_modules[0].handle); 
+  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, glob.shader_modules[0].handle); 
 
   
   // FRAG SHADER
@@ -288,7 +288,8 @@ bool setup_shader_modules (Glob& glob, const std::filesystem::path& fspath) {
   if (!rokz::CreateShaderModule (glob.shader_modules[1], frag_file_path.string(), glob.device.handle))
     return false; 
   
-  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, glob.shader_modules[1].handle); 
+
+  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, glob.shader_modules[1].handle); 
   //
 
   return true; 
@@ -655,32 +656,32 @@ bool setup_descriptorpool (Glob& glob) {
 // CreateGraphicsPipelineLayout 
 
 // ---------------------------------------------------------------------
-bool create_graphicspipelinelayout_defaults (
-    rokz::PipelineLayout&                 pipeline_layout, 
-    // VkPipelineLayout&                  pipeline_layout,
-    // VkPipelineLayoutCreateInfo&        create_info,
-    VkViewport&                        viewport,
-    VkRect2D&                          scissor,
-    rokz::PipelineStateCreateInfo&     sci,
-    const VkExtent2D&                  swapchain_extent,
-    const VkDevice&                    device)
-{
-  rokz::Viewport  (viewport, 0, 0, swapchain_extent.width, swapchain_extent.height, 1.0f);
-  rokz::Rect2D (scissor,  VkOffset2D {0, 0}, swapchain_extent);
-  rokz::CreateInfo (sci.viewport_state, viewport, scissor);
+// bool create_graphicspipelinelayout_defaults (
+//     rokz::PipelineLayout&                 pipeline_layout, 
+//     // VkPipelineLayout&                  pipeline_layout,
+//     // VkPipelineLayoutCreateInfo&        create_info,
+//     VkViewport&                        viewport,
+//     VkRect2D&                          scissor,
+//     rokz::PipelineStateCreateInfo&     sci,
+//     const VkExtent2D&                  swapchain_extent,
+//     const VkDevice&                    device)
+// {
+//   rokz::Viewport  (viewport, 0, 0, swapchain_extent.width, swapchain_extent.height, 1.0f);
+//   rokz::Rect2D (scissor,  VkOffset2D {0, 0}, swapchain_extent);
+//   rokz::CreateInfo (sci.viewport_state, viewport, scissor);
 
-  rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::CreateInfo (sci.rasterizer); 
-  rokz::CreateInfo (sci.multisampling); 
-  rokz::CreateInfo (sci.depthstencil); 
+//   rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+//   rokz::CreateInfo (sci.rasterizer); 
+//   rokz::CreateInfo (sci.multisampling); 
+//   rokz::CreateInfo (sci.depthstencilstate); 
 
-  if (vkCreatePipelineLayout (device, &pipeline_layout.ci, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
-    printf("failed to create pipeline layout!\n");
-    return false;
-  }
+//   if (vkCreatePipelineLayout (device, &pipeline_layout.ci, nullptr, &pipeline_layout.handle) != VK_SUCCESS) {
+//     printf("failed to create pipeline layout!\n");
+//     return false;
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 
 // ---------------------------------------------------------------------
@@ -742,9 +743,9 @@ Glob& default_glob (Glob& g) {
   g.device.queue_ci = {}; 
   //g.create_info.queue   = {};
   g.swapchain.ci= {};
-  g.create_info.imageview = {}; 
-  g.create_info.renderpass = {};
-  g.create_info.pipeline = {}; 
+  // g.create_info.imageview = {}; 
+  // g.create_info.renderpass = {};
+  // g.create_info.pipeline = {}; 
 
 
   g.physical_device.family_indices.graphics.reset();
@@ -891,7 +892,7 @@ void update_scene (Glob& glob, double dt) {
 // --------------------------------------------------------------------
 // 
 // --------------------------------------------------------------------
-bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>& syncs, bool& resize, double dt) {
+bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::RenderSync>& syncs, bool& resize, double dt) {
 
   vkWaitForFences(glob.device.handle, 1, &syncs[curr_frame].in_flight_fen, VK_TRUE, UINT64_MAX);
     
@@ -950,7 +951,7 @@ bool render_frame (Glob &glob, uint32_t curr_frame, std::vector<rokz::SyncStruc>
   VkSubmitInfo submit_info {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   VkSemaphore wait_semaphores[]      = {syncs[curr_frame].image_available_sem};
-  VkSemaphore signal_semaphores[]    = {syncs[curr_frame].render_fnished_sem }; 
+  VkSemaphore signal_semaphores[]    = {syncs[curr_frame].render_finished_sem }; 
   VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
   submit_info.waitSemaphoreCount = 1;
@@ -1121,32 +1122,26 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
 
   setup_shader_modules (glob, rokz_path);
 
-  rokz::ColorBlendState_default (glob.color_blend_attachment_state, glob.pipeline.state_ci.colorblend); 
-
-  rokz::DynamicState_default (glob.dynamic_states, glob.pipeline.state_ci.dynamic_state); 
-
-  // 
-  rokz::VertexInputState (glob.pipeline.state_ci.vertex_input_state, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
-
-
+  rokz::ColorBlendState_default (glob.color_blend_attachment_state); 
+  rokz::DynamicState_default (glob.dynamic_states, glob.pipeline.state.ci.dynamicstate); 
   const VkOffset2D offs0 {0, 0}; 
+
   //glob.create_info.swapchain.imageExtent.width;
-  rokz::Viewport  (glob.viewport,
-                   offs0.x, offs0.y, 
+  rokz::Viewport  (glob.viewport, offs0.x, offs0.y, 
                    glob.swapchain.ci.imageExtent.width,
                    glob.swapchain.ci.imageExtent.height,
                    1.0f);
+  rokz::Rect2D (glob.scissor_rect, offs0, glob.swapchain.ci.imageExtent);
 
-  rokz::Rect2D  (glob.scissor_rect, offs0, glob.swapchain.ci.imageExtent);
+  rokz::PipelineStateCreateInfo& sci = glob.pipeline.state.ci;
 
-  rokz::PipelineStateCreateInfo& sci = glob.pipeline.state_ci;
-  rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (sci.colorblendstate, glob.color_blend_attachment_state); 
+  rokz::CreateInfo (sci.vertexinputstate, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
   rokz::CreateInfo (sci.viewport_state, glob.viewport, glob.scissor_rect);
-
+  rokz::CreateInfo (sci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
   rokz::CreateInfo (sci.rasterizer); 
-  //rokz::Init (sci.colorblend);
   rokz::CreateInfo (sci.multisampling, glob.msaa_samples); 
-  rokz::CreateInfo (sci.depthstencil); 
+  rokz::CreateInfo (sci.depthstencilstate); 
 
   //  glob.uniform_group.
   glob.desc_set_layout_bindings.resize (2); 
@@ -1176,13 +1171,13 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
     glob.render_pass.handle,     // const VkRenderPass&           render_pass,
     sci.shader_stages, //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
     &sci.input_assembly, //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-    &sci.vertex_input_state, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+    &sci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
     &sci.viewport_state, //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
     &sci.rasterizer, //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
     &sci.multisampling, //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-    &sci.depthstencil,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-    &sci.colorblend, //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-    &sci.dynamic_state,//const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+    &sci.depthstencilstate,  //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+    &sci.colorblendstate, //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+    &sci.dynamicstate,//const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
     glob.device.handle);    //const VkDevice                           b          device)
 
   setup_mutisample_color_resource (glob);
@@ -1266,8 +1261,9 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
 
  
   // items per frames 
-  glob.create_info.syncs.resize (kMaxFramesInFlight);
   glob.syncs.resize (kMaxFramesInFlight);
+  //glob.create_info.syncs.resize (kMaxFramesInFlight);
+  //  glob.syncs.resize (kMaxFramesInFlight);
 
   //glob.create_info.command_buffer.resize (kMaxFramesInFlight);
   glob.command_buffer_group.buffers.resize (kMaxFramesInFlight);
@@ -1279,7 +1275,7 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
                               glob.command_buffer_group.alloc_info,
                               glob.device.handle);
 
-    rokz::CreateSyncObjs(glob.syncs[i], glob.create_info.syncs[i], glob.device.handle);
+    rokz::CreateRenderSync (glob.syncs[i], glob.syncs[i].ci, glob.device.handle);
   }
 
   //

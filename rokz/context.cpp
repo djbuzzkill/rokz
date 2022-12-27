@@ -376,45 +376,14 @@ VkSwapchainCreateInfoKHR& rokz::CreateInfo_default (VkSwapchainCreateInfoKHR&   
 // -------------------------------------------------------------------------
 bool rokz::CreateSwapchain (Swapchain& swapchain, const Device& device) {
 
-  printf (" %s \n", __FUNCTION__);
+  printf (" %s ", __FUNCTION__);
 
   if (vkCreateSwapchainKHR (device.handle, &swapchain.ci, nullptr, &swapchain.handle) != VK_SUCCESS) {
-    printf ("failed to create swap chain!\n");
-    printf ("LEAVING[FALSE] %s\n", __FUNCTION__);
+    printf (" --> LEAVING[FALSE] %s Create Swapchain\n", __FUNCTION__);
     return false; 
   }
 
-  printf (" %s [SUCCESS] \n", __FUNCTION__);
-  return true;
-}
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::GetSwapChainImages (std::vector<VkImage> &swapchain_images,
-                               VkSwapchainKHR& swapchain,
-                               const VkDevice& dev) {
-  printf ("%s\n", __FUNCTION__);
-
-  uint32_t image_count = 0; 
-
-  VkResult res;
-  res = vkGetSwapchainImagesKHR(dev, swapchain, &image_count, nullptr);
-  
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after image_count %s\n", __FUNCTION__);
-    return false;
-  }
-  printf ( "no. swapchain images[%u]\n", image_count); 
-
-  swapchain_images.resize(image_count);
-  res = vkGetSwapchainImagesKHR (dev, swapchain, &image_count, &swapchain_images[0]);
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
-    return false;
-  }
-
-  printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
+  printf (" --> [SUCCESS]\n");
   return true;
 }
 
@@ -435,22 +404,19 @@ bool rokz::GetSwapChainImages (std::vector<Image> &swapchain_images,
     return false;
   }
   printf ( "no. swapchain images[%u]\n", image_count); 
-
   
   std::vector<VkImage> vk_images(image_count);
-  swapchain_images.resize(image_count);
   res = vkGetSwapchainImagesKHR (dev, swapchain.handle, &image_count, &vk_images[0]);
   if (res != VK_SUCCESS) {
     printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
     return false;
   }
 
-
-  for (size_t i = 0; i < vk_images.size (); ++i) {
+  swapchain_images.resize(image_count);
+  for (size_t i = 0; i < image_count; ++i) {
     // Createinfo for image from swapchain
     CreateInfo (swapchain_images[i].ci, swapchain.ci); 
     swapchain_images[i].handle = vk_images[i];
-    
   }
   
   printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
@@ -477,10 +443,10 @@ bool rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states, Vk
 }
 
 // ---------------------------------------------------------------------
+
 //
 // ---------------------------------------------------------------------
-bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state,
-                                  VkPipelineColorBlendStateCreateInfo& color_blending_create_info) {
+bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state) {
   // COLOR BLENDING
   color_blend_attachment_state = {};
   color_blend_attachment_state.colorWriteMask =
@@ -493,123 +459,41 @@ bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_b
   color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
   color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
   color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD; 
+
   // Create Info
+  // color_blending_create_info = {};
+  // color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  // color_blending_create_info.pNext = nullptr;
+  // color_blending_create_info.logicOpEnable = VK_FALSE;
+  // color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
+  // color_blending_create_info.attachmentCount = 1;
+  // color_blending_create_info.pAttachments = &color_blend_attachment_state;
+  // color_blending_create_info.blendConstants[0] = 0.0f; 
+  // color_blending_create_info.blendConstants[1] = 0.0f; 
+  // color_blending_create_info.blendConstants[2] = 0.0f; 
+  // color_blending_create_info.blendConstants[3] = 0.0f; 
+  return true;
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
+                                                        const VkPipelineColorBlendAttachmentState& colorblend) {   // Create Info
   color_blending_create_info = {};
   color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blending_create_info.pNext = nullptr;
   color_blending_create_info.logicOpEnable = VK_FALSE;
   color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
   color_blending_create_info.attachmentCount = 1;
-  color_blending_create_info.pAttachments = &color_blend_attachment_state;
+  color_blending_create_info.pAttachments = &colorblend;
   color_blending_create_info.blendConstants[0] = 0.0f; 
   color_blending_create_info.blendConstants[1] = 0.0f; 
   color_blending_create_info.blendConstants[2] = 0.0f; 
   color_blending_create_info.blendConstants[3] = 0.0f; 
-  return true;
-}
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateRenderPass (RenderPass&             render_pass,
-                             VkFormat                swapchain_format,
-                             VkSampleCountFlagBits   msaa_samples, 
-                             const VkDevice&         device,
-                             const VkPhysicalDevice& physdev) {
-  //printf ("%s\n", __FUNCTION__); 
-
-  // COLOR ATTACHMENT | VkAttachmentDescription 
-  auto co_in = ATTACH_COLOR; 
-  render_pass.attach_desc[co_in] = {}; 
-  render_pass.attach_desc[co_in].format         = swapchain_format ;
-  render_pass.attach_desc[co_in].samples        = msaa_samples, // VK_SAMPLE_COUNT_1_BIT; // msaa samples
-  render_pass.attach_desc[co_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  render_pass.attach_desc[co_in].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  render_pass.attach_desc[co_in].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  render_pass.attach_desc[co_in].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[co_in].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  render_pass.attach_desc[co_in].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
-
-  // DEPTHSTENCIL ATTACHMENT | VkAttachmentDescription 
-  auto dp_in = ATTACH_DEPTHSTENCIL;
-  //VkFormat depth_format; 
-  //rokz::FindDepthFormat (depth_format, physdev); 
-  render_pass.attach_desc[dp_in] = {}; 
-  // render_pass.attach_desc[dp_in].format         = depth_format;
-  rokz::FindDepthFormat (render_pass.attach_desc[dp_in].format, physdev);
-  render_pass.attach_desc[dp_in].samples        = msaa_samples; // VK_SAMPLE_COUNT_1_BIT;
-  render_pass.attach_desc[dp_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  render_pass.attach_desc[dp_in].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[dp_in].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  render_pass.attach_desc[dp_in].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[dp_in].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  render_pass.attach_desc[dp_in].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-  // COLOR RESOLVE ATTACHMENT | VkAttachmentDescription 
-  auto cr_in = ATTACH_COLRESOLV; 
-  render_pass.attach_desc[cr_in] = {}; 
-  render_pass.attach_desc[cr_in].format         = swapchain_format ;
-  render_pass.attach_desc[cr_in].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
-  render_pass.attach_desc[cr_in].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  render_pass.attach_desc[cr_in].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  render_pass.attach_desc[cr_in].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  render_pass.attach_desc[cr_in].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  render_pass.attach_desc[cr_in].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  render_pass.attach_desc[cr_in].finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-
-  //VkAttachmentReference color_attachment_ref{};
-  render_pass.attach_ref[co_in] = {};
-  render_pass.attach_ref[co_in].attachment = co_in; // index
-  render_pass.attach_ref[co_in].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  // depth
-  render_pass.attach_ref[dp_in] = {};
-  render_pass.attach_ref[dp_in].attachment = dp_in;
-  render_pass.attach_ref[dp_in].layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  // not used yet
-  render_pass.attach_ref[cr_in] = {};
-  render_pass.attach_ref[cr_in].attachment = cr_in; // index
-  render_pass.attach_ref[cr_in].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  
-  // SUBPASS,  VkSubpassDescription                 
-  render_pass.subpass_descs.resize (1);
-  render_pass.subpass_descs[0] = {};
-  render_pass.subpass_descs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  render_pass.subpass_descs[0].colorAttachmentCount    = 1;
-  render_pass.subpass_descs[0].pColorAttachments       = &render_pass.attach_ref[co_in];  // co_in, [cr_in] for msaa
-  render_pass.subpass_descs[0].inputAttachmentCount    = 0;
-  render_pass.subpass_descs[0].pInputAttachments       = nullptr;
-  render_pass.subpass_descs[0].pDepthStencilAttachment = &render_pass.attach_ref[dp_in]; //nullptr;
-  render_pass.subpass_descs[0].preserveAttachmentCount = 0;
-  render_pass.subpass_descs[0].pPreserveAttachments    = nullptr;
-  render_pass.subpass_descs[0].pResolveAttachments     = &render_pass.attach_ref[cr_in];
-  render_pass.subpass_descs[0].flags = 0 ;
-  //
-  render_pass.dependancy = {};
-  render_pass.dependancy.srcSubpass    = VK_SUBPASS_EXTERNAL;
-  render_pass.dependancy.dstSubpass    = 0;
-  render_pass.dependancy.srcStageMask  =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  render_pass.dependancy.srcAccessMask = 0;
-  render_pass.dependancy.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  render_pass.dependancy.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-  
-  // CREATEINFO. gets passed back out
-  render_pass.create_info = {}; 
-  render_pass.create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  render_pass.create_info.attachmentCount = 3; // color + depthstencil + color resolv
-  render_pass.create_info.pAttachments = &render_pass.attach_desc[0];
-  render_pass.create_info.subpassCount = 1;
-  render_pass.create_info.pSubpasses = &render_pass.subpass_descs[0];
-  render_pass.create_info.dependencyCount = 1;
-  render_pass.create_info.pDependencies = &render_pass.dependancy;
-  render_pass.create_info.pNext = nullptr; 
-  //
-  if (vkCreateRenderPass(device, &render_pass.create_info, nullptr, &render_pass.handle) != VK_SUCCESS) {
-    printf ("[FAILED] %s create render pass\n", __FUNCTION__);
-    return false; 
-  }
-
-  return true;
+  return color_blending_create_info ;
 }
 
 
@@ -696,16 +580,34 @@ bool rokz::CreateCommandPool (VkCommandPool&            command_pool,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool) 
+
+VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, uint32_t commandbuffers,  const VkCommandPool& commandpool) 
 {
   alloc_info = {};
   alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
   alloc_info.commandPool = commandpool;
   alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  alloc_info.commandBufferCount = 1;
+  alloc_info.commandBufferCount =  commandbuffers;
   return alloc_info;
 }
+
+VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool) 
+{
+  // alloc_info = {};
+  // alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  // alloc_info.pNext = nullptr;
+  // alloc_info.commandPool = commandpool;
+  // alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  // alloc_info.commandBufferCount =  commandbuffers;
+  // return alloc_info;
+
+
+  return AllocateInfo (alloc_info, 1,  commandpool) ; 
+
+}
+
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -821,10 +723,10 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
                                         const VkDescriptorSet& desc_set, 
                                         const VkBuffer&        vertex_buffer, 
                                         const VkBuffer&        index_buffer, 
-                                        const VkExtent2D &ext2d,
-                                        const VkFramebuffer &framebuffer,
-                                        const RenderPass &render_pass,
-                                        const VkDevice &device) {
+                                        const VkExtent2D&      ext2d,
+                                        const VkFramebuffer&   framebuffer,
+                                        const RenderPass&      render_pass,
+                                        const VkDevice&        device) {
 
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -836,23 +738,23 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
      printf ("failed to begin recording command buffer!");
      return false; 
   }
-  // begin command list
-  VkRenderPassBeginInfo pass_info{};
+
 
   VkClearValue clear_values[3] = {};
   clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   clear_values[1].depthStencil = {1.0f, 0};
   clear_values[2].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
 
-
-  pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  pass_info.pNext = nullptr;
- pass_info.renderPass = render_pass.handle; 
-  pass_info.framebuffer = framebuffer; 
+  // begin command list
+  VkRenderPassBeginInfo pass_info{};
+  pass_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  pass_info.pNext             = nullptr;
+  pass_info.renderPass        = render_pass.handle; 
+  pass_info.framebuffer       = framebuffer; 
   pass_info.renderArea.offset = {0, 0};
   pass_info.renderArea.extent = ext2d;
-  pass_info.clearValueCount = 3; 
-  pass_info.pClearValues = clear_values; 
+  pass_info.clearValueCount   = 3; 
+  pass_info.pClearValues      = clear_values; // ?does this match attachment order
 
   vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -876,7 +778,6 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
   VkBuffer vertex_buffers[] = {vertex_buffer};
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
 
   vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
@@ -906,10 +807,12 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateSyncObjs (SyncStruc&      sync,
-                           SyncCreateInfo& create_info,
-                           const VkDevice& device) {
+bool rokz::CreateRenderSync (RenderSync&      sync,
+                             RenderSyncCreateInfo& create_info,
+                             const VkDevice& device) {
 
+  printf ("%s\n", __FUNCTION__);
+  
   create_info.semaphore = {};
   create_info.semaphore.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   create_info.semaphore.pNext = nullptr;
@@ -919,14 +822,13 @@ bool rokz::CreateSyncObjs (SyncStruc&      sync,
   create_info.fence.flags = VK_FENCE_CREATE_SIGNALED_BIT;
   create_info.fence.pNext = nullptr;
   if (vkCreateSemaphore(device, &create_info.semaphore, nullptr, &sync.image_available_sem) != VK_SUCCESS
-      || vkCreateSemaphore(device, &create_info.semaphore, nullptr, &sync.render_fnished_sem) != VK_SUCCESS
+      || vkCreateSemaphore(device, &create_info.semaphore, nullptr, &sync.render_finished_sem) != VK_SUCCESS
       || vkCreateFence(device, &create_info.fence, nullptr, &sync.in_flight_fen) != VK_SUCCESS)
     {
-      printf ("failed to create semaphores!");
+      printf ("[FAILED]--> create sync objects\n");
       return false; 
     }
   
-  printf ("BAI %s\n", __FUNCTION__); 
   return true; 
 }
 
@@ -1047,7 +949,7 @@ void rokz::Cleanup (VkPipeline&                 pipeline,
               rokz::Swapchain&                  swapchain,
               VkSurfaceKHR&                     surf,
               VkCommandPool&                    command_pool,
-              std::vector<rokz::SyncStruc>&     syncs, 
+              std::vector<rokz::RenderSync>&     syncs, 
               std::vector<rokz::ShaderModule>&  shader_modules,
               VkPipelineLayout&                 pipeline_layout,
               rokz::RenderPass&                 render_pass,
@@ -1083,7 +985,7 @@ void rokz::Cleanup (VkPipeline&                 pipeline,
 
   for (size_t i = 0; i < syncs.size (); ++i) {
     vkDestroySemaphore(device.handle, syncs[i].image_available_sem, nullptr);
-    vkDestroySemaphore(device.handle, syncs[i].render_fnished_sem, nullptr);
+    vkDestroySemaphore(device.handle, syncs[i].render_finished_sem, nullptr);
     vkDestroyFence (device.handle, syncs[i].in_flight_fen, nullptr);
   }
 
@@ -1238,7 +1140,7 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind, VkPhysicalDevicePropert
   //   && devfeatures.geometryShader;
 
   if (devfeatures.samplerAnisotropy) {
-    printf ("[SUPPORTED] -> Anisotropy\n"); 
+    printf ("[SUPPORTED] -> Anisotropic Sampling\n"); 
   }
 
   return all_queues_available

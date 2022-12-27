@@ -68,6 +68,10 @@ namespace rokz {
   bool                  FindDepthFormat      (VkFormat& outfmt, const VkPhysicalDevice& physdev);
   bool                  HasStencilComponent  (VkFormat format);
   VkSampleCountFlagBits MaxUsableSampleCount (VkPhysicalDevice physdev); 
+
+
+  const char* Get_VkResult_string (VkResult r); 
+
 }
 
 

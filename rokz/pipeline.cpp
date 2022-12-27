@@ -1,7 +1,130 @@
 #include "pipeline.h"
 
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineVertexInputStateCreateInfo& rokz::CreateInfo ( 
+    VkPipelineVertexInputStateCreateInfo&                 create_info,
+    const VkVertexInputBindingDescription&                binding_desc, 
+    const std::vector<VkVertexInputAttributeDescription>& attrib_desc)
+{
+  // VERTEX INPUT
+  create_info = {};
+  create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  create_info.pNext = nullptr;
+  create_info.vertexBindingDescriptionCount = 1;
+  create_info.pVertexBindingDescriptions = &binding_desc; 
+  create_info.vertexAttributeDescriptionCount = attrib_desc.size(); 
+  create_info.pVertexAttributeDescriptions = &attrib_desc[0]; 
 
+  return create_info; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineMultisampleStateCreateInfo& rokz::CreateInfo (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits  msaa_samples) { 
+  // MULTI SAMPLING
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.sampleShadingEnable = VK_FALSE;
+  ci.rasterizationSamples = msaa_samples;
+  ci.minSampleShading = 1.0f;          
+  ci.pSampleMask = nullptr;            
+  ci.alphaToCoverageEnable = VK_FALSE; 
+  ci.alphaToOneEnable = VK_FALSE;      
+
+  return ci; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineDepthStencilStateCreateInfo& rokz::CreateInfo (VkPipelineDepthStencilStateCreateInfo& ci) {
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.depthTestEnable = VK_TRUE;
+  ci.depthWriteEnable = VK_TRUE;
+  ci.depthCompareOp = VK_COMPARE_OP_LESS;
+  ci.depthBoundsTestEnable = VK_FALSE;
+  ci.stencilTestEnable = VK_FALSE;
+  return ci; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineInputAssemblyStateCreateInfo& rokz::CreateInfo (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim) { 
+  // INPUT ASSEMBLY STATE
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  ci.pNext = nullptr; 
+  ci.flags = 0x0;
+  ci.topology = prim ; //VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  ci.primitiveRestartEnable = VK_FALSE;
+  return ci; 
+
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateInfo& ci,
+                                             VkShaderStageFlagBits stage_flags,
+                                             const VkShaderModule& module)
+{
+  ci = {};   
+  ci.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.stage  = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT;
+  ci.module = module;
+  ci.pSpecializationInfo = nullptr; 
+  ci.pName = "main";
+  return ci; 
+}
+
+//---------------------------------------------------------------------
+//
+//---------------------------------------------------------------------
+VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor) { 
+  // VkPipelineViewportStateCreateInfo
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.viewportCount = 1;
+  ci.pViewports = &vp; 
+
+  ci.scissorCount = 1;
+  ci.pScissors = &scissor;
+
+  return ci; 
+}
+
+//---------------------------------------------------------------------
+//
+//---------------------------------------------------------------------
+VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizationStateCreateInfo& ci) {
+  // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.depthClampEnable = VK_FALSE;
+  ci.rasterizerDiscardEnable = VK_FALSE;
+  ci.polygonMode = VK_POLYGON_MODE_FILL;
+  ci.lineWidth = 1.0f;
+  ci.cullMode = VK_CULL_MODE_BACK_BIT;
+  ci.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
+  ci.depthBiasEnable = VK_FALSE;
+  ci.depthBiasConstantFactor = 0.0f; 
+  ci.depthBiasClamp = 0.0f;          
+  ci.depthBiasSlopeFactor = 0.0f;    
+
+  //ci.cullMode = VK_CULL_MODE_BACK_BIT;
+  return ci;
+}
 
 // ---------------------------------------------------------------------
 //
@@ -39,7 +162,7 @@ bool rokz::CreateGraphicsPipelineLayout (
 bool rokz::CreateGraphicsPipeline (
     rokz::Pipeline&                                    pipeline,
     const VkRenderPass&                                render_pass,
-    const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+    const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
     const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
     const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
     const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
@@ -48,7 +171,7 @@ bool rokz::CreateGraphicsPipeline (
     const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
     const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
     const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
-    const VkDevice                                     device)
+    const VkDevice&                                    device)
 {
   pipeline.ci.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline.ci.pNext               = nullptr;
@@ -94,6 +217,7 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
                                                 const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
                                                 const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state)
 {
+  ci = {}; 
   ci.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   ci.pNext               = nullptr;
   ci.flags               = 0x0; 
@@ -129,4 +253,6 @@ bool rokz::CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice devi
   return true; 
 
   }
+
+
 

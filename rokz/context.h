@@ -104,28 +104,24 @@ namespace rokz {
                                         const VmaAllocator&                   allocator,
                                         GLFWwindow*                           glfwin); 
 
-
-
-
-
-
-  
-
-  bool               GetSwapChainImages (std::vector<VkImage> &swapchain_images, VkSwapchainKHR& swapchain, const VkDevice& dev);
   bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
   
   bool               DynamicState_default (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
-  bool               ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state, VkPipelineColorBlendStateCreateInfo& color_blending_create_info); 
+  bool               ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state); 
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
   bool               CreateRenderPass (RenderPass&             render_pass,
                                        VkFormat                swapchain_format,
                                        VkSampleCountFlagBits   msaa_samples, 
                                        const VkDevice &device, const VkPhysicalDevice& physdev);
+
+  VkPipelineColorBlendStateCreateInfo& CreateInfo (VkPipelineColorBlendStateCreateInfo&       color_blending_create_info,
+                                                   const VkPipelineColorBlendAttachmentState& colorblend); 
+
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info,
-                                             const VkCommandPool& commandpool); 
+  VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, uint32_t commandbuffers,  const VkCommandPool& commandpool); 
+  VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool); 
 
 
   bool CreateCommandPool (VkCommandPool&            command_pool,
@@ -164,7 +160,7 @@ namespace rokz {
   // -------------------------------------------------------------------------
   //
   // -------------------------------------------------------------------------
-  bool CreateSyncObjs (SyncStruc& sync, SyncCreateInfo& create_info, const VkDevice& device);
+  bool CreateRenderSync (RenderSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
 
   // ---------------------------------------------------------------------
   //
@@ -190,7 +186,7 @@ namespace rokz {
                 rokz::Swapchain&                  swapchain,
                 VkSurfaceKHR&                     surf,
                 VkCommandPool&                    command_pool,
-                std::vector<rokz::SyncStruc>&     syncs, 
+                std::vector<rokz::RenderSync>&    syncs, 
                 std::vector<rokz::ShaderModule>&  shader_modules,
                 VkPipelineLayout&                 pipeline_layout,
                 rokz::RenderPass&                 render_pass,

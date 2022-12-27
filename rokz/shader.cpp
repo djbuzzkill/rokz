@@ -5,8 +5,7 @@
 
 #include "utility.h"
 #include "defaults.h"
-
-
+#include "pipeline.h"
 
 // ---------------------------------------------------------------------
 // 
@@ -50,7 +49,7 @@ bool rokz::CreateShaderModules (
   if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device))
     return false; 
   
-  rokz::Init (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
+  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
 
   
   // FRAG SHADER
@@ -60,7 +59,7 @@ bool rokz::CreateShaderModules (
   if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device))
     return false; 
   
-  rokz::Init (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
+  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
   //
 
   return true; 

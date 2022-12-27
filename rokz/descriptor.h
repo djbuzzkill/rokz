@@ -53,10 +53,6 @@ namespace rokz {
                                   const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                                   const VkDevice& device);
 
-  bool CreateDescriptorSet (VkDescriptorSetLayout&              desc_set_layout, 
-                            VkDescriptorSetLayoutCreateInfo&    create_info,
-                            const VkDescriptorSetLayoutBinding& desc_set_layout_binding, 
-                            const VkDevice&                     device); 
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
