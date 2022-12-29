@@ -197,6 +197,9 @@ bool rokz::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
     
   vkQueueSubmit(que, 1, &submit_info, VK_NULL_HANDLE);
   vkQueueWaitIdle(que);
+
+  vkFreeCommandBuffers (device, command_pool, 1, &cmdbuf);
+
   return true; 
 }
 

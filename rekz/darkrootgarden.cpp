@@ -44,18 +44,25 @@ const VkVertexInputBindingDescription kDarkVertexBindingDesc =  {
 }; 
 
 
-template<typename VTy>
+template<typename VTy, typename IndTy>
 struct GeometryData {
+
+  typedef  VTy         VertexType; 
+  typedef  IndTy       IndexType; 
+
+  enum { VertexSize = sizeof(VTy) }; 
+  enum { IndexSize  = sizeof(IndTy) }; 
+  
   std::vector<VTy> verts;
-  std::vector<VTy> indices;
+  std::vector<IndTy> indices;
 }; 
 
 template<typename VTy> 
-using TriMesh = GeometryData<VTy>; 
+using TriMesh = GeometryData<VTy, uint16_t>; 
 
 typedef TriMesh<Darkroot_vertex>  Darkroot_mesh;
 
-//TriMesh 
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -106,7 +113,10 @@ const Darkroot_vertex dark_verts[] = {
 };
 
 
-const uint16_t darkroot_indices[] = {
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+const uint16_t dark_indices[] = {
     0, 1, 2, 2, 3, 0,
     4, 5, 6, 6, 7, 4
 };
@@ -115,15 +125,20 @@ const uint16_t darkroot_indices[] = {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-struct CreateInfo {
+struct Renderable {
 
-  //VkCommandPoolCreateInfo                  command_pool; 
-  //  std::vector<rokz::SyncCreateInfo>        syncs; 
-};
+  virtual auto SetupRS (VkCommandBuffer commandbuffer) -> int = 0;
+  virtual auto Draw    (VkCommandBuffer commandbuffer) -> int = 0;
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
+  virtual auto AllocRes (VmaAllocator& alloc) -> int = 0; 
+  virtual auto FreeRes  (VmaAllocator& alloc) -> int = 0; 
+
+protected:
+  Renderable () = default; 
+  
+}; 
+
+
 
 // --------------------------------------------------------------------
 //
@@ -133,6 +148,7 @@ struct DarkrootGlob {
   //#ifdef GLOB_COMMENT_OUT   
   DarkrootGlob();
   
+  std::shared_ptr<Renderable> dark_renderable;
   //VkApplicationInfo            app_info; // {};
 
   rokz::Instance                   instance;
@@ -185,6 +201,10 @@ struct DarkrootGlob {
   float                       queue_priority;
   double                      sim_time; 
   float                       dt;
+
+
+  Darkroot_mesh  dark_mesh;
+
 };
 
 
@@ -229,7 +249,162 @@ DarkrootGlob::DarkrootGlob() :
   queues.present = {}; 
 }
 
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+struct DarkRenderable : public Renderable, public rokz::destructor {
 
+  DarkRenderable () : num_verts (0), num_inds (0), vb_dev() , ib_dev () {
+  };
+
+  virtual ~DarkRenderable () {};
+
+
+  virtual auto SetupRS (VkCommandBuffer commandbuffer) -> int {
+    return 0; 
+  }
+
+  virtual auto Draw (VkCommandBuffer commandbuffer) -> int  {
+    return 0; 
+  }
+
+  virtual auto AllocRes (VmaAllocator& allocator) -> int {
+
+    
+    
+    rokz::CreateInfo_VB_device (vb_dev.ci, Darkroot_mesh::VertexSize,  num_verts);
+    rokz::AllocCreateInfo_device (vb_dev.alloc_ci); 
+    rokz::CreateBuffer (vb_dev, allocator); 
+
+    //rokz::Transfer_2_Device;
+    // rokz::MoveToBuffer_XB2DB (darkobj->vb_dev, vb_x, // user buffer, 
+    //                           Darkroot_mesh::VertexSize * dark_mesh.verts.size(), // sizeof(dark_verts)
+    //                           glob.command_pool.handle, 
+    //                           glob.queues.graphics,
+    //                           glob.device.handle); 
+
+    rokz::CreateInfo_IB_16_device (ib_dev.ci, num_inds); 
+    rokz::AllocCreateInfo_device (ib_dev.alloc_ci);
+    rokz::CreateBuffer (ib_dev, allocator);
+
+    // rokz::MoveToBuffer_XB2DB  (darkobj->ib_dev, ib_x, // user buffer, 
+    //                            Darkroot_mesh::IndexSize * dark_mesh.indices.size (), // sizeof(darkroot_indices),
+    //                            glob.command_pool.handle, 
+    //                            glob.queues.graphics,
+    //                            glob.device.handle); 
+    return 0; 
+  }
+
+  virtual auto FreeRes (VmaAllocator& alloc) -> int {
+
+
+    rokz::Destroy (vb_dev, alloc);
+    rokz::Destroy (ib_dev, alloc);
+
+    return 0; 
+  }
+
+
+  uint32_t num_verts;
+  uint32_t num_inds;
+  
+  rokz::Buffer vb_dev;
+  rokz::Buffer ib_dev;
+};
+
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+std::shared_ptr<DarkRenderable> CreateDarkRenderable () {
+
+  return std::make_shared<DarkRenderable> ();
+
+}
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+void SetupDarkGeometry (DarkrootGlob& glob) {
+
+  printf ("%s\n", __FUNCTION__); 
+
+  Darkroot_mesh& dark_mesh = glob.dark_mesh; 
+
+  // create the dark mesh 
+  const size_t num_verts = sizeof (dark_verts) / sizeof (Darkroot_vertex);
+  const size_t num_inds = sizeof (dark_indices) / sizeof (uint16_t); 
+
+  dark_mesh.verts.resize (num_verts); 
+  dark_mesh.indices.resize (num_inds);
+
+
+  for (size_t i = 0; i < num_verts; ++i) {
+    dark_mesh.verts[i] = dark_verts[i]; 
+  }
+  
+  for (size_t i  = 0; i < num_inds; ++i) {
+    dark_mesh.indices[i] = dark_indices[i]; 
+  }
+
+  // create the renderable
+  std::shared_ptr<DarkRenderable> darkobj = CreateDarkRenderable (); 
+  darkobj->num_verts = dark_mesh.verts.size (); 
+  darkobj->num_inds  = dark_mesh.indices.size (); 
+  void* pmapped  = nullptr;
+
+
+  // VERTEX BUFFER allocat and fill transfer buffers
+  rokz::Buffer vb_x;
+  rokz::CreateInfo_VB_stage (vb_x.ci, Darkroot_mesh::VertexSize, 8);
+  rokz::AllocCreateInfo_stage (vb_x.alloc_ci);
+  rokz::CreateBuffer (vb_x, glob.allocator);
+  if (rokz::MapMemory (&pmapped, vb_x.allocation, glob.allocator)) {
+    memcpy (pmapped,  &dark_mesh.verts[0] , Darkroot_mesh::VertexSize * dark_mesh.verts.size()); 
+    rokz::UnmapMemory (vb_x.allocation, glob.allocator); 
+  }
+  // INDEX BUFFER
+  rokz::Buffer ib_x;
+  rokz::CreateInfo_IB_16_stage (ib_x.ci, 12); 
+  rokz::AllocCreateInfo_stage (ib_x.alloc_ci);
+  rokz::CreateBuffer (ib_x, glob.allocator);
+
+  if (rokz::MapMemory (&pmapped, ib_x.allocation, glob.allocator)) {
+    memcpy (pmapped, &dark_mesh.indices[0], Darkroot_mesh::IndexSize * dark_mesh.indices.size ()); 
+    rokz::UnmapMemory (ib_x.allocation, glob.allocator); 
+  }
+
+
+
+  darkobj->AllocRes (glob.allocator); 
+
+
+  // rokz::CreateInfo_VB_device (darkobj->vb_dev.ci, Darkroot_mesh::VertexSize,  dark_mesh.verts.size ());
+  // rokz::AllocCreateInfo_device (darkobj->vb_dev.alloc_ci); 
+  // rokz::CreateBuffer (darkobj->vb_dev, glob.allocator); 
+  //rokz::Transfer_2_Device;
+  rokz::MoveToBuffer_XB2DB (darkobj->vb_dev, vb_x, // user buffer, 
+                            Darkroot_mesh::VertexSize * dark_mesh.verts.size(), // sizeof(dark_verts)
+                            glob.command_pool.handle, 
+                            glob.queues.graphics,
+                            glob.device.handle); 
+
+  // rokz::CreateInfo_IB_16_device (darkobj->ib_dev.ci, 12); 
+  // rokz::AllocCreateInfo_device (darkobj->ib_dev.alloc_ci);
+  // rokz::CreateBuffer (darkobj->ib_dev, glob.allocator);
+  rokz::MoveToBuffer_XB2DB  (darkobj->ib_dev, ib_x, // user buffer, 
+                             Darkroot_mesh::IndexSize * dark_mesh.indices.size (), // sizeof(darkroot_indices),
+                             glob.command_pool.handle, 
+                             glob.queues.graphics,
+                             glob.device.handle); 
+
+
+  
+  rokz::Destroy (vb_x, glob.allocator); 
+  rokz::Destroy  (ib_x, glob.allocator); 
+
+  glob.dark_renderable = darkobj;
+}
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -1023,6 +1198,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
   SetupDarkMultisampleColorResource (glob);
 
   SetupDarkDepthBuffer (glob);
+
+
   
   rokz::CreateFramebuffers (frame_group.swapchain_framebuffers, frame_group.swapchain_imageviews, glob.render_pass,
                             frame_group.swapchain.ci.imageExtent, glob.multisamp_color_imageview.handle,
@@ -1031,28 +1208,26 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci,
                            glob.physical_device.family_indices, glob.device.handle);
 
+  SetupDarkGeometry (glob); 
+
   void* pmapped  = nullptr;
 
   rokz::Buffer vb_x; 
-  rokz::CreateInfo_VB_stage (vb_x.ci, sizeof(Darkroot_vertex), 8);
+  rokz::CreateInfo_VB_stage (vb_x.ci, Darkroot_mesh::VertexSize, 8);
   rokz::AllocCreateInfo_stage (vb_x.alloc_ci);
   rokz::CreateBuffer (vb_x, glob.allocator);
   if (rokz::MapMemory (&pmapped, vb_x.allocation, glob.allocator)) {
-    memcpy (pmapped, dark_verts,  sizeof(dark_verts) ); 
+    memcpy (pmapped, &glob.dark_mesh.verts[0], Darkroot_mesh::VertexSize * glob.dark_mesh.verts.size()); 
     rokz::UnmapMemory (vb_x.allocation, glob.allocator); 
   }
 
-  rokz::CreateInfo_VB_device (glob.vma_vb_device.ci, sizeof(Darkroot_vertex), 8);
+  rokz::CreateInfo_VB_device (glob.vma_vb_device.ci, Darkroot_mesh::VertexSize, 8);
   rokz::AllocCreateInfo_device (glob.vma_vb_device.alloc_ci); 
   rokz::CreateBuffer (glob.vma_vb_device, glob.allocator); 
 
   //rokz::Transfer_2_Device;
-  rokz::MoveToBuffer_XB2DB  (glob.vma_vb_device, // device buffer
-                             vb_x, // user buffer, 
-                             sizeof(dark_verts),
-                             glob.command_pool.handle, 
-                             glob.queues.graphics,
-                             glob.device.handle); 
+  rokz::MoveToBuffer_XB2DB (glob.vma_vb_device, vb_x, Darkroot_mesh::VertexSize * glob.dark_mesh.verts.size(), 
+                            glob.command_pool.handle, glob.queues.graphics, glob.device.handle); 
 
   rokz::Destroy (vb_x, glob.allocator); 
   
@@ -1063,7 +1238,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::CreateBuffer (ib_x, glob.allocator);
 
   if (rokz::MapMemory (&pmapped, ib_x.allocation, glob.allocator)) {
-    memcpy (pmapped, darkroot_indices, sizeof(darkroot_indices) ); 
+    memcpy (pmapped, &glob.dark_mesh.indices[0], Darkroot_mesh::IndexSize * glob.dark_mesh.indices.size()  ); 
     rokz::UnmapMemory (ib_x.allocation, glob.allocator); 
   }
   
@@ -1071,13 +1246,10 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::AllocCreateInfo_device (glob.vma_ib_device.alloc_ci);
   rokz::CreateBuffer (glob.vma_ib_device, glob.allocator);
 
-  rokz::MoveToBuffer_XB2DB  (glob.vma_ib_device, // device buffer
-                             ib_x, // user buffer, 
-                             sizeof(darkroot_indices),
-                             glob.command_pool.handle, 
-                             glob.queues.graphics,
-                             glob.device.handle); 
+  rokz::MoveToBuffer_XB2DB  (glob.vma_ib_device, ib_x, Darkroot_mesh::IndexSize * glob.dark_mesh.indices.size (), 
+                             glob.command_pool.handle, glob.queues.graphics, glob.device.handle); 
   rokz::Destroy  (ib_x, glob.allocator); 
+  //Darkroot_mesh& dark_mesh = glob.dark_mesh;
   //
   SetupDarkSampler (glob); 
   // SetupUniformBuffers (glob.uniform_buffers,
