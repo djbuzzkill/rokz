@@ -1,7 +1,14 @@
-#version 420
+#version 460
 
 
-//
+
+//        .vert - a vertex shader
+//        .tesc - a tessellation control shader
+//        .tese - a tessellation evaluation shader
+//        .geom - a geometry shader
+//        .frag - a fragment shader
+//        .comp - a compute shader
+
 // MARS FRAGMENT PROGRAM
                                                    
 const vec3 mars_color = vec3 (1.0, 0.8, 0.6);

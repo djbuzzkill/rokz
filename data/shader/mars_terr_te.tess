@@ -1,6 +1,11 @@
-#version 420
+#version 460
 
-//
+//        .vert - a vertex shader
+//        .tesc - a tessellation control shader
+//        .tese - a tessellation evaluation shader
+//        .geom - a geometry shader
+//        .frag - a fragment shader
+//        .comp - a compute shader
 // MARS TESSELLATION EVALUATION PROGRAM
 
 layout(quads, equal_spacing, cw) in;

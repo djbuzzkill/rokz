@@ -1,10 +1,15 @@
-#version 420
+#version 460
 
+
+//        .vert - a vertex shader
+//        .tesc - a tessellation control shader
+//        .tese - a tessellation evaluation shader
+//        .geom - a geometry shader
+//        .frag - a fragment shader
+//        .comp - a compute shader
 
 // MARS VERTEX PROGRAM
-//
 
-////
 // input vertex 
 layout(location=0) in vec3 attrib_position;                                                        
 layout(location=1) in vec2 attrib_texcoord;                                                        
