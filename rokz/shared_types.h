@@ -28,6 +28,15 @@ namespace rokz {
   // ---------------------------------------------------
   typedef std::optional<uint32_t> MaybeIndex;
 
+  // ---------------------------------------------------
+  struct MVPTransform {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+  };
+
+  constexpr size_t kSizeOf_MVPTransform = sizeof (rokz::MVPTransform);
+  
   // --------------------------------------------------------
   struct QueueFamilyIndices {
 
@@ -268,7 +277,6 @@ namespace rokz {
     std::vector<VkSubpassDependency>                          dependencies;
   };
 
-
   // --------------------------------------------------------
   struct CommandPool {
     VkCommandPool           handle;
@@ -281,7 +289,6 @@ namespace rokz {
     std::vector<VkCommandBuffer> buffers; 
     VkCommandBufferAllocateInfo  alloc_info;
   };
-
 
   // --------------------------------------------------------
   struct FrameGroup {
@@ -297,11 +304,7 @@ namespace rokz {
     std::vector<rokz::RenderSync> syncs;
     std::vector<VkCommandBuffer>  command_buffers;
   }; 
-
-
   
-
-
 }
 
 #endif

@@ -50,20 +50,16 @@ struct GeometryData {
   std::vector<VTy> indices;
 }; 
 
-
 template<typename VTy> 
 using TriMesh = GeometryData<VTy>; 
 
-
 typedef TriMesh<Darkroot_vertex>  Darkroot_mesh;
 
-
 //TriMesh 
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc =  {
+const std::vector<VkVertexInputAttributeDescription> kDarkvertBindingAttributeDesc =  {
 
   VkVertexInputAttributeDescription { // pos
     0,                             // .location 
@@ -97,7 +93,7 @@ const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-const Darkroot_vertex simple_verts[] = {
+const Darkroot_vertex dark_verts[] = {
   {{-0.7f, -0.7f, 0.0f}, {0.0f,-1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
   {{ 0.7f, -0.7f, 0.0f}, {0.0f,-1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
   {{ 0.7f,  0.7f, 0.0f}, {0.0f,-1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
@@ -288,11 +284,8 @@ void SetupDarkSampler (DarkrootGlob& glob) {
 bool SetupDarkShaderModules (DarkrootGlob& glob, const std::filesystem::path& fspath) {
 
   printf ("%s \n", __FUNCTION__); 
-  // SetupCreateShaderModules (glob .shader_modules,
-  //                            glob.pipeline.state_ci.shader_stages,
-  //                            rokz_path,
-  //                            glob.device);
 
+  
   // std::vector<ShaderModule>&                    shader_modules,
   std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state.ci.shader_stages; 
   // const VkDevice&                               device)
@@ -323,6 +316,7 @@ bool SetupDarkShaderModules (DarkrootGlob& glob, const std::filesystem::path& fs
 // 
 // --------------------------------------------------------------------
 void SetupDarkDescriptorSetLayout (DarkrootGlob& glob)  {
+
   glob.descr_group.set_layout.bindings.resize (2); 
   //rokz::Init (glob.desc_set_layout_bindings[0],
   rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[0],
@@ -865,7 +859,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glob.dt = 0.0;
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
 
-  auto rokz_path = std::filesystem::path ( "/home/djbuzzkill/owenslake");
+  auto dark_path = std::filesystem::path ( "/home/djbuzzkill/owenslake/rokz");
   //Default (glob); 
   
   glfwInit();
@@ -981,7 +975,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
                           glob.physical_device.handle);
   
   // SetupShaderModules also sets up Pipeline Shader State CreateInfo's
-  SetupDarkShaderModules (glob, rokz_path);
+  SetupDarkShaderModules (glob, dark_path);
 
   rokz::ColorBlendState_default (glob.pipeline.state.color_blend_attachment); 
   rokz::DynamicState_default (glob.pipeline.dynamic_states, glob.pipeline.state.ci.dynamicstate); 
@@ -993,7 +987,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   rokz::PipelineStateCreateInfo& psci = glob.pipeline.state.ci;
 
-  rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kSimpleBindingAttributeDesc); 
+  rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
   rokz::CreateInfo (psci.viewport_state, glob.viewport, rokz::Rect2D (glob.scissor_rect, offs0, frame_group.swapchain.ci.imageExtent));
   rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
   rokz::CreateInfo (psci.rasterizer); 
@@ -1044,7 +1038,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::AllocCreateInfo_stage (vb_x.alloc_ci);
   rokz::CreateBuffer (vb_x, glob.allocator);
   if (rokz::MapMemory (&pmapped, vb_x.allocation, glob.allocator)) {
-    memcpy (pmapped, simple_verts,  sizeof(simple_verts) ); 
+    memcpy (pmapped, dark_verts,  sizeof(dark_verts) ); 
     rokz::UnmapMemory (vb_x.allocation, glob.allocator); 
   }
 
@@ -1055,7 +1049,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //rokz::Transfer_2_Device;
   rokz::MoveToBuffer_XB2DB  (glob.vma_vb_device, // device buffer
                              vb_x, // user buffer, 
-                             sizeof(simple_verts),
+                             sizeof(dark_verts),
                              glob.command_pool.handle, 
                              glob.queues.graphics,
                              glob.device.handle); 

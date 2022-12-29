@@ -901,7 +901,7 @@ bool rokz::RecreateSwapchain(Swapchain&                             swapchain,
                                               depth_imageview.handle,
                                               device);
 
-  return (swapchain_res &&imageviews_res && framebuffers_res); 
+  return (swapchain_res && imageviews_res && framebuffers_res); 
 }
 
 

@@ -10,17 +10,20 @@
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-bool rokz::CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev) {
+bool rokz::CreateShaderModule (ShaderModule& sm, const std::string fsrc, const VkDevice& dev) {
 
-  printf ( "%s [%s]\n", __FUNCTION__, fsrc.c_str()); 
-  From_file (shm.bin, fsrc);
+  printf ( "%s [%s]", __FUNCTION__, fsrc.c_str()); 
 
-  shm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  shm.ci.pNext = nullptr;
-  shm.ci.codeSize = shm.bin.size();
-  shm.ci.pCode = reinterpret_cast<const uint32_t*>(&shm.bin[0]);
+  From_file (sm.bin, fsrc);
 
-  if (vkCreateShaderModule(dev, &shm.ci, nullptr, &shm.handle) != VK_SUCCESS) {
+  printf (" --> %s, shader module bin size[%zu] \n", fsrc.c_str(),  sm.bin.size()); 
+  
+  sm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  sm.ci.pNext = nullptr;
+  sm.ci.codeSize = sm.bin.size();
+  sm.ci.pCode = reinterpret_cast<const uint32_t*>(&sm.bin[0]);
+
+  if (vkCreateShaderModule(dev, &sm.ci, nullptr, &sm.handle) != VK_SUCCESS) {
     printf ("[%s]FAILED create shader module\n", __FUNCTION__);
     return false;
   }
@@ -88,6 +91,7 @@ VkShaderModule& rokz::CreateShaderModule (VkShaderModule& shader_module,
 
   return shader_module; 
 }
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -103,6 +107,7 @@ bool rokz::CreateShaderModules (
 
   // VERT SHADER 
   std::filesystem::path vert_file_path  =  fspath / "data/shader/basic3D_vert.spv" ;
+
   printf ("[1] %s\n",   vert_file_path.string().c_str() );
   bytearray             vertbin;
   VkShaderModule        vertmod; 

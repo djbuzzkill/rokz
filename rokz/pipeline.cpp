@@ -146,8 +146,14 @@ bool rokz::CreateGraphicsPipelineLayout (
   create_info.pSetLayouts            = &desc_set_layout;         
   //printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 
 
-  create_info.pushConstantRangeCount = 0;    
-  create_info.pPushConstantRanges = nullptr; 
+  //
+  VkPushConstantRange pcr;
+  pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  pcr.offset     = 0;
+  pcr.size       = sizeof(glm::mat4) * 2; 
+  
+  create_info.pushConstantRangeCount = 1;    
+  create_info.pPushConstantRanges = &pcr; 
 
   if (vkCreatePipelineLayout (device, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
     printf("FAILED _create pipeline layout_\n");

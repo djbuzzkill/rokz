@@ -8,6 +8,7 @@
 #include <IL/ilu.h>
 
 //#define VMA_IMPLEMENTATION
+#include "rokz/shared_types.h"
 #include "vk_mem_alloc.h"
  
 
@@ -22,6 +23,9 @@ const std::string data_root =  "/home/djbuzzkill/owenslake/rokz/data"; //
 const VkExtent2D  kTestExtent  = { 800, 600 };
 
 #define ROKZ_USE_VMA_ALLOCATION 1
+
+
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -66,6 +70,8 @@ const std::vector<VkVertexInputAttributeDescription> kSimpleBindingAttributeDesc
 
 }; 
 
+
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -87,13 +93,7 @@ const uint16_t simple_indices[] = {
     4, 5, 6, 6, 7, 4
 };
 
-struct StandardTransform3D {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
-};
 
-const size_t kSizeOf_StandardTransform3D = sizeof (StandardTransform3D); 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -682,7 +682,7 @@ bool SetupUniformBuffers (std::vector<rokz::BufferStruc>& uniform_buffers,
 
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
 
-    if (!rokz::CreateUniformBuffer (uniform_buffers[i], kSizeOf_StandardTransform3D, 1, device, physdev)) {
+    if (!rokz::CreateUniformBuffer (uniform_buffers[i], rokz::kSizeOf_MVPTransform, 1, device, physdev)) {
       printf (" [FAIL] CreateUniformbuffer in  CreateUniformbuffers\n"); 
       return false; 
     }
@@ -710,7 +710,7 @@ bool SetupUniformBuffers (Glob& glob) {
 
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
 
-    rokz::CreateInfo_uniform (uniform_buffs[i].ci, kSizeOf_StandardTransform3D, 1); 
+    rokz::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
     rokz::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
 
     if (!rokz::CreateBuffer  (uniform_buffs[i], glob.allocator)) {
@@ -744,13 +744,13 @@ void UpdateUniformBuffer (Glob& glob, uint32_t current_frame, double dt) {
   
   float asp = (float)glob.frame_group.swapchain.ci.imageExtent.width / (float)glob.frame_group.swapchain.ci.imageExtent.height;
     
-  StandardTransform3D mats; 
+  rokz::MVPTransform  mats; 
   mats.model = glm::rotate(glm::mat4(1.0f), sim_timef * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   mats.view  = glm::lookAt(glm::vec3(0.0f, 1.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
   mats.proj[1][1] *= -1;
  
-  memcpy (glob.uniform_mapped_pointers[current_frame], &mats, kSizeOf_StandardTransform3D); 
+  memcpy (glob.uniform_mapped_pointers[current_frame], &mats, rokz::kSizeOf_MVPTransform); 
 
 }
 
@@ -1035,16 +1035,16 @@ int test_rokz (const std::vector<std::string>& args) {
                   frame_group.swapchain.ci.imageExtent.width, frame_group.swapchain.ci.imageExtent.height,
                   1.0f);
 
-  rokz::PipelineStateCreateInfo& ps_ci = glob.pipeline.state.ci;
+  rokz::PipelineStateCreateInfo& psci = glob.pipeline.state.ci;
 
-  rokz::CreateInfo (ps_ci.vertexinputstate, kSimpleVertexBindingDesc, kSimpleBindingAttributeDesc); 
-  rokz::CreateInfo (ps_ci.viewport_state, glob.viewport,
-                    rokz::Rect2D (glob.scissor_rect, offs0, frame_group.swapchain.ci.imageExtent));
-  rokz::CreateInfo (ps_ci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::CreateInfo (ps_ci.rasterizer); 
-  rokz::CreateInfo (ps_ci.colorblendstate, glob.pipeline.state.color_blend_attachment); 
-  rokz::CreateInfo (ps_ci.multisampling, glob.msaa_samples); 
-  rokz::CreateInfo (ps_ci.depthstencilstate); 
+  rokz::CreateInfo (psci.vertexinputstate, kSimpleVertexBindingDesc, kSimpleBindingAttributeDesc); 
+  rokz::CreateInfo (psci.viewport_state, glob.viewport, rokz::Rect2D (glob.scissor_rect, offs0, frame_group.swapchain.ci.imageExtent));
+  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (psci.rasterizer); 
+  rokz::CreateInfo (psci.colorblendstate, glob.pipeline.state.color_blend_attachment); 
+  rokz::CreateInfo (psci.multisampling, glob.msaa_samples); 
+  rokz::CreateInfo (psci.depthstencilstate); 
+
   SetupDescriptorSetLayout (glob); 
   //
   rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
@@ -1055,15 +1055,15 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::CreateInfo (glob.pipeline.ci,
                     glob.pipeline.layout.handle,
                     glob.render_pass.handle,                    
-                    ps_ci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
-                    &ps_ci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-                    &ps_ci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-                    &ps_ci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-                    &ps_ci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-                    &ps_ci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-                    &ps_ci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-                    &ps_ci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-                    &ps_ci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+                    psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+                    &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                    &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                    &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                    &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                    &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                    &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                    &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                    &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
 
 
   if (rokz::CreateGraphicsPipeline (glob.pipeline, glob.device.handle)) {     //const VkDevice                           b          device)
@@ -1096,6 +1096,7 @@ int test_rokz (const std::vector<std::string>& args) {
   rokz::AllocCreateInfo_device (glob.vma_vb_device.alloc_ci); 
   rokz::CreateBuffer (glob.vma_vb_device, glob.allocator); 
 
+  //rokz::Transfer_2_Device;
   rokz::MoveToBuffer_XB2DB  (glob.vma_vb_device, // device buffer
                              vb_x, // user buffer, 
                              sizeof(simple_verts),
