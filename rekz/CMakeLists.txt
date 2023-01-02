@@ -7,11 +7,13 @@ project (rekz)
   
 set (REKZ_HEADER_FILES
     rekz.h
+    darkrootgarden.h
 )
 	
 set (REKZ_SOURCE_FILES
   texture_tool.cpp
   darkrootgarden.cpp
+  darksolids.cpp
   test_rokz_hpp.cpp
   test_rokz.cpp
   rekz.cpp

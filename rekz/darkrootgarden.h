@@ -36,8 +36,8 @@ namespace darkroot {
   struct Renderable {
 
     virtual auto SetupRS (VkCommandBuffer commandbuffer) -> int = 0;
-    virtual auto Draw    (VkCommandBuffer commandbuffer) -> int = 0;
-
+    virtual auto Draw    (VkCommandBuffer commandbuffer) -> void = 0;
+    
     virtual auto AllocRes (VmaAllocator& alloc) -> int = 0; 
     virtual auto FreeRes  (VmaAllocator& alloc) -> int = 0; 
 
@@ -47,7 +47,7 @@ namespace darkroot {
   }; 
 
   // --------------------------------------------------------------------
-  // struct Renderable 
+  // 
   // --------------------------------------------------------------------
   namespace HalfEdge {
 
@@ -73,7 +73,7 @@ namespace darkroot {
 
     // --------------------------------------------------------------------
     struct BRep {
-      // geometry.verts[i] per edgei[i];
+      // edgei[i] -> geometry.verts[i] 
       std::vector<Index> edgei;
       // edge store
       Edges edges;
@@ -83,5 +83,35 @@ namespace darkroot {
 
   } // HalfEdge
 
+
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  struct DarkrootVert {
+    glm::vec3 pos; 
+    glm::vec3 nrm; 
+    glm::vec3 col; 
+    glm::vec2 txc0; 
+  };
+
+  //
+  typedef TriMesh<DarkrootVert> DarkrootMesh;
+
+  //
+  struct SceneObjParam {
+    glm::mat4 modelmat;
+    //  glm::mat4 unused0;
+  };
+
+  //
+  const size_t SizeOf_SceneObjParam = sizeof (SceneObjParam); 
+
+
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+  const DarkrootMesh& DarkOctohedron (); 
+
+  
 }
 #endif

@@ -51,6 +51,9 @@ namespace rokz {
   VkPipelineShaderStageCreateInfo&        CreateInfo (VkPipelineShaderStageCreateInfo& ci, VkShaderStageFlagBits stage_flags, const VkShaderModule& module); 
   VkPipelineViewportStateCreateInfo&      CreateInfo (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor); 
   VkPipelineRasterizationStateCreateInfo& CreateInfo (VkPipelineRasterizationStateCreateInfo& ci);
+
+  VkPipelineLayoutCreateInfo&             CreateInfo (VkPipelineLayoutCreateInfo& ci, const std::vector<VkDescriptorSetLayout>& dslos, const std::vector<VkPushConstantRange>& pc = std::vector<VkPushConstantRange>(0)); 
+
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------

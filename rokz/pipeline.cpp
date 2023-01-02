@@ -1,3 +1,4 @@
+//
 #include "pipeline.h"
 
 
@@ -107,24 +108,50 @@ VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCrea
 //
 //---------------------------------------------------------------------
 VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizationStateCreateInfo& ci) {
+  //printf ("%s -> VkPipelineRasterizationStateCreateInfo& \n", __FUNCTION__); 
   // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
   ci = {};
-  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-  ci.pNext = nullptr;
-  ci.depthClampEnable = VK_FALSE;
+  ci.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  ci.pNext                   = nullptr;
+  ci.depthClampEnable        = VK_FALSE;
   ci.rasterizerDiscardEnable = VK_FALSE;
-  ci.polygonMode = VK_POLYGON_MODE_FILL;
-  ci.lineWidth = 1.0f;
-  ci.cullMode = VK_CULL_MODE_BACK_BIT;
-  ci.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
-  ci.depthBiasEnable = VK_FALSE;
+  ci.polygonMode             = VK_POLYGON_MODE_FILL;
+  ci.lineWidth               = 1.0f;
+  ci.cullMode                = VK_CULL_MODE_BACK_BIT;
+  ci.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
+  ci.depthBiasEnable         = VK_FALSE;
   ci.depthBiasConstantFactor = 0.0f; 
-  ci.depthBiasClamp = 0.0f;          
-  ci.depthBiasSlopeFactor = 0.0f;    
+  ci.depthBiasClamp          = 0.0f;          
+  ci.depthBiasSlopeFactor    = 0.0f;    
 
   //ci.cullMode = VK_CULL_MODE_BACK_BIT;
   return ci;
 }
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci, const std::vector<VkDescriptorSetLayout>& dslos, const std::vector<VkPushConstantRange> & pc) {
+  // typedef struct VkPipelineLayoutCreateInfo {
+  //   VkStructureType                 sType;
+  //   const void*                     pNext;
+  //   VkPipelineLayoutCreateFlags     flags;
+  //   uint32_t                        setLayoutCount;
+  //   const VkDescriptorSetLayout*    pSetLayouts;
+  //   uint32_t                        pushConstantRangeCount;
+  //   const VkPushConstantRange*      pPushConstantRanges;
+  // } VkPipelineLayoutCreateInfo;
+  ci.sType                = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  ci.pNext                  = nullptr;
+  ci.flags                  = 0; 
+  ci.setLayoutCount         = dslos.size();            
+  ci.pSetLayouts            = dslos.size() ? &dslos[0] : nullptr;
+  ci.pushConstantRangeCount = pc.size();    
+  ci.pPushConstantRanges    = pc.size() ? &pc[0] : nullptr;
+
+  return ci;
+}
+
 
 // ---------------------------------------------------------------------
 //
@@ -142,19 +169,19 @@ bool rokz::CreateGraphicsPipelineLayout (
 
   create_info.setLayoutCount         = 1;            
   create_info.pSetLayouts            = &desc_set_layout;         
-  create_info.setLayoutCount         = 1;            
-  create_info.pSetLayouts            = &desc_set_layout;         
   //printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 
 
-  //
-  VkPushConstantRange pcr;
-  pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  pcr.offset     = 0;
-  pcr.size       = sizeof(glm::mat4) * 2; 
-  
-  create_info.pushConstantRangeCount = 1;    
-  create_info.pPushConstantRanges = &pcr; 
+  create_info.pushConstantRangeCount = 0;    
+  create_info.pPushConstantRanges = nullptr; 
 
+  create_info.flags = 0; // ?? VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT; 
+  //
+  // VkPushConstantRange pcr;
+  // pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  // pcr.offset     = 0;
+  // pcr.size       = sizeof(glm::mat4) * 2; 
+  // create_info.pushConstantRangeCount = 1;    
+  // create_info.pPushConstantRanges = &pcr; 
   if (vkCreatePipelineLayout (device, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
     printf("FAILED _create pipeline layout_\n");
     return false;

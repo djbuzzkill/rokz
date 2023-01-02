@@ -1,5 +1,6 @@
 
 #include "buffer.h"
+#include <vulkan/vulkan_core.h>
 
 // ---------------------------------------------------------------------
 //
@@ -62,6 +63,38 @@ bool rokz::CreateBuffer (Buffer& buffer, VmaAllocator const& allocator) {
   return true; 
 }
 
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+VmaAllocationCreateInfo& rokz::CreateInfo_default (VmaAllocationCreateInfo& ci) {
+
+
+  ci = {};
+  ci.pool = VK_NULL_HANDLE;
+  ci.flags = 0;
+  ci.usage = VMA_MEMORY_USAGE_AUTO;
+  ci.priority = 1.0f;
+  ci.pUserData =  nullptr;
+  ci.requiredFlags = 0;
+  ci.preferredFlags = 0;
+  ci.memoryTypeBits = 0;
+  
+  return ci;
+}
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+bool rokz::CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator) {
+
+  if (VK_SUCCESS != vmaCreateBufferWithAlignment (allocator, &buffer.ci, &buffer.alloc_ci, min_align, &buffer.handle, &buffer.allocation, &buffer.alloc_info)) {
+
+    printf ("[FAILED] %s vmaCreateBuffer", __FUNCTION__);
+    return false; 
+  }
+  
+  return true; 
+}
 // ---------------------------------------------------------------------
 // transfer buffer
 // ---------------------------------------------------------------------
@@ -204,17 +237,14 @@ bool rokz::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
 }
 
 
-void rokz::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
-
-  vmaDestroyBuffer (allocator, buffer.handle, buffer.allocation); 
-
-}
-
-
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
 VkBufferCreateInfo& rokz::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t sizeOf_elem, size_t num_e) {
 
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  ci.pNext = nullptr; 
   ci.size  = sizeOf_elem * num_e; 
   ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -255,8 +285,21 @@ bool rokz::MapBuffer (void** ptr, BufferStruc& vb, const VkDevice& device) {
 }
 
 // 
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
 void rokz::UnmapBuffer (BufferStruc& vb, const VkDevice& device) {
   vkUnmapMemory (device, vb.mem);
+}
+
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+void rokz::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
+
+  vmaDestroyBuffer (allocator, buffer.handle, buffer.allocation); 
+
 }
 
 // ---------------------------------------------------------------------
@@ -273,8 +316,6 @@ void rokz::UnmapBuffer (BufferStruc& vb, const VkDevice& device) {
 //   }
 //   return false;
 // }
-
-
 
 
 

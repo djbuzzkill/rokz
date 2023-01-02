@@ -68,6 +68,22 @@ namespace rokz {
   bool                  FindDepthFormat      (VkFormat& outfmt, const VkPhysicalDevice& physdev);
   bool                  HasStencilComponent  (VkFormat format);
   VkSampleCountFlagBits MaxUsableSampleCount (VkPhysicalDevice physdev); 
+  // --------------------------------------------------------------
+  inline VkSampleCountFlagBits MaxUsableSampleCount  (const PhysicalDevice& physdev) {
+    const VkPhysicalDeviceProperties& phys_dev_props =     physdev.properties;
+    VkSampleCountFlags counts = phys_dev_props.limits.framebufferColorSampleCounts & phys_dev_props.limits.framebufferDepthSampleCounts;
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+    return VK_SAMPLE_COUNT_1_BIT;
+  }
+  // --------------------------------------------------------------
+  inline VkDeviceSize MinUniformBufferOffsetAlignment (const PhysicalDevice& phdev) {
+   return phdev.properties.limits.minUniformBufferOffsetAlignment;
+  }
 
 
   const char* Get_VkResult_string (VkResult r); 

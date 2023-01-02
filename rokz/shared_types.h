@@ -117,6 +117,15 @@ namespace rokz {
     VkShaderModuleCreateInfo       ci;
   };
 
+  // --------------------------------------------------------
+  struct Buffer {
+    VkBuffer                handle;
+    VkBufferCreateInfo      ci; 
+    VmaAllocationCreateInfo alloc_ci; 
+    VmaAllocation           allocation;
+    VmaAllocationInfo       alloc_info;
+  }; 
+
   // ------------------------------------------------------------------
   struct Image {
 
@@ -144,6 +153,30 @@ namespace rokz {
     VkImageViewCreateInfo   ci; 
   };
 
+  // ---------------------------------------------------------------------
+  struct DescriptorPool {
+
+    VkDescriptorPool                  handle;
+    std::vector<VkDescriptorPoolSize> sizes;
+    VkDescriptorPoolCreateInfo        ci;
+  };
+
+  // ---------------------------------------------------------------------
+  struct DescriptorSetLayout { 
+    VkDescriptorSetLayout                     handle;    
+    VkDescriptorSetLayoutCreateInfo           ci;
+    std::vector<VkDescriptorSetLayoutBinding> bindings; 
+    
+  }; 
+
+  // ---------------------------------------------------------------------
+  struct DescriptorGroup {
+    
+    std::vector<VkDescriptorSet>   descrsets;
+    rokz::DescriptorSetLayout      dslayout;
+    VkDescriptorSetAllocateInfo    alloc_info;
+
+  }; 
 
   // --------------------------------------------------------
   struct RenderSyncCreateInfo {
@@ -178,6 +211,7 @@ namespace rokz {
     VkFramebufferCreateInfo  ci;
     std::vector<VkImageView> attachments; 
   };
+
 
   // --------------------------------------------------------
   struct PipelineStateCreateInfo {

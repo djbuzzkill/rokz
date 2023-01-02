@@ -301,21 +301,23 @@ bool SetupShaderModules (Glob& glob, const std::filesystem::path& fspath) {
 // 
 // --------------------------------------------------------------------
 void SetupDescriptorSetLayout (Glob& glob)  {
-  glob.descr_group.set_layout.bindings.resize (2); 
+  glob.descr_group.dslayout.bindings.resize (2); 
   //rokz::Init (glob.desc_set_layout_bindings[0],
-  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[0],
+  rokz::DescriptorSetLayoutBinding (glob.descr_group.dslayout.bindings[0],
                                     0,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    1, 
                                     VK_SHADER_STAGE_VERTEX_BIT);
 
-  rokz::DescriptorSetLayoutBinding (glob.descr_group.set_layout.bindings[1],
+  rokz::DescriptorSetLayoutBinding (glob.descr_group.dslayout.bindings[1],
                                     1,
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    1, 
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
-  rokz::CreateDescriptorSetLayout (glob.descr_group.set_layout.handle,
-                                   glob.descr_group.set_layout.ci,
-                                   glob.descr_group.set_layout.bindings,
+  rokz::CreateDescriptorSetLayout (glob.descr_group.dslayout.handle,
+                                   glob.descr_group.dslayout.ci,
+                                   glob.descr_group.dslayout.bindings,
                                    glob.device.handle); 
 
 }
@@ -537,7 +539,7 @@ bool SetupDescriptorSets (Glob& glob) {
   rokz::DescriptorGroup& dg = glob.descr_group;
 
   // use same layout for both allocations
-  std::vector<VkDescriptorSetLayout> desc_layouts (kMaxFramesInFlight, dg.set_layout.handle);
+  std::vector<VkDescriptorSetLayout> desc_layouts (kMaxFramesInFlight, dg.dslayout.handle);
   // could have also said: 
   //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
   // but that wouldnt work
@@ -548,7 +550,7 @@ bool SetupDescriptorSets (Glob& glob) {
   dg.alloc_info.pSetLayouts        = &desc_layouts[0];
   
   //rokz::AllocateDescriptorSets; // (DescriptorPool& desc_pool, VkDescriptorType type, uint32_t desc_count, const VkDevice &device)
-  if (!rokz::AllocateDescriptorSets (dg.desc_sets, dg.alloc_info,  kMaxFramesInFlight, glob.device.handle)) {
+  if (!rokz::AllocateDescriptorSets (dg.descrsets,  kMaxFramesInFlight, dg.alloc_info, glob.device.handle)) {
     printf ("[FAILED] alloc desc sets %s", __FUNCTION__);
     return false;
   }
@@ -568,7 +570,7 @@ bool SetupDescriptorSets (Glob& glob) {
     //
     std::array<VkWriteDescriptorSet, 2>  descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet           = dg.desc_sets[i];
+    descriptor_writes[0].dstSet           = dg.descrsets[i];
     descriptor_writes[0].dstBinding       = 0;
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -578,7 +580,7 @@ bool SetupDescriptorSets (Glob& glob) {
     descriptor_writes[0].pTexelBufferView = nullptr; // Optional}
 
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].dstSet           = dg.desc_sets[i];
+    descriptor_writes[1].dstSet           = dg.descrsets[i];
     descriptor_writes[1].dstBinding       = 1;
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
@@ -1049,7 +1051,7 @@ int test_rokz (const std::vector<std::string>& args) {
   //
   rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
                                       glob.pipeline.layout.ci,
-                                      glob.descr_group.set_layout.handle,
+                                      glob.descr_group.dslayout.handle,
                                       glob.device.handle);
 
   rokz::CreateInfo (glob.pipeline.ci,
@@ -1203,7 +1205,7 @@ int test_rokz (const std::vector<std::string>& args) {
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
     if (RenderFrame (glob, image_index, fb_resize, glob.render_pass, glob.pipeline,
-                     glob.descr_group.desc_sets[curr_frame], curr_frame, glob.dt)) {
+                     glob.descr_group.descrsets[curr_frame], curr_frame, glob.dt)) {
 
     }
     else {

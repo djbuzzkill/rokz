@@ -15,7 +15,7 @@ layout(location = 2) in vec2 txcrd2;
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = 1) uniform sampler2D tx_sampler;
+layout(binding = 2) uniform sampler2D tx_sampler;
 
 void main() {
      

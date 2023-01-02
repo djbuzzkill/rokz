@@ -19,7 +19,9 @@ const bool kEnableValidationLayers = true;
 //
 // ---------------------------------------------------------------------
 const std::vector<const char*> kDeviceExtensions = {
-  VK_KHR_SWAPCHAIN_EXTENSION_NAME
+  VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
+  "VK_EXT_descriptor_indexing", 
+
 };
 
 
@@ -756,9 +758,9 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
   pass_info.clearValueCount   = 3; 
   pass_info.pClearValues      = clear_values; // ?does this match attachment order
 
-  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
+  vkCmdBindPipeline    (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
+  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
   VkViewport viewport{};
   viewport.x = 0.0f;
@@ -774,13 +776,6 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
   scissor.extent = ext2d;
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-
-  VkBuffer vertex_buffers[] = {vertex_buffer};
-  VkDeviceSize offsets[] = {0};
-  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-  vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
-
   vkCmdBindDescriptorSets (command_buffer,
                            VK_PIPELINE_BIND_POINT_GRAPHICS,
                            pipeline.layout.handle,
@@ -789,7 +784,14 @@ bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
                            &desc_set, //&descriptorSets[currentFrame],
                            0,
                            nullptr);
+
   
+  VkBuffer vertex_buffers[] = {vertex_buffer};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
+  vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
+
   vkCmdDrawIndexed (command_buffer, 12, 1, 0, 0, 0);
   
   vkCmdEndRenderPass(command_buffer);
@@ -992,7 +994,6 @@ void rokz::Cleanup (VkPipeline&                 pipeline,
   for (auto shmod : shader_modules) {
     vkDestroyShaderModule (device.handle, shmod.handle, nullptr); 
   }
-
   vkDestroyPipelineLayout (device.handle, pipeline_layout, nullptr);
   vkDestroyRenderPass (device.handle, render_pass.handle, nullptr); 
 

@@ -56,18 +56,6 @@ namespace rokz {
   // 
   //
   // 
-
-
-  // nu ---------------------------------------------------------------------------------> 
-  struct Buffer {
-    VkBuffer                handle;
-    VkBufferCreateInfo      ci; 
-    VmaAllocationCreateInfo alloc_ci; 
-    VmaAllocation           allocation;
-    VmaAllocationInfo       alloc_info;
-  }; 
-
-
   VkBufferCreateInfo& CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem); 
   VkBufferCreateInfo& CreateInfo_IB_16_stage  (VkBufferCreateInfo& ci, uint32_t num_elem); 
   VkBufferCreateInfo& CreateInfo_IB_16_local  (VkBufferCreateInfo& ci, uint32_t num_elem); 
@@ -77,8 +65,10 @@ namespace rokz {
 
   VkBufferCreateInfo& CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes);
   VkBufferCreateInfo& CreateInfo_uniform      (VkBufferCreateInfo& ci, size_t size_e, size_t num_e); 
+  VmaAllocationCreateInfo& CreateInfo_default (VmaAllocationCreateInfo& ci) ; 
   //
   bool                CreateBuffer         (Buffer&, VmaAllocator const& allocator);
+  bool                CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator); 
 
   bool MoveToBuffer_XB2DB (Buffer&         buff_dst, // device buffer
                            Buffer&         buff_src, // user buffer, 
@@ -99,6 +89,9 @@ namespace rokz {
   void Destroy (Buffer& buffer, VmaAllocator const& allocator); 
   // <---------------------------------------------------------------------------------- nu 
 
+  inline void* MappedPointer (const Buffer& buff) { 
+    return  buff.alloc_info.pMappedData;
+  }
   
 }
 
