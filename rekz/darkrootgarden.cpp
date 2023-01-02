@@ -5,6 +5,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -757,6 +758,10 @@ bool SetupDarkDescriptorSetLayout (DarkrootGlob& glob)  {
   return true; 
 }
 
+
+
+//
+
 // ---------------------------------------------------------------------
 //Drob
 // ---------------------------------------------------------------------
@@ -913,6 +918,18 @@ bool SetupDarkUniforms (DarkrootGlob& glob) {
 }
 
   
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+glm::vec3& unit_angle_xz (glm::vec3& v, float theta) {
+  v.y = 0.0f;
+  v.x =  cos (theta) ;
+  v.z = -sinf (theta) ;
+  return v; 
+}
+
+
+
 
 // --------------------------------------------------------------------
 //
@@ -922,8 +939,10 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
   glob.sim_time += dt;
   //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
 
+    
   float sim_timef = glob.sim_time;
-  
+
+
   float asp = (float)glob.frame_group.swapchain.ci.imageExtent.width / (float)glob.frame_group.swapchain.ci.imageExtent.height;
     
   glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
@@ -939,16 +958,17 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
   memcpy (rokz::MappedPointer (glob.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
  
   if (SceneObjParam* obj = reinterpret_cast<SceneObjParam*> (rokz::MappedPointer (glob.vma_objparam_buffs[current_frame]))) {
+  
 
-    glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, 0.5, -6.0));
-    glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, -0.5,-6.0));
-    for (size_t i = 0; i < kSceneObjCount; ++i) {
-      obj[i].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    }
+    glm::vec3 va, vb;
+    unit_angle_xz (va, sim_timef); 
+    unit_angle_xz (vb, sim_timef + kPi); 
 
-    // obj[1].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    // obj[2].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    // obj[3].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+    glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.0, -6.0));
+    glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.0,-6.0));
+    //for (size_t i = 0; i < kSceneObjCount; ++i) {
+    obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    obj[1].modelmat = glm::rotate(model1, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     
   }
 
@@ -1047,8 +1067,11 @@ bool RecordDarkRenderPass_indexed (DarkrootGlob& glob,
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
   vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
+
   vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
   
+  vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 1);
+
   vkCmdEndRenderPass(command_buffer);
 
   // end 
@@ -1453,7 +1476,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int        countdown  = 360;
+  int        countdown  = 120;
 
   printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
   //
