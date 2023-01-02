@@ -792,7 +792,6 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
       objparams[iobj].offset   = iobj * sizeof(SceneObjParam);         // min_uniform_buffer_offset_alignment ??
       objparams[iobj].range    = sizeof(SceneObjParam) ;            //glob.vma_objparam_buffs[i].ci.size;
     }
-
     
     //buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
     VkDescriptorImageInfo image_info {};
@@ -809,8 +808,8 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[0].descriptorCount  = 1;
     descriptor_writes[0].pBufferInfo      = &buffer_info;
-    descriptor_writes[0].pImageInfo       = nullptr; // Optional
-    descriptor_writes[0].pTexelBufferView = nullptr; // Optional}
+    descriptor_writes[0].pImageInfo       = nullptr; 
+    descriptor_writes[0].pTexelBufferView = nullptr; 
 
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[1].pNext            = nullptr;    
@@ -820,8 +819,8 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[1].descriptorCount  = objparams.size(); // <
     descriptor_writes[1].pBufferInfo      = &objparams[0]; 
-    descriptor_writes[1].pImageInfo       = nullptr; // Optional
-    descriptor_writes[1].pTexelBufferView = nullptr; // Optional}
+    descriptor_writes[1].pImageInfo       = nullptr; 
+    descriptor_writes[1].pTexelBufferView = nullptr; 
 
     descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[2].pNext            = nullptr;    
@@ -831,8 +830,8 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
     descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
     descriptor_writes[2].descriptorCount  = 1;
     descriptor_writes[2].pBufferInfo      = nullptr;
-    descriptor_writes[2].pImageInfo       = &image_info; // Optional
-    descriptor_writes[2].pTexelBufferView = nullptr; // Optional}
+    descriptor_writes[2].pImageInfo       = &image_info; 
+    descriptor_writes[2].pTexelBufferView = nullptr; 
 
     vkUpdateDescriptorSets (glob.device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
 
@@ -892,21 +891,16 @@ bool SetupDarkUniforms (DarkrootGlob& glob) {
   
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
 
+
     rokz::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
     rokz::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
-
     if (!rokz::CreateBuffer (uniform_buffs[i], glob.allocator)) {
       printf (" --> [FAIL]  create MVPTransform \n"); 
       return false; 
     }
 
-    // printf ("\n  SizeOf_SceneObjParam ->[%zu]\n  kSceneObjCount -> [%zu]\n",
-    //         SizeOf_SceneObjParam,
-    //         kSceneObjCount);
     rokz::CreateInfo_uniform (objparams[i].ci, SizeOf_SceneObjParam, 128);
     rokz::AllocCreateInfo_mapped (objparams[i].alloc_ci);
-
-    //if (!rokz::CreateBuffer_aligned (param_buffs[i], 16, glob.allocator)) {
     if (!rokz::CreateBuffer (objparams[i], glob.allocator)) {
       printf (" --> [FAIL]  create SceneObjParam \n"); 
       return false; 
@@ -945,14 +939,17 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
   memcpy (rokz::MappedPointer (glob.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
  
   if (SceneObjParam* obj = reinterpret_cast<SceneObjParam*> (rokz::MappedPointer (glob.vma_objparam_buffs[current_frame]))) {
-    
+
     glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, 0.5, -6.0));
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, -0.5,-6.0));
-    //r (size_t i = 0; kSceneObjCount; ++i) {
-    obj[0].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    obj[1].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    obj[2].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    obj[3].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+    for (size_t i = 0; i < kSceneObjCount; ++i) {
+      obj[i].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    }
+
+    // obj[1].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    // obj[2].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    // obj[3].modelmat = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+    
   }
 
 
