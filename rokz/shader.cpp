@@ -8,6 +8,22 @@
 #include "pipeline.h"
 
 // ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateInfo& ci,
+                                             VkShaderStageFlagBits stage_flags,
+                                             const VkShaderModule& module)
+{
+  ci.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.stage  = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT;
+  ci.module = module;
+  ci.pSpecializationInfo = nullptr; 
+  ci.pName = "main";
+  return ci; 
+}
+
+// ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModule (ShaderModule& sm, const std::string fsrc, const VkDevice& dev) {

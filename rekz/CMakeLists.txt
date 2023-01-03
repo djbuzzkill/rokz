@@ -14,8 +14,8 @@ set (REKZ_SOURCE_FILES
   texture_tool.cpp
   darkrootgarden.cpp
   darksolids.cpp
-  test_rokz_hpp.cpp
-  test_rokz.cpp
+#  test_rokz_hpp.cpp
+# test_rokz.cpp
   rekz.cpp
 )
 

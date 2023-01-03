@@ -8,7 +8,10 @@
 
 namespace rokz {
 
-
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
+  VkPipelineShaderStageCreateInfo& CreateInfo (VkPipelineShaderStageCreateInfo& ci, VkShaderStageFlagBits stage_flags, const VkShaderModule& module); 
   
   bool               CreateShaderModule (ShaderModule& shm, const std::string fsrc, const VkDevice& dev);
   bool               CreateShaderModules (std::vector<ShaderModule>&                    shader_modules,

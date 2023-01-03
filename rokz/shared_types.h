@@ -4,6 +4,7 @@
 #define ROKZ_SHARED_TYPES_INCLUDE
 
 #include "common.h"
+#include <vulkan/vulkan_core.h>
 
 namespace rokz { 
   // ---------------------------------------------------
@@ -223,6 +224,7 @@ namespace rokz {
     VkPipelineInputAssemblyStateCreateInfo       input_assembly; 
     VkPipelineVertexInputStateCreateInfo         vertexinputstate;
     VkPipelineViewportStateCreateInfo            viewport_state;
+    VkPipelineTessellationStateCreateInfo        tesselation; 
     VkPipelineRasterizationStateCreateInfo       rasterizer;
     VkPipelineMultisampleStateCreateInfo         multisampling;
     VkPipelineDepthStencilStateCreateInfo        depthstencilstate;
@@ -230,13 +232,19 @@ namespace rokz {
     VkPipelineDynamicStateCreateInfo             dynamicstate;
   };
 
+  struct ViewportState {
+    std::vector<VkViewport> viewports;
+    std::vector<VkRect2D>   scissors;
+  };
 
   // --------------------------------------------------------
   struct PipelineState {
 
-    VkPipelineColorBlendAttachmentState color_blend_attachment;     
-
     PipelineStateCreateInfo ci;
+    VkPipelineColorBlendAttachmentState color_blend_attachment;     
+    ViewportState                       viewport;
+    std::vector<VkDynamicState>         dynamics; 
+
   }; 
 
   // --------------------------------------------------------
@@ -259,7 +267,6 @@ namespace rokz {
     PipelineLayout                   layout; 
     PipelineState                    state;
     std::vector<rokz::ShaderModule>  shader_modules; 
-    std::vector<VkDynamicState>      dynamic_states; 
   };
 
   // ----------------------------------------------------------

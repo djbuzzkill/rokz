@@ -70,40 +70,39 @@ VkPipelineInputAssemblyStateCreateInfo& rokz::CreateInfo (VkPipelineInputAssembl
 
 }
 
-// ---------------------------------------------------------------------
+//---------------------------------------------------------------------
 //
-// ---------------------------------------------------------------------
-VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateInfo& ci,
-                                             VkShaderStageFlagBits stage_flags,
-                                             const VkShaderModule& module)
-{
-  ci = {};   
-  ci.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  ci.pNext = nullptr;
-  ci.stage  = stage_flags; // VK_SHADER_STAGE_VERTEX_BIT;
-  ci.module = module;
-  ci.pSpecializationInfo = nullptr; 
-  ci.pName = "main";
-  return ci; 
-}
+//---------------------------------------------------------------------
 
-//---------------------------------------------------------------------
-//
-//---------------------------------------------------------------------
-VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor) { 
+VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci, const ViewportState& vps) {
   // VkPipelineViewportStateCreateInfo
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
   ci.pNext = nullptr;
-  ci.viewportCount = 1;
-  ci.pViewports = &vp; 
-
-  ci.scissorCount = 1;
-  ci.pScissors = &scissor;
+  ci.viewportCount = vps.viewports.size ();
+  ci.pViewports    = &vps.viewports[0]; 
+  ci.scissorCount  = vps.scissors.size();
+  ci.pScissors     = &vps.scissors[0];
 
   return ci; 
 }
 
+//---------------------------------------------------------------------
+//
+//---------------------------------------------------------------------
+VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci,
+                                                     const std::vector<VkViewport>& vps,
+                                                     const std::vector<VkRect2D>& scissors) {
+
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.viewportCount = vps.size();
+  ci.pViewports = &vps[0]; 
+
+  ci.scissorCount = scissors.size();
+  ci.pScissors = &scissors[0];
+  return ci;
+}
 //---------------------------------------------------------------------
 //
 //---------------------------------------------------------------------
@@ -152,6 +151,17 @@ VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci, co
   return ci;
 }
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineTessellationStateCreateInfo&  rokz::CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points) { 
+
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.flags = 0;
+  ci.patchControlPoints =  num_control_points;
+  return ci;
+}
 
 // ---------------------------------------------------------------------
 //
@@ -174,6 +184,7 @@ bool rokz::CreateGraphicsPipelineLayout (
   create_info.pushConstantRangeCount = 0;    
   create_info.pPushConstantRanges = nullptr; 
 
+
   create_info.flags = 0; // ?? VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT; 
   //
   // VkPushConstantRange pcr;
@@ -189,50 +200,6 @@ bool rokz::CreateGraphicsPipelineLayout (
 
   return true;
 }
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateGraphicsPipeline (
-    rokz::Pipeline&                                    pipeline,
-    const VkRenderPass&                                render_pass,
-    const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
-    const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-    const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-    const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-    const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-    const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-    const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-    const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-    const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
-    const VkDevice&                                    device)
-{
-  pipeline.ci.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipeline.ci.pNext               = nullptr;
-  pipeline.ci.flags               = 0x0; 
-  pipeline.ci.stageCount          = ci_shader_stages.size();
-  pipeline.ci.pStages             = &ci_shader_stages[0]; 
-  pipeline.ci.pVertexInputState   = ci_vertex_input_state; ;
-  pipeline.ci.pInputAssemblyState = ci_input_assembly;
-  pipeline.ci.pViewportState      = ci_viewport_state;
-  pipeline.ci.pRasterizationState = ci_rasterizer;
-  pipeline.ci.pMultisampleState   = ci_multisampling;
-  pipeline.ci.pDepthStencilState  = ci_depthstencil; 
-  pipeline.ci.pColorBlendState    = ci_colorblend; 
-  pipeline.ci.pDynamicState       = ci_dynamic_state; 
-  pipeline.ci.layout              = pipeline.layout.handle; 
-  pipeline.ci.renderPass          = render_pass;
-  pipeline.ci.subpass             = 0;
-  pipeline.ci.basePipelineHandle  = VK_NULL_HANDLE; 
-  pipeline.ci.basePipelineIndex   = -1;              
-
-  if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline.ci, nullptr, &pipeline.handle) != VK_SUCCESS) {
-    printf("failed to create graphics pipeline!");
-    return false;
-  }
-
-  return true; 
-  
-}
 
 // ---------------------------------------------------------------------
 //
@@ -244,6 +211,7 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
                                                 const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
                                                 const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
                                                 const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                                                const VkPipelineTessellationStateCreateInfo*       ci_tesselation, 
                                                 const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
                                                 const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
                                                 const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 

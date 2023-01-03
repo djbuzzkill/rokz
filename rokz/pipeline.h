@@ -8,12 +8,8 @@
 
 namespace rokz {
 
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
   inline VkViewport& Viewport (VkViewport& vp, float x, float y, float wd, float ht, float dp) {
     // VIEWPORT 
-    vp = {};
     vp.x = x;
     vp.y = y;
     vp.width = wd;
@@ -23,6 +19,14 @@ namespace rokz {
 
     return vp ;
   }
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
+  inline VkViewport& Viewport (VkViewport& vp, const VkOffset2D& offs, const VkExtent2D& ext, float dp) {
+    return Viewport (vp, offs.x, offs.y, ext.width, ext.height, dp); 
+  }
+
+
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -48,15 +52,20 @@ namespace rokz {
   VkPipelineMultisampleStateCreateInfo&   CreateInfo (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits msaa_samples = VK_SAMPLE_COUNT_1_BIT);
   VkPipelineDepthStencilStateCreateInfo&  CreateInfo (VkPipelineDepthStencilStateCreateInfo& ci);
   VkPipelineInputAssemblyStateCreateInfo& CreateInfo (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  VkPipelineShaderStageCreateInfo&        CreateInfo (VkPipelineShaderStageCreateInfo& ci, VkShaderStageFlagBits stage_flags, const VkShaderModule& module); 
-  VkPipelineViewportStateCreateInfo&      CreateInfo (VkPipelineViewportStateCreateInfo& ci, const VkViewport& vp, const VkRect2D& scissor); 
+
+  VkPipelineViewportStateCreateInfo&      CreateInfo (VkPipelineViewportStateCreateInfo& ci, const ViewportState& vps); 
+  VkPipelineViewportStateCreateInfo&      CreateInfo (VkPipelineViewportStateCreateInfo& ci,  const std::vector<VkViewport>& vps, const std::vector<VkRect2D>& scissors); 
+
+
   VkPipelineRasterizationStateCreateInfo& CreateInfo (VkPipelineRasterizationStateCreateInfo& ci);
 
-  VkPipelineLayoutCreateInfo&             CreateInfo (VkPipelineLayoutCreateInfo& ci, const std::vector<VkDescriptorSetLayout>& dslos, const std::vector<VkPushConstantRange>& pc = std::vector<VkPushConstantRange>(0)); 
+  VkPipelineTessellationStateCreateInfo&  CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points); 
 
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
+  
+  VkPipelineLayoutCreateInfo&             CreateInfo (VkPipelineLayoutCreateInfo& ci,
+                                                      const std::vector<VkDescriptorSetLayout>& dslos,
+                                                      const std::vector<VkPushConstantRange>& pc = std::vector<VkPushConstantRange>(0)); 
+
   VkGraphicsPipelineCreateInfo&           CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
                                                       const VkPipelineLayout&                            pipeline_layout,
                                                       const VkRenderPass&                                render_pass,
@@ -64,6 +73,7 @@ namespace rokz {
                                                       const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
                                                       const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
                                                       const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                                                      const VkPipelineTessellationStateCreateInfo*       ci_tesselation, 
                                                       const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
                                                       const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
                                                       const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
@@ -73,27 +83,7 @@ namespace rokz {
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  bool CreateGraphicsPipeline (
-    rokz::Pipeline&          pipeline,
-    const VkDevice           device); 
-
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
-  bool CreateGraphicsPipeline (
-    rokz::Pipeline&             pipeline,
-    //const PipelineLayout&       pipeline_layout,
-    const VkRenderPass&         render_pass,
-    const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
-    const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-    const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-    const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-    const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-    const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-    const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-    const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-    const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
-    const VkDevice&                                     device); 
+  bool CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice device); 
   
 }
   

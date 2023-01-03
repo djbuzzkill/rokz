@@ -1123,7 +1123,7 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
   setup_shader_modules (glob, rokz_path);
 
   rokz::ColorBlendState_default (glob.color_blend_attachment_state); 
-  rokz::DynamicState_default (glob.dynamic_states, glob.pipeline.state.ci.dynamicstate); 
+  rokz::DynamicState_default    (glob.dynamic_states); 
   const VkOffset2D offs0 {0, 0}; 
 
   //glob.create_info.swapchain.imageExtent.width;
@@ -1135,6 +1135,7 @@ int test_rokz_hpp (const std::vector<std::string>& args) {
 
   rokz::PipelineStateCreateInfo& sci = glob.pipeline.state.ci;
 
+  rokz::CreateInfo (sci.dynamicstate, glob.dynamic_states); 
   rokz::CreateInfo (sci.colorblendstate, glob.color_blend_attachment_state); 
   rokz::CreateInfo (sci.vertexinputstate, kSimpleVertexBindingDesc , kSimpleBindingAttributeDesc ); 
   rokz::CreateInfo (sci.viewport_state, glob.viewport, glob.scissor_rect);

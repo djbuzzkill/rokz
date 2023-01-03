@@ -1030,7 +1030,7 @@ int test_rokz (const std::vector<std::string>& args) {
   SetupShaderModules (glob, rokz_path);
 
   rokz::ColorBlendState_default (glob.pipeline.state.color_blend_attachment); 
-  rokz::DynamicState_default (glob.pipeline.dynamic_states, glob.pipeline.state.ci.dynamicstate); 
+  rokz::DynamicState_default (glob.pipeline.state.dynamics); 
   // 
   const VkOffset2D offs0 {0, 0}; 
   rokz::Viewport (glob.viewport, offs0.x, offs0.y,
@@ -1039,6 +1039,7 @@ int test_rokz (const std::vector<std::string>& args) {
 
   rokz::PipelineStateCreateInfo& psci = glob.pipeline.state.ci;
 
+  rokz::CreateInfo (psci.dynamicstate, glob.pipeline.state.dynamics);
   rokz::CreateInfo (psci.vertexinputstate, kSimpleVertexBindingDesc, kSimpleBindingAttributeDesc); 
   rokz::CreateInfo (psci.viewport_state, glob.viewport, rokz::Rect2D (glob.scissor_rect, offs0, frame_group.swapchain.ci.imageExtent));
   rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
@@ -1061,6 +1062,7 @@ int test_rokz (const std::vector<std::string>& args) {
                     &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
                     &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
                     &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                    nullptr, 
                     &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
                     &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
                     &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 

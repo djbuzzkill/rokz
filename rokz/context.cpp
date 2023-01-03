@@ -428,20 +428,42 @@ bool rokz::GetSwapChainImages (std::vector<Image> &swapchain_images,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info) {
+std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states) {
 
   // DYNAMIC STATE
   dynamic_states.clear ();
   dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
   dynamic_states.push_back (VK_DYNAMIC_STATE_SCISSOR);
-  
-  dynamic_state_create_info =  {};
-  dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-  dynamic_state_create_info.pNext = nullptr;
-  dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
-  dynamic_state_create_info.pDynamicStates = &dynamic_states[0];
+  return dynamic_states; 
+}
+ 
 
-  return true; 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+rokz::ViewportState& rokz::ViewportState_default (rokz::ViewportState& vps, const VkRect2D& rect, float fdepth) {
+
+  vps.viewports.resize (1);
+  vps.scissors.resize (1);
+
+  vps.scissors[0] = rect;
+  rokz::Viewport (vps.viewports[0], rect.offset, rect.extent, fdepth);  
+
+  return vps;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineDynamicStateCreateInfo& rokz::CreateInfo (VkPipelineDynamicStateCreateInfo& ci, const std::vector<VkDynamicState>& dynamics) {
+
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.dynamicStateCount = static_cast<uint32_t>(dynamics.size());
+  ci.pDynamicStates = &dynamics[0];
+
+  return ci;
+
 }
 
 // ---------------------------------------------------------------------

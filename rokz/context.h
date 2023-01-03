@@ -106,17 +106,27 @@ namespace rokz {
 
   bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
   
-  bool               DynamicState_default (std::vector<VkDynamicState>& dynamic_states, VkPipelineDynamicStateCreateInfo& dynamic_state_create_info); 
-  bool               ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state); 
   //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
   bool               CreateRenderPass (RenderPass&             render_pass,
                                        VkFormat                swapchain_format,
                                        VkSampleCountFlagBits   msaa_samples, 
                                        const VkDevice &device, const VkPhysicalDevice& physdev);
 
-  VkPipelineColorBlendStateCreateInfo& CreateInfo (VkPipelineColorBlendStateCreateInfo&       color_blending_create_info,
-                                                   const VkPipelineColorBlendAttachmentState& colorblend); 
+  
+  std::vector<VkDynamicState>& DynamicState_default    (std::vector<VkDynamicState>& dynamic_states);
 
+  bool                         ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state); 
+
+
+
+
+  ViewportState& ViewportState_default (ViewportState& vps, const VkRect2D& rect, float depth) ; 
+  //
+
+  VkPipelineColorBlendStateCreateInfo& CreateInfo (VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
+                                                   const VkPipelineColorBlendAttachmentState& colorblend);
+  
+  VkPipelineDynamicStateCreateInfo&    CreateInfo (VkPipelineDynamicStateCreateInfo& ci, const std::vector<VkDynamicState>& dynamics); 
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------

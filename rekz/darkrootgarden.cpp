@@ -9,6 +9,7 @@
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <vulkan/vulkan_core.h>
 
 //#define VMA_IMPLEMENTATION
 #include "rokz/descriptor.h"
@@ -248,6 +249,11 @@ DarkRenderable& Friendly ( DarkRenderable& dr) {
   return dr;
 }
 
+struct PipelineGroup { 
+
+  rokz::Pipeline        pipeline;
+  rokz::DescriptorGroup descrgroup;
+};
 
 // --------------------------------------------------------------------
 //
@@ -266,14 +272,22 @@ struct DarkrootGlob {
 
   VmaAllocator                     allocator;
 
+
+  rokz::ViewportState          viewport_state;
+  
   rokz::FrameGroup                       frame_group;
   rokz::SwapchainSupportInfo       swapchain_support_info;
 
-  //std::vector<VkShaderModule>  shader_modules; 
   rokz::CommandPool            command_pool;
 
   rokz::DescriptorPool         descr_pool;
-  rokz::DescriptorGroup          descrgroup; 
+
+
+  // rokz::DescriptorGroup        descrgroup; 
+  // rokz::Pipeline               pipeline; 
+  PipelineGroup                obj_pipeline;
+  PipelineGroup                terrain_pipeline;
+
 
   rokz::Image                  depth_image;
   rokz::ImageView              depth_imageview; 
@@ -301,13 +315,11 @@ struct DarkrootGlob {
   //  std::vector<void*>          uniform_param_pointers; 
 
   
-
-  rokz::Pipeline              pipeline; 
   rokz::Window                window;
   VkSurfaceKHR                surface; // 
 
-  VkViewport                  viewport;
-  VkRect2D                    scissor_rect; 
+  //VkViewport                  viewport;
+  //VkRect2D                    scissor_rect; 
 
   float                       queue_priority;
   double                      sim_time; 
@@ -347,13 +359,11 @@ DarkrootGlob::DarkrootGlob() :
   sampler(),
   vma_uniform_buffs(),
   descr_pool(),
-  pipeline(),
   window(),
   physical_device(),
   queue_priority(),
   swapchain_support_info(),
   surface(nullptr),     
-  viewport(),
   sim_time(0.0)
 {
   queues.graphics = {};
@@ -465,25 +475,25 @@ void SetupDarkSampler (DarkrootGlob& glob) {
 }
 
 
+
+
  // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupDarkShaderModules (DarkrootGlob& glob, const std::filesystem::path& fspath) {
+bool SetupDarkShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
 
   
-  // std::vector<ShaderModule>&                    shader_modules,
-  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = glob.pipeline.state.ci.shader_stages; 
-  // const VkDevice&                               device)
+  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
+  std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
 
-  glob.pipeline.shader_modules.resize (2);
-  shader_stage_create_infos.resize    (2);
-  std::vector<rokz::ShaderModule>& shader_modules = glob.pipeline.shader_modules;
+  shader_modules.resize  (2);
+  shader_stage_create_infos.resize(2);
   // VERT SHADER 
   std::filesystem::path vert_file_path  = fspath/"data/shader/darkroot_vertex.spv" ;
 
-  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), glob.device.handle))
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
     return false; 
   
   rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
@@ -491,7 +501,7 @@ bool SetupDarkShaderModules (DarkrootGlob& glob, const std::filesystem::path& fs
   // FRAG SHADER
   std::filesystem::path frag_file_path = fspath/"data/shader/darkroot_fragment.spv" ;
 
-  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), glob.device.handle))
+  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device.handle))
     return false; 
   
   rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
@@ -528,6 +538,9 @@ void SetupDarkMultisampleColorResource (DarkrootGlob& glob) {
 
 }
 
+
+
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -552,22 +565,22 @@ void CleanupDarkroot (DarkrootGlob& glob) {
   rokz::Destroy (glob.sampler, glob.device.handle); 
 
   rokz::Destroy (glob.descr_pool, glob.device.handle); 
-  rokz::Destroy (glob.descrgroup, glob.device.handle); 
+  rokz::Destroy (glob.obj_pipeline.descrgroup, glob.device.handle); 
   rokz::Destroy (glob.texture_imageview, glob.device.handle);
 
   rokz::Destroy (glob.texture_image, glob.allocator);
   rokz::Destroy (glob.vma_vb_device, glob.allocator);
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
-  Cleanup (glob.pipeline.handle,
+  Cleanup (glob.obj_pipeline.pipeline.handle,
            glob.frame_group.swapchain_framebuffers, glob.frame_group.swapchain_imageviews,
 
            glob.frame_group.swapchain,
            glob.surface,
            glob.command_pool.handle,
            glob.frame_group.syncs, 
-           glob.pipeline.shader_modules,
-           glob.pipeline.layout.handle, 
+           glob.obj_pipeline.pipeline.shader_modules,
+           glob.obj_pipeline.pipeline.layout.handle, 
            glob.render_pass,
 
            glob.multisamp_color_image, glob.multisamp_color_imageview,
@@ -710,44 +723,59 @@ void SetupDarkTextureImageView (DarkrootGlob& glob) {
   }
 }
 
-  // --------------------------------------------------------------------
-// 
-// --------------------------------------------------------------------
-bool SetupDarkDescriptorSetLayout (DarkrootGlob& glob)  {
 
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool SetupTerrainDescriptorLayout  (rokz::DescriptorGroup& descrgroup,
+                                    const rokz::Device&    device) {
+  printf ("%s", __FUNCTION__); 
+
+  descrgroup.dslayout.bindings.resize (69);
+
+  
+  
+  return false; 
+}
+
+// --------------------------------------------------------------------
+// SetupDarkDescriptorSetLayout (
+// --------------------------------------------------------------------
+bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device)  {
+
+  
   printf ("%s", __FUNCTION__); 
 
   //  UniformBinding
   //  SamplerBinding
-  
-  glob.descrgroup.dslayout.bindings.resize (3); 
+  descrgroup.dslayout.bindings.resize (3); 
   //rokz::Init (glob.desc_set_layout_bindings[0],
 
   // MVPTransform
-  rokz::DescriptorSetLayoutBinding (glob.descrgroup.dslayout.bindings[0],
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
                                     0,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                     1,
                                     VK_SHADER_STAGE_VERTEX_BIT);
 
   // SceneObjParams
-  rokz::DescriptorSetLayoutBinding (glob.descrgroup.dslayout.bindings[1],
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
                                     1,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                     128, 
                                     VK_SHADER_STAGE_VERTEX_BIT);
 
   // sammpler+image
-  rokz::DescriptorSetLayoutBinding (glob.descrgroup.dslayout.bindings[2],
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
                                     2,
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                     1, 
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
-  if (!rokz::CreateDescriptorSetLayout (glob.descrgroup.dslayout.handle,
-                                        glob.descrgroup.dslayout.ci,
-                                        glob.descrgroup.dslayout.bindings,
-                                        glob.device.handle))
+  if (!rokz::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
+                                        descrgroup.dslayout.ci,
+                                        descrgroup.dslayout.bindings,
+                                        device.handle))
     {
 
       printf (" --> [FAILED] \n"); 
@@ -760,25 +788,45 @@ bool SetupDarkDescriptorSetLayout (DarkrootGlob& glob)  {
 
 
 
+// ---------------------------------------------------------------------
 //
+// ---------------------------------------------------------------------
+bool SetupTerrainkDescriptorSets (PipelineGroup&              pipelinegroup,
+                                  const rokz::DescriptorPool& descpool,
+                                  const rokz::Device&         device) {
+
+  //
+
+  return false;
+}
+  
 
 // ---------------------------------------------------------------------
 //Drob
 // ---------------------------------------------------------------------
-bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
+bool SetupObjectDescriptorSets (PipelineGroup& pipelinegroup,
+
+                                const std::vector<rokz::Buffer>& vma_uniform_buffs,
+                                const std::vector<rokz::Buffer>& vma_objparam_buffs,
+
+                                const rokz::ImageView& texture_imageview, 
+                                const rokz::Sampler&   sampler, 
+
+                                const rokz::DescriptorPool& descpool,
+                                const rokz::Device&         device) {
 
   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
 
-  rokz::DescriptorGroup& dg = glob.descrgroup;
+  rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
  
   // use same layout for both allocations
   std::vector<VkDescriptorSetLayout> descrlos (kMaxFramesInFlight, dg.dslayout.handle);
   // could have also said: 
   //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
   // but that wouldnt work
-  rokz::AllocateInfo (dg.alloc_info , descrlos, glob.descr_pool);
+  rokz::AllocateInfo (dg.alloc_info , descrlos, descpool);
   
-  if (!rokz::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, glob.device.handle)) {
+  if (!rokz::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, device.handle)) {
     printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
     return false;
   }
@@ -787,13 +835,13 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
   for (uint32_t i = 0; i < kMaxFramesInFlight; i++) {
     // wtf does this do
     VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer     = glob.vma_uniform_buffs[i].handle;
+    buffer_info.buffer     = vma_uniform_buffs[i].handle;
     buffer_info.offset     = 0;
-    buffer_info.range      = glob.vma_uniform_buffs[i].ci.size ;
+    buffer_info.range      = vma_uniform_buffs[i].ci.size ;
     
     std::vector<VkDescriptorBufferInfo>  objparams (kSceneObjCount, VkDescriptorBufferInfo {});
     for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
-      objparams[iobj].buffer   = glob.vma_objparam_buffs[i].handle; //
+      objparams[iobj].buffer   = vma_objparam_buffs[i].handle; //
       objparams[iobj].offset   = iobj * sizeof(SceneObjParam);         // min_uniform_buffer_offset_alignment ??
       objparams[iobj].range    = sizeof(SceneObjParam) ;            //glob.vma_objparam_buffs[i].ci.size;
     }
@@ -801,8 +849,8 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
     //buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
     VkDescriptorImageInfo image_info {};
     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
-    image_info.imageView   = glob.texture_imageview.handle;
-    image_info.sampler     = glob.sampler.handle;
+    image_info.imageView   = texture_imageview.handle;
+    image_info.sampler     = sampler.handle;
   //
     std::array<VkWriteDescriptorSet, 3>  descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -838,7 +886,7 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
     descriptor_writes[2].pImageInfo       = &image_info; 
     descriptor_writes[2].pTexelBufferView = nullptr; 
 
-    vkUpdateDescriptorSets (glob.device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
 
   }
 
@@ -848,7 +896,7 @@ bool SetupDarkDescriptorSets (DarkrootGlob& glob) {
 // ---------------------------------------------------------------------
 //Drob
 // ---------------------------------------------------------------------
-bool SetupDarkDescriptorPool (DarkrootGlob& glob) {
+bool SetupGlobalDescriptorPool (DarkrootGlob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
   //SetupDescriptorPool (glob.descr_pool, glob.device);
@@ -875,6 +923,152 @@ bool SetupDarkDescriptorPool (DarkrootGlob& glob) {
   }
 
  return true; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+void SetupViewportState (rokz::ViewportState & vps, VkExtent2D& swapchain_extent) {
+
+  const VkOffset2D offs0 {0, 0};
+
+  vps.viewports.resize (1);
+  vps.scissors.resize (1);
+  
+  vps.scissors[0] = { offs0, swapchain_extent };
+  rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
+  //
+
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool SetupObjectPipeline (PipelineGroup& pipelinegroup,
+                          const rokz::ViewportState& vps,
+                          const rokz::RenderPass& renderpass,
+                          const std::filesystem::path& fspath,
+                          const rokz::Swapchain& swapchain,
+                          VkSampleCountFlagBits msaa_samples,
+                          const rokz::Device& device) {
+
+  //rokz::FrameGroup& frame_group = glob.frame_group;
+  SetupDarkShaderModules (pipelinegroup.pipeline, fspath, device);
+  
+  rokz::ColorBlendState_default (pipelinegroup.pipeline.state.color_blend_attachment); 
+  rokz::DynamicState_default    (pipelinegroup.pipeline.state.dynamics); 
+
+  // glob.pipeline;
+  // glob.descrgroup;
+  
+
+  rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
+
+  rokz::CreateInfo (psci.tesselation, 69); 
+  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
+  rokz::CreateInfo (psci.viewport_state, vps);
+  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (psci.rasterizer); 
+  rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.color_blend_attachment); 
+  rokz::CreateInfo (psci.multisampling, msaa_samples); 
+  rokz::CreateInfo (psci.depthstencilstate); 
+
+
+
+  
+  SetupObjectDescriptorLayout (  pipelinegroup.descrgroup, device); 
+  //
+  rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
+                                      pipelinegroup.pipeline.layout.ci,
+                                      pipelinegroup.descrgroup.dslayout.handle,
+                                      device.handle);
+
+  rokz::CreateInfo (pipelinegroup.pipeline.ci,
+                    pipelinegroup.pipeline.layout.handle,
+                    renderpass.handle,                    
+                    psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+                    &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                    &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                    &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                    nullptr,                 // tesselation 
+                    &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                    &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                    &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                    &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                    &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+
+  if (!rokz::CreateGraphicsPipeline (pipelinegroup.pipeline, device.handle)) {     //const VkDevice                           b          device)
+    printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
+    return false;
+  }
+
+  return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
+                           const rokz::ViewportState& vps,
+                           const rokz::RenderPass& renderpass,
+                           const std::filesystem::path& fspath,
+                           const rokz::Swapchain& swapchain,
+                           VkSampleCountFlagBits msaa_samples,
+                           const rokz::Device& device) {
+
+  rokz::Pipeline& pipeline = pipelinegroup.pipeline;
+  
+  rokz::ColorBlendState_default (pipeline.state.color_blend_attachment); 
+  rokz::DynamicState_default (pipeline.state.dynamics); 
+  // 
+  // const VkOffset2D offs0 {0, 0};
+  // glob.scissor_rect = {offs0, frame_group.swapchain.ci.imageExtent};
+  // rokz::Viewport (glob.viewport, glob.scissor_rect.offset, glob.scissor_rect.extent, 1.0f);  
+
+  rokz::PipelineStateCreateInfo& psci = pipeline.state.ci;
+
+  rokz::CreateInfo (psci.tesselation, 69); 
+  rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
+  rokz::CreateInfo (psci.viewport_state, vps.viewports, vps.scissors);
+  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (psci.rasterizer); 
+  rokz::CreateInfo (psci.colorblendstate, pipeline.state.color_blend_attachment); 
+  rokz::CreateInfo (psci.multisampling, msaa_samples); 
+  rokz::CreateInfo (psci.depthstencilstate); 
+
+  SetupTerrainDescriptorLayout (pipelinegroup); 
+  //
+  rokz::CreateGraphicsPipelineLayout (pipeline.layout.handle,
+                                      pipeline.layout.ci,
+                                      pipelinegroup.descrgroup.dslayout.handle,
+                                      device.handle);
+
+  rokz::CreateInfo (pipeline.ci,
+                    pipeline.layout.handle,
+                    renderpass.handle,                    
+                    psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+                    &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                    &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                    &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                    nullptr,                 // tesselation 
+                    &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                    &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                    &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                    &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                    &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+
+  if (!rokz::CreateGraphicsPipeline (pipeline, device.handle)) {     //const VkDevice                           b          device)
+    printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
+    return false;
+  }
+
+
+  
+  return false; 
 }
 
 // ---------------------------------------------------------------------
@@ -919,17 +1113,14 @@ bool SetupDarkUniforms (DarkrootGlob& glob) {
 
   
 // --------------------------------------------------------------------
-//
+// 
 // --------------------------------------------------------------------
 glm::vec3& unit_angle_xz (glm::vec3& v, float theta) {
+  v.x = cos (theta) ;
   v.y = 0.0f;
-  v.x =  cos (theta) ;
   v.z = -sinf (theta) ;
   return v; 
 }
-
-
-
 
 // --------------------------------------------------------------------
 //
@@ -939,9 +1130,7 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
   glob.sim_time += dt;
   //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
 
-    
   float sim_timef = glob.sim_time;
-
 
   float asp = (float)glob.frame_group.swapchain.ci.imageExtent.width / (float)glob.frame_group.swapchain.ci.imageExtent.height;
     
@@ -961,11 +1150,11 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
   
 
     glm::vec3 va, vb;
-    unit_angle_xz (va, sim_timef); 
-    unit_angle_xz (vb, sim_timef + kPi); 
+    unit_angle_xz (va, 5.0 * sim_timef ); 
+    unit_angle_xz (vb, 5.0 * sim_timef + kPi); 
 
-    glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.0, -6.0));
-    glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.0,-6.0));
+    glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
+    glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     obj[1].modelmat = glm::rotate(model1, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1035,9 +1224,6 @@ bool RecordDarkRenderPass_indexed (DarkrootGlob& glob,
   pass_info.pClearValues      = clear_values; // ?does this match attachment order
 
 
-  vkCmdBindPipeline    (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
-  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
   VkViewport viewport{};
   viewport.x = 0.0f;
   viewport.y = 0.0f;
@@ -1045,11 +1231,18 @@ bool RecordDarkRenderPass_indexed (DarkrootGlob& glob,
   viewport.height = static_cast<float>(ext2d.height);
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
-  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
   VkRect2D scissor{};
   scissor.offset = {0, 0};
   scissor.extent = ext2d;
+
+  
+  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
+  
+  vkCmdBindPipeline    (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
+
+  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
   vkCmdBindDescriptorSets (command_buffer,
@@ -1064,12 +1257,13 @@ bool RecordDarkRenderPass_indexed (DarkrootGlob& glob,
   
   VkBuffer vertex_buffers[] = {vertex_buffer};
   VkDeviceSize offsets[] = {0};
-  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
   vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
+  //for (
   vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
-  
+
   vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 1);
 
   vkCmdEndRenderPass(command_buffer);
@@ -1278,8 +1472,13 @@ int darkroot_basin (const std::vector<std::string>& args) {
   allocatorCreateInfo.flags = 0;
 
   
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
   vmaCreateAllocator(&allocatorCreateInfo, &glob.allocator);
-  // ------------------------------------------ VMA 
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
   
   rokz::QuerySwapchainSupport (glob.swapchain_support_info,
                                glob.surface,
@@ -1298,69 +1497,34 @@ int darkroot_basin (const std::vector<std::string>& args) {
                             glob.physical_device);
 
   rokz::CreateSwapchain (frame_group.swapchain, glob.device); 
-  //bool CreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const Device& device);
-  // rokz::CreateSwapchain (glob.swapchain, glob.create_info.swapchain,
-  //                        glob.surface, glob.physical_device.handle,
-  //                        glob.device.handle,
-  //                        glob.window.glfw_window);
-
-  // printf (" B4  GLOB RESET\n"); 
-  // globmem.reset ();
-  // printf (" AFTER GLOB RESET\n"); 
   
   rokz::GetSwapChainImages (frame_group.swapchain_images, frame_group.swapchain, glob.device.handle); 
   rokz::CreateImageViews (frame_group.swapchain_imageviews, frame_group.swapchain_images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
+
+
   rokz::CreateRenderPass (glob.render_pass,
                           frame_group.swapchain.ci.imageFormat,
                           glob.msaa_samples,
                           glob.device.handle,
                           glob.physical_device.handle);
+
+
   
   // SetupShaderModules also sets up Pipeline Shader State CreateInfo's
-  SetupDarkShaderModules (glob, dark_path);
+  //  SetupDarkShaderModules (glob.pipeline, dark_path, glob.device);
+  // bool SetupDarkShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+  SetupViewportState (glob.viewport_state, glob.frame_group.swapchain.ci.imageExtent); 
 
-  rokz::ColorBlendState_default (glob.pipeline.state.color_blend_attachment); 
-  rokz::DynamicState_default (glob.pipeline.dynamic_states, glob.pipeline.state.ci.dynamicstate); 
-  // 
-  const VkOffset2D offs0 {0, 0}; 
-  rokz::Viewport (glob.viewport, offs0.x, offs0.y,
-                  frame_group.swapchain.ci.imageExtent.width, frame_group.swapchain.ci.imageExtent.height,
-                  1.0f);
+  SetupObjectPipeline (glob.obj_pipeline,
+                       glob.viewport_state,
+                       glob.render_pass,
+                       dark_path,
+                       glob.frame_group.swapchain,
+                       glob.msaa_samples,
+                       glob.device); 
 
-  rokz::PipelineStateCreateInfo& psci = glob.pipeline.state.ci;
-
-  rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
-  rokz::CreateInfo (psci.viewport_state, glob.viewport, rokz::Rect2D (glob.scissor_rect, offs0, frame_group.swapchain.ci.imageExtent));
-  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  rokz::CreateInfo (psci.rasterizer); 
-  rokz::CreateInfo (psci.colorblendstate, glob.pipeline.state.color_blend_attachment); 
-  rokz::CreateInfo (psci.multisampling, glob.msaa_samples); 
-  rokz::CreateInfo (psci.depthstencilstate); 
-
-  SetupDarkDescriptorSetLayout (glob); 
-  //
-  rokz::CreateGraphicsPipelineLayout (glob.pipeline.layout.handle,
-                                      glob.pipeline.layout.ci,
-                                      glob.descrgroup.dslayout.handle,
-                                      glob.device.handle);
-
-  rokz::CreateInfo (glob.pipeline.ci,
-                    glob.pipeline.layout.handle,
-                    glob.render_pass.handle,                    
-                    psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
-                    &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-                    &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-                    &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-                    &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-                    &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-                    &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-                    &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-                    &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
-
-  if (!rokz::CreateGraphicsPipeline (glob.pipeline, glob.device.handle)) {     //const VkDevice                           b          device)
-    printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
-    return false;
-  }
+  
+  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.frame_group.swapchain);
 
   SetupDarkMultisampleColorResource (glob);
 
@@ -1434,11 +1598,18 @@ int darkroot_basin (const std::vector<std::string>& args) {
   SetupDarkTextureImageView (glob); 
   
 
-  if (!SetupDarkDescriptorPool (glob))
+  if (!SetupGlobalDescriptorPool (glob))
     return false;
 
-  if (!SetupDarkDescriptorSets (glob)) 
+  if (!SetupObjectDescriptorSets (glob.obj_pipeline,
+                                  glob.vma_uniform_buffs,
+                                  glob.vma_objparam_buffs,
+                                  glob.texture_imageview,
+                                  glob.sampler,
+                                  glob.descr_pool, 
+                                  glob.device)) {
     return false;
+  }
 
   
   // items per frames 
@@ -1459,12 +1630,15 @@ int darkroot_basin (const std::vector<std::string>& args) {
                               glob.device.handle);
 
     rokz::CreateRenderSync (glob.frame_group.syncs[i], frame_group.render_sync_create_info, glob.device.handle);
-    //rokz::CreateRenderSync (glob.frame_group.frames[i].sync, frame_group.syncs[i].ci, glob.device.handle);
   }
 
   //
   SetupDarkroot ();
-  //
+
+
+  // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
+  // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
+  // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   const double time_per_frame_sec = 1.0 / 60.0;
   glob.dt = time_per_frame_sec; // just do this for now
   
@@ -1497,8 +1671,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
-    if (RenderDarkFrame (glob, image_index, fb_resize, glob.render_pass, glob.pipeline,
-                     glob.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
+    if (RenderDarkFrame (glob, image_index, fb_resize, glob.render_pass, glob.obj_pipeline.pipeline,
+                     glob.obj_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
 
     }
     else {
