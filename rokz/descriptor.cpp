@@ -11,7 +11,7 @@ VkDescriptorSetLayoutBinding& rokz::DescriptorSetLayoutBinding (VkDescriptorSetL
                                                                uint32_t                       binding,
                                                                VkDescriptorType               desc_type,
                                                                uint32_t                       descrcount, 
-                                                               VkShaderStageFlagBits          stage_flags,
+                                                               VkShaderStageFlags             stage_flags,
                                                                const VkSampler*               p_immu) {
   out = {};
   out.binding            = binding;

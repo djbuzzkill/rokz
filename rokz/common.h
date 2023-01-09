@@ -14,7 +14,14 @@
 #define GLM_FORCE_RADIANS            // value always mean radians (not degrees)
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE  // Vulkan depth is [0,1] 
 #include <glm/glm.hpp>
+#include <glm/fwd.hpp>
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/ext.hpp>
+#include <glm/ext/scalar_constants.hpp>
+
+
+
 
 #include <vulkan/vulkan.hpp>  // not yet
 // vulkan memo allocator

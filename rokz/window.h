@@ -7,6 +7,11 @@
 
 namespace rokz {
 
+  typedef void (*WindowEvent_OnResize)        (GLFWwindow* window, int width, int height); 
+  typedef void (*WindowEvent_OnKeyPress)      (GLFWwindow* window, int key, int scancode, int action, int mods); 
+  typedef void (*WindowEvent_OnMouseButtonCB) (GLFWwindow* window, int button, int action, int mods);
+  typedef void (*WindowEvent_OnMouseMove)     (GLFWwindow* window, double xpos, double ypos); 
+  typedef void (*WindowEvent_OnMouseEnter)    (GLFWwindow* window, int entered); 
 
 
   GLFWwindow* CreateWindow_glfw (GLFWwindow*& w); 

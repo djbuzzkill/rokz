@@ -173,26 +173,27 @@ bool rokz::CreateGraphicsPipelineLayout (
     const VkDevice&              device)
 {
   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
-  create_info = {};
-  create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  create_info.pNext = nullptr;
-
-  create_info.setLayoutCount         = 1;            
-  create_info.pSetLayouts            = &desc_set_layout;         
+  create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  create_info.pNext          = nullptr;
+  create_info.flags          = 0; // ?? VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT; 
+  create_info.setLayoutCount = 1;            
+  create_info.pSetLayouts    = &desc_set_layout;         
   //printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 
 
   create_info.pushConstantRangeCount = 0;    
   create_info.pPushConstantRanges = nullptr; 
 
+  bool enable_push_constants = false;
+  VkPushConstantRange pcr;
+  if (enable_push_constants) {
+    pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pcr.offset     = 0;
+    pcr.size       = sizeof(glm::mat4) * 2; 
+    create_info.pushConstantRangeCount = 1;    
+    create_info.pPushConstantRanges = &pcr; 
+  }
 
-  create_info.flags = 0; // ?? VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT; 
   //
-  // VkPushConstantRange pcr;
-  // pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  // pcr.offset     = 0;
-  // pcr.size       = sizeof(glm::mat4) * 2; 
-  // create_info.pushConstantRangeCount = 1;    
-  // create_info.pPushConstantRanges = &pcr; 
   if (vkCreatePipelineLayout (device, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
     printf("FAILED _create pipeline layout_\n");
     return false;

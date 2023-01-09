@@ -34,12 +34,11 @@ layout(location = 1) out vec3 o_norm;
 layout(location = 2) out vec2 o_txcd; 
 
 void main() {
-//  gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);
-//  o_norm = (mat.model * vec4(in_nrm, 1.0)).xyz; 
+  //  gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);
+  //  o_norm = (mat.model * vec4(in_nrm, 1.0)).xyz; 
 
   gl_Position = mat.proj * mat.view * params[gl_InstanceIndex].model * vec4(in_pos, 1.0);
   o_norm = (params[gl_InstanceIndex].model * vec4(in_nrm, 1.0)).xyz; 
   o_frag = in_co0;
   o_txcd = in_txc;
-
 }

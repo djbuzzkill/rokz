@@ -2,6 +2,7 @@
 #include "rekz.h"
 #include "darkrootgarden.h"
 // 
+#include <GLFW/glfw3.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 
@@ -152,75 +153,48 @@ const std::vector<VkVertexInputAttributeDescription> kDarkvertBindingAttributeDe
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-struct DarkRenderable : public Renderable {
+auto DarkRenderable::SetupRS (VkCommandBuffer commandbuffer) -> int {
+  return 0; 
+}
 
-  DarkRenderable () : num_verts (0), num_inds (0), vb_dev() , ib_dev () {
-  }
+// --------------------------------------------------------------------
+auto DarkRenderable::Draw (VkCommandBuffer commandbuffer) -> void  {
+  // rokz::Pipeline pipeline;
+  // rokz::DescriptorGroup desc_group;
+  VkBuffer vertex_buffers[] = { vb_dev.handle};
+  VkDeviceSize offsets[] = {0};
 
-  DarkRenderable (uint32_t v, uint32_t i) : num_verts (v), num_inds (i), vb_dev() , ib_dev () {
-  }
+  vkCmdBindVertexBuffers(commandbuffer, 0, 1, vertex_buffers, offsets);
 
-  // --------------------------------------------------------------------
-  virtual auto SetupRS (VkCommandBuffer commandbuffer) -> int {
-    return 0; 
-  }
+  vkCmdBindIndexBuffer(commandbuffer, ib_dev.handle, 0, VK_INDEX_TYPE_UINT16);
 
-  // --------------------------------------------------------------------
-  virtual auto Draw (VkCommandBuffer commandbuffer) -> void  {
-    // rokz::Pipeline pipeline;
-    // rokz::DescriptorGroup desc_group;
-    VkBuffer vertex_buffers[] = { vb_dev.handle};
-    VkDeviceSize offsets[] = {0};
-
-    vkCmdBindVertexBuffers(commandbuffer, 0, 1, vertex_buffers, offsets);
-
-    vkCmdBindIndexBuffer(commandbuffer, ib_dev.handle, 0, VK_INDEX_TYPE_UINT16);
-
-    vkCmdDrawIndexed (commandbuffer, num_inds, 1, 0, 0, 0);
-    //return 0; 
-  }
+  vkCmdDrawIndexed (commandbuffer, num_inds, 1, 0, 0, 0);
+  //return 0; 
+}
 
   
-  // --------------------------------------------------------------------
-  virtual auto AllocRes (VmaAllocator& allocator) -> int {
+// --------------------------------------------------------------------
+auto DarkRenderable::AllocRes (VmaAllocator& allocator) -> int {
     
-    rokz::CreateInfo_VB_device (vb_dev.ci, DarkrootMesh::VertexSize,  num_verts);
-    rokz::AllocCreateInfo_device (vb_dev.alloc_ci); 
-    rokz::CreateBuffer (vb_dev, allocator); 
+  rokz::CreateInfo_VB_device (vb_dev.ci, DarkrootMesh::VertexSize,  num_verts);
+  rokz::AllocCreateInfo_device (vb_dev.alloc_ci); 
+  rokz::CreateBuffer (vb_dev, allocator); 
     
-    rokz::CreateInfo_IB_16_device (ib_dev.ci, num_inds); 
-    rokz::AllocCreateInfo_device (ib_dev.alloc_ci);
-    rokz::CreateBuffer (ib_dev, allocator);
+  rokz::CreateInfo_IB_16_device (ib_dev.ci, num_inds); 
+  rokz::AllocCreateInfo_device (ib_dev.alloc_ci);
+  rokz::CreateBuffer (ib_dev, allocator);
 
-    return 0; 
-  }
+  return 0; 
+}
 
-  //
-  virtual auto FreeRes (VmaAllocator& alloc) -> int {
+//
+auto DarkRenderable::FreeRes (VmaAllocator& alloc) -> int {
 
-    rokz::Destroy (vb_dev, alloc);
-    rokz::Destroy (ib_dev, alloc);
+  rokz::Destroy (vb_dev, alloc);
+  rokz::Destroy (ib_dev, alloc);
 
-    return 0; 
-  }
-
-  uint32_t num_verts;
-  uint32_t num_inds;
-  
-  rokz::Buffer vb_dev;
-  rokz::Buffer ib_dev;
-
-  glm::vec3 pos;
-  glm::quat qrot;
-  
-  friend DarkRenderable& Friendly ( DarkRenderable& dr); 
-
-protected:
-};
-
-
-
-
+  return 0; 
+}
 
 
 // --------------------------------------------------------------------
@@ -249,102 +223,16 @@ DarkRenderable& Friendly ( DarkRenderable& dr) {
   return dr;
 }
 
-struct PipelineGroup { 
-
-  rokz::Pipeline        pipeline;
-  rokz::DescriptorGroup descrgroup;
-};
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-struct DarkrootGlob {
-
-  //#ifdef GLOB_COMMENT_OUT   
-  DarkrootGlob();
-  
-
-  rokz::Instance                   instance;
-  rokz::PhysicalDevice             physical_device;
-  rokz::Device                     device;
-  
-  struct { VkQueue graphics; VkQueue present; } queues;
-
-  VmaAllocator                     allocator;
-
-
-  rokz::ViewportState          viewport_state;
-  
-  rokz::FrameGroup                       frame_group;
-  rokz::SwapchainSupportInfo       swapchain_support_info;
-
-  rokz::CommandPool            command_pool;
-
-  rokz::DescriptorPool         descr_pool;
-
-
-  // rokz::DescriptorGroup        descrgroup; 
-  // rokz::Pipeline               pipeline; 
-  PipelineGroup                obj_pipeline;
-  PipelineGroup                terrain_pipeline;
-
-
-  rokz::Image                  depth_image;
-  rokz::ImageView              depth_imageview; 
-
-  rokz::Image                  multisamp_color_image;
-  rokz::ImageView              multisamp_color_imageview; 
-  
-  VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
-
-  rokz::Buffer                 vma_ib_device;
-  rokz::Buffer                 vma_vb_device;
-
-
-  rokz::RenderPass             render_pass; 
-
-  // image/texture
-  rokz::Image                 texture_image; 
-  rokz::ImageView             texture_imageview; 
-  rokz::Sampler               sampler;
-
-  std::vector<rokz::Buffer>   vma_uniform_buffs;
-  //  std::vector<void*>          uniform_mapped_pointers; 
-
-  std::vector<rokz::Buffer>   vma_objparam_buffs;
-  //  std::vector<void*>          uniform_param_pointers; 
-
-  
-  rokz::Window                window;
-  VkSurfaceKHR                surface; // 
-
-  //VkViewport                  viewport;
-  //VkRect2D                    scissor_rect; 
-
-  float                       queue_priority;
-  double                      sim_time; 
-  float                       dt;
-  
-
-  DarkrootMesh                darkmesh;
-  DarkRenderable              darkobj;
-  HalfEdge::BRep              darkboundary;
-
-  std::vector<Renderable*>    renderables;
-
-};
-
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 
-DarkrootGlob::DarkrootGlob() :
+Glob::Glob() :
   instance(),
   device (),
   dt (),
   allocator(),
-
   depth_image(),
   depth_imageview(),
   multisamp_color_image(),
@@ -370,10 +258,92 @@ DarkrootGlob::DarkrootGlob() :
   queues.present = {}; 
 }
 
+//
+// The callback function receives the new classification of the cursor.
+
+//
+void rokz_window_event_cursor_enter (GLFWwindow* window, int entered) {
+    if (entered) {
+        // The cursor entered the content area of the window
+    }
+    else {
+        // The cursor left the content area of the window
+    }
+}
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void SetupDarkGeometry (DarkrootGlob& glob) {
+void rokz_window_event_on_resize (GLFWwindow* window, int width, int height) {
+
+  reinterpret_cast<Glob*> (glfwGetWindowUserPointer(window))->fb_resize = true;
+
+}
+
+// --------------------------------------------------------------------
+// KEY PRESS
+// --------------------------------------------------------------------
+void rokz_window_event_on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+  if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+    printf ("%s [E] key press\n", __FUNCTION__); 
+  }      
+  else if (action == GLFW_PRESS) {
+    printf ("%s other  key press\n", __FUNCTION__); 
+
+  }      
+  
+}
+
+// --------------------------------------------------------------------
+// MOUSE MOVEMENT
+// --------------------------------------------------------------------
+void rokz_window_event_on_mouse_move (GLFWwindow* window, double xpos, double ypos) {
+  printf ("%s [xpos:%f | ypos:%f]\n" ,__FUNCTION__,  xpos, ypos); 
+  
+}
+
+// --------------------------------------------------------------------
+// MOUSE BUTTON
+// --------------------------------------------------------------------
+void rokz_window_event_on_mouse_button (GLFWwindow* window, int button, int action, int mods)
+{
+  if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+    printf ("%s RIGHT MOUSE BUTTON\n", __FUNCTION__); 
+    //     popup_menu();
+  }
+
+  else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+
+    printf ("%s LEFT MOUSE BUTTON\n", __FUNCTION__); 
+    //     popup_menu();
+  }
+  
+}
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+bool SetupDarkrootWindow (Glob& glob) {
+  rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
+
+  glfwSetFramebufferSizeCallback (glob.window.glfw_window, darkroot::window_event_on_resize ); 
+  glfwSetKeyCallback (glob.window.glfw_window, darkroot::window_event_on_keypress);
+  glfwSetCursorPosCallback(glob.window.glfw_window, darkroot::window_event_on_mouse_move);
+  glfwSetMouseButtonCallback(glob.window.glfw_window, darkroot::window_event_on_mouse_button);
+
+  //glfwSetCursorEnterCallback(window, rokz);
+
+  glfwSetWindowUserPointer (glob.window.glfw_window, &glob);
+
+
+
+  return true;
+}
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+void SetupDarkGeometry (Glob& glob) {
 
   printf ("%s\n", __FUNCTION__); 
 
@@ -432,7 +402,7 @@ void SetupDarkGeometry (DarkrootGlob& glob) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void SetupDarkDepthBuffer (DarkrootGlob& glob) {
+void SetupDarkDepthBuffer (Glob& glob) {
   printf ("%s\n", __FUNCTION__); 
 
   rokz::FrameGroup& frame_group = glob.frame_group;
@@ -466,7 +436,7 @@ void SetupDarkDepthBuffer (DarkrootGlob& glob) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void SetupDarkSampler (DarkrootGlob& glob) {
+void SetupDarkSampler (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
   rokz::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
@@ -515,7 +485,7 @@ bool SetupDarkShaderModules (rokz::Pipeline& pipeline, const std::filesystem::pa
 // --------------------------------------------------------------------
 // VMA
 // --------------------------------------------------------------------
-void SetupDarkMultisampleColorResource (DarkrootGlob& glob) {
+void SetupDarkMultisampleColorResource (Glob& glob) {
 
   printf ("%s\n", __FUNCTION__); 
 
@@ -544,7 +514,7 @@ void SetupDarkMultisampleColorResource (DarkrootGlob& glob) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void CleanupDarkroot (DarkrootGlob& glob) {
+void CleanupDarkroot (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
 
@@ -599,7 +569,7 @@ void CleanupDarkroot (DarkrootGlob& glob) {
 //
 // ---------------------------------------------------------------------
 
-bool SetupDarkTexture (DarkrootGlob& glob) {
+bool SetupDarkTexture (Glob& glob) {
   
   printf ("%s \n", __FUNCTION__); 
   //rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
@@ -713,7 +683,7 @@ bool SetupDarkTexture (DarkrootGlob& glob) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-void SetupDarkTextureImageView (DarkrootGlob& glob) {
+void SetupDarkTextureImageView (Glob& glob) {
 
   printf ("[%s]\n", __FUNCTION__); 
 
@@ -725,30 +695,67 @@ void SetupDarkTextureImageView (DarkrootGlob& glob) {
 
 
 // ---------------------------------------------------------------------
-//
+// Setup 'DescriptorLayout' is how it looks
 // ---------------------------------------------------------------------
-bool SetupTerrainDescriptorLayout  (rokz::DescriptorGroup& descrgroup,
-                                    const rokz::Device&    device) {
+bool SetupTerrainDescriptorLayout (darkroot::PipelineGroup& pipelinegroup, uint32_t num_patches, const rokz::Device& device) {
+
   printf ("%s", __FUNCTION__); 
 
-  descrgroup.dslayout.bindings.resize (69);
+  rokz::DescriptorGroup&  descrgroup = pipelinegroup.descrgroup; 
 
+  VkShaderStageFlags stage_flag_bits = VK_SHADER_STAGE_VERTEX_BIT
+                                     | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
+                                     | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT; 
+
+  descrgroup.dslayout.bindings.resize (4);
+
+  // MVPTransform
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
+                                    0,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    1,
+                                    stage_flag_bits);
+  // patch params
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
+                                    1,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    num_patches, 
+                                    stage_flag_bits);
+  // color images
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
+                                    2,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    num_patches, 
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+  // height map textures - use for height + normal 
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
+                                    3,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    num_patches, 
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
   
-  
-  return false; 
+  if (!rokz::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
+                                        descrgroup.dslayout.ci,
+                                        descrgroup.dslayout.bindings,
+                                        device.handle)) {
+    printf (" --> [FAILED] \n"); 
+    return false;
+  }
+
+  printf (" --> true\n"); 
+  return true; 
 }
 
 // --------------------------------------------------------------------
 // SetupDarkDescriptorSetLayout (
 // --------------------------------------------------------------------
-bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device)  {
+bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
 
-  
   printf ("%s", __FUNCTION__); 
 
   //  UniformBinding
   //  SamplerBinding
-  descrgroup.dslayout.bindings.resize (3); 
+  descrgroup.dslayout.bindings.resize (3);
   //rokz::Init (glob.desc_set_layout_bindings[0],
 
   // MVPTransform
@@ -775,12 +782,10 @@ bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz:
   if (!rokz::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
                                         descrgroup.dslayout.ci,
                                         descrgroup.dslayout.bindings,
-                                        device.handle))
-    {
-
-      printf (" --> [FAILED] \n"); 
-      return false;
-    }
+                                        device.handle)) {
+    printf (" --> [FAILED] \n"); 
+    return false;
+  }
 
   printf (" --> true\n"); 
   return true; 
@@ -789,22 +794,34 @@ bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz:
 
 
 // ---------------------------------------------------------------------
-//
+// Setup 'DescriptorSets' is how it works
 // ---------------------------------------------------------------------
-bool SetupTerrainkDescriptorSets (PipelineGroup&              pipelinegroup,
+bool SetupTerrainkDescriptorSets (darkroot::PipelineGroup&              pipelinegroup,
+
+                                  const std::vector<rokz::Buffer>& vma_terr_uniform_buffs,
+                                  const std::vector<rokz::Buffer>& vma_terr_patch_buffs,
+                                  // color texture array per patch
+                                  const std::vector<rokz::ImageView>& txr_imageview_color, 
+                                  // normal texture array
+                                  const std::vector<rokz::ImageView>& txr_imageview_normal, 
+
+                                  const rokz::Sampler&   normal_sampler, 
+                                  const rokz::Sampler&   color_sampler, 
+
                                   const rokz::DescriptorPool& descpool,
                                   const rokz::Device&         device) {
 
-  //
+  
+
 
   return false;
 }
   
 
 // ---------------------------------------------------------------------
-//Drob
+// 
 // ---------------------------------------------------------------------
-bool SetupObjectDescriptorSets (PipelineGroup& pipelinegroup,
+bool SetupObjectDescriptorSets (darkroot::PipelineGroup& pipelinegroup,
 
                                 const std::vector<rokz::Buffer>& vma_uniform_buffs,
                                 const std::vector<rokz::Buffer>& vma_objparam_buffs,
@@ -896,7 +913,7 @@ bool SetupObjectDescriptorSets (PipelineGroup& pipelinegroup,
 // ---------------------------------------------------------------------
 //Drob
 // ---------------------------------------------------------------------
-bool SetupGlobalDescriptorPool (DarkrootGlob& glob) {
+bool SetupGlobalDescriptorPool (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
   //SetupDescriptorPool (glob.descr_pool, glob.device);
@@ -944,7 +961,7 @@ void SetupViewportState (rokz::ViewportState & vps, VkExtent2D& swapchain_extent
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupObjectPipeline (PipelineGroup& pipelinegroup,
+bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
                           const rokz::ViewportState& vps,
                           const rokz::RenderPass& renderpass,
                           const std::filesystem::path& fspath,
@@ -974,19 +991,20 @@ bool SetupObjectPipeline (PipelineGroup& pipelinegroup,
   rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.color_blend_attachment); 
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
-
-
-
-  
   SetupObjectDescriptorLayout (  pipelinegroup.descrgroup, device); 
+
+
   //
   rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
                                       pipelinegroup.pipeline.layout.ci,
                                       pipelinegroup.descrgroup.dslayout.handle,
                                       device.handle);
 
+
+  //
   rokz::CreateInfo (pipelinegroup.pipeline.ci,
                     pipelinegroup.pipeline.layout.handle,
+                    
                     renderpass.handle,                    
                     psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
                     &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
@@ -1005,12 +1023,13 @@ bool SetupObjectPipeline (PipelineGroup& pipelinegroup,
   }
 
   return true;
+
 }
 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
+bool SetupTerrainPipeline (darkroot::PipelineGroup& pipelinegroup,
                            const rokz::ViewportState& vps,
                            const rokz::RenderPass& renderpass,
                            const std::filesystem::path& fspath,
@@ -1040,7 +1059,10 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
 
-  SetupTerrainDescriptorLayout (pipelinegroup); 
+
+  const uint32_t num_patches = 69; // <--- dont know yet
+  
+  SetupTerrainDescriptorLayout (pipelinegroup, num_patches , device); 
   //
   rokz::CreateGraphicsPipelineLayout (pipeline.layout.handle,
                                       pipeline.layout.ci,
@@ -1074,7 +1096,7 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupDarkUniforms (DarkrootGlob& glob) {
+bool SetupDarkUniforms (Glob& glob) {
   printf ("%s", __FUNCTION__);
 
   VkDevice const&          device = glob.device.handle;
@@ -1125,7 +1147,7 @@ glm::vec3& unit_angle_xz (glm::vec3& v, float theta) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) {
+void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
   //static auto startTime = std::chrono::high_resolution_clock::now();
   glob.sim_time += dt;
   //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
@@ -1148,7 +1170,6 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
  
   if (SceneObjParam* obj = reinterpret_cast<SceneObjParam*> (rokz::MappedPointer (glob.vma_objparam_buffs[current_frame]))) {
   
-
     glm::vec3 va, vb;
     unit_angle_xz (va, 5.0 * sim_timef ); 
     unit_angle_xz (vb, 5.0 * sim_timef + kPi); 
@@ -1165,26 +1186,18 @@ void UpdateDarkUniforms (DarkrootGlob& glob, uint32_t current_frame, double dt) 
 
 }
 
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void DarkrootResizeCB (GLFWwindow* window, int width, int height) {
-  *reinterpret_cast<bool*> (glfwGetWindowUserPointer(window)) = true;
-}
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 void SetupDarkroot () { printf ("%s\n", __FUNCTION__); }
 void ShutdownDarkroot () { printf ("%s\n", __FUNCTION__); }
-void UpdateInput (DarkrootGlob& glob, double dt) { }
-void UpdateDarkroot (DarkrootGlob& glob, double dt) { }
+void UpdateInput (Glob& glob, double dt) { }
+void UpdateDarkroot (Glob& glob, double dt) { }
 
 // ---------------------------------------------------------------------
 // RecordDarkCommandBuffer_indexed
 // ---------------------------------------------------------------------
-bool RecordDarkRenderPass_indexed (DarkrootGlob& glob, 
+bool RecordDarkRenderPass_indexed (Glob& glob, 
                                    VkCommandBuffer        &command_buffer,
                                    const rokz::Pipeline&        pipeline,
                                    const VkDescriptorSet& desc_set, 
@@ -1282,7 +1295,7 @@ bool RecordDarkRenderPass_indexed (DarkrootGlob& glob,
 // --------------------------------------------------------------------
 // nue
 // --------------------------------------------------------------------
-bool RenderDarkFrame (DarkrootGlob&           glob,
+bool RenderDarkFrame (Glob&           glob,
                       uint32_t&               image_index,
                       bool&                   resize,
                       rokz::RenderPass&       renderpass, 
@@ -1380,15 +1393,16 @@ bool RenderDarkFrame (DarkrootGlob&           glob,
   
 }
 
+
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-
 int darkroot_basin (const std::vector<std::string>& args) {
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
 
-  DarkrootGlob  glob; // *globmem; // something representing the app state
+  Glob  glob; // *globmem; // something representing the app state
   
   glob.dt = 0.0;
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
@@ -1399,13 +1413,12 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glfwInit();
 
   
-  bool fb_resize = false; 
+  glob.fb_resize = false; 
   
   //rokz::CreateWindow_glfw (glob.glfwin);
-  rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
+  SetupDarkrootWindow (glob); 
 
-  glfwSetFramebufferSizeCallback (glob.window.glfw_window, DarkrootResizeCB); 
-  glfwSetWindowUserPointer (glob.window.glfw_window, &fb_resize); 
+  
 
   rokz::AppInfo_default (glob.instance.app_info);
 
@@ -1650,7 +1663,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int        countdown  = 120;
+  int        countdown  = 60;
 
   printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
   //
@@ -1671,7 +1684,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
-    if (RenderDarkFrame (glob, image_index, fb_resize, glob.render_pass, glob.obj_pipeline.pipeline,
+    if (RenderDarkFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.obj_pipeline.pipeline,
                      glob.obj_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
 
     }

@@ -14,8 +14,8 @@ namespace rokz {
   // ---------------------------------------------------------------------
   VkDescriptorSetLayoutBinding&
   DescriptorSetLayoutBinding (VkDescriptorSetLayoutBinding& out, uint32_t binding,
-                             VkDescriptorType desc_type, uint32_t descrcount, 
-                              VkShaderStageFlagBits stage_flags, 
+                              VkDescriptorType desc_type, uint32_t descrcount, 
+                              VkShaderStageFlags stage_flags, 
                               const VkSampler* pImmutableSamplers = nullptr)  ; 
 
 
