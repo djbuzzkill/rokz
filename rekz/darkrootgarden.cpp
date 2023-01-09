@@ -172,7 +172,6 @@ auto DarkRenderable::Draw (VkCommandBuffer commandbuffer) -> void  {
   //return 0; 
 }
 
-  
 // --------------------------------------------------------------------
 auto DarkRenderable::AllocRes (VmaAllocator& allocator) -> int {
     
@@ -187,7 +186,9 @@ auto DarkRenderable::AllocRes (VmaAllocator& allocator) -> int {
   return 0; 
 }
 
+// --------------------------------------------------------------------
 //
+// --------------------------------------------------------------------
 auto DarkRenderable::FreeRes (VmaAllocator& alloc) -> int {
 
   rokz::Destroy (vb_dev, alloc);
@@ -195,7 +196,6 @@ auto DarkRenderable::FreeRes (VmaAllocator& alloc) -> int {
 
   return 0; 
 }
-
 
 // --------------------------------------------------------------------
 //
@@ -227,99 +227,36 @@ DarkRenderable& Friendly ( DarkRenderable& dr) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-
-Glob::Glob() :
-  instance(),
-  device (),
-  dt (),
-  allocator(),
-  depth_image(),
-  depth_imageview(),
-  multisamp_color_image(),
-  multisamp_color_imageview(),
-  msaa_samples (),
-  vma_ib_device(),
-  vma_vb_device(),
-  command_pool(),
-  render_pass(),
-  texture_image(),
-  texture_imageview(),
-  sampler(),
-  vma_uniform_buffs(),
-  descr_pool(),
-  window(),
-  physical_device(),
-  queue_priority(),
-  swapchain_support_info(),
-  surface(nullptr),     
-  sim_time(0.0)
-{
+Glob::Glob()
+  : instance()
+  , device ()
+  , dt ()
+  , allocator()
+  , depth_image()
+  , depth_imageview()
+  , multisamp_color_image()
+  , multisamp_color_imageview()
+  , msaa_samples ()
+  , vma_ib_device()
+  , vma_vb_device()
+  , command_pool()
+  , render_pass()
+  , texture_image()
+  , texture_imageview()
+  , sampler()
+  , vma_uniform_buffs()
+  , descr_pool()
+  , window()
+  , physical_device()
+  , queue_priority()
+  , swapchain_support_info()
+  , surface(nullptr)
+  , sim_time(0.0)
+{ 
   queues.graphics = {};
   queues.present = {}; 
 }
 
-//
-// The callback function receives the new classification of the cursor.
-
-//
-void rokz_window_event_cursor_enter (GLFWwindow* window, int entered) {
-    if (entered) {
-        // The cursor entered the content area of the window
-    }
-    else {
-        // The cursor left the content area of the window
-    }
-}
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void rokz_window_event_on_resize (GLFWwindow* window, int width, int height) {
-
-  reinterpret_cast<Glob*> (glfwGetWindowUserPointer(window))->fb_resize = true;
-
-}
-
-// --------------------------------------------------------------------
-// KEY PRESS
-// --------------------------------------------------------------------
-void rokz_window_event_on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
-
-  if (key == GLFW_KEY_E && action == GLFW_PRESS) {
-    printf ("%s [E] key press\n", __FUNCTION__); 
-  }      
-  else if (action == GLFW_PRESS) {
-    printf ("%s other  key press\n", __FUNCTION__); 
-
-  }      
-  
-}
-
-// --------------------------------------------------------------------
-// MOUSE MOVEMENT
-// --------------------------------------------------------------------
-void rokz_window_event_on_mouse_move (GLFWwindow* window, double xpos, double ypos) {
-  printf ("%s [xpos:%f | ypos:%f]\n" ,__FUNCTION__,  xpos, ypos); 
-  
-}
-
-// --------------------------------------------------------------------
-// MOUSE BUTTON
-// --------------------------------------------------------------------
-void rokz_window_event_on_mouse_button (GLFWwindow* window, int button, int action, int mods)
-{
-  if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-    printf ("%s RIGHT MOUSE BUTTON\n", __FUNCTION__); 
-    //     popup_menu();
-  }
-
-  else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-
-    printf ("%s LEFT MOUSE BUTTON\n", __FUNCTION__); 
-    //     popup_menu();
-  }
-  
-}
 
 // --------------------------------------------------------------------
 //
@@ -1720,3 +1657,81 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 
 //#endif // HIDE_TEST_ROKZ
+
+
+
+template<typename ElTy> 
+struct RGB {
+  ElTy r;
+  ElTy g;
+  ElTy b;
+};
+
+typedef RGB<unsigned char> RGBu8; 
+
+
+int mars_prelim (const std::vector<std::string>& args) {
+  printf ("%s\n", __FUNCTION__);
+  // const std::string colt = tile_root + "/rando_col_" + index_2_str(iY, iX) + "_3uc.col"; 
+  // const std::string hgtt = tile_root + "/rando_hgt_" + index_2_str(iY, iX) + "_1f.hgt"; 
+  // const std::string nrmt = tile_root + "/rando_nrm_" + index_2_str(iY, iX) + "_3f.nrm"; 
+  std::string tile_root = "/home/djbuzzkill/owenslake/data/awsum/rando/tile/";
+  
+  std::string color_tile =  "rando_col_1_1_3uc.col";
+  std::string height_tile = "rando_hgt_3_1_1f.hgt";
+  std::string normal_tile = "rando_nrm_5_1_3f.nrm"; 
+
+  const int col_dim = 128;
+  const int hgt_dim = 256;
+  const int nrm_dim = 256;
+
+  const int num_col_pxls = col_dim * col_dim;
+  const int num_hgt_pxls = hgt_dim * hgt_dim;
+  const int num_nrm_pxls = nrm_dim * nrm_dim;
+
+  uint32_t mars_terrain_num_X_tiles         = 10;
+  uint32_t mars_terrain_num_Y_tiles         = 10;
+
+  float mars_terrain_easting_Tile_step   = 256.0;
+  float mars_terrain_northing_Tile_step  = 256.0;
+  float mars_tearrain_height_offset       = 0.0;
+  float mars_terrain_height_range        = 100.0;
+
+  // std::vector<RGBu8> colors (col_dim * col_dim, RGBu8{});
+  // rokz::ReadStreamRef col_rs = rokz::CreateReadFileStream  (tile_root + color_tile); 
+  // col_rs->Read (&colors[0], col_dim * col_dim * sizeof (RGBu8)); 
+  // for (int iy = 0; iy < col_dim; ++iy) {
+  //   for (int ix = 0; ix < col_dim; ++ix) {
+  //     int ind = iy * col_dim + ix; 
+  //     printf ( "col[%i] (%u, %u, %u)\n", ind, colors[ind].r, colors[ind].g, colors[ind].b); 
+  //   }
+  // }
+                                        
+  std::vector<float> heights (hgt_dim * hgt_dim, 0.0); 
+  if ( rokz::ReadStreamRef hgt_rs = rokz::CreateReadFileStream  (tile_root + height_tile)) {  
+
+  hgt_rs->Read (&heights[0], hgt_dim * hgt_dim * sizeof(float));
+  for (int iy = 0; iy < hgt_dim; ++iy) {
+    for (int ix = 0; ix < hgt_dim; ++ix) {
+      int ind = iy * hgt_dim + ix; 
+      printf ( "heights[%i] --> %f\n", ind, heights[ind] ); 
+    }
+  }
+  printf ( "max height %f\n ", *std::max_element (heights.begin (), heights.end ()));
+  printf ( "min height %f\n ", *std::min_element (heights.begin (), heights.end ()));
+  }
+  
+  // std::vector<glm::vec3> normals (nrm_dim * nrm_dim, glm::vec3{});
+  // rokz::ReadStreamRef nrm_rs = rokz::CreateReadFileStream  (tile_root + normal_tile);
+  // nrm_rs->Read (&normals[0], nrm_dim * nrm_dim * sizeof(glm::vec3)); 
+  // for (int iy = 0; iy < nrm_dim; ++iy) {
+  //   for (int ix = 0; ix < nrm_dim; ++ix) {
+
+  //     int ind = iy * nrm_dim + ix; 
+  //     printf ( "normal[%i] --> <%f, %f, %f> \n", ind, normals[ind].x, normals[ind].y, normals[ind].z);
+  //   }
+  // }
+
+
+  return 0; 
+}

@@ -226,27 +226,21 @@ namespace rokz {
 
   
   ReadStreamRef CreateReadFileStream (const std::string& fname) {
-
-
+    //printf ("%s ", __FUNCTION__);
     ReadStreamRef ref (nullptr); 
     if (std::FILE* f = std::fopen (fname.c_str (), "r")) {
      
       std::fseek (f, 0, SEEK_END);
-
       size_t sz = std::ftell (f);
-
       std::fseek (f, 0, SEEK_SET); 
-
       ref = std::make_shared<read_file_str_impl> (std::shared_ptr<std::FILE> (f, std::fclose), sz); 
-      
       //ref.reset (new read_file_str_impl (std::shared_ptr<std::FILE> (f, std::fclose), sz));
-
+      //printf ("[OK]\n", fname.c_str());
       return ref; 
     }
 
-    
+    printf ("%s [ERROR] --> \"%s\" not found\n",  __FUNCTION__,  fname.c_str());
     return ref;  
-    
   }
 
 

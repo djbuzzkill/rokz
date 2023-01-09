@@ -16,8 +16,9 @@ set (REKZ_SOURCE_FILES
   dark_window_event.cpp
   darkrootgarden.cpp
   darksolids.cpp
-#  test_rokz_hpp.cpp
-# test_rokz.cpp
+  
+  #  test_rokz_hpp.cpp
+  # test_rokz.cpp
   rekz.cpp
 )
 
