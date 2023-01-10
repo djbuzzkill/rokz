@@ -13,6 +13,8 @@ int texture_tool (const std::vector<std::string>& args);
 int test_ouput (const std::vector<std::string>& args); 
 int test_time (); 
 int darkroot_basin (const std::vector<std::string>& args);
+
+int mars_run (const std::vector<std::string>& args);
 int mars_prelim (const std::vector<std::string>& args);
 
 // --------------------------------------------------------------------
@@ -25,7 +27,7 @@ int main (int argv, char** argc) {
   //   test_time (); 
   //test_rokz (args); 
   //darkroot_basin  (args);
-  mars_prelim  (args);
+  mars_run  (args);
   // test_rokz_hpp (args); 
   // texture_tool (args); 
   //test_ouput (args);

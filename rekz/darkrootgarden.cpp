@@ -20,6 +20,9 @@
 // #include "rokz/rokz.h"
 // #include <GLFW/glfw3.h>
 // #include <vulkan/vulkan_core.h>
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
 
 
 #define ROKZ_USE_VMA_ALLOCATION 1
@@ -31,80 +34,6 @@ const size_t        kSceneObjCount = 128;
 //
 //
 using namespace darkroot; 
-
-//
-// brep is associated with a geom
-HalfEdge::BRep& BuildBoundaryRep (HalfEdge::BRep& brep, const DarkrootMesh& geom) {
-
-  auto nverts = geom.verts.size ();
-  auto ninds = geom.indices.size ();
-
-  if (ninds % 3) {
-    printf ("[%s] --> TriMesh should be:0\n", __FUNCTION__); 
-    return brep;
-  }
-
-  auto nfaces = ninds / 3;
-  
-  brep.edgei.resize (nverts, HalfEdge::NullIndex);
-  brep.edges.resize (nfaces * 3);
-  brep.faces.resize (nfaces);
-
-  auto edge_count = 0; 
-  auto index_count = 0;
-  
-  for (size_t iface = 0; iface < nfaces; ++iface) {
-    //geom.verts[
-    // geom.indices[index_count+0]
-    // geom.indices[index_count+1]
-    // geom.indices[index_count+2]
-    brep.faces[iface].edgei = edge_count+0;
-    brep.edges[edge_count+0].facei = iface;
-    brep.edges[edge_count+0].verti = geom.indices[index_count+0];
-    brep.edges[edge_count+0].nexti = edge_count + 1;
-    brep.edges[edge_count+0].pairi = HalfEdge::NullIndex; //<-- we dont know yet
-        
-    brep.edges[edge_count+1].facei = iface;
-    brep.edges[edge_count+1].verti = geom.indices[index_count+1];
-    brep.edges[edge_count+1].nexti = edge_count + 2;
-    brep.edges[edge_count+1].pairi = HalfEdge::NullIndex; // <-- we dont know yet
-      
-    brep.edges[edge_count+2].facei = iface;
-    brep.edges[edge_count+2].verti = geom.indices[index_count+2];
-    brep.edges[edge_count+2].nexti = edge_count + 0;
-    brep.edges[edge_count+2].pairi = HalfEdge::NullIndex; // <-- we dont know yet
-    // verti : vertex at the end of the half-edge 
-    // pairi : oppositely oriented adjacent half-edge 
-    // facei : face the half-edge borders
-    // nexti : next half-edge around the face
-    edge_count  += 3;
-    index_count += 3; 
-  }
-
-  // find pair 
-  for (size_t iedge = 0; iedge < brep.edges.size (); ++iedge) {
-    // make sure this isnt paried
-    if (brep.edges[iedge].pairi != HalfEdge::NullIndex) 
-      continue;
-      
-    for (size_t iiedge = 0; iiedge < brep.edges.size (); ++iiedge) {
-      // if not itself & not paired
-      if (iedge == iiedge || brep.edges[iiedge].pairi != HalfEdge::NullIndex) 
-        continue;
-      
-      if (brep.edges[iedge].verti == brep.edges[iiedge].verti) {
-        // iedge.pairi = iiedge.nexti.nexti;
-        brep.edges[iedge].pairi = brep.edges[ brep.edges[iiedge].nexti ].nexti;
-          
-        // iiedge.nexti.nexti.pairi = iedge; 
-        brep.edges[ brep.edges[ brep.edges[iiedge].nexti ].nexti ].pairi = iedge; 
-      }
-    }
-    
-  }
-  
-  return brep;
-}
 
 // --------------------------------------------------------------------
 //
@@ -264,12 +193,33 @@ Glob::Glob()
 bool SetupDarkrootWindow (Glob& glob) {
   rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
 
-  glfwSetFramebufferSizeCallback (glob.window.glfw_window, darkroot::window_event_on_resize ); 
-  glfwSetKeyCallback (glob.window.glfw_window, darkroot::window_event_on_keypress);
-  glfwSetCursorPosCallback(glob.window.glfw_window, darkroot::window_event_on_mouse_move);
-  glfwSetMouseButtonCallback(glob.window.glfw_window, darkroot::window_event_on_mouse_button);
+  glfwSetFramebufferSizeCallback (glob.window.glfw_window, win_handler::on_resize ); 
+  glfwSetKeyCallback (glob.window.glfw_window, win_handler::on_keypress);
+  glfwSetCursorPosCallback(glob.window.glfw_window, win_handler::on_mouse_move);
+  glfwSetMouseButtonCallback(glob.window.glfw_window, win_handler::on_mouse_button);
 
   //glfwSetCursorEnterCallback(window, rokz);
+  // typedef struct GLFWcursor GLFWcursor;
+  // typedef void (* GLFWerrorfun)(int error_code, const char* description);
+  // typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
+  // typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
+  // typedef void (* GLFWwindowclosefun)(GLFWwindow* window);
+  // typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);
+  // typedef void (* GLFWwindowfocusfun)(GLFWwindow* window, int focused);
+  // typedef void (* GLFWwindowiconifyfun)(GLFWwindow* window, int iconified);
+  // typedef void (* GLFWwindowmaximizefun)(GLFWwindow* window, int maximized);
+  // typedef void (* GLFWframebuffersizefun)(GLFWwindow* window, int width, int height);
+  // typedef void (* GLFWwindowcontentscalefun)(GLFWwindow* window, float xscale, float yscale);
+  // typedef void (* GLFWmousebuttonfun)(GLFWwindow* window, int button, int action, int mods);
+  // typedef void (* GLFWcursorposfun)(GLFWwindow* window, double xpos, double ypos);
+  // typedef void (* GLFWcursorenterfun)(GLFWwindow* window, int entered);
+  // typedef void (* GLFWscrollfun)(GLFWwindow* window, double xoffset, double yoffset);
+  // typedef void (* GLFWkeyfun)(GLFWwindow* window, int key, int scancode, int action, int mods);
+  // typedef void (* GLFWcharfun)(GLFWwindow* window, unsigned int codepoint);
+  // typedef void (* GLFWcharmodsfun)(GLFWwindow* window, unsigned int codepoint, int mods);
+  // typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* paths[]);
+  // typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
+  // typedef void (* GLFWjoystickfun)(int jid, int event);
 
   glfwSetWindowUserPointer (glob.window.glfw_window, &glob);
 
@@ -283,7 +233,6 @@ bool SetupDarkrootWindow (Glob& glob) {
 void SetupDarkGeometry (Glob& glob) {
 
   printf ("%s\n", __FUNCTION__); 
-
 
   glob.darkmesh = darkroot::DarkOctohedron (); 
 
@@ -442,11 +391,7 @@ void SetupDarkMultisampleColorResource (Glob& glob) {
   rokz::CreateImageView (glob.multisamp_color_imageview,
                          glob.multisamp_color_imageview.ci,
                          glob.device.handle);
-
 }
-
-
-
 
 // --------------------------------------------------------------------
 //
@@ -463,14 +408,11 @@ void CleanupDarkroot (Glob& glob) {
     rokz::Destroy (buf, glob.allocator);
   }
 
-
   for (auto r : glob.renderables) { 
     r->FreeRes  (glob.allocator);
   }
 
-
   rokz::Destroy (glob.sampler, glob.device.handle); 
-
   rokz::Destroy (glob.descr_pool, glob.device.handle); 
   rokz::Destroy (glob.obj_pipeline.descrgroup, glob.device.handle); 
   rokz::Destroy (glob.texture_imageview, glob.device.handle);
@@ -748,9 +690,6 @@ bool SetupTerrainkDescriptorSets (darkroot::PipelineGroup&              pipeline
                                   const rokz::DescriptorPool& descpool,
                                   const rokz::Device&         device) {
 
-  
-
-
   return false;
 }
   
@@ -891,7 +830,6 @@ void SetupViewportState (rokz::ViewportState & vps, VkExtent2D& swapchain_extent
   
   vps.scissors[0] = { offs0, swapchain_extent };
   rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
-  //
 
 }
 
@@ -1118,9 +1056,6 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
     obj[1].modelmat = glm::rotate(model1, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     
   }
-
-
-
 }
 
 // --------------------------------------------------------------------
@@ -1136,13 +1071,13 @@ void UpdateDarkroot (Glob& glob, double dt) { }
 // ---------------------------------------------------------------------
 bool RecordDarkRenderPass_indexed (Glob& glob, 
                                    VkCommandBuffer        &command_buffer,
-                                   const rokz::Pipeline&        pipeline,
+                                   const rokz::Pipeline&  pipeline,
                                    const VkDescriptorSet& desc_set, 
                                    const VkBuffer&        vertex_buffer, 
                                    const VkBuffer&        index_buffer, 
                                    const VkExtent2D&      ext2d,
                                    const VkFramebuffer&   framebuffer,
-                                   const rokz::RenderPass&      render_pass,
+                                   const rokz::RenderPass&render_pass,
                                    const VkDevice&        device) {
 
   VkCommandBufferBeginInfo begin_info {};
@@ -1658,80 +1593,3 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 //#endif // HIDE_TEST_ROKZ
 
-
-
-template<typename ElTy> 
-struct RGB {
-  ElTy r;
-  ElTy g;
-  ElTy b;
-};
-
-typedef RGB<unsigned char> RGBu8; 
-
-
-int mars_prelim (const std::vector<std::string>& args) {
-  printf ("%s\n", __FUNCTION__);
-  // const std::string colt = tile_root + "/rando_col_" + index_2_str(iY, iX) + "_3uc.col"; 
-  // const std::string hgtt = tile_root + "/rando_hgt_" + index_2_str(iY, iX) + "_1f.hgt"; 
-  // const std::string nrmt = tile_root + "/rando_nrm_" + index_2_str(iY, iX) + "_3f.nrm"; 
-  std::string tile_root = "/home/djbuzzkill/owenslake/data/awsum/rando/tile/";
-  
-  std::string color_tile =  "rando_col_1_1_3uc.col";
-  std::string height_tile = "rando_hgt_3_1_1f.hgt";
-  std::string normal_tile = "rando_nrm_5_1_3f.nrm"; 
-
-  const int col_dim = 128;
-  const int hgt_dim = 256;
-  const int nrm_dim = 256;
-
-  const int num_col_pxls = col_dim * col_dim;
-  const int num_hgt_pxls = hgt_dim * hgt_dim;
-  const int num_nrm_pxls = nrm_dim * nrm_dim;
-
-  uint32_t mars_terrain_num_X_tiles         = 10;
-  uint32_t mars_terrain_num_Y_tiles         = 10;
-
-  float mars_terrain_easting_Tile_step   = 256.0;
-  float mars_terrain_northing_Tile_step  = 256.0;
-  float mars_tearrain_height_offset       = 0.0;
-  float mars_terrain_height_range        = 100.0;
-
-  // std::vector<RGBu8> colors (col_dim * col_dim, RGBu8{});
-  // rokz::ReadStreamRef col_rs = rokz::CreateReadFileStream  (tile_root + color_tile); 
-  // col_rs->Read (&colors[0], col_dim * col_dim * sizeof (RGBu8)); 
-  // for (int iy = 0; iy < col_dim; ++iy) {
-  //   for (int ix = 0; ix < col_dim; ++ix) {
-  //     int ind = iy * col_dim + ix; 
-  //     printf ( "col[%i] (%u, %u, %u)\n", ind, colors[ind].r, colors[ind].g, colors[ind].b); 
-  //   }
-  // }
-                                        
-  std::vector<float> heights (hgt_dim * hgt_dim, 0.0); 
-  if ( rokz::ReadStreamRef hgt_rs = rokz::CreateReadFileStream  (tile_root + height_tile)) {  
-
-  hgt_rs->Read (&heights[0], hgt_dim * hgt_dim * sizeof(float));
-  for (int iy = 0; iy < hgt_dim; ++iy) {
-    for (int ix = 0; ix < hgt_dim; ++ix) {
-      int ind = iy * hgt_dim + ix; 
-      printf ( "heights[%i] --> %f\n", ind, heights[ind] ); 
-    }
-  }
-  printf ( "max height %f\n ", *std::max_element (heights.begin (), heights.end ()));
-  printf ( "min height %f\n ", *std::min_element (heights.begin (), heights.end ()));
-  }
-  
-  // std::vector<glm::vec3> normals (nrm_dim * nrm_dim, glm::vec3{});
-  // rokz::ReadStreamRef nrm_rs = rokz::CreateReadFileStream  (tile_root + normal_tile);
-  // nrm_rs->Read (&normals[0], nrm_dim * nrm_dim * sizeof(glm::vec3)); 
-  // for (int iy = 0; iy < nrm_dim; ++iy) {
-  //   for (int ix = 0; ix < nrm_dim; ++ix) {
-
-  //     int ind = iy * nrm_dim + ix; 
-  //     printf ( "normal[%i] --> <%f, %f, %f> \n", ind, normals[ind].x, normals[ind].y, normals[ind].z);
-  //   }
-  // }
-
-
-  return 0; 
-}

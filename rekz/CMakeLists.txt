@@ -9,13 +9,18 @@ set (REKZ_HEADER_FILES
     rekz.h
     dark_types.h
     darkrootgarden.h
-)
+    mars_types.h
+  )
 	
 set (REKZ_SOURCE_FILES
   texture_tool.cpp
   dark_window_event.cpp
   darkrootgarden.cpp
-  darksolids.cpp
+  darkthings.cpp
+
+  marscape.cpp
+  mars_window_handler.cpp
+  mars_things.cpp
   
   #  test_rokz_hpp.cpp
   # test_rokz.cpp
