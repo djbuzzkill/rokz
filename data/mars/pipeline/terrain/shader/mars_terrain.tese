@@ -62,16 +62,17 @@ vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3) {
 
 
 
-//
-//
+// -------------------------------------------------------------------------
+// ?? gl_PrimitiveID == gl_InstanceIndex ??
+// 
+// -------------------------------------------------------------------------
 void main() {
-     int primitiveIndex = 69;
 
-     vec2 tex_coord = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
+    vec2 tex_coord = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
     vec4 pos = interpolate4 (in_position[0], in_position[1], in_position[2], in_position[3]);
 
-    pos.z = params[primitiveIndex].height_scale.x * texture (height_map[primitiveIndex], tex_coord).r;
-    pos = params[primitiveIndex].model * pos;                                                   
+    pos.z = params[gl_PrimitiveID].height_scale.x * texture (height_map[gl_PrimitiveID], tex_coord).r;
+    pos = params[gl_PrimitiveID].model * pos;                                                   
     pos = mat.view * pos;                                                    
     gl_Position = mat.proj * pos;
 }				

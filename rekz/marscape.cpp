@@ -211,33 +211,38 @@ bool SetupTesselationShaderModules (rokz::Pipeline& pipeline, const std::filesys
   shader_stage_create_infos.resize(4);
   //
   // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"mars/pipeline/terrain/shader/mars_vertex.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
-    return false; 
+  std::filesystem::path vert_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_vert.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", vert_file_path.string().c_str()); 
+    return false; }
   rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
 
   //
   // TESS CONTROL
-  std::filesystem::path tesco_file_path  = fspath/"data/shader/mars_tess_ctrl.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[1], tesco_file_path.string(), device.handle))
-    return false; 
+  std::filesystem::path tesco_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_tesc.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[1], tesco_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", tesco_file_path.string().c_str()); 
+    return false; }
   rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, shader_modules[1].handle); 
 
   //
   // TESSS EVAL
-  std::filesystem::path tesev_file_path  = fspath/"data/shader/mars_tess_eval.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[2], tesev_file_path.string(), device.handle))
-    return false; 
+  std::filesystem::path tesev_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_tese.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[2], tesev_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", tesev_file_path.string().c_str()); 
+    return false;
+  }
   rokz::CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, shader_modules[2].handle); 
 
   //
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"data/shader/mars_fragment.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[3], frag_file_path.string(), device.handle))
-    return false; 
+  std::filesystem::path frag_file_path = fspath/"mars/pipeline/terrain/shader/mars_terrain_frag.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[3], frag_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", frag_file_path.string().c_str()); 
+    return false; }
   rokz::CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[3].handle); 
   //
-  return false;
+  return true;
 }
 
 
@@ -415,6 +420,7 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
     printf ("[FAILED] --> SetupTesselationShaderModules \n");
     return false;
   }
+
   
   rokz::ColorBlendState_default (pipelinegroup.pipeline.state.color_blend_attachment); 
   rokz::DynamicState_default    (pipelinegroup.pipeline.state.dynamics); 
@@ -595,8 +601,6 @@ int mars_run (const std::vector<std::string>& args) {
   glob.dt = 0.0;
   glob.fb_resize = false; 
 
-  std::filesystem::path mars_path =
-    std::filesystem::path ( "/home/djbuzzkill/owenslake/rokz");
   
   SetupMarsWindow (glob); 
 
@@ -703,20 +707,22 @@ int mars_run (const std::vector<std::string>& args) {
   SetupViewportState (glob.viewport_state, glob.frame_group.swapchain.ci.imageExtent); 
 
 
-printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
-#ifdef HIDE_MARS_RUN 
 
   
   SetupTerrainPipeline (glob.obj_pipeline,
-                       glob.viewport_state,
-                       glob.render_pass,
-                       mars_path,
-                       glob.frame_group.swapchain,
-                       glob.msaa_samples,
-                       glob.device); 
+                        glob.viewport_state,
+                        glob.render_pass,
+                        mars::data_root,
+                        glob.frame_group.swapchain,
+                        glob.msaa_samples,
+                        glob.device); 
   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.frame_group.swapchain);
 
-  SetupMultisampleColorResource (glob);
+printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
+#ifdef HIDE_MARS_RUN 
+
+
+ SetupMultisampleColorResource (glob);
 
   SetupMarsDepthBuffer (glob);
   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
