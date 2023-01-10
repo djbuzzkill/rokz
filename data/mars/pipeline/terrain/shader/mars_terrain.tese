@@ -10,59 +10,69 @@
 
 layout(quads, equal_spacing, cw) in;
 
-uniform mat4		mat_Model   ;                                               
-uniform mat4		mat_View    ;                                               
-uniform mat4		mat_ModelView;                                               
-uniform mat4		mat_Proj    ;                                               
-uniform float		heightScale;                                               
-uniform sampler2D	heightMap;                                                  
 
-in vec4				in_position[];
-in vec2				texcoord[]; 
+#extension GL_EXT_nonuniform_qualifier : enable
 
 
-out vec4 gl_Position; 
-out vec2 texCoord; 
+
+
+layout (location = 0) in vec4 in_position[];
+layout (location = 1) in vec2 in_txcrd[]; 
+
+
+//layout (location = 0) out vec4 gl_Position; 
+layout (location = 0) out vec2 out_txcrd; 
+
+
+////
+// uniform constants 
+layout (binding = 0) uniform MVPTransform {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+} mat;                                             
+
+
+layout (binding = 1) uniform PatchParams {
+    mat4 model;
+    vec4 height_scale;                                               
+
+vec4 unused1;
+
+} params[];                                             
+
+
+layout (binding = 2) uniform sampler2D height_map[];                                                  
+
+
 //
 //
-vec2 interpolate2 (in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3)
-{
+vec2 interpolate2 (in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3) {
 	vec2 a = mix(v0, v1, gl_TessCoord.x);
 	vec2 b = mix(v3, v2, gl_TessCoord.x);
 	return mix(a, b, gl_TessCoord.y);
 }
 
 //quad interpol
-vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
-{
+vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3) {
 	vec4 a = mix(v0, v1, gl_TessCoord.x);
 	vec4 b = mix(v3, v2, gl_TessCoord.x);
 	return mix(a, b, gl_TessCoord.y);
 }
 
 
+
 //
 //
-void main()
-{
-   texCoord = interpolate2 (
-	   texcoord[0],
-	   texcoord[1],
-	   texcoord[2],
-	   texcoord[3]
-	   ); 
+void main() {
+     int primitiveIndex = 69;
 
-	vec4 pos = interpolate4 (
-	   in_position[0], 
-	   in_position[1], 
-	   in_position[2], 
-	   in_position[3]
-	   );
+     vec2 tex_coord = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
+    vec4 pos = interpolate4 (in_position[0], in_position[1], in_position[2], in_position[3]);
 
-	pos.z = heightScale * texture2D (heightMap, texCoord).r;
-
-	pos = mat_Model * pos;                                                   
-	pos = mat_View * pos;                                                    
-	gl_Position = mat_Proj * pos;
+    pos.z = params[primitiveIndex].height_scale.x * texture (height_map[primitiveIndex], tex_coord).r;
+    pos = params[primitiveIndex].model * pos;                                                   
+    pos = mat.view * pos;                                                    
+    gl_Position = mat.proj * pos;
 }				
 

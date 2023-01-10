@@ -13,7 +13,6 @@ layout(vertices = 4) out;
 
 in gl_PerVertex 
 {
-
 	vec4 gl_Position; 
 
 } gl_in[]; 
@@ -27,8 +26,11 @@ out gl_PerVertex
 } gl_out[]; 
 
 
-in	vec2 txco[];
-out vec2 texcoord[];
+layout (location = 0) in vec2 in_txco[];
+
+
+
+layout (location = 0) out vec2 out_txco[];
 
 //
 void main ()
@@ -47,6 +49,6 @@ void main ()
 	}
 
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position; 
-	texcoord[gl_InvocationID]			   = txco[gl_InvocationID]; 
+	out_txco[gl_InvocationID]           = in_txco[gl_InvocationID]; 
 
 }
