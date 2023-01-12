@@ -168,6 +168,45 @@ VkPipelineTessellationStateCreateInfo&  rokz::CreateInfo (VkPipelineTessellation
 // ---------------------------------------------------------------------
 bool rokz::CreateGraphicsPipelineLayout (
     VkPipelineLayout&            pipeline_layout,
+    VkPipelineLayoutCreateInfo&  create_info,
+    uint32_t                     push_constant_size,
+    const VkDescriptorSetLayout& desc_set_layout, 
+    const VkDevice&              device)
+{
+  // PIPELINE LAYOUT CREATE INFO << mostly empty for now
+  create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  create_info.pNext          = nullptr;
+  create_info.flags          = 0; // ?? VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT; 
+  create_info.setLayoutCount = 1;            
+  create_info.pSetLayouts    = &desc_set_layout;         
+  //printf ("NOTE: %s [Descriptor Set Layout INACTIVE]\n", __FUNCTION__); 
+
+  create_info.pushConstantRangeCount = 0;    
+  create_info.pPushConstantRanges = nullptr; 
+
+  VkPushConstantRange pcr;
+  if (push_constant_size) {
+    pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pcr.offset     = 0;
+    pcr.size       = push_constant_size; 
+    create_info.pushConstantRangeCount = 1;    
+    create_info.pPushConstantRanges = &pcr; 
+  }
+
+  //
+  if (vkCreatePipelineLayout (device, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
+    printf("FAILED _create pipeline layout_\n");
+    return false;
+  }
+
+  return true;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool rokz::CreateGraphicsPipelineLayout (
+    VkPipelineLayout&            pipeline_layout,
     VkPipelineLayoutCreateInfo&  create_info, 
     const VkDescriptorSetLayout& desc_set_layout, 
     const VkDevice&              device)

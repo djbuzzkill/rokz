@@ -13,6 +13,7 @@
 #include <vulkan/vulkan_core.h>
 
 //#define VMA_IMPLEMENTATION
+#include "rekz/dark_types.h"
 #include "rokz/descriptor.h"
 #include "rokz/shared_types.h"
 #include "vk_mem_alloc.h"
@@ -675,7 +676,7 @@ bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz:
 // ---------------------------------------------------------------------
 // Setup 'DescriptorSets' is how it works
 // ---------------------------------------------------------------------
-bool SetupTerrainkDescriptorSets (darkroot::PipelineGroup&              pipelinegroup,
+bool SetupTerrainDescriptorSets (darkroot::PipelineGroup&              pipelinegroup,
 
                                   const std::vector<rokz::Buffer>& vma_terr_uniform_buffs,
                                   const std::vector<rokz::Buffer>& vma_terr_patch_buffs,
@@ -872,6 +873,7 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
   //
   rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
                                       pipelinegroup.pipeline.layout.ci,
+                                      sizeof(darkroot::PushConstants), 
                                       pipelinegroup.descrgroup.dslayout.handle,
                                       device.handle);
 
@@ -1146,10 +1148,30 @@ bool RecordDarkRenderPass_indexed (Glob& glob,
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
   vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
-  //for (
-  vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
 
-  vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 1);
+  for (uint32_t i = 0; i < 2; ++i) {
+
+    darkroot::PushConstants pcs {};
+    pcs.drawIDs.x = i; 
+    pcs.drawIDs.y = i; 
+    pcs.drawIDs.z = i; 
+    pcs.drawIDs.w = i; 
+
+    const VkShaderStageFlags shader_stages =
+      VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    vkCmdPushConstants (command_buffer,
+                        pipeline.layout.handle,
+                        shader_stages,
+                        0,
+                        sizeof(darkroot::PushConstants),
+                        &pcs);
+
+    vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
+
+  }
+  //for (
+  // vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(command_buffer);
 

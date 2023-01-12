@@ -7,6 +7,15 @@
 
 namespace darkroot {
 
+  struct PushConstants {
+
+    glm::ivec4 drawIDs; 
+    // x: object index
+    // y: unused
+    // z: unused
+    // w: unused
+  }; 
+
   //    3.14159265f;
   struct PipelineGroup { 
 

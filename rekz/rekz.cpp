@@ -26,8 +26,8 @@ int main (int argv, char** argc) {
 
   //   test_time (); 
   //test_rokz (args); 
-  //darkroot_basin  (args);
-  mars_run  (args);
+  darkroot_basin  (args);
+  //mars_run  (args);
   // test_rokz_hpp (args); 
   // texture_tool (args); 
   //test_ouput (args);

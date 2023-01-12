@@ -7,6 +7,10 @@
 //        .frag - a fragment shader
 //        .comp - a compute shader
 
+layout (push_constant) uniform PushConstants {
+  ivec4 draw_ids; 
+
+} pc;
 
 layout(location = 0) in vec3 frag_color;
 layout(location = 1) in vec3 frag_norm;

@@ -16,10 +16,15 @@ layout(binding = 0) uniform MVPTransform {
     mat4 proj;
 } mat;
 
+layout (push_constant) uniform PushConstants {
+  ivec4 draw_ids; 
+
+} pc;
 
 layout(binding = 1) uniform SceneObjParams {
     mat4 model;
 } params[128];
+
 
 
 
@@ -37,8 +42,8 @@ void main() {
   //  gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);
   //  o_norm = (mat.model * vec4(in_nrm, 1.0)).xyz; 
 
-  gl_Position = mat.proj * mat.view * params[gl_InstanceIndex].model * vec4(in_pos, 1.0);
-  o_norm = (params[gl_InstanceIndex].model * vec4(in_nrm, 1.0)).xyz; 
+  gl_Position = mat.proj * mat.view * params[pc.draw_ids.x].model * vec4(in_pos, 1.0);
+  o_norm = (params[pc.draw_ids.x].model * vec4(in_nrm, 1.0)).xyz; 
   o_frag = in_co0;
   o_txcd = in_txc;
 }

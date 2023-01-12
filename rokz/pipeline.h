@@ -41,10 +41,17 @@ namespace rokz {
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
-  bool CreateGraphicsPipelineLayout  (VkPipelineLayout&            pipeline_layout,
+  bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
                                      VkPipelineLayoutCreateInfo&  create_info, 
                                      const VkDescriptorSetLayout& desc_set_layout, 
                                      const VkDevice&              device); 
+
+  bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
+                                     VkPipelineLayoutCreateInfo&  create_info,
+                                     uint32_t                     push_constant_size,
+                                     const VkDescriptorSetLayout& desc_set_layout, 
+                                     const VkDevice&              device); 
+
 
   VkPipelineVertexInputStateCreateInfo&   CreateInfo (VkPipelineVertexInputStateCreateInfo& create_info,
                                                       const VkVertexInputBindingDescription& binding_desc,

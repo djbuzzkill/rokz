@@ -7,6 +7,20 @@
 
 namespace mars {
 
+  // --------------------------------------------------------------------
+  // Geometry
+  // --------------------------------------------------------------------
+  struct PushConstants {
+
+    glm::ivec4 objectIDs;
+    // x: object index
+    // y: unused
+    // z: unused
+    // w: unused
+
+  };
+
+
   //    3.14159265f;
   struct PipelineGroup { 
 

@@ -442,6 +442,7 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
   //
   rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
                                       pipelinegroup.pipeline.layout.ci,
+                                      sizeof(mars::PushConstants), 
                                       pipelinegroup.descrgroup.dslayout.handle,
                                       device.handle);
 

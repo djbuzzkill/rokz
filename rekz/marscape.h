@@ -20,7 +20,8 @@ namespace mars {
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
-  namespace window_handler { 
+  namespace window_handler
+  { 
     void on_resize       (GLFWwindow* window, int width, int height); 
     void on_keypress     (GLFWwindow* window, int key, int scancode, int action, int mods); 
     void on_mouse_enter  (GLFWwindow* window, int entered);
