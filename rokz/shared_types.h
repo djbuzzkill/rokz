@@ -53,6 +53,7 @@ namespace rokz {
   // ----------------------------------------------------------
 
   struct Window {
+
     Window () : glfw_window (nullptr) {
     }
     
@@ -189,19 +190,6 @@ namespace rokz {
     VkFenceCreateInfo      fence;
 
   }; 
-  // --------------------------------------------------------
-  struct RenderSync {
-
-    RenderSync () :image_available_sem (), render_finished_sem (), in_flight_fen () {
-    }
-      
-    VkSemaphore image_available_sem;
-    VkSemaphore render_finished_sem;
-    VkFence     in_flight_fen;
-
-    RenderSyncCreateInfo ci;
-
-  };
   
   // ---------------------------------------------------------------------
   struct Framebuffer {
@@ -332,20 +320,57 @@ namespace rokz {
   };
 
   // --------------------------------------------------------
-  struct FrameGroup {
-    rokz::Swapchain                swapchain              ;// = glob.swapchain; 
-    //  #image_views
-    std::vector<rokz::Image>       swapchain_images       ;// = glob.swapchain_images; 
-    std::vector<rokz::ImageView>   swapchain_imageviews   ;//= glob.swapchain_imageviews; 
-    std::vector<rokz::Framebuffer> swapchain_framebuffers ;//= glob.swapchain_framebuffers; 
+  struct SwapchainGroup {
+    rokz::Swapchain                swapchain    ;// = glob.swapchain; 
+    std::vector<rokz::Image>       images       ;// = glob.swapchain_images; 
+    std::vector<rokz::ImageView>   imageviews   ;//= glob.swapchain_imageviews; 
+    std::vector<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
 
-    VkCommandBufferAllocateInfo    command_buffer_alloc_info;
-    rokz::RenderSyncCreateInfo     render_sync_create_info;
+    // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
+    // rokz::RenderSyncCreateInfo     render_sync_create_info;
+
+    // // kMaxFramesInFlight
+    // std::vector<rokz::RenderSync>  syncs;
+    // std::vector<VkCommandBuffer>   command_buffers;
+  }; 
+
+  // --------------------------------------------------------
+
+  // template<int NFrames> 
+  // struct FrameSequencing {
+  //   VkCommandBufferAllocateInfo    command_buffer_alloc_info;
+  //   rokz::RenderSyncCreateInfo     render_sync_create_info;
+  //   // kMaxFramesInFlight
+  //   std::array<rokz::RenderSync, NFrames> syncs;
+  //   std::array<VkCommandBuffer, NFrames>  command_buffers;
+  // }; 
+
+  // --------------------------------------------------------
+  struct RenderSync {
+
+    RenderSync () :image_available_sem (), render_finished_sem (), in_flight_fen () {
+    }
+      
+    VkSemaphore image_available_sem;
+    VkSemaphore render_finished_sem;
+    VkFence     in_flight_fen;
+
+    RenderSyncCreateInfo ci;
+
+  };
+
+  // --------------------------------------------------------
+  struct FrameSequencing {
+
+    VkCommandBufferAllocateInfo  command_buffer_alloc_info;
+    std::vector<VkCommandBuffer> command_buffers;
+    //rokz::RenderSyncCreateInfo     render_sync_create_info;
     // kMaxFramesInFlight
     std::vector<rokz::RenderSync> syncs;
-    std::vector<VkCommandBuffer>  command_buffers;
   }; 
   
+
+
 }
 
 #endif

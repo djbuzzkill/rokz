@@ -13,6 +13,7 @@
 #include <vulkan/vulkan_core.h>
 
 //#define VMA_IMPLEMENTATION
+#include "rekz/mars_types.h"
 #include "rokz/descriptor.h"
 #include "rokz/shared_types.h"
 #include "vk_mem_alloc.h"
@@ -20,13 +21,17 @@
 #define ROKZ_USE_VMA_ALLOCATION 1
 
 namespace mars {
+
+  template<typename VTy> 
+  using Result = std::tuple<bool, VTy>;
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  const size_t        kMaxFramesInFlight = 2;
   const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
   const VkExtent2D    kTestExtent  = { 800, 600 };
-  const size_t        kSceneObjCount = 128;
+
+
+  const size_t        kPatchCount  = 100;
 
   // --------------------------------------------------------------------
   //
@@ -98,7 +103,7 @@ namespace mars {
 } // MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS 
 
 
-
+const size_t kMaxFramesInFlight = mars::Glob::MaxFramesInFlight; 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -157,7 +162,7 @@ void SetupPatchGeometry (Glob& glob) {
 void SetupMarsDepthBuffer (Glob& glob) {
   printf ("%s\n", __FUNCTION__); 
 
-  rokz::FrameGroup& frame_group = glob.frame_group;
+  rokz::SwapchainGroup& frame_group = glob.frame_group;
 
 
   //
@@ -293,12 +298,12 @@ void CleanupMars (Glob& glob) {
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
   Cleanup (glob.obj_pipeline.pipeline.handle,
-           glob.frame_group.swapchain_framebuffers, glob.frame_group.swapchain_imageviews,
+           glob.frame_group.framebuffers, glob.frame_group.imageviews,
 
            glob.frame_group.swapchain,
            glob.surface,
            glob.command_pool.handle,
-           glob.frame_group.syncs, 
+           glob.frame_sequence.syncs, 
            glob.obj_pipeline.pipeline.shader_modules,
            glob.obj_pipeline.pipeline.layout.handle, 
            glob.render_pass,
@@ -324,7 +329,14 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
   // SetupDarkTexture (glob); 
   // SetupDarkTextureImageView (glob); 
 
+  "height textures";
 
+  "normal textures";
+
+  "color textures"; 
+    
+
+  
   return false;
 }
 
@@ -338,7 +350,7 @@ bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
 
   //  UniformBinding
   //  SamplerBinding
-  descrgroup.dslayout.bindings.resize (3);
+  descrgroup.dslayout.bindings.resize (6);
   //rokz::Init (glob.desc_set_layout_bindings[0],
 
   // MVPTransform
@@ -347,19 +359,37 @@ bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                     1,
                                     VK_SHADER_STAGE_VERTEX_BIT);
-
-  // SceneObjParams
+  // ViewParams dont need yet rly
+  // rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[x],
+  //                                   1,
+  //                                   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+  //                                   1,
+  //                                   VK_SHADER_STAGE_VERTEX_BIT);
+  // PatchParams
   rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
-                                    1,
+                                    2,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    128, 
+                                    kPatchCount, 
                                     VK_SHADER_STAGE_VERTEX_BIT);
 
-  // sammpler+image
+  // HEIGHT map
   rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
-                                    2,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    1, 
+                                    3,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
+                                    kPatchCount, 
+                                    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+  // NORMAL map
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[3],
+                                    4,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
+                                    kPatchCount, 
+                                    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+
+  // COLOR image
+  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[4],
+                                    5,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
+                                    kPatchCount, 
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
   if (!rokz::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
@@ -370,7 +400,6 @@ bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
     return false;
   }
 
-  printf (" --> true\n"); 
   return true; 
 }
 
@@ -387,7 +416,211 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
                                 const rokz::Sampler&   sampler, 
 
                                 const rokz::DescriptorPool& descpool,
-                                const rokz::Device&         device) {
+                                const rokz::Device&         device)
+{
+
+  // printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+
+  // rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
+ 
+  // // use same layout for both allocations
+  // std::vector<VkDescriptorSetLayout> descrlos (kMaxFramesInFlight, dg.dslayout.handle);
+  // // could have also said: 
+  // //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
+  // // but that wouldnt work
+  // rokz::AllocateInfo (dg.alloc_info , descrlos, descpool);
+  
+  // if (!rokz::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, device.handle)) {
+  //   printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
+  //   return false;
+  // }
+  // //
+
+  struct notype {}; 
+  
+  for (uint32_t flight = 0; flight < kMaxFramesInFlight; flight++) {
+
+    // MVPTransform
+    VkDescriptorBufferInfo mvp_info{};
+    mvp_info.buffer     = 0; // vma_uniform_buffs[i].handle;
+    mvp_info.offset     = 0;
+    mvp_info.range      = sizeof (rokz::MVPTransform); 
+
+    // mar::ViewParams
+    VkDescriptorBufferInfo view_info{};
+    view_info.buffer     = 0; // vma_uniform_buffs[i].handle;
+    view_info.offset     = 0;
+    view_info.range      = sizeof (mars::ViewParams); 
+
+    //  mars::PatchParams
+    std::vector<VkDescriptorBufferInfo> patch_params  (kPatchCount, VkDescriptorBufferInfo {});
+    for (size_t ipatch = 0; ipatch < patch_params.size (); ++ipatch) { 
+      patch_params[ipatch].buffer   = vma_objparam_buffs[flight].handle; //
+      patch_params[ipatch].offset   = ipatch * sizeof(mars::PatchParams) ;         // min_uniform_buffer_offset_alignment ??
+      patch_params[ipatch].range    = sizeof(mars::PatchParams) ;            //glob.vma_objparam_buffs[i].ci.size;
+    }
+    
+    // height maps
+    std::vector<VkDescriptorImageInfo> hgt_map_infos  (kPatchCount, VkDescriptorImageInfo {});
+    for (size_t ipatch = 0; ipatch < kPatchCount; ++ipatch) { 
+      hgt_map_infos[ipatch].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+      hgt_map_infos[ipatch].imageView   = texture_imageview.handle;
+      hgt_map_infos[ipatch].sampler     = sampler.handle;
+    }
+
+    //  normal maps
+    std::vector<VkDescriptorImageInfo>  normal_map_infos (kPatchCount, VkDescriptorImageInfo {}); 
+    for (size_t ipatch = 0; ipatch < kPatchCount; ++ipatch ) { 
+      normal_map_infos[ipatch].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+      normal_map_infos[ipatch].imageView   = texture_imageview.handle;
+      normal_map_infos[ipatch].sampler     = sampler.handle;
+    }
+    
+    // color maps
+    std::vector<VkDescriptorImageInfo>  color_map_infos (kPatchCount, VkDescriptorImageInfo {}); 
+    for (size_t ipatch = 0; ipatch < kPatchCount; ++ipatch) {  
+      color_map_infos[ipatch].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+      color_map_infos[ipatch].imageView   = texture_imageview.handle;
+      color_map_infos[ipatch].sampler     = sampler.handle;
+
+    }
+
+    // MVP
+    std::array<VkWriteDescriptorSet, 6>  descr_writes {};
+    descr_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descr_writes[0].pNext            = nullptr;    
+    descr_writes[0].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[0].dstBinding       = 0;
+    descr_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descr_writes[0].dstArrayElement  = 0;
+    descr_writes[0].descriptorCount  = 1;
+    descr_writes[0].pBufferInfo      = &mvp_info;
+    descr_writes[0].pImageInfo       = nullptr; 
+    descr_writes[0].pTexelBufferView = nullptr; 
+    // ViewParams
+    descr_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descr_writes[1].pNext            = nullptr;    
+    descr_writes[1].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[1].dstBinding       = 1;
+    descr_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descr_writes[1].dstArrayElement  = 0;
+    descr_writes[1].descriptorCount  = 1;
+    descr_writes[1].pBufferInfo      = &mvp_info;
+    descr_writes[1].pImageInfo       = nullptr; 
+    descr_writes[1].pTexelBufferView = nullptr; 
+    // per Patch
+    descr_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descr_writes[2].pNext            = nullptr;    
+    descr_writes[2].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[2].dstBinding       = 2;
+    descr_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descr_writes[2].dstArrayElement  = 0;
+    descr_writes[2].descriptorCount  = patch_params.size();
+    descr_writes[2].pBufferInfo      = &patch_params[0];
+    descr_writes[2].pImageInfo       = nullptr; 
+    descr_writes[2].pTexelBufferView = nullptr; 
+    // height maps
+    descr_writes[3].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descr_writes[3].pNext            = nullptr;    
+    descr_writes[3].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[3].dstBinding       = 3;
+    descr_writes[3].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descr_writes[3].dstArrayElement  = 0;
+    descr_writes[3].descriptorCount  = hgt_map_infos.size();
+    descr_writes[3].pBufferInfo      = nullptr; 
+    descr_writes[3].pImageInfo       = &hgt_map_infos[0];
+    descr_writes[3].pTexelBufferView = nullptr; 
+    // normal maps
+    descr_writes[4].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descr_writes[4].pNext            = nullptr;    
+    descr_writes[4].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[4].dstBinding       = 4;
+    descr_writes[4].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descr_writes[4].dstArrayElement  = 0;
+    descr_writes[4].descriptorCount  = normal_map_infos.size();
+    descr_writes[4].pBufferInfo      = nullptr; 
+    descr_writes[4].pImageInfo       = &normal_map_infos[0];
+    descr_writes[4].pTexelBufferView = nullptr; 
+    // color maps
+    descr_writes[5].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descr_writes[5].pNext            = nullptr;    
+    descr_writes[5].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[5].dstBinding       = 5;
+    descr_writes[5].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descr_writes[5].dstArrayElement  = 0;
+    descr_writes[5].descriptorCount  = color_map_infos.size();
+    descr_writes[5].pBufferInfo      = nullptr; 
+    descr_writes[5].pImageInfo       = &color_map_infos[0];
+    descr_writes[5].pTexelBufferView = nullptr; 
+
+    
+    //
+    vkUpdateDescriptorSets (device.handle, descr_writes.size(), &descr_writes[0], 0, nullptr);
+  }
+  
+  // for (uint32_t i = 0; i < kMaxFramesInFlight; i++) {
+  //   // wtf does this do
+  //   VkDescriptorBufferInfo buffer_info{};
+  //   buffer_info.buffer     = vma_uniform_buffs[i].handle;
+  //   buffer_info.offset     = 0;
+  //   buffer_info.range      = vma_uniform_buffs[i].ci.size ;
+    
+  //   std::vector<VkDescriptorBufferInfo>  objparams (kSceneObjCount, VkDescriptorBufferInfo {});
+  //   for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
+  //     objparams[iobj].buffer   = vma_objparam_buffs[i].handle; //
+  //     objparams[iobj].offset   = 0;         // min_uniform_buffer_offset_alignment ??
+  //     objparams[iobj].range    = sizeof(SceneObjParam) ;            //glob.vma_objparam_buffs[i].ci.size;
+  //   }
+    
+   //   VkDescriptorImageInfo image_info {};
+  //   image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+  //   image_info.imageView   = texture_imageview.handle;
+  //   image_info.sampler     = sampler.handle;
+  // //
+  //   std::array<VkWriteDescriptorSet, 3>  descriptor_writes {};
+  
+  //   descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  //   descriptor_writes[0].pNext            = nullptr;    
+  //   descriptor_writes[0].dstSet           = dg.descrsets[i];
+  //   descriptor_writes[0].dstBinding       = 0;
+  //   descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+  //   descriptor_writes[0].dstArrayElement  = 0;
+  //   descriptor_writes[0].descriptorCount  = 1;
+  //   descriptor_writes[0].pBufferInfo      = &buffer_info;
+  //   descriptor_writes[0].pImageInfo       = nullptr; 
+  //   descriptor_writes[0].pTexelBufferView = nullptr; 
+
+  //   descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  //   descriptor_writes[1].pNext            = nullptr;    
+  //   descriptor_writes[1].dstSet           = dg.descrsets[i];
+  //   descriptor_writes[1].dstBinding       = 1;
+  //   descriptor_writes[1].dstArrayElement  = 0;
+  //   descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  //   descriptor_writes[1].descriptorCount  = objparams.size(); // <
+  //   descriptor_writes[1].pBufferInfo      = &objparams[0]; 
+  //   descriptor_writes[1].pImageInfo       = nullptr; 
+  //   descriptor_writes[1].pTexelBufferView = nullptr; 
+
+  //   descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  //   descriptor_writes[2].pNext            = nullptr;    
+  //   descriptor_writes[2].dstSet           = dg.descrsets[i];
+  //   descriptor_writes[2].dstBinding       = 2;
+  //   descriptor_writes[2].dstArrayElement  = 0;
+  //   descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+  //   descriptor_writes[2].descriptorCount  = 1;
+  //   descriptor_writes[2].pBufferInfo      = nullptr;
+  //   descriptor_writes[2].pImageInfo       = &image_info; 
+  //   descriptor_writes[2].pTexelBufferView = nullptr; 
+
+  //   vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  // }
+
+    VkWriteDescriptorSet wdescs {}; 
+    VK_DESCRIPTOR_TYPE_SAMPLER; 
+  // return true;
+
 
   return false;
 }
@@ -401,6 +634,8 @@ bool SetupGlobalDescriptorPool (Glob& glob) {
 
   return false;
 }
+
+
 
 // ---------------------------------------------------------------------
 //
@@ -605,17 +840,17 @@ int mars_run (const std::vector<std::string>& args) {
   
   SetupMarsWindow (glob); 
 
-  rokz::AppInfo_default (glob.instance.app_info);
+  rokz::cx::AppInfo_default (glob.instance.app_info);
 
-  rokz::CreateInfo (glob.instance.ci,
+  rokz::cx::CreateInfo (glob.instance.ci,
                     glob.instance.required_extensions,
                     glob.instance.extension_strings,
                     glob.instance.vals, glob.instance.validation_strings, 
                     glob.instance.app_info); 
 
-  rokz::CreateInstance  (glob.instance.handle, glob.instance.ci);
-  rokz::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
-  rokz::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
+  rokz::cx::CreateInstance  (glob.instance.handle, glob.instance.ci);
+  rokz::cx::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
+  rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
 
   glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device); 
 
@@ -634,23 +869,23 @@ int mars_run (const std::vector<std::string>& args) {
 
   glob.device.queue_ci.resize  (2); 
   // VkQueueCreateInfo
-  rokz::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.queue_priority);
-  rokz::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.queue_priority);
+  rokz::cx::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.queue_priority);
+  rokz::cx::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.queue_priority);
   
   // device info
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   glob.physical_device.features.samplerAnisotropy = VK_TRUE;
 
-    rokz::CreateInfo (glob.device.ci,
+  rokz::cx::CreateInfo (glob.device.ci,
                     glob.device.vals, glob.device.valstrs, 
                     glob.device.dxs, glob.device.dxstrs, 
                     glob.device.queue_ci, &glob.physical_device.features);
 
-  rokz::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
+  rokz::cx::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
 
   // get queue handle
-  rokz::GetDeviceQueue (&glob.queues.graphics, glob.physical_device.family_indices.graphics.value(), glob.device.handle);
-  rokz::GetDeviceQueue (&glob.queues.present,  glob.physical_device.family_indices.present.value(), glob.device.handle);
+  rokz::cx::GetDeviceQueue (&glob.queues.graphics, glob.physical_device.family_indices.graphics.value(), glob.device.handle);
+  rokz::cx::GetDeviceQueue (&glob.queues.present,  glob.physical_device.family_indices.present.value(), glob.device.handle);
   // VMA SECTION
   // VmaVulkanFunctions vulkanFunctions = {};
   // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
@@ -672,29 +907,29 @@ int mars_run (const std::vector<std::string>& args) {
   // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
   // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
   // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-
-
   
-  rokz::QuerySwapchainSupport (glob.swapchain_support_info,
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
                                glob.surface,
                                glob.physical_device.handle);
 
-  rokz::FrameGroup& frame_group = glob.frame_group;
+  rokz::SwapchainGroup& frame_group = glob.frame_group;
 
   frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
   frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
   
-  rokz::CreateInfo_default (frame_group.swapchain.ci,  
+  rokz::cx::CreateInfo_default (frame_group.swapchain.ci,  
                             frame_group.swapchain.family_indices,
                             glob.surface,
                             kTestExtent, 
                             glob.swapchain_support_info, 
                             glob.physical_device);
 
-  rokz::CreateSwapchain (frame_group.swapchain, glob.device); 
+  rokz::cx::CreateSwapchain (frame_group.swapchain, glob.device); 
   
-  rokz::GetSwapChainImages (frame_group.swapchain_images, frame_group.swapchain, glob.device.handle); 
-  rokz::CreateImageViews (frame_group.swapchain_imageviews, frame_group.swapchain_images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rokz::cx::GetSwapChainImages (frame_group.images, frame_group.swapchain, glob.device.handle); 
+
+
+  rokz::CreateImageViews (frame_group.imageviews, frame_group.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
 
   rokz::CreateRenderPass (glob.render_pass,
@@ -734,12 +969,11 @@ printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
                             frame_group.swapchain.ci.imageExtent, glob.multisamp_color_imageview.handle,
                             glob.depth_imageview.handle, glob.device); 
 
-  rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci,
-                           glob.physical_device.family_indices, glob.device.handle);
+  rokz::CreateInfo (glob.command_pool.ci, glob.physical_device.family_indices.graphics.value());
+  rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci, glob.device.handle);
+
 
   SetupPatchGeometry (glob); 
-
-
 
 
   "Setup Index+Vertex Buffers";
@@ -980,3 +1214,13 @@ int mars_prelim (const std::vector<std::string>& args) {
 }
 
 
+//
+//
+bool SetupOutlinePipeline () {
+
+  "shaders"; 
+  "descriptor sets";
+  "pipeline layout";
+ 
+  return false;
+}

@@ -151,6 +151,7 @@ namespace darkroot {
   struct Glob {
 
     //#ifdef GLOB_COMMENT_OUT   
+    enum { MaxFramesInFlight = 2 }; 
     Glob();
   
 
@@ -165,7 +166,10 @@ namespace darkroot {
 
     rokz::ViewportState          viewport_state;
   
-    rokz::FrameGroup                       frame_group;
+    rokz::SwapchainGroup         swapchain_group;
+
+    rokz::FrameSequencing        frame_sequence;
+
     rokz::SwapchainSupportInfo       swapchain_support_info;
 
     rokz::CommandPool            command_pool;

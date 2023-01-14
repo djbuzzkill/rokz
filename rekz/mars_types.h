@@ -11,22 +11,46 @@ namespace mars {
   // Geometry
   // --------------------------------------------------------------------
   struct PushConstants {
-
     glm::ivec4 objectIDs;
     // x: object index
     // y: unused
     // z: unused
     // w: unused
-
   };
 
+  // --------------------------------------------------------------------
+  // Geometry
+  // --------------------------------------------------------------------
+  struct ViewParams {
 
+    alignas(16) glm::vec3 view_pos;
+    alignas(16) glm::vec3 view_dir;
+    alignas(16) glm::vec3 view_up;
+
+    float field_of_view; 
+    float aspect;
+    float near_dist;
+    float far_dist;
+    
+  };
+
+  // --------------------------------------------------------------------
   //    3.14159265f;
+  // --------------------------------------------------------------------
+  struct PatchParams {
+    glm::mat4 model;
+  }; 
+
+  
+  // --------------------------------------------------------------------
+  //    3.14159265f;
+  // --------------------------------------------------------------------
   struct PipelineGroup { 
 
     rokz::Pipeline        pipeline;
     rokz::DescriptorGroup descrgroup;
   };
+
   // --------------------------------------------------------------------
   // Geometry
   // --------------------------------------------------------------------
@@ -65,11 +89,13 @@ namespace mars {
   // --------------------------------------------------------------------
   typedef TriMesh<MarsVert> MarsMesh;
 
-
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
   struct Glob {
+
+
+    enum { MaxFramesInFlight = 2 }; 
 
     rokz::Instance               instance;
     rokz::PhysicalDevice         physical_device;
@@ -81,7 +107,10 @@ namespace mars {
     VmaAllocator                 allocator;
 
     rokz::ViewportState          viewport_state;
-    rokz::FrameGroup             frame_group;
+    rokz::SwapchainGroup         frame_group;
+
+    rokz::FrameSequencing        frame_sequence;
+    
     rokz::SwapchainSupportInfo   swapchain_support_info;
 
     rokz::CommandPool            command_pool;

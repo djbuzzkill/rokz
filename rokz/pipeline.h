@@ -41,6 +41,13 @@ namespace rokz {
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
+  std::vector<VkDynamicState>& DynamicState_default    (std::vector<VkDynamicState>& dynamic_states);
+  bool                         ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state); 
+  ViewportState&               ViewportState_default   (ViewportState& vps, const VkRect2D& rect, float depth) ; 
+
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
   bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
                                      VkPipelineLayoutCreateInfo&  create_info, 
                                      const VkDescriptorSetLayout& desc_set_layout, 
@@ -52,7 +59,13 @@ namespace rokz {
                                      const VkDescriptorSetLayout& desc_set_layout, 
                                      const VkDevice&              device); 
 
+  bool CreateGraphicsPipelineLayout (VkPipelineLayout&                 pipeline_layout,
+                                     const VkPipelineLayoutCreateInfo& create_info,
+                                     const VkDevice&                   device); 
 
+  VkPipelineColorBlendStateCreateInfo&    CreateInfo (VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
+                                                      const VkPipelineColorBlendAttachmentState& colorblend);
+  VkPipelineDynamicStateCreateInfo&       CreateInfo (VkPipelineDynamicStateCreateInfo& ci, const std::vector<VkDynamicState>& dynamics); 
   VkPipelineVertexInputStateCreateInfo&   CreateInfo (VkPipelineVertexInputStateCreateInfo& create_info,
                                                       const VkVertexInputBindingDescription& binding_desc,
                                                       const std::vector<VkVertexInputAttributeDescription>& attrib_desc); 

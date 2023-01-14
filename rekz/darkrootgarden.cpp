@@ -28,7 +28,9 @@
 
 #define ROKZ_USE_VMA_ALLOCATION 1
 
-const size_t        kMaxFramesInFlight = 2;
+
+const size_t kMaxFramesInFlight = darkroot::Glob::MaxFramesInFlight; 
+
 const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
 const VkExtent2D    kTestExtent  = { 800, 600 };
 const size_t        kSceneObjCount = 128;
@@ -292,12 +294,12 @@ void SetupDarkGeometry (Glob& glob) {
 void SetupDarkDepthBuffer (Glob& glob) {
   printf ("%s\n", __FUNCTION__); 
 
-  rokz::FrameGroup& frame_group = glob.frame_group;
+  rokz::SwapchainGroup& scg = glob.swapchain_group;
 
 
   //
-  uint32_t wd = frame_group.swapchain.ci.imageExtent.width; 
-  uint32_t ht = frame_group.swapchain.ci.imageExtent.height;   
+  uint32_t wd = scg.swapchain.ci.imageExtent.width; 
+  uint32_t ht = scg.swapchain.ci.imageExtent.height;   
 
   VkFormat depth_format;
 
@@ -376,7 +378,7 @@ void SetupDarkMultisampleColorResource (Glob& glob) {
 
   printf ("%s\n", __FUNCTION__); 
 
-  rokz::Swapchain& swapchain = glob.frame_group.swapchain; 
+  rokz::Swapchain& swapchain = glob.swapchain_group.swapchain; 
   
   VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
   VkFormat    swapchain_format = swapchain.ci.imageFormat; 
@@ -423,12 +425,12 @@ void CleanupDarkroot (Glob& glob) {
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
   Cleanup (glob.obj_pipeline.pipeline.handle,
-           glob.frame_group.swapchain_framebuffers, glob.frame_group.swapchain_imageviews,
+           glob.swapchain_group.framebuffers, glob.swapchain_group.imageviews,
 
-           glob.frame_group.swapchain,
+           glob.swapchain_group.swapchain,
            glob.surface,
            glob.command_pool.handle,
-           glob.frame_group.syncs, 
+           glob.frame_sequence.syncs, 
            glob.obj_pipeline.pipeline.shader_modules,
            glob.obj_pipeline.pipeline.layout.handle, 
            glob.render_pass,
@@ -845,7 +847,7 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
                           VkSampleCountFlagBits msaa_samples,
                           const rokz::Device& device) {
 
-  //rokz::FrameGroup& frame_group = glob.frame_group;
+  //rokz::FrameGroup& frame_group = glob.swapchain_group;
   SetupDarkShaderModules (pipelinegroup.pipeline, fspath, device);
   
   rokz::ColorBlendState_default (pipelinegroup.pipeline.state.color_blend_attachment); 
@@ -859,7 +861,6 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
 
   rokz::CreateInfo (psci.tesselation, 69); 
   rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
-  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
   rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
   rokz::CreateInfo (psci.viewport_state, vps);
   rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
@@ -867,7 +868,7 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
   rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.color_blend_attachment); 
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
-  SetupObjectDescriptorLayout (  pipelinegroup.descrgroup, device); 
+  SetupObjectDescriptorLayout (pipelinegroup.descrgroup, device); 
 
 
   //
@@ -1031,7 +1032,7 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
 
   float sim_timef = glob.sim_time;
 
-  float asp = (float)glob.frame_group.swapchain.ci.imageExtent.width / (float)glob.frame_group.swapchain.ci.imageExtent.height;
+  float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
     
   glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
   // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
@@ -1148,7 +1149,6 @@ bool RecordDarkRenderPass_indexed (Glob& glob,
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
   vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
-
   for (uint32_t i = 0; i < 2; ++i) {
 
     darkroot::PushConstants pcs {};
@@ -1168,16 +1168,14 @@ bool RecordDarkRenderPass_indexed (Glob& glob,
                         &pcs);
 
     vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
-
   }
-  //for (
-  // vkCmdDrawIndexed (command_buffer, glob.darkmesh.indices.size(), 1, 0, 0, 0);
 
+
+  //
   vkCmdEndRenderPass(command_buffer);
-
-  // end 
+  //
   if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
-    printf ("failed to record command buffer!");
+    printf ("[FAILED] record command buffer\n");
     return false; 
   }
   
@@ -1199,12 +1197,12 @@ bool RenderDarkFrame (Glob&           glob,
                       double dt) {
 
   const rokz::Device&             device      = glob.device; 
-  rokz::FrameGroup&               frame_group = glob.frame_group;
+  rokz::SwapchainGroup&           scg = glob.swapchain_group;
 
-  rokz::Swapchain&                swapchain              = frame_group.swapchain; 
-  std::vector<rokz::Image>&       swapchain_images       = frame_group.swapchain_images; 
-  std::vector<rokz::Framebuffer>& swapchain_framebuffers = frame_group.swapchain_framebuffers; 
-  std::vector<rokz::ImageView>&   swapchain_imageviews   = frame_group.swapchain_imageviews; 
+  rokz::Swapchain&                swapchain              = scg.swapchain; 
+  std::vector<rokz::Image>&       swapchain_images       = scg.images; 
+  std::vector<rokz::Framebuffer>& swapchain_framebuffers = scg.framebuffers; 
+  std::vector<rokz::ImageView>&   swapchain_imageviews   = scg.imageviews; 
 
   
   rokz::Image&                    depth_image            = glob.depth_image;
@@ -1216,14 +1214,14 @@ bool RenderDarkFrame (Glob&           glob,
   VmaAllocator&                   allocator              =  glob.allocator;
   rokz::Window&                   window                 = glob.window;
 
-  rokz::RenderSync&               render_sync    = frame_group.syncs[curr_frame];
+  rokz::RenderSync&               render_sync            = glob.frame_sequence.syncs[curr_frame];
     // glob.syncs;
 
-  VkResult acquire_res = rokz::AcquireFrame (glob.frame_group.swapchain, render_sync, image_index, device); 
+  VkResult acquire_res = rokz::AcquireFrame (glob.swapchain_group.swapchain, render_sync, image_index, device); 
   
   if (acquire_res == VK_ERROR_OUT_OF_DATE_KHR || acquire_res == VK_SUBOPTIMAL_KHR || resize) {
     resize = false; 
-    return rokz::RecreateSwapchain (swapchain, 
+    return rokz::cx::RecreateSwapchain (swapchain, 
                                     swapchain_images,
                                     swapchain_framebuffers,
                                     swapchain_imageviews,
@@ -1244,7 +1242,7 @@ bool RenderDarkFrame (Glob&           glob,
   UpdateDarkUniforms (glob, curr_frame, dt); 
 
   rokz::Framebuffer& framebuffer    = swapchain_framebuffers[image_index]; 
-  VkCommandBuffer&   command_buffer = frame_group.command_buffers[curr_frame]; 
+  VkCommandBuffer&   command_buffer = glob.frame_sequence.command_buffers[curr_frame]; 
   rokz::Buffer&      vma_vb_device  = glob.vma_vb_device;
   rokz::Buffer&      vma_ib_device  = glob.vma_ib_device; 
 
@@ -1283,7 +1281,7 @@ bool RenderDarkFrame (Glob&           glob,
     return false; 
   }
   
-  return rokz::PresentFrame (glob.queues.present, glob.frame_group.swapchain, image_index, glob.frame_group.syncs[curr_frame]); 
+  return rokz::PresentFrame (glob.queues.present, glob.swapchain_group.swapchain, image_index, glob.frame_sequence.syncs[curr_frame]); 
   
 }
 
@@ -1314,20 +1312,20 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   
 
-  rokz::AppInfo_default (glob.instance.app_info);
+  rokz::cx::AppInfo_default (glob.instance.app_info);
 
   //std::vector<const char*> _vls;
   //std::vector<std::string> vstrs;
 
-  rokz::CreateInfo (glob.instance.ci,
+  rokz::cx::CreateInfo (glob.instance.ci,
                     glob.instance.required_extensions,
                     glob.instance.extension_strings,
                     glob.instance.vals, glob.instance.validation_strings, 
                     glob.instance.app_info); 
 
-  rokz::CreateInstance  (glob.instance.handle, glob.instance.ci);
-  rokz::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
-  rokz::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
+  rokz::cx::CreateInstance  (glob.instance.handle, glob.instance.ci);
+  rokz::cx::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
+  rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
 
   glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device); 
 
@@ -1348,23 +1346,23 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   glob.device.queue_ci.resize  (2); 
   // VkQueueCreateInfo
-  rokz::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.queue_priority);
-  rokz::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.queue_priority);
+  rokz::cx::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.queue_priority);
+  rokz::cx::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.queue_priority);
   
   // device info
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   glob.physical_device.features.samplerAnisotropy = VK_TRUE;
 
-  rokz::CreateInfo (glob.device.ci,
+  rokz::cx::CreateInfo (glob.device.ci,
                     glob.device.vals, glob.device.valstrs, 
                     glob.device.dxs, glob.device.dxstrs, 
                     glob.device.queue_ci, &glob.physical_device.features);
 
-  rokz::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
+  rokz::cx::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
 
   // get queue handle
-  rokz::GetDeviceQueue (&glob.queues.graphics, glob.physical_device.family_indices.graphics.value(), glob.device.handle);
-  rokz::GetDeviceQueue (&glob.queues.present,  glob.physical_device.family_indices.present.value(), glob.device.handle);
+  rokz::cx::GetDeviceQueue (&glob.queues.graphics, glob.physical_device.family_indices.graphics.value(), glob.device.handle);
+  rokz::cx::GetDeviceQueue (&glob.queues.present,  glob.physical_device.family_indices.present.value(), glob.device.handle);
   // VMA SECTION
   // VmaVulkanFunctions vulkanFunctions = {};
   // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
@@ -1387,30 +1385,30 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
   // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
   
-  rokz::QuerySwapchainSupport (glob.swapchain_support_info,
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
                                glob.surface,
                                glob.physical_device.handle);
 
-  rokz::FrameGroup& frame_group = glob.frame_group;
+  rokz::SwapchainGroup& scg = glob.swapchain_group;
 
-  frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
-  frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
+  scg.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
+  scg.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
   
-  rokz::CreateInfo_default (frame_group.swapchain.ci,  
-                            frame_group.swapchain.family_indices,
+  rokz::cx::CreateInfo_default (scg.swapchain.ci,  
+                            scg.swapchain.family_indices,
                             glob.surface,
                             kTestExtent, 
                             glob.swapchain_support_info, 
                             glob.physical_device);
 
-  rokz::CreateSwapchain (frame_group.swapchain, glob.device); 
+  rokz::cx::CreateSwapchain (scg.swapchain, glob.device); 
   
-  rokz::GetSwapChainImages (frame_group.swapchain_images, frame_group.swapchain, glob.device.handle); 
-  rokz::CreateImageViews (frame_group.swapchain_imageviews, frame_group.swapchain_images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rokz::cx::GetSwapChainImages (scg.images, scg.swapchain, glob.device.handle); 
+  rokz::CreateImageViews (scg.imageviews, scg.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
 
   rokz::CreateRenderPass (glob.render_pass,
-                          frame_group.swapchain.ci.imageFormat,
+                          scg.swapchain.ci.imageFormat,
                           glob.msaa_samples,
                           glob.device.handle,
                           glob.physical_device.handle);
@@ -1420,18 +1418,18 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // SetupShaderModules also sets up Pipeline Shader State CreateInfo's
   //  SetupDarkShaderModules (glob.pipeline, dark_path, glob.device);
   // bool SetupDarkShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
-  SetupViewportState (glob.viewport_state, glob.frame_group.swapchain.ci.imageExtent); 
+  SetupViewportState (glob.viewport_state, glob.swapchain_group.swapchain.ci.imageExtent); 
 
   SetupObjectPipeline (glob.obj_pipeline,
                        glob.viewport_state,
                        glob.render_pass,
                        dark_path,
-                       glob.frame_group.swapchain,
+                       glob.swapchain_group.swapchain,
                        glob.msaa_samples,
                        glob.device); 
 
   
-  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.frame_group.swapchain);
+  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
   SetupDarkMultisampleColorResource (glob);
 
@@ -1439,17 +1437,19 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 
   
-  rokz::CreateFramebuffers (frame_group.swapchain_framebuffers, frame_group.swapchain_imageviews, glob.render_pass,
-                            frame_group.swapchain.ci.imageExtent, glob.multisamp_color_imageview.handle,
+  rokz::CreateFramebuffers (scg.framebuffers, scg.imageviews, glob.render_pass,
+                            scg.swapchain.ci.imageExtent, glob.multisamp_color_imageview.handle,
                             glob.depth_imageview.handle, glob.device); 
 
-  rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci,
-                           glob.physical_device.family_indices, glob.device.handle);
 
+  // Command Pool 
+  rokz::CreateInfo (glob.command_pool.ci, glob.physical_device.family_indices.graphics.value());
+  rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci, glob.device.handle);
+  
+  
   SetupDarkGeometry (glob); 
 
   void* pmapped  = nullptr;
-
   rokz::Buffer vb_x; 
   rokz::CreateInfo_VB_stage (vb_x.ci, DarkrootMesh::VertexSize, glob.darkmesh.verts.size());
   rokz::AllocCreateInfo_stage (vb_x.alloc_ci);
@@ -1520,23 +1520,18 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   
   // items per frames 
-  //frame_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
-  frame_group.syncs.resize (kMaxFramesInFlight);
-  frame_group.command_buffers.resize (kMaxFramesInFlight);
+  //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);
+  rokz::FrameSequencing& frameseq = glob.frame_sequence;
   
-  rokz::AllocateInfo (frame_group.command_buffer_alloc_info, glob.command_pool.handle); 
-  //glob.command_buffer_gourp.resize (kMaxFramesInFlight);
+  // !! 
+  frameseq.command_buffers.resize (kMaxFramesInFlight);
+  frameseq.syncs.resize           (kMaxFramesInFlight);
+  rokz::AllocateInfo (frameseq.command_buffer_alloc_info, glob.command_pool.handle); 
 
-  //frame_group.syncs.resize (kMaxFramesInFlight);
-  //glob.create_info.syncs.resize (kMaxFramesInFlight);
-
-  for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
-    // sep
-    rokz::CreateCommandBuffer(frame_group.command_buffers[i], 
-                              frame_group.command_buffer_alloc_info,
-                              glob.device.handle);
-
-    rokz::CreateRenderSync (glob.frame_group.syncs[i], frame_group.render_sync_create_info, glob.device.handle);
+  for (size_t i = 0; i < Glob::MaxFramesInFlight; ++i) {
+    // ^^ 'CreateCommandBuffers' should be called, we call it 
+    rokz::CreateCommandBuffer(frameseq.command_buffers[i], frameseq.command_buffer_alloc_info,glob.device.handle);
+    rokz::CreateRenderSync (frameseq.syncs[i], frameseq.syncs[i].ci, glob.device.handle);
   }
 
   //

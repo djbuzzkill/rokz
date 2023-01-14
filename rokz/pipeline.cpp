@@ -2,6 +2,105 @@
 #include "pipeline.h"
 
 
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states) {
+
+  // DYNAMIC STATE
+  dynamic_states.clear ();
+  dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
+  dynamic_states.push_back (VK_DYNAMIC_STATE_SCISSOR);
+  return dynamic_states; 
+}
+ 
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+rokz::ViewportState& rokz::ViewportState_default (rokz::ViewportState& vps, const VkRect2D& rect, float fdepth) {
+
+  vps.viewports.resize (1);
+  vps.scissors.resize (1);
+
+  vps.scissors[0] = rect;
+  rokz::Viewport (vps.viewports[0], rect.offset, rect.extent, fdepth);  
+
+  return vps;
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineDynamicStateCreateInfo& rokz::CreateInfo (VkPipelineDynamicStateCreateInfo& ci, const std::vector<VkDynamicState>& dynamics) {
+
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.dynamicStateCount = static_cast<uint32_t>(dynamics.size());
+  ci.pDynamicStates = &dynamics[0];
+
+  return ci;
+
+}
+
+// ---------------------------------------------------------------------
+
+//
+// ---------------------------------------------------------------------
+bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state) {
+  // COLOR BLENDING
+  color_blend_attachment_state = {};
+  color_blend_attachment_state.colorWriteMask =
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_attachment_state.blendEnable = VK_FALSE;
+  color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; 
+  color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; 
+  color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD; 
+  color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; 
+  color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD; 
+
+  // Create Info
+  // color_blending_create_info = {};
+  // color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  // color_blending_create_info.pNext = nullptr;
+  // color_blending_create_info.logicOpEnable = VK_FALSE;
+  // color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
+  // color_blending_create_info.attachmentCount = 1;
+  // color_blending_create_info.pAttachments = &color_blend_attachment_state;
+  // color_blending_create_info.blendConstants[0] = 0.0f; 
+  // color_blending_create_info.blendConstants[1] = 0.0f; 
+  // color_blending_create_info.blendConstants[2] = 0.0f; 
+  // color_blending_create_info.blendConstants[3] = 0.0f; 
+  return true;
+}
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
+                                                        const VkPipelineColorBlendAttachmentState& colorblend) {   // Create Info
+  color_blending_create_info = {};
+  color_blending_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  color_blending_create_info.pNext = nullptr;
+  color_blending_create_info.logicOpEnable = VK_FALSE;
+  color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
+  color_blending_create_info.attachmentCount = 1;
+  color_blending_create_info.pAttachments = &colorblend;
+  color_blending_create_info.blendConstants[0] = 0.0f; 
+  color_blending_create_info.blendConstants[1] = 0.0f; 
+  color_blending_create_info.blendConstants[2] = 0.0f; 
+  color_blending_create_info.blendConstants[3] = 0.0f; 
+
+  return color_blending_create_info ;
+}
+
+
+
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -128,23 +227,19 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
 }
 
 // ---------------------------------------------------------------------
-//
+// VkPipelineLayoutCreateInfo
 // ---------------------------------------------------------------------
-VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci, const std::vector<VkDescriptorSetLayout>& dslos, const std::vector<VkPushConstantRange> & pc) {
-  // typedef struct VkPipelineLayoutCreateInfo {
-  //   VkStructureType                 sType;
-  //   const void*                     pNext;
-  //   VkPipelineLayoutCreateFlags     flags;
-  //   uint32_t                        setLayoutCount;
-  //   const VkDescriptorSetLayout*    pSetLayouts;
-  //   uint32_t                        pushConstantRangeCount;
-  //   const VkPushConstantRange*      pPushConstantRanges;
-  // } VkPipelineLayoutCreateInfo;
+VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci,
+                                              const std::vector<VkDescriptorSetLayout>& dslos,
+                                              const std::vector<VkPushConstantRange> & pc) {
+
   ci.sType                = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   ci.pNext                  = nullptr;
   ci.flags                  = 0; 
+
   ci.setLayoutCount         = dslos.size();            
   ci.pSetLayouts            = dslos.size() ? &dslos[0] : nullptr;
+
   ci.pushConstantRangeCount = pc.size();    
   ci.pPushConstantRanges    = pc.size() ? &pc[0] : nullptr;
 
@@ -152,9 +247,9 @@ VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci, co
 }
 
 // ---------------------------------------------------------------------
-//
+// VkPipelineTessellationStateCreateInfo
 // ---------------------------------------------------------------------
-VkPipelineTessellationStateCreateInfo&  rokz::CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points) { 
+VkPipelineTessellationStateCreateInfo& rokz::CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points) { 
 
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
   ci.pNext = nullptr;
@@ -162,6 +257,7 @@ VkPipelineTessellationStateCreateInfo&  rokz::CreateInfo (VkPipelineTessellation
   ci.patchControlPoints =  num_control_points;
   return ci;
 }
+
 
 // ---------------------------------------------------------------------
 //
@@ -244,6 +340,24 @@ bool rokz::CreateGraphicsPipelineLayout (
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
+bool rokz::CreateGraphicsPipelineLayout (
+    VkPipelineLayout&                 pipeline_layout,
+    const VkPipelineLayoutCreateInfo& create_info,
+    const VkDevice&                   device)
+{
+  //
+  if (vkCreatePipelineLayout (device, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
+
+    printf ("%s --> [FAILED ] create graphics pipeline layout\n", __FUNCTION__); 
+    return false;
+  }
+
+  return true;
+}
+
+// ---------------------------------------------------------------------
+// VkGraphicsPipelineCreateInfo 
+// ---------------------------------------------------------------------
 VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
                                                 const VkPipelineLayout&                            pipeline_layout,
                                                 const VkRenderPass&                                render_pass,
@@ -265,6 +379,7 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
   ci.stageCount          = ci_shader_stages.size();
   ci.pStages             = &ci_shader_stages[0]; 
   ci.pVertexInputState   = ci_vertex_input_state; ;
+  ci.pTessellationState  = ci_tesselation; 
   ci.pInputAssemblyState = ci_input_assembly;
   ci.pViewportState      = ci_viewport_state;
   ci.pRasterizationState = ci_rasterizer;
