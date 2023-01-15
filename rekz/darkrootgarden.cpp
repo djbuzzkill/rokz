@@ -335,6 +335,33 @@ void SetupDarkSampler (Glob& glob) {
 
 
 
+bool SetupGridscapeShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device)  {
+
+  printf ("%s \n", __FUNCTION__); 
+
+  
+  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
+  std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
+
+  shader_modules.resize  (2);
+  shader_stage_create_infos.resize(2);
+  // VERT SHADER 
+  std::filesystem::path vert_file_path  = fspath/"data/shader/gridscape_vert.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
+    return false; 
+  
+  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
+  
+  // FRAG SHADER
+  std::filesystem::path frag_file_path = fspath/"data/shader/gridscape_frag.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device.handle))
+    return false; 
+  
+  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
+  //
+  return true; 
+
+}
 
  // ---------------------------------------------------------------------
 //
@@ -446,13 +473,427 @@ void CleanupDarkroot (Glob& glob) {
 
   glfwTerminate();
 }
- 
+
+
+
+// ---------------------------------------------------------------------------
+// handle most of the common ones
+// ---------------------------------------------------------------------------
+uint32_t NumberOfComponents (VkFormat format) {
+
+  switch (format) { 
+    // 1 comp
+  case VK_FORMAT_R8_UNORM:
+  case VK_FORMAT_R8_SNORM :
+  case VK_FORMAT_R8_USCALED:
+  case VK_FORMAT_R8_SSCALED:
+  case VK_FORMAT_R8_UINT:    
+  case VK_FORMAT_R8_SINT:    
+  case VK_FORMAT_R8_SRGB:    
+  case VK_FORMAT_R16_UNORM:
+  case VK_FORMAT_R16_SNORM:
+  case VK_FORMAT_R16_USCALED:
+  case VK_FORMAT_R16_SSCALED:
+  case VK_FORMAT_R16_UINT:
+  case VK_FORMAT_R16_SINT: 
+  case VK_FORMAT_R16_SFLOAT:
+  case VK_FORMAT_R32_UINT  :
+  case VK_FORMAT_R32_SINT  :
+  case VK_FORMAT_R32_SFLOAT:
+  case VK_FORMAT_R64_UINT  :    
+  case VK_FORMAT_R64_SINT  :    
+  case VK_FORMAT_R64_SFLOAT:    
+    // sorta
+  case VK_FORMAT_D16_UNORM: 
+  case VK_FORMAT_D32_SFLOAT: 
+  case VK_FORMAT_S8_UINT: 
+
+    return 1;
+    break;
+
+    // + 2 components +
+  case VK_FORMAT_R4G4_UNORM_PACK8 : // <-- hmmm
+  case VK_FORMAT_R8G8_UNORM:
+  case VK_FORMAT_R8G8_SNORM:     
+  case VK_FORMAT_R8G8_USCALED:
+  case VK_FORMAT_R8G8_SSCALED: 
+  case VK_FORMAT_R8G8_UINT:      
+  case VK_FORMAT_R8G8_SINT:      
+  case VK_FORMAT_R8G8_SRGB:      
+  case VK_FORMAT_R16G16_UNORM  : 
+  case VK_FORMAT_R16G16_SNORM  : 
+  case VK_FORMAT_R16G16_USCALED: 
+  case VK_FORMAT_R16G16_SSCALED: 
+  case VK_FORMAT_R16G16_UINT   :    
+  case VK_FORMAT_R16G16_SINT   :    
+  case VK_FORMAT_R16G16_SFLOAT :    
+  case VK_FORMAT_R32G32_UINT  :
+  case VK_FORMAT_R32G32_SINT  :
+  case VK_FORMAT_R32G32_SFLOAT:
+  case VK_FORMAT_R64G64_UINT  :    
+  case VK_FORMAT_R64G64_SINT  :    
+  case VK_FORMAT_R64G64_SFLOAT:    
+    // sorta
+  case VK_FORMAT_D16_UNORM_S8_UINT: 
+  case VK_FORMAT_D24_UNORM_S8_UINT:
+  case VK_FORMAT_D32_SFLOAT_S8_UINT:  
+    // ??? VK_FORMAT_X8_D24_UNORM_PACK32: ???
+    return 2;
+    break;
+
+   // + 3 components +
+  case VK_FORMAT_R5G6B5_UNORM_PACK16:
+  case VK_FORMAT_B5G6R5_UNORM_PACK16:   
+  case VK_FORMAT_R8G8B8_UNORM  : 
+  case VK_FORMAT_R8G8B8_SNORM  : 
+  case VK_FORMAT_R8G8B8_USCALED: 
+  case VK_FORMAT_R8G8B8_SSCALED:
+  case VK_FORMAT_R8G8B8_UINT   :
+  case VK_FORMAT_R8G8B8_SINT   :
+  case VK_FORMAT_R8G8B8_SRGB   :
+  case VK_FORMAT_B8G8R8_UNORM  :
+  case VK_FORMAT_B8G8R8_SNORM  :
+  case VK_FORMAT_B8G8R8_USCALED: 
+  case VK_FORMAT_B8G8R8_SSCALED: 
+  case VK_FORMAT_B8G8R8_UINT   :   
+  case VK_FORMAT_B8G8R8_SINT   :   
+  case VK_FORMAT_B8G8R8_SRGB   :
+  case VK_FORMAT_R16G16B16_UNORM  : 
+  case VK_FORMAT_R16G16B16_SNORM  :
+  case VK_FORMAT_R16G16B16_USCALED:
+  case VK_FORMAT_R16G16B16_SSCALED:
+  case VK_FORMAT_R16G16B16_UINT   :
+  case VK_FORMAT_R16G16B16_SINT   :
+  case VK_FORMAT_R16G16B16_SFLOAT :
+  case VK_FORMAT_R32G32B32_UINT  :
+  case VK_FORMAT_R32G32B32_SINT  :
+  case VK_FORMAT_R32G32B32_SFLOAT:
+  case VK_FORMAT_R64G64B64_UINT  :    
+  case VK_FORMAT_R64G64B64_SINT  :    
+  case VK_FORMAT_R64G64B64_SFLOAT:    
+  case VK_FORMAT_B10G11R11_UFLOAT_PACK32: 
+    return 3;
+    break;
+
+   // + 4 components +
+  case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+  case VK_FORMAT_B4G4R4A4_UNORM_PACK16: 
+  case VK_FORMAT_R5G5B5A1_UNORM_PACK16: 
+  case VK_FORMAT_B5G5R5A1_UNORM_PACK16: 
+  case VK_FORMAT_A1R5G5B5_UNORM_PACK16: 
+  case VK_FORMAT_R8G8B8A8_UNORM:   
+  case VK_FORMAT_R8G8B8A8_SNORM:   
+  case VK_FORMAT_R8G8B8A8_USCALED: 
+  case VK_FORMAT_R8G8B8A8_SSCALED: 
+  case VK_FORMAT_R8G8B8A8_UINT   : 
+  case VK_FORMAT_R8G8B8A8_SINT   : 
+  case VK_FORMAT_R8G8B8A8_SRGB   : 
+  case VK_FORMAT_B8G8R8A8_UNORM  : 
+  case VK_FORMAT_B8G8R8A8_SNORM  : 
+  case VK_FORMAT_B8G8R8A8_USCALED: 
+  case VK_FORMAT_B8G8R8A8_SSCALED: 
+  case VK_FORMAT_B8G8R8A8_UINT:
+  case VK_FORMAT_B8G8R8A8_SINT:
+  case VK_FORMAT_B8G8R8A8_SRGB:
+  case VK_FORMAT_A8B8G8R8_UNORM_PACK32:  
+  case VK_FORMAT_A8B8G8R8_SNORM_PACK32:  
+  case VK_FORMAT_A8B8G8R8_USCALED_PACK32:  
+  case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:  
+  case VK_FORMAT_A8B8G8R8_UINT_PACK32   :  
+  case VK_FORMAT_A8B8G8R8_SINT_PACK32   :  
+  case VK_FORMAT_A8B8G8R8_SRGB_PACK32: 
+  case VK_FORMAT_A2R10G10B10_UNORM_PACK32  :
+  case VK_FORMAT_A2R10G10B10_SNORM_PACK32  :
+  case VK_FORMAT_A2R10G10B10_USCALED_PACK32: 
+  case VK_FORMAT_A2R10G10B10_SSCALED_PACK32: 
+  case VK_FORMAT_A2R10G10B10_UINT_PACK32   : 
+  case VK_FORMAT_A2R10G10B10_SINT_PACK32   : 
+  case VK_FORMAT_A2B10G10R10_UNORM_PACK32  : 
+  case VK_FORMAT_A2B10G10R10_SNORM_PACK32  : 
+  case VK_FORMAT_A2B10G10R10_USCALED_PACK32: 
+  case VK_FORMAT_A2B10G10R10_SSCALED_PACK32: 
+  case VK_FORMAT_A2B10G10R10_UINT_PACK32   : 
+  case VK_FORMAT_A2B10G10R10_SINT_PACK32   : 
+  case VK_FORMAT_R16G16B16A16_UNORM :  
+  case VK_FORMAT_R16G16B16A16_SNORM :  
+  case VK_FORMAT_R16G16B16A16_USCALED: 
+  case VK_FORMAT_R16G16B16A16_SSCALED: 
+  case VK_FORMAT_R16G16B16A16_UINT   : 
+  case VK_FORMAT_R16G16B16A16_SINT   : 
+  case VK_FORMAT_R16G16B16A16_SFLOAT : 
+  case VK_FORMAT_R32G32B32A32_UINT   :
+  case VK_FORMAT_R32G32B32A32_SINT   :
+  case VK_FORMAT_R32G32B32A32_SFLOAT :
+  case VK_FORMAT_R64G64B64A64_UINT   :    
+  case VK_FORMAT_R64G64B64A64_SINT  :  
+  case VK_FORMAT_R64G64B64A64_SFLOAT: 
+    return 4;
+    break;
+
+  default:
+    // ?? case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 : 
+    printf ( "%s [WARNING] --> unhandled format %u\n", __FUNCTION__, format);
+    return 0;
+    break;
+  }
+
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------------
+uint32_t SizeOfComponents (VkFormat format) {
+
+  
+  switch (format) { 
+    // 1 byte component
+  case VK_FORMAT_R8_UNORM:
+  case VK_FORMAT_R8_SNORM :
+  case VK_FORMAT_R8_USCALED:
+  case VK_FORMAT_R8_SSCALED:
+  case VK_FORMAT_R8_UINT:    
+  case VK_FORMAT_R8_SINT:    
+  case VK_FORMAT_R8_SRGB:    
+  case VK_FORMAT_S8_UINT: 
+
+  case VK_FORMAT_R8G8_UNORM:
+  case VK_FORMAT_R8G8_SNORM:     
+  case VK_FORMAT_R8G8_USCALED:
+  case VK_FORMAT_R8G8_SSCALED: 
+  case VK_FORMAT_R8G8_UINT:      
+  case VK_FORMAT_R8G8_SINT:      
+  case VK_FORMAT_R8G8_SRGB:      
+    
+  case VK_FORMAT_R8G8B8_UNORM  : 
+  case VK_FORMAT_R8G8B8_SNORM  : 
+  case VK_FORMAT_R8G8B8_USCALED: 
+  case VK_FORMAT_R8G8B8_SSCALED:
+  case VK_FORMAT_R8G8B8_UINT   :
+  case VK_FORMAT_R8G8B8_SINT   :
+  case VK_FORMAT_R8G8B8_SRGB   :
+  case VK_FORMAT_B8G8R8_UNORM  :
+  case VK_FORMAT_B8G8R8_SNORM  :
+  case VK_FORMAT_B8G8R8_USCALED: 
+  case VK_FORMAT_B8G8R8_SSCALED: 
+  case VK_FORMAT_B8G8R8_UINT   :   
+  case VK_FORMAT_B8G8R8_SINT   :   
+  case VK_FORMAT_B8G8R8_SRGB   :
+
+  case VK_FORMAT_R8G8B8A8_UNORM:   
+  case VK_FORMAT_R8G8B8A8_SNORM:   
+  case VK_FORMAT_R8G8B8A8_USCALED: 
+  case VK_FORMAT_R8G8B8A8_SSCALED: 
+  case VK_FORMAT_R8G8B8A8_UINT   : 
+  case VK_FORMAT_R8G8B8A8_SINT   : 
+  case VK_FORMAT_R8G8B8A8_SRGB   : 
+  case VK_FORMAT_B8G8R8A8_UNORM  : 
+  case VK_FORMAT_B8G8R8A8_SNORM  : 
+  case VK_FORMAT_B8G8R8A8_USCALED: 
+  case VK_FORMAT_B8G8R8A8_SSCALED: 
+  case VK_FORMAT_B8G8R8A8_UINT:
+  case VK_FORMAT_B8G8R8A8_SINT:
+  case VK_FORMAT_B8G8R8A8_SRGB:
+  case VK_FORMAT_A8B8G8R8_UNORM_PACK32:  
+  case VK_FORMAT_A8B8G8R8_SNORM_PACK32:  
+  case VK_FORMAT_A8B8G8R8_USCALED_PACK32:  
+  case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:  
+  case VK_FORMAT_A8B8G8R8_UINT_PACK32   :  
+  case VK_FORMAT_A8B8G8R8_SINT_PACK32   :  
+  case VK_FORMAT_A8B8G8R8_SRGB_PACK32: 
+
+    return 1;
+    break;
+
+    // + 2 bytes +
+  case VK_FORMAT_R16_UNORM:
+  case VK_FORMAT_R16_SNORM:
+  case VK_FORMAT_R16_USCALED:
+  case VK_FORMAT_R16_SSCALED:
+  case VK_FORMAT_R16_UINT:
+  case VK_FORMAT_R16_SINT: 
+  case VK_FORMAT_R16_SFLOAT:
+  case VK_FORMAT_D16_UNORM: 
+  case VK_FORMAT_R16G16_UNORM  : 
+  case VK_FORMAT_R16G16_SNORM  : 
+  case VK_FORMAT_R16G16_USCALED: 
+  case VK_FORMAT_R16G16_SSCALED: 
+  case VK_FORMAT_R16G16_UINT   :    
+  case VK_FORMAT_R16G16_SINT   :    
+  case VK_FORMAT_R16G16_SFLOAT :    
+
+  case VK_FORMAT_R16G16B16_UNORM  : 
+  case VK_FORMAT_R16G16B16_SNORM  :
+  case VK_FORMAT_R16G16B16_USCALED:
+  case VK_FORMAT_R16G16B16_SSCALED:
+  case VK_FORMAT_R16G16B16_UINT   :
+  case VK_FORMAT_R16G16B16_SINT   :
+  case VK_FORMAT_R16G16B16_SFLOAT :
+
+  case VK_FORMAT_R16G16B16A16_UNORM :  
+  case VK_FORMAT_R16G16B16A16_SNORM :  
+  case VK_FORMAT_R16G16B16A16_USCALED: 
+  case VK_FORMAT_R16G16B16A16_SSCALED: 
+  case VK_FORMAT_R16G16B16A16_UINT   : 
+  case VK_FORMAT_R16G16B16A16_SINT   : 
+  case VK_FORMAT_R16G16B16A16_SFLOAT : 
+      
+    return 2;
+    break;
+
+
+    //  4 bytes
+  case VK_FORMAT_R32_UINT  :
+  case VK_FORMAT_R32_SINT  :
+  case VK_FORMAT_R32_SFLOAT:
+  case VK_FORMAT_D32_SFLOAT: 
+
+  case VK_FORMAT_R32G32_UINT  :
+  case VK_FORMAT_R32G32_SINT  :
+  case VK_FORMAT_R32G32_SFLOAT:
+
+  case VK_FORMAT_R32G32B32_UINT  :
+  case VK_FORMAT_R32G32B32_SINT  :
+  case VK_FORMAT_R32G32B32_SFLOAT:
+
+  case VK_FORMAT_R32G32B32A32_UINT   :
+  case VK_FORMAT_R32G32B32A32_SINT   :
+  case VK_FORMAT_R32G32B32A32_SFLOAT :
+
+    return 4;
+    break;
+
+
+    //case VK_FORMAT_R4G4_UNORM_PACK8 : // <-- hmmm
+  case VK_FORMAT_R64_UINT  :    
+  case VK_FORMAT_R64_SINT  :    
+  case VK_FORMAT_R64_SFLOAT:    
+  case VK_FORMAT_R64G64_UINT  :    
+  case VK_FORMAT_R64G64_SINT  :    
+  case VK_FORMAT_R64G64_SFLOAT:
+  case VK_FORMAT_R64G64B64_UINT  :    
+  case VK_FORMAT_R64G64B64_SINT  :    
+  case VK_FORMAT_R64G64B64_SFLOAT:    
+  case VK_FORMAT_R64G64B64A64_UINT:    
+  case VK_FORMAT_R64G64B64A64_SINT:  
+  case VK_FORMAT_R64G64B64A64_SFLOAT: 
+
+    return 8;
+    break;
+
+    // + WAT TODO WITH THESE +
+    
+  // case VK_FORMAT_D16_UNORM_S8_UINT: 
+  // case VK_FORMAT_D24_UNORM_S8_UINT:
+  // case VK_FORMAT_D32_SFLOAT_S8_UINT:  
+  // ??? VK_FORMAT_X8_D24_UNORM_PACK32: ???
+  // case VK_FORMAT_R5G6B5_UNORM_PACK16:
+  // case VK_FORMAT_B5G6R5_UNORM_PACK16:   
+  // case VK_FORMAT_B10G11R11_UFLOAT_PACK32: 
+  // case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+  // case VK_FORMAT_B4G4R4A4_UNORM_PACK16: 
+  // case VK_FORMAT_R5G5B5A1_UNORM_PACK16: 
+  // case VK_FORMAT_B5G5R5A1_UNORM_PACK16: 
+  // case VK_FORMAT_A1R5G5B5_UNORM_PACK16: 
+  // case VK_FORMAT_A2R10G10B10_UNORM_PACK32  :
+  // case VK_FORMAT_A2R10G10B10_SNORM_PACK32  :
+  // case VK_FORMAT_A2R10G10B10_USCALED_PACK32: 
+  // case VK_FORMAT_A2R10G10B10_SSCALED_PACK32: 
+  // case VK_FORMAT_A2R10G10B10_UINT_PACK32   : 
+  // case VK_FORMAT_A2R10G10B10_SINT_PACK32   : 
+  // case VK_FORMAT_A2B10G10R10_UNORM_PACK32  : 
+  // case VK_FORMAT_A2B10G10R10_SNORM_PACK32  : 
+  // case VK_FORMAT_A2B10G10R10_USCALED_PACK32: 
+  // case VK_FORMAT_A2B10G10R10_SSCALED_PACK32: 
+  // case VK_FORMAT_A2B10G10R10_UINT_PACK32   : 
+  // case VK_FORMAT_A2B10G10R10_SINT_PACK32   : 
+  // case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 : 
+
+
+  default:
+    printf ( "%s [WARNING] --> unhandled format %u\n", __FUNCTION__, format);
+    return 0;
+    break;
+  }
+
+  return 0;
+
+}
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
 
-bool SetupDarkTexture (Glob& glob) {
+bool GenerateMipMaps (rokz::Image& image, 
+                      bool        generate_mipmap,
+                      uint32_t    num_mipmaps) {
+
+  return false; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool LoadTexture_color_sampling (rokz::Image&        image,
+                           VkFormat            format,
+                           const VkExtent2D&   ext2d,
+                           const void*         srcimage,
+                           const VmaAllocator& allocator, 
+                           const VkQueue&      queue, 
+                           const rokz::CommandPool& commandpool, 
+                           const rokz::Device& device) {
+
+  //size_t image_size = image_width * image_height *  bytes_per_pixel; 
+  auto image_size = SizeOfComponents (format)
+                  * NumberOfComponents (format)
+                  * ext2d.width * ext2d.height;
+  assert (image_size); 
+
+  rokz::Buffer stage_buff; 
   
+  rokz::CreateInfo_buffer_stage (stage_buff.ci, image_size);
+  rokz::AllocCreateInfo_stage (stage_buff.alloc_ci);
+  rokz::CreateBuffer   (stage_buff, allocator); 
+
+  void* mapped = nullptr; 
+  if (rokz::MapMemory (&mapped, stage_buff.allocation, allocator)) { 
+  
+    const uint8_t* image_data = reinterpret_cast<const unsigned char*> (srcimage); 
+    std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
+  }
+  rokz::UnmapMemory (stage_buff.allocation, allocator);
+
+  rokz::CreateInfo_2D_color_sampling  (image.ci, VK_SAMPLE_COUNT_1_BIT, ext2d.width, ext2d.height);
+  rokz::AllocCreateInfo_device (image.alloc_ci);
+  if (!rokz::CreateImage (image, allocator)) {
+    printf ("[FAILED] %s setup test texture", __FUNCTION__);
+    return false;
+  }
+
+  //VK_FORMAT_R8G8B8A8_SRGB
+  rokz::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_UNDEFINED,
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               queue, commandpool.handle, device.handle);
+
+  rokz::CopyBufferToImage (image.handle, stage_buff.handle, ext2d.width, ext2d.height,
+                           queue, commandpool.handle, device.handle);
+
+  rokz::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                               queue, commandpool.handle, device.handle);
+
+  rokz::Destroy (stage_buff, allocator); 
+  return true; 
+}
+
+
+
+bool LoadIndexBuffer_static ();
+bool LoadVertexBuffer_static();
+
+
+bool SetupDarkTexture (Glob& glob) {
+
   printf ("%s \n", __FUNCTION__); 
   //rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
   const char*  test_image_files[] = { 
@@ -474,10 +915,11 @@ bool SetupDarkTexture (Glob& glob) {
    int image_bpp      = 0;
    int image_type     = 0;
    int image_format   = 0;
-
    
+   bool result = false;
    printf ("loading.. %s ", fq_test_file.c_str()); 
    if (ilLoadImage(fq_test_file.c_str())) {
+
      printf ("succeeded\n"); 
      image_width    = ilGetInteger (IL_IMAGE_WIDTH); 
      image_height   = ilGetInteger (IL_IMAGE_HEIGHT);
@@ -487,109 +929,72 @@ bool SetupDarkTexture (Glob& glob) {
      image_type     = ilGetInteger (IL_IMAGE_TYPE);
      image_format   = ilGetInteger (IL_IMAGE_FORMAT); 
 
-     size_t image_size = image_width * image_height *  bytes_per_pixel; 
-
-     rokz::CreateInfo_buffer_stage (stage_image.ci, image_size);
-     rokz::AllocCreateInfo_stage (stage_image.alloc_ci);
-     rokz::CreateBuffer   (stage_image, glob.allocator); 
-
-     void* mapped = nullptr; 
-     rokz::MapMemory (&mapped, stage_image.allocation, glob.allocator);
-
      printf ( "image dim [w:%i, h:%i, d:%i | bpp:%i, bytes:%i, type:%x, format:%x]\n",
               image_width, image_height, image_depth,
               image_bpp, bytes_per_pixel, image_type, image_format); 
 
-     ILubyte* image_data = ilGetData ();
+     if (LoadTexture_color_sampling (glob.texture_image, VK_FORMAT_R8G8B8A8_SRGB ,
+                                     VkExtent2D{ (uint32_t)image_width, (uint32_t) image_height},
+                                     ilGetData (), glob.allocator, glob.queues.graphics, 
+                                     glob.command_pool, glob.device)) {
 
-     std::copy (image_data, image_data + image_size, reinterpret_cast<unsigned char*> (mapped));
-
-     struct rgba { ILubyte r, g, b, a; }; 
-     const int numpixs = image_width  * image_height; 
-     ILubyte _; 
-     rgba* rgba_mapped = reinterpret_cast<rgba*> (mapped); 
-     // swizzle
-     for (int i = 0; i < numpixs; ++i) {
-       _ = rgba_mapped[i].r;
-       rgba_mapped[i].r = rgba_mapped[i].b;
-       rgba_mapped[i].b = _;       
+       ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
+       result = true; 
      }
-       
-     rokz::UnmapMemory (stage_image.allocation, glob.allocator);
-     ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
+     
    }
-   else {
-     printf ("failed\n"); 
-   }// LoadImage
 
-   
    ilShutDown ();
 
-   rokz::Image& image = glob.texture_image; 
-
-   rokz::CreateInfo_2D_color_sampling  (image.ci, VK_SAMPLE_COUNT_1_BIT, image_width, image_height);
-   rokz::AllocCreateInfo_device (image.alloc_ci);
-   if (!rokz::CreateImage (image, glob.allocator)) {
-     printf ("[FAILED] %s setup test texture", __FUNCTION__);
-     return false;
+   if (result) {
+     // void SetupDarkTextureImageView (Glob& glob) {
+     result = false;
+     rokz::CreateInfo (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
+     if (VK_SUCCESS == vkCreateImageView(glob.device.handle, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle)) {
+       result = true; 
+     }
+     else {
+       printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
+     }
    }
 
-   rokz::TransitionImageLayout (glob.texture_image.handle,
-                                VK_FORMAT_R8G8B8A8_SRGB,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                glob.queues.graphics,
-                                glob.command_pool.handle,
-                                glob.device.handle);
 
-   rokz::CopyBufferToImage (glob.texture_image.handle, stage_image.handle, image_width, image_height,
-                            glob.queues.graphics,
-                            glob.command_pool.handle,
-                            glob.device.handle);
-
-   rokz::TransitionImageLayout (glob.texture_image.handle,
-                                VK_FORMAT_R8G8B8A8_SRGB,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                glob.queues.graphics,
-                                glob.command_pool.handle,
-                                glob.device.handle);
-
-
-   rokz::Destroy (stage_image, glob.allocator); 
-
-   printf ("385\n"); 
-   return true; 
+   if (!result) {
+     printf ("%s [FAILED] --> false\n", __FUNCTION__); 
+   }
+   
+   return result; 
 }
+
 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-void SetupDarkTextureImageView (Glob& glob) {
+// void SetupDarkTextureImageView (Glob& glob) {
 
-  printf ("[%s]\n", __FUNCTION__); 
+//   printf ("[%s]\n", __FUNCTION__); 
 
-  rokz::CreateInfo (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
-  if (vkCreateImageView(glob.device.handle, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle) != VK_SUCCESS) {
-    printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
-  }
-}
+//   rokz::CreateInfo (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
+//   if (vkCreateImageView(glob.device.handle, &glob.texture_imageview.ci, nullptr, &glob.texture_imageview.handle) != VK_SUCCESS) {
+//     printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
+//   }
+// }
 
 
 // ---------------------------------------------------------------------
 // Setup 'DescriptorLayout' is how it looks
 // ---------------------------------------------------------------------
-bool SetupTerrainDescriptorLayout (darkroot::PipelineGroup& pipelinegroup, uint32_t num_patches, const rokz::Device& device) {
+bool SetupGridscapeDescriptorLayout (darkroot::PipelineGroup& pipelinegroup, const rokz::Device& device) {
 
   printf ("%s", __FUNCTION__); 
 
   rokz::DescriptorGroup&  descrgroup = pipelinegroup.descrgroup; 
 
-  VkShaderStageFlags stage_flag_bits = VK_SHADER_STAGE_VERTEX_BIT
-                                     | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
-                                     | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT; 
+  VkShaderStageFlags stage_flag_bits = VK_SHADER_STAGE_VERTEX_BIT;
+                                     // | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
+                                     // | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT; 
 
-  descrgroup.dslayout.bindings.resize (4);
+  descrgroup.dslayout.bindings.resize (2);
 
   // MVPTransform
   rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
@@ -601,20 +1006,9 @@ bool SetupTerrainDescriptorLayout (darkroot::PipelineGroup& pipelinegroup, uint3
   rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
                                     1,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    num_patches, 
+                                    kSceneObjCount, 
                                     stage_flag_bits);
-  // color images
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
-                                    2,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    num_patches, 
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
-  // height map textures - use for height + normal 
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
-                                    3,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    num_patches, 
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+
   
   if (!rokz::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
                                         descrgroup.dslayout.ci,
@@ -678,7 +1072,7 @@ bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz:
 // ---------------------------------------------------------------------
 // Setup 'DescriptorSets' is how it works
 // ---------------------------------------------------------------------
-bool SetupTerrainDescriptorSets (darkroot::PipelineGroup&              pipelinegroup,
+bool SetupGridscapeDescriptorSets (darkroot::PipelineGroup&              pipelinegroup,
 
                                   const std::vector<rokz::Buffer>& vma_terr_uniform_buffs,
                                   const std::vector<rokz::Buffer>& vma_terr_patch_buffs,
@@ -824,7 +1218,7 @@ bool SetupGlobalDescriptorPool (Glob& glob) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-void SetupViewportState (rokz::ViewportState & vps, VkExtent2D& swapchain_extent) {
+void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent) {
 
   const VkOffset2D offs0 {0, 0};
 
@@ -840,32 +1234,32 @@ void SetupViewportState (rokz::ViewportState & vps, VkExtent2D& swapchain_extent
 //
 // ---------------------------------------------------------------------
 bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
-                          const rokz::ViewportState& vps,
                           const rokz::RenderPass& renderpass,
                           const std::filesystem::path& fspath,
                           const rokz::Swapchain& swapchain,
                           VkSampleCountFlagBits msaa_samples,
                           const rokz::Device& device) {
 
+  rokz::Pipeline&          pipeline = pipelinegroup.pipeline;
   //rokz::FrameGroup& frame_group = glob.swapchain_group;
   SetupDarkShaderModules (pipelinegroup.pipeline, fspath, device);
-  
+
+  SetupViewportState (pipeline.state.viewport, swapchain.ci.imageExtent); 
+
   rokz::ColorBlendState_default (pipelinegroup.pipeline.state.color_blend_attachment); 
   rokz::DynamicState_default    (pipelinegroup.pipeline.state.dynamics); 
 
   // glob.pipeline;
   // glob.descrgroup;
-  
-
-  rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
+  rokz::PipelineStateCreateInfo& psci     = pipelinegroup.pipeline.state.ci;
 
   rokz::CreateInfo (psci.tesselation, 69); 
-  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
   rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
-  rokz::CreateInfo (psci.viewport_state, vps);
+  rokz::CreateInfo (psci.viewport_state, pipeline.state.viewport);
   rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
   rokz::CreateInfo (psci.rasterizer); 
-  rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.color_blend_attachment); 
+  rokz::CreateInfo (psci.colorblendstate, pipeline.state.color_blend_attachment); 
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
   SetupObjectDescriptorLayout (pipelinegroup.descrgroup, device); 
@@ -907,7 +1301,7 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupTerrainPipeline (darkroot::PipelineGroup& pipelinegroup,
+bool SetupGridscapePipeline (darkroot::PipelineGroup& pipelinegroup,
                            const rokz::ViewportState& vps,
                            const rokz::RenderPass& renderpass,
                            const std::filesystem::path& fspath,
@@ -915,38 +1309,47 @@ bool SetupTerrainPipeline (darkroot::PipelineGroup& pipelinegroup,
                            VkSampleCountFlagBits msaa_samples,
                            const rokz::Device& device) {
 
-  rokz::Pipeline& pipeline = pipelinegroup.pipeline;
   
+
+  SetupGridscapeShaderModules (pipelinegroup.pipeline, fspath, device);
+  
+
+  rokz::Pipeline& pipeline = pipelinegroup.pipeline;
+  SetupViewportState (pipeline.state.viewport, swapchain.ci.imageExtent); 
   rokz::ColorBlendState_default (pipeline.state.color_blend_attachment); 
   rokz::DynamicState_default (pipeline.state.dynamics); 
-  // 
-  // const VkOffset2D offs0 {0, 0};
-  // glob.scissor_rect = {offs0, frame_group.swapchain.ci.imageExtent};
-  // rokz::Viewport (glob.viewport, glob.scissor_rect.offset, glob.scissor_rect.extent, 1.0f);  
 
   rokz::PipelineStateCreateInfo& psci = pipeline.state.ci;
-
-  rokz::CreateInfo (psci.tesselation, 69); 
-  rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
-  rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
+  // !! VK_PRIMITIVE_TOPOLOGY_LINE_LIST
+  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_LINE_LIST); 
   rokz::CreateInfo (psci.vertexinputstate, kDarkVertexBindingDesc, kDarkvertBindingAttributeDesc); 
   rokz::CreateInfo (psci.viewport_state, vps.viewports, vps.scissors);
-  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  rokz::CreateInfo (psci.tesselation, 69); 
   rokz::CreateInfo (psci.rasterizer); 
-  rokz::CreateInfo (psci.colorblendstate, pipeline.state.color_blend_attachment); 
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
+  rokz::CreateInfo (psci.colorblendstate, pipeline.state.color_blend_attachment); 
+  rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
+  //rokz::DescriptorGroup& descrgroup = pipelinegroup.descrgroup;
+  // pipelinegroup.descrgroup.dslayout;
+  // pipelinegroup.descrgroup.descrsets;
+  // pipelinegroup.descrgroup.alloc_info;
+  SetupGridscapeDescriptorLayout (pipelinegroup, device); 
 
+  std::vector<VkDescriptorSetLayout> dslos =  {
+    pipelinegroup.descrgroup.dslayout.handle
+  };
 
-  const uint32_t num_patches = 69; // <--- dont know yet
-  
-  SetupTerrainDescriptorLayout (pipelinegroup, num_patches , device); 
-  //
-  rokz::CreateGraphicsPipelineLayout (pipeline.layout.handle,
-                                      pipeline.layout.ci,
-                                      pipelinegroup.descrgroup.dslayout.handle,
-                                      device.handle);
+  std::vector<VkPushConstantRange> pcs = {
+    VkPushConstantRange { VK_SHADER_STAGE_VERTEX_BIT, 0,  sizeof(darkroot::PushConstants)  }
+  };
 
+  rokz::CreateInfo (pipeline.layout.ci, dslos, pcs); 
+  rokz::CreateGraphicsPipelineLayout (pipeline.layout.handle, pipeline.layout.ci, device.handle); 
+  // rokz::CreateGraphicsPipelineLayout (pipeline.layout.handle,
+  //                                     pipeline.layout.ci,
+  //                                     pipelinegroup.descrgroup.dslayout.handle,
+  //                                     device.handle);
   rokz::CreateInfo (pipeline.ci,
                     pipeline.layout.handle,
                     renderpass.handle,                    
@@ -965,8 +1368,6 @@ bool SetupTerrainPipeline (darkroot::PipelineGroup& pipelinegroup,
     printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
     return false;
   }
-
-
   
   return false; 
 }
@@ -1299,7 +1700,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glob.dt = 0.0;
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
 
-  auto dark_path = std::filesystem::path ( "/home/djbuzzkill/owenslake/rokz");
+  auto dark_path = std::filesystem::path ( "/home/djbuzzkill/owenslake/rokz/");
   //Default (glob); 
   
   glfwInit();
@@ -1418,18 +1819,29 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // SetupShaderModules also sets up Pipeline Shader State CreateInfo's
   //  SetupDarkShaderModules (glob.pipeline, dark_path, glob.device);
   // bool SetupDarkShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
-  SetupViewportState (glob.viewport_state, glob.swapchain_group.swapchain.ci.imageExtent); 
 
+
+#ifdef DARKROOT_ENABLE_GRID
+  
+  SetupGridscapePipeline (glob.grid_pipeline,
+                          glob.grid_pipeline.pipeline.state.viewport, 
+                          glob.render_pass,
+                          dark_path,
+                          glob.swapchain_group.swapchain,
+                          glob.msaa_samples,
+                          glob.device); 
+
+
+#endif
+  
+  
   SetupObjectPipeline (glob.obj_pipeline,
-                       glob.viewport_state,
                        glob.render_pass,
                        dark_path,
                        glob.swapchain_group.swapchain,
                        glob.msaa_samples,
                        glob.device); 
 
-  
-  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
   SetupDarkMultisampleColorResource (glob);
 
@@ -1501,8 +1913,11 @@ int darkroot_basin (const std::vector<std::string>& args) {
   
   // rokz::DescriptorPool           uniform_descriptor_pool;
   // rokz::DescriptorGroup          uniform_group; 
-  SetupDarkTexture (glob); 
-  SetupDarkTextureImageView (glob); 
+  if (!SetupDarkTexture (glob)) {
+    printf ("[FAILED] --> SetupDarkTexture \n"); 
+    return false;
+  }
+  //SetupDarkTextureImageView (glob); 
   
 
   if (!SetupGlobalDescriptorPool (glob))

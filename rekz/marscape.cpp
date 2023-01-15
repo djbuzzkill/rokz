@@ -289,23 +289,24 @@ void CleanupMars (Glob& glob) {
   }
 
   rokz::Destroy (glob.sampler, glob.device.handle); 
-  rokz::Destroy (glob.descr_pool, glob.device.handle); 
-  rokz::Destroy (glob.obj_pipeline.descrgroup, glob.device.handle); 
+  rokz::Destroy (glob.descriptor_pool, glob.device.handle); 
+  rokz::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
+  rokz::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
   rokz::Destroy (glob.texture_imageview, glob.device.handle);
 
   rokz::Destroy (glob.texture_image, glob.allocator);
   rokz::Destroy (glob.vma_vb_device, glob.allocator);
   rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
-  Cleanup (glob.obj_pipeline.pipeline.handle,
+  Cleanup (glob.terrain_pipeline.pipeline.handle,
            glob.frame_group.framebuffers, glob.frame_group.imageviews,
 
            glob.frame_group.swapchain,
            glob.surface,
            glob.command_pool.handle,
            glob.frame_sequence.syncs, 
-           glob.obj_pipeline.pipeline.shader_modules,
-           glob.obj_pipeline.pipeline.layout.handle, 
+           glob.terrain_pipeline.pipeline.shader_modules,
+           glob.terrain_pipeline.pipeline.layout.handle, 
            glob.render_pass,
 
            glob.multisamp_color_image, glob.multisamp_color_imageview,
@@ -421,20 +422,20 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
 
   // printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
 
-  // rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
+  rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
  
-  // // use same layout for both allocations
-  // std::vector<VkDescriptorSetLayout> descrlos (kMaxFramesInFlight, dg.dslayout.handle);
-  // // could have also said: 
-  // //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
-  // // but that wouldnt work
-  // rokz::AllocateInfo (dg.alloc_info , descrlos, descpool);
+  // use same layout for both allocations
+  std::vector<VkDescriptorSetLayout> descrlos (kMaxFramesInFlight, dg.dslayout.handle);
+  // could have also said: 
+  //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
+  // but that wouldnt work
+  rokz::AllocateInfo (dg.alloc_info , descrlos, descpool);
   
-  // if (!rokz::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, device.handle)) {
-  //   printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
-  //   return false;
-  // }
-  // //
+  if (!rokz::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, device.handle)) {
+    printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
+    return false;
+  }
+  //
 
   struct notype {}; 
   
@@ -489,7 +490,7 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
     std::array<VkWriteDescriptorSet, 6>  descr_writes {};
     descr_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descr_writes[0].pNext            = nullptr;    
-    descr_writes[0].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[0].dstSet           = dg.descrsets[flight];
     descr_writes[0].dstBinding       = 0;
     descr_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descr_writes[0].dstArrayElement  = 0;
@@ -500,7 +501,7 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
     // ViewParams
     descr_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descr_writes[1].pNext            = nullptr;    
-    descr_writes[1].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[1].dstSet           = dg.descrsets[flight];
     descr_writes[1].dstBinding       = 1;
     descr_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descr_writes[1].dstArrayElement  = 0;
@@ -511,7 +512,7 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
     // per Patch
     descr_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descr_writes[2].pNext            = nullptr;    
-    descr_writes[2].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[2].dstSet           = dg.descrsets[flight];
     descr_writes[2].dstBinding       = 2;
     descr_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descr_writes[2].dstArrayElement  = 0;
@@ -522,7 +523,7 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
     // height maps
     descr_writes[3].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descr_writes[3].pNext            = nullptr;    
-    descr_writes[3].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[3].dstSet           = dg.descrsets[flight];
     descr_writes[3].dstBinding       = 3;
     descr_writes[3].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descr_writes[3].dstArrayElement  = 0;
@@ -533,7 +534,7 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
     // normal maps
     descr_writes[4].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descr_writes[4].pNext            = nullptr;    
-    descr_writes[4].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[4].dstSet           = dg.descrsets[flight];
     descr_writes[4].dstBinding       = 4;
     descr_writes[4].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descr_writes[4].dstArrayElement  = 0;
@@ -544,7 +545,7 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
     // color maps
     descr_writes[5].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descr_writes[5].pNext            = nullptr;    
-    descr_writes[5].dstSet           = 0; // dg.descrsets[i];
+    descr_writes[5].dstSet           = dg.descrsets[flight];
     descr_writes[5].dstBinding       = 5;
     descr_writes[5].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descr_writes[5].dstArrayElement  = 0;
@@ -940,13 +941,11 @@ int mars_run (const std::vector<std::string>& args) {
 
 
   
-  SetupViewportState (glob.viewport_state, glob.frame_group.swapchain.ci.imageExtent); 
+  SetupViewportState (glob.terrain_pipeline.pipeline.state.viewport, glob.frame_group.swapchain.ci.imageExtent); 
 
-
-
-  
-  SetupTerrainPipeline (glob.obj_pipeline,
-                        glob.viewport_state,
+  // SetupGridscape ();
+  SetupTerrainPipeline (glob.terrain_pipeline,
+                        glob.terrain_pipeline.pipeline.state.viewport,
                         glob.render_pass,
                         mars::data_root,
                         glob.frame_group.swapchain,

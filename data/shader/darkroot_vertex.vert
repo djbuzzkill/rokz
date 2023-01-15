@@ -8,14 +8,13 @@
 
 // +vertex+shader+
 //
-
-#extension GL_EXT_nonuniform_qualifier : enable
+// #extension GL_ARB_shading_language_include : require
+// #extension GL_EXT_nonuniform_qualifier : enable
 
 
 //
 // IN PER VERTEX
 //
-
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_nrm; 
 layout(location = 2) in vec3 in_co0; 

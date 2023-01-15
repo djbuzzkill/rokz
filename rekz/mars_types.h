@@ -105,20 +105,17 @@ namespace mars {
              VkQueue present; }  queues;
 
     VmaAllocator                 allocator;
-
-    rokz::ViewportState          viewport_state;
     rokz::SwapchainGroup         frame_group;
-
     rokz::FrameSequencing        frame_sequence;
-    
+
     rokz::SwapchainSupportInfo   swapchain_support_info;
 
     rokz::CommandPool            command_pool;
-    rokz::DescriptorPool         descr_pool;
+    rokz::DescriptorPool         descriptor_pool;
     // rokz::DescriptorGroup        descrgroup; 
     // rokz::Pipeline               pipeline; 
-    PipelineGroup                obj_pipeline;
     PipelineGroup                terrain_pipeline;
+    PipelineGroup                grid_pipeline;
 
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 

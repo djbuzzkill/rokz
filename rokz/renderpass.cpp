@@ -1,6 +1,7 @@
 
 #include "renderpass.h"
 #include "utility.h"
+#include <vulkan/vulkan_core.h>
 
 
 
@@ -33,8 +34,6 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
 
   // DEPTHSTENCIL ATTACHMENT | VkAttachmentDescription 
   auto DP_n = ATTACH_DEPTHSTENCIL;
-  //VkFormat depth_format; 
-  //rokz::FindDepthFormat (depth_format, physdev); 
   render_pass.attach_desc[DP_n] = {}; 
   // render_pass.attach_desc[dp_in].format         = depth_format;
   rokz::FindDepthFormat (render_pass.attach_desc[DP_n].format, physdev);
@@ -66,14 +65,15 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   render_pass.attach_ref[DP_n] = {};
   render_pass.attach_ref[DP_n].attachment = DP_n;
   render_pass.attach_ref[DP_n].layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  // not used yet
+  // 
   render_pass.attach_ref[CR_n] = {};
   render_pass.attach_ref[CR_n].attachment = CR_n; // index
-  render_pass.attach_ref[CR_n].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  render_pass.attach_ref[CR_n].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // <--- color opt is correct
+                                       // = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   
   // SUBPASS,  VkSubpassDescription                 
   render_pass.subpass_descs.resize (1);
-  render_pass.subpass_descs[0] = {};
+  render_pass.subpass_descs[0] = {}; 
   render_pass.subpass_descs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
   render_pass.subpass_descs[0].colorAttachmentCount    = 1;
   render_pass.subpass_descs[0].pColorAttachments       = &render_pass.attach_ref[CO_n];  // co_in, [cr_in] for msaa
@@ -98,11 +98,14 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   // CREATEINFO. gets passed back out
   render_pass.ci  = {}; 
   render_pass.ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+
   render_pass.ci.attachmentCount = 3; // color + depthstencil + color resolv
   render_pass.ci.pAttachments = &render_pass.attach_desc[0];
+
   render_pass.ci.subpassCount = 1;
-  render_pass.ci.pSubpasses = &render_pass.subpass_descs[0];
-  render_pass.ci.dependencyCount = render_pass.dependencies.size();;
+  render_pass.ci.pSubpasses   = &render_pass.subpass_descs[0];
+
+  render_pass.ci.dependencyCount = render_pass.dependencies.size();
   render_pass.ci.pDependencies = &render_pass.dependencies[0]; 
   render_pass.ci.pNext = nullptr; 
   //
@@ -114,4 +117,46 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   return true;
 }
 
+
+// r there defaults? ColorAttachment_default, DepthStencil_default,  PresentSrc_default
+
+VkAttachmentDescription& rokz::ColorAttachment_default  (VkAttachmentDescription& ad);
+VkAttachmentDescription& rokz::DepthStencil_default     (VkAttachmentDescription& ad);
+VkAttachmentDescription& rokz::PresentSrc_default       (VkAttachmentDescription& ad);
+
+VkSubpassDescription&    rokz::SubpassDesc_default     (VkSubpassDescription&    spd); 
+VkSubpassDependency&     rokz::SubpassDep_default      (VkSubpassDependency&     dep); 
+
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&                     ci,
+                                          const std::vector<VkAttachmentDescription>& attach_descs,
+                                          const std::vector<VkSubpassDescription>&    subpass_descs,
+                                          const std::vector<VkSubpassDependency>&     deps) {
+
+
+  // THESE ARE  INITIALIZED EXTERNALLY
+  // const std::vector<VkAttachmentDescription>& attach_descs;
+  // const std::vector<VkSubpassDescription>&    subpass_descs;
+  // const std::vector<VkSubpassDependency>&     deps;
+
+  ci  = {}; 
+  ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  ci.flags = 0; 
+  ci.pNext = nullptr; 
+  // VkAttachmentDescription's
+  ci.attachmentCount = attach_descs.size(); // = 3; // color + depthstencil + color resolv
+  ci.pAttachments = &attach_descs[0];
+  // VkSubpassDescription's
+  ci.subpassCount = subpass_descs.size();
+  ci.pSubpasses   = &subpass_descs[0];
+  // VkSubpassDependency's
+  ci.dependencyCount = deps.size();
+  ci.pDependencies   = &deps[0]; 
+
+  return ci; 
+}
 

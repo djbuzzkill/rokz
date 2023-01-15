@@ -164,7 +164,7 @@ namespace darkroot {
     VmaAllocator                     allocator;
 
 
-    rokz::ViewportState          viewport_state;
+    //rokz::ViewportState          viewport_state;
   
     rokz::SwapchainGroup         swapchain_group;
 
@@ -180,8 +180,7 @@ namespace darkroot {
     // rokz::DescriptorGroup        descrgroup; 
     // rokz::Pipeline               pipeline; 
     PipelineGroup                obj_pipeline;
-    PipelineGroup                terrain_pipeline;
-
+    PipelineGroup                grid_pipeline;
 
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 

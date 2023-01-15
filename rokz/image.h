@@ -62,6 +62,14 @@ namespace rokz {
   //
   void                Destroy       (Image& image, VmaAllocator const& allocator); 
   // <---------------------------------------------------------------------------VMA
+
+
+
+
+  bool LoadImage (Image& image, VkFormat format, void* image_source); 
+
+
+
 }
 
 #endif

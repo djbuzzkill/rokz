@@ -262,6 +262,7 @@ VkPipelineTessellationStateCreateInfo& rokz::CreateInfo (VkPipelineTessellationS
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
+
 bool rokz::CreateGraphicsPipelineLayout (
     VkPipelineLayout&            pipeline_layout,
     VkPipelineLayoutCreateInfo&  create_info,
@@ -388,8 +389,8 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
   ci.pColorBlendState    = ci_colorblend; 
   ci.pDynamicState       = ci_dynamic_state; 
   ci.layout              = pipeline_layout; 
-  ci.renderPass          = render_pass;
-  ci.subpass             = 0;
+  ci.renderPass          = render_pass;              // a pipeline is bound a render pass
+  ci.subpass             = 0;                        // and also to a specific subpass
   ci.basePipelineHandle  = VK_NULL_HANDLE; 
   ci.basePipelineIndex   = -1;              
 
