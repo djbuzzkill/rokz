@@ -53,6 +53,18 @@ namespace rokz {
 
                                           const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
                                           VkPhysicalDeviceFeatures* devfeats); 
+
+
+    VkDeviceCreateInfo&       CreateInfo (VkDeviceCreateInfo&       info,
+                                          const void*               next, 
+                                          std::vector<const char*>& vls, 
+                                          std::vector<std::string>& vstrs, 
+
+                                          std::vector<const char*>& dxs,
+                                          std::vector<std::string>& dxstrs, 
+
+                                          const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
+                                          VkPhysicalDeviceFeatures* devfeats); 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------

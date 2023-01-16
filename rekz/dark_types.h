@@ -219,12 +219,10 @@ namespace darkroot {
     double                      sim_time; 
     float                       dt;
   
-
-    DarkrootMesh                darkmesh;
-    DarkRenderable              darkobj;
-    HalfEdge::BRep              darkboundary;
-
-    std::vector<Renderable*>    renderables;
+    // DarkrootMesh                darkmesh;
+    // DarkRenderable             darkobj;
+    // HalfEdge::BRep             darkboundary;
+    // std::vector<Renderable*>   renderables;
 
   };
   // --------------------------------------------------------------------

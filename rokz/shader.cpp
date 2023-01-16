@@ -28,11 +28,11 @@ VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateIn
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModule (ShaderModule& sm, const std::string fsrc, const VkDevice& dev) {
 
-  printf ( "%s [%s]", __FUNCTION__, fsrc.c_str()); 
+  printf ( "%s", __FUNCTION__); 
 
   From_file (sm.bin, fsrc);
 
-  printf (" --> %s, shader module bin size[%zu] \n", fsrc.c_str(),  sm.bin.size()); 
+  printf ("\n     --> size[%zu] | %s   \n", sm.bin.size(), fsrc.c_str() ); 
   
   sm.ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   sm.ci.pNext = nullptr;

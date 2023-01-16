@@ -122,40 +122,77 @@ bool SetupMarsWindow (Glob& glob) {
   glfwSetKeyCallback (glob.window.glfw_window, window_handler::on_keypress);
   glfwSetCursorPosCallback(glob.window.glfw_window, window_handler::on_mouse_move);
   glfwSetMouseButtonCallback(glob.window.glfw_window, window_handler::on_mouse_button);
-  //glfwSetCursorEnterCallback(window, rokz);
-  // typedef struct GLFWcursor GLFWcursor;
-  // typedef void (* GLFWerrorfun)(int error_code, const char* description);
-  // typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
-  // typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
-  // typedef void (* GLFWwindowclosefun)(GLFWwindow* window);
-  // typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);
-  // typedef void (* GLFWwindowfocusfun)(GLFWwindow* window, int focused);
-  // typedef void (* GLFWwindowiconifyfun)(GLFWwindow* window, int iconified);
-  // typedef void (* GLFWwindowmaximizefun)(GLFWwindow* window, int maximized);
-  // typedef void (* GLFWframebuffersizefun)(GLFWwindow* window, int width, int height);
-  // typedef void (* GLFWwindowcontentscalefun)(GLFWwindow* window, float xscale, float yscale);
-  // typedef void (* GLFWmousebuttonfun)(GLFWwindow* window, int button, int action, int mods);
-  // typedef void (* GLFWcursorposfun)(GLFWwindow* window, double xpos, double ypos);
-  // typedef void (* GLFWcursorenterfun)(GLFWwindow* window, int entered);
-  // typedef void (* GLFWscrollfun)(GLFWwindow* window, double xoffset, double yoffset);
-  // typedef void (* GLFWkeyfun)(GLFWwindow* window, int key, int scancode, int action, int mods);
-  // typedef void (* GLFWcharfun)(GLFWwindow* window, unsigned int codepoint);
-  // typedef void (* GLFWcharmodsfun)(GLFWwindow* window, unsigned int codepoint, int mods);
-  // typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* paths[]);
-  // typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
-  // typedef void (* GLFWjoystickfun)(int jid, int event);
-
-  
   return true;
 }
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+bool SetupTerrainResources (mars::Glob& glob) { 
+  // rokz::Buffer vb_x; 
+  // rokz::CreateInfo_VB_stage (vb_x.ci, DarkrootMesh::VertexSize, glob.darkmesh.verts.size());
+  // rokz::AllocCreateInfo_stage (vb_x.alloc_ci);
+  // rokz::CreateBuffer (vb_x, glob.allocator);
+  // if (rokz::MapMemory (&pmapped, vb_x.allocation, glob.allocator)) {
+  //   memcpy (pmapped, &glob.darkmesh.verts[0], DarkrootMesh::VertexSize * glob.darkmesh.verts.size()); 
+  //   rokz::UnmapMemory (vb_x.allocation, glob.allocator); 
+  // }
+
+  // rokz::CreateInfo_VB_device (glob.vma_vb_device.ci, DarkrootMesh::VertexSize, glob.darkmesh.verts.size());
+  // rokz::AllocCreateInfo_device (glob.vma_vb_device.alloc_ci); 
+  // rokz::CreateBuffer (glob.vma_vb_device, glob.allocator); 
+
+  // //rokz::Transfer_2_Device;
+  // rokz::MoveToBuffer_XB2DB (glob.vma_vb_device, vb_x, DarkrootMesh::VertexSize * glob.darkmesh.verts.size(), 
+  //                           glob.command_pool.handle, glob.queues.graphics, glob.device.handle); 
+
+  // rokz::Destroy (vb_x, glob.allocator); 
+  
+  // // INDEX BUFF
+  // rokz::Buffer ib_x;
+  // rokz::CreateInfo_IB_16_stage (ib_x.ci, glob.darkmesh.indices.size()); 
+  // rokz::AllocCreateInfo_stage (ib_x.alloc_ci);
+  // rokz::CreateBuffer (ib_x, glob.allocator);
+
+  // if (rokz::MapMemory (&pmapped, ib_x.allocation, glob.allocator)) {
+  //   memcpy (pmapped, &glob.darkmesh.indices[0], DarkrootMesh::IndexSize * glob.darkmesh.indices.size()  ); 
+  //   rokz::UnmapMemory (ib_x.allocation, glob.allocator); 
+  // }
+  
+  // rokz::CreateInfo_IB_16_device (glob.vma_ib_device.ci, glob.darkmesh.indices.size()); 
+  // rokz::AllocCreateInfo_device (glob.vma_ib_device.alloc_ci);
+  // rokz::CreateBuffer (glob.vma_ib_device, glob.allocator);
+
+  // rokz::MoveToBuffer_XB2DB  (glob.vma_ib_device, ib_x, DarkrootMesh::IndexSize * glob.darkmesh.indices.size (), 
+  //                            glob.command_pool.handle, glob.queues.graphics, glob.device.handle); 
+  // rokz::Destroy (ib_x, glob.allocator); 
+  // //DarkrootMesh& dark_mesh = glob.dark_mesh;
+return false;
+}
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+void SetupTerrainSamplers (Glob& glob) {
+  printf ("%s \n", __FUNCTION__); 
+
+  rokz::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
+  
+  rokz::CreateSampler (glob.sampler, glob.device.handle);  
+
+}
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 void SetupPatchGeometry (Glob& glob) {
 
+  // wat even is this
+
   rokz::MVPTransform ub0;
 
 }
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -188,21 +225,11 @@ void SetupMarsDepthBuffer (Glob& glob) {
   }
 }
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void SetupTerrainSamplers (Glob& glob) {
-  printf ("%s \n", __FUNCTION__); 
-
-  rokz::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
-  
-  rokz::CreateSampler (glob.sampler, glob.device.handle);  
-}
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool SetupTesselationShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+bool SetupTerrainShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
   
@@ -652,7 +679,7 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 
   //rokz::FrameGroup& frame_group = glob.frame_group;
-  if (!SetupTesselationShaderModules (pipelinegroup.pipeline, fspath, device)) {
+  if (!SetupTerrainShaderModules (pipelinegroup.pipeline, fspath, device)) {
     printf ("[FAILED] --> SetupTesselationShaderModules \n");
     return false;
   }
@@ -972,10 +999,12 @@ printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
   rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci, glob.device.handle);
 
 
-  SetupPatchGeometry (glob); 
+  //SetupPatchGeometry (glob); 
 
 
   "Setup Index+Vertex Buffers";
+
+  SetupTerrainResources (glob); 
   // rokz::Buffer vb_x; 
   // rokz::CreateInfo_VB_stage (vb_x.ci, DarkrootMesh::VertexSize, glob.darkmesh.verts.size());
   // rokz::AllocCreateInfo_stage (vb_x.alloc_ci);

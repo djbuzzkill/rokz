@@ -34,7 +34,11 @@ VkSamplerCreateInfo& rokz::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysical
   printf ("%s SamplerCreateInfo \n", __FUNCTION__); 
 
   ci =  {}; 
+
   ci.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+  ci.pNext                   = nullptr;
+  ci.flags                   = 0;
+
   ci.magFilter               = VK_FILTER_LINEAR;
   ci.minFilter               = VK_FILTER_LINEAR;
   ci.addressModeU            = VK_SAMPLER_ADDRESS_MODE_REPEAT;

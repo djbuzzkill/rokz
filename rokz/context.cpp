@@ -10,6 +10,7 @@
 #include "shader.h"
 #include "window.h"
 #include "descriptor.h"
+#include <vulkan/vulkan_core.h>
 
 
 const bool kEnableValidationLayers = true;
@@ -21,7 +22,8 @@ const bool kEnableValidationLayers = true;
 // ---------------------------------------------------------------------
 const std::vector<const char*> kDeviceExtensions = {
   VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
-  "VK_EXT_descriptor_indexing", 
+  VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+  //"VK_EXT_descriptor_indexing", 
 
 };
 
@@ -222,6 +224,37 @@ VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo&       info,
   info.ppEnabledLayerNames   = &vls[0]; 
   return info;
 }
+
+
+VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo&       info,
+                                          const void* next, 
+                                          std::vector<const char*>& vls, std::vector<std::string>& vstrs,
+                                          std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
+                                          const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
+                                          VkPhysicalDeviceFeatures* devfeats) {
+
+
+  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
+
+  dxstrs.clear (); 
+  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
+    
+  vls.clear ();
+  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
+  
+  info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  info.pNext                 = next;
+  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
+  info.ppEnabledExtensionNames= &dxs[0]; 
+
+  info.queueCreateInfoCount  = queuecreateinfos.size();   
+  info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
+  info.pEnabledFeatures      = devfeats; // &glob.device_features;
+  info.enabledLayerCount     = vls.size();   
+  info.ppEnabledLayerNames   = &vls[0]; 
+  return info;
+}
+
 
 // -------------------------------------------------------------------------
 //
