@@ -4,6 +4,7 @@
 
 #include "rokz/rokz.h"
 
+#define DARKROOT_DYNAMIC_RENDER_ENABLE 1
 
 namespace darkroot {
 
@@ -14,6 +15,7 @@ namespace darkroot {
     // y: unused
     // z: unused
     // w: unused
+
   }; 
 
   //    3.14159265f;
@@ -21,6 +23,12 @@ namespace darkroot {
 
     rokz::Pipeline        pipeline;
     rokz::DescriptorGroup descrgroup;
+
+    // * extensions * 
+    
+    // VK_KHR_dynamic_rendering
+    VkPipelineRenderingCreateInfoKHR pr_ci; 
+    
   };
   // --------------------------------------------------------------------
   // Geometry
@@ -145,6 +153,27 @@ namespace darkroot {
 
   protected:
   };
+
+#ifdef DARKROOT_DYNAMIC_RENDER_ENABLE
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  struct RenderingInfoGroup {
+
+    VkRenderingInfo ri;
+  
+    VkRenderingInfo                        rendering_info;
+    std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
+    VkRenderingAttachmentInfo              depth_attachment_info;
+
+    std::vector<VkClearValue>              clear_colors;  // = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    VkClearValue                           clear_depth; //  = {{
+
+    VkRect2D                               render_area; 
+  };
+#endif
+  
+
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
@@ -154,6 +183,8 @@ namespace darkroot {
     enum { MaxFramesInFlight = 2 }; 
     Glob();
   
+    VkFormat                         depth_format;
+    VkSurfaceFormatKHR               surface_format;
 
     rokz::Instance                   instance;
     rokz::PhysicalDevice             physical_device;
@@ -163,30 +194,28 @@ namespace darkroot {
 
     VmaAllocator                     allocator;
 
-
-    //rokz::ViewportState          viewport_state;
-  
     rokz::SwapchainGroup         swapchain_group;
-
     rokz::FrameSequencing        frame_sequence;
+    rokz::SwapchainSupportInfo   swapchain_support_info;
 
-    rokz::SwapchainSupportInfo       swapchain_support_info;
-
+    // global pools
     rokz::CommandPool            command_pool;
-
     rokz::DescriptorPool         descr_pool;
 
-
-    // rokz::DescriptorGroup        descrgroup; 
-    // rokz::Pipeline               pipeline; 
+    // 
     PipelineGroup                obj_pipeline;
     PipelineGroup                grid_pipeline;
 
+    // DYNAMIC RENDERING
+#ifdef  DARKROOT_DYNAMIC_RENDER_ENABLE
+    RenderingInfoGroup           rendering_info_group;
+#endif
+    
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
 
-    rokz::Image                  multisamp_color_image;
-    rokz::ImageView              multisamp_color_imageview; 
+    rokz::Image                  msaa_color_image;
+    rokz::ImageView              msaa_color_imageview; 
   
     VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
 
@@ -194,7 +223,6 @@ namespace darkroot {
     rokz::Buffer                 vma_vb_device;
 
 
-    rokz::RenderPass             render_pass; 
 
     // image/texture
     rokz::Image                 texture_image; 

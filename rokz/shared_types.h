@@ -204,20 +204,21 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct PipelineStateCreateInfo {
-    PipelineStateCreateInfo () : shader_stages (), input_assembly (), vertexinputstate (), viewport_state (),
-                                 rasterizer (), multisampling (), depthstencilstate (), colorblendstate (), dynamicstate () {
+    PipelineStateCreateInfo () : shader_stages(), colorblendstate(), input_assembly(), vertexinputstate(),
+                                 viewport_state(), rasterizer(), multisampling(), depthstencilstate(), dynamicstate() {
     }
 
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages; 
-    VkPipelineInputAssemblyStateCreateInfo       input_assembly; 
-    VkPipelineVertexInputStateCreateInfo         vertexinputstate;
-    VkPipelineViewportStateCreateInfo            viewport_state;
-    VkPipelineTessellationStateCreateInfo        tesselation; 
-    VkPipelineRasterizationStateCreateInfo       rasterizer;
-    VkPipelineMultisampleStateCreateInfo         multisampling;
-    VkPipelineDepthStencilStateCreateInfo        depthstencilstate;
-    VkPipelineColorBlendStateCreateInfo          colorblendstate; 
-    VkPipelineDynamicStateCreateInfo             dynamicstate;
+    std::vector<VkPipelineShaderStageCreateInfo>     shader_stages; 
+
+    VkPipelineColorBlendStateCreateInfo              colorblendstate; 
+    VkPipelineInputAssemblyStateCreateInfo           input_assembly; 
+    VkPipelineVertexInputStateCreateInfo             vertexinputstate;
+    VkPipelineViewportStateCreateInfo                viewport_state;
+    VkPipelineTessellationStateCreateInfo            tesselation; 
+    VkPipelineRasterizationStateCreateInfo           rasterizer;
+    VkPipelineMultisampleStateCreateInfo             multisampling;
+    VkPipelineDepthStencilStateCreateInfo            depthstencilstate;
+    VkPipelineDynamicStateCreateInfo                 dynamicstate;
   };
 
   struct ViewportState {
@@ -229,9 +230,9 @@ namespace rokz {
   struct PipelineState {
 
     PipelineStateCreateInfo ci;
-    VkPipelineColorBlendAttachmentState color_blend_attachment;     
-    ViewportState                       viewport;
-    std::vector<VkDynamicState>         dynamics; 
+    std::vector<VkPipelineColorBlendAttachmentState> colorblend_attachments;     
+    ViewportState                                    viewport;
+    std::vector<VkDynamicState>                      dynamics; 
 
   }; 
 

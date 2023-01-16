@@ -61,3 +61,66 @@ bool rokz::PresentFrame (VkQueue& present_que, const rokz::Swapchain& swapchain,
  return PresentFrame (present_que , PresentInfo (pi, image_index, swapchains, signal_sems));
 }
 
+
+
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+VkRenderingAttachmentInfo& rokz::AttachmentInfo (VkRenderingAttachmentInfo& ai,
+
+                                                 VkImageView                imageview ,
+                                                 VkImageLayout              image_layout,
+                                                 VkResolveModeFlagBits      resolve_mode,
+
+                                                 VkImageView                resolve_imageview,
+                                                 VkImageLayout              resolve_imagelayout ,
+
+                                                 VkAttachmentLoadOp         load_op,
+                                                 VkAttachmentStoreOp        store_op,
+                                                 VkClearValue               clear_value)
+{
+  //
+  ai.sType             = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+  ai.pNext             = nullptr;
+  ai.imageView         = imageview          ;
+  ai.imageLayout       = image_layout       ;
+  ai.resolveMode       = resolve_mode       ;
+  ai.resolveImageView  = resolve_imageview  ;
+  ai.resolveImageLayout= resolve_imagelayout;
+  ai.loadOp            = load_op            ;
+  ai.storeOp           = store_op           ;
+  ai.clearValue        = clear_value        ;
+
+  return ai;
+}
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+VkRenderingInfo& rokz::RenderingInfo (VkRenderingInfo& ri,
+                                 const VkRect2D&                               render_area,
+                                 uint32_t                                      layer_count,
+                                 uint32_t                                      view_mask,
+                                 const std::vector<VkRenderingAttachmentInfo>& color_attachments,
+                                 const VkRenderingAttachmentInfoKHR*           depth_attachment,
+                                 const VkRenderingAttachmentInfoKHR*           stencil_attachment)
+
+{
+
+
+  printf ("%s  -> color_attachments_size[%zu]\n", __FUNCTION__,  color_attachments.size());
+  
+  ri.sType                = VK_STRUCTURE_TYPE_RENDERING_INFO;
+  ri.pNext                = nullptr;               
+  ri.flags                = 0;               
+  ri.renderArea           = render_area;          
+  ri.layerCount           = layer_count;          
+  ri.viewMask             = view_mask;            
+  ri.colorAttachmentCount = color_attachments.size();
+  ri.pColorAttachments    = &color_attachments[0];     
+  ri.pDepthAttachment     = depth_attachment;    
+  ri.pStencilAttachment   = stencil_attachment;
+ 
+  return ri; 
+}

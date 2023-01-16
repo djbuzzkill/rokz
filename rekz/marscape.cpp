@@ -684,8 +684,8 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
     return false;
   }
 
-  
-  rokz::ColorBlendState_default (pipelinegroup.pipeline.state.color_blend_attachment); 
+  pipelinegroup.pipeline.state.colorblend_attachments.resize (1);
+  rokz::ColorBlendState_default (pipelinegroup.pipeline.state.colorblend_attachments[0]); 
   rokz::DynamicState_default    (pipelinegroup.pipeline.state.dynamics); 
 
   rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
@@ -696,7 +696,7 @@ bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
   rokz::CreateInfo (psci.viewport_state, vps);
   rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST); 
   rokz::CreateInfo (psci.rasterizer); 
-  rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.color_blend_attachment); 
+  rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.colorblend_attachments); 
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
   SetupMarsDescriptorLayout (  pipelinegroup.descrgroup, device); 

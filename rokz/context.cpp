@@ -956,7 +956,8 @@ void rokz::Cleanup (VkPipeline&                 pipeline,
               std::vector<rokz::ShaderModule>&  shader_modules,
               VkPipelineLayout&                 pipeline_layout,
               rokz::RenderPass&                 render_pass,
-              rokz::Image&                      msaa_color_image,
+
+                   rokz::Image&                      msaa_color_image,
               rokz::ImageView&                  msaa_color_imageview,
 
               rokz::Image&                      depth_image,

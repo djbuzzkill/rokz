@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "shared_types.h"
+#include <vulkan/vulkan_core.h>
 
 
 namespace rokz {
@@ -65,6 +66,10 @@ namespace rokz {
 
   VkPipelineColorBlendStateCreateInfo&    CreateInfo (VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
                                                       const VkPipelineColorBlendAttachmentState& colorblend);
+  VkPipelineColorBlendStateCreateInfo&    CreateInfo (VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
+                                                      const std::vector<VkPipelineColorBlendAttachmentState>& colorblends);
+
+
   VkPipelineDynamicStateCreateInfo&       CreateInfo (VkPipelineDynamicStateCreateInfo& ci, const std::vector<VkDynamicState>& dynamics); 
   VkPipelineVertexInputStateCreateInfo&   CreateInfo (VkPipelineVertexInputStateCreateInfo& create_info,
                                                       const VkVertexInputBindingDescription& binding_desc,
@@ -86,6 +91,16 @@ namespace rokz {
                                                       const std::vector<VkDescriptorSetLayout>& dslos,
                                                       const std::vector<VkPushConstantRange>& pc = std::vector<VkPushConstantRange>(0)); 
 
+
+  VkPipelineRenderingCreateInfoKHR& CreateInfo  (VkPipelineRenderingCreateInfoKHR& ci,
+                                                 const std::vector<VkFormat>& color_formats,
+                                                 VkFormat depth_format = VK_FORMAT_UNDEFINED,
+                                                 VkFormat stencil_format = VK_FORMAT_UNDEFINED) ; 
+
+  
+  //
+  // VkGraphicsPipelineCreateInfo
+  //
   VkGraphicsPipelineCreateInfo&           CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
                                                       const VkPipelineLayout&                            pipeline_layout,
                                                       const VkRenderPass&                                render_pass,
@@ -100,6 +115,22 @@ namespace rokz {
                                                       const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
                                                       const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state); 
 
+  //
+  // VkGraphicsPipelineCreateInfo - similar to above except using dynamic render pass
+  //
+  VkGraphicsPipelineCreateInfo&          CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
+                                                     const VkPipelineLayout&                            pipeline_layout,
+                                                     const VkPipelineRenderingCreateInfoKHR*            ci_pipeline_rendering, 
+                                                     const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
+                                                     const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                                                     const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                                                     const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                                                     const VkPipelineTessellationStateCreateInfo*       ci_tesselation, 
+                                                     const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                                                     const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                                                     const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                                                     const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                                                     const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state); 
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------

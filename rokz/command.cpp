@@ -15,45 +15,90 @@ bool has_stencil_component(VkFormat format) {
 //
 // --------------------------------------------------------------------
 VkImageMemoryBarrier& transition_barrier_mask (
-    VkPipelineStageFlags& dst_stage,
-    VkPipelineStageFlags& src_stage,
     VkImageMemoryBarrier& barrier,
-    VkImageLayout new_layout,
-    VkImageLayout old_layout) {
+    VkPipelineStageFlags& src_stage,
+    VkPipelineStageFlags& dst_stage,
+    VkFormat              format, 
+    VkImageLayout         old_layout,
+    VkImageLayout         new_layout) {
 
-  // if (new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-  //   barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+  //
+  // 
+  if (new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
 
-  //   if (hasStencilComponent(format)) {
-  //     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-  //   }
-  // } else {
-  //   barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  // }
-  
-  if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+    if (has_stencil_component(format)) {
+      barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+    
+  } else {
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  }
+
+  // 
+  // make ready for host transfer
+  //
+  if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED
+   && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
     barrier.srcAccessMask = 0;
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
   }
-  else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-         & new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 
+  //
+  // new from host/ready/ready for read only 
+  //
+  else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+        && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+
+    src_stage             = VK_PIPELINE_STAGE_TRANSFER_BIT;
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+    dst_stage             = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
   }
 
+  //
+  // new depth/ make ready for use
+  //
   else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED
         && new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
 
-    barrier.srcAccessMask = 0;
+    src_stage             = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    barrier.srcAccessMask = VK_ACCESS_NONE;
+
+    dst_stage             = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    dst_stage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
   }
+
+
+  // 
+  // the begining color target pre render
+  //
+  else if (old_layout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        && new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ) {
+
+    src_stage             = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    barrier.srcAccessMask = VK_ACCESS_NONE;
+
+    dst_stage             = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT ;
+  }
+  // 
+  // end drawing ready for presenting
+  //
+  else if (old_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        && new_layout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+
+    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    src_stage             = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    dst_stage             = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT ; // ;
+    barrier.dstAccessMask = VK_ACCESS_NONE;   // is VK_ACCESS_NONE correct?
+  }
+
   else {
      printf ("[ERROR] unknown layout transition\n");
   }
@@ -65,21 +110,20 @@ VkImageMemoryBarrier& transition_barrier_mask (
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::TransitionImageLayout (VkImage image,
-                                  VkFormat format,
+void rokz::TransitionImageLayout (VkImage              image,
+                                  VkFormat             format,
                                   const VkImageLayout& old_layout,
                                   const VkImageLayout& new_layout,
                                   const VkQueue&       queue,
                                   const VkCommandPool& command_pool,
                                   const VkDevice&      device) {
 
-  (void) format; // <-- for now
-
   VkCommandBuffer command_buffer  = BeginCommandList (command_pool, device); 
 
   VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   barrier.pNext = nullptr;
+
   barrier.oldLayout = old_layout;
   barrier.newLayout = new_layout;
   barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -91,23 +135,11 @@ void rokz::TransitionImageLayout (VkImage image,
   barrier.subresourceRange.levelCount = 1;
   barrier.subresourceRange.baseArrayLayer = 0;
   barrier.subresourceRange.layerCount = 1;
-
-  // VkBufferMemoryBarrier _buffmem_barr;
-  // VkMemoryBarrier       _mem_barr;
   
-  VkPipelineStageFlags dst_stage, src_stage;  
-  transition_barrier_mask (dst_stage, src_stage, barrier , new_layout , old_layout); 
-  // barrier.srcAccessMask = 0;  printf ("[TODO] (%i)\n", __LINE__);
-  // barrier.dstAccessMask = 0;  printf ("[TODO] (%i)\n", __LINE__);
-
-  vkCmdPipelineBarrier(command_buffer,
-                       src_stage,
-                       dst_stage,
-                       0,
-                       0, nullptr,
-                       0, nullptr,
-                       1, &barrier
-                       );
+  VkPipelineStageFlags dst_flags, src_flags;  
+  transition_barrier_mask (barrier, src_flags, dst_flags, format, old_layout, new_layout); 
+  vkCmdPipelineBarrier (command_buffer, src_flags, dst_flags, 0,
+                        0, nullptr, 0, nullptr, 1, &barrier);
   
   EndCommandList (command_buffer, queue, command_pool, device);
   
