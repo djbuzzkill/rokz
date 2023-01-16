@@ -649,7 +649,16 @@ void SetupDarkDepthBuffer (Glob& glob) {
                                  glob.queues.graphics, glob.command_pool.handle, glob.device.handle);
 
   } 
-  
+// VUID-vkCmdDrawIndexed-pDepthAttachment-06181(ERROR / SPEC): msgNum: -1016735096 - Validation Error:
+//  [ VUID-vkCmdDrawIndexed-pDepthAttachment-06181 ] Object 0: handle = 0x56169b0053e0, type = VK_OBJECT_TYPE_COMMAND_BUFFER; | MessageID = 0xc365da88 | vkCmdDrawIndexed:
+  "Depth attachment imageView format (VK_FORMAT_D32_SFLOAT) must match corresponding format in pipeline\
+  (VK_FORMAT_UNDEFINED) The Vulkan spec states: If the current render pass instance was begun with\
+  vkCmdBeginRendering and VkRenderingInfo::pDepthAttachment->imageView was not VK_NULL_HANDLE, the value of\
+  VkPipelineRenderingCreateInfo::depthAttachmentFormat used to create the currently bound graphics pipeline\
+  must be equal to the VkFormat used to create VkRenderingInfo::pDepthAttachment->imageView\
+  (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-vkCmdDrawIndexed-pDepthAttachment-06181)";
+//     Objects: 1
+//         [0] 0x56169b0053e0, type: 6, name: NULL  
 }
 
 
@@ -1086,6 +1095,8 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
                           const std::filesystem::path& fspath,
                           const rokz::Swapchain& swapchain,
                           VkSampleCountFlagBits msaa_samples,
+                          VkFormat color_format,
+                          VkFormat depth_format,
                           const rokz::Device& device) {
 
   
@@ -1120,11 +1131,18 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
                                       pipelinegroup.descrgroup.dslayout.handle,
                                       device.handle);
   
+  pipeline.ext.pipeline_rendering.color_formats.resize (1);
+  pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
 
+  rokz::CreateInfo  (pipeline.ext.pipeline_rendering.ci,
+                     pipeline.ext.pipeline_rendering.color_formats,
+                     depth_format); 
+
+  
   //
   rokz::CreateInfo (pipelinegroup.pipeline.ci,
                     pipelinegroup.pipeline.layout.handle,
-                    &pipelinegroup.pr_ci,                    
+                    &pipeline.ext.pipeline_rendering.ci,                    
                     psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
                     &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
                     &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
@@ -1855,10 +1873,11 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // this is passed on as a VkGraphicsPipelineCreateInfo::pNext
   //  VkPipelineRenderingCreateInfo
-  std::vector<VkFormat> color_formats = {
-        glob.surface_format.format };
-  rokz::CreateInfo  (glob.obj_pipeline.pr_ci, color_formats, glob.depth_format); 
-
+  // std::vector<VkFormat> color_formats = {
+  //       glob.surface_format.format };
+  // rokz::CreateInfo  (glob.obj_pipeline.pr_ci, color_formats, glob.depth_format); 
+  // glob.depth_format;
+  
 #else
   // this wont compile
   rokz::CreateRenderPass (glob.render_pass,
@@ -1899,18 +1918,23 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 #endif
 
+
+  rokz::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
+
+
   SetupObjectPipeline (glob.obj_pipeline,
                        //glob.render_pass,
                        dark_path,
                        glob.swapchain_group.swapchain,
                        glob.msaa_samples,
+                       glob.surface_format.format,
+                       glob.depth_format,
                        glob.device); 
-
 
   SetupDarkMultisampleColorResource (glob);
 
   SetupDarkDepthBuffer (glob);
-
+  glob.depth_format;
 
 #ifdef DARKROOT_DYNAMIC_RENDER_ENABLE
 
@@ -1980,7 +2004,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int        countdown  = 1;
+  int        countdown  = 60;
 
   printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
   //

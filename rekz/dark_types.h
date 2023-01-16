@@ -24,10 +24,6 @@ namespace darkroot {
     rokz::Pipeline        pipeline;
     rokz::DescriptorGroup descrgroup;
 
-    // * extensions * 
-    
-    // VK_KHR_dynamic_rendering
-    VkPipelineRenderingCreateInfoKHR pr_ci; 
     
   };
   // --------------------------------------------------------------------

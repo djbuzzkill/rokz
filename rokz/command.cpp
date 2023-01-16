@@ -99,6 +99,27 @@ VkImageMemoryBarrier& transition_barrier_mask (
     barrier.dstAccessMask = VK_ACCESS_NONE;   // is VK_ACCESS_NONE correct?
   }
 
+  else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED
+        && new_layout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+
+    src_stage             = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    barrier.srcAccessMask = VK_ACCESS_NONE;
+
+    dst_stage             = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_NONE;
+  }
+
+  else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED
+        && new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ) {
+
+    src_stage             = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    barrier.srcAccessMask = VK_ACCESS_NONE;
+
+    dst_stage             = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT ;
+  }
+
+  
   else {
      printf ("[ERROR] unknown layout transition\n");
   }

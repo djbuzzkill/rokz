@@ -256,6 +256,15 @@ namespace rokz {
     PipelineLayout                   layout; 
     PipelineState                    state;
     std::vector<rokz::ShaderModule>  shader_modules; 
+    // EXTENSIONS
+    struct { 
+      struct {
+        VkPipelineRenderingCreateInfoKHR ci; 
+        std::vector<VkFormat> color_formats;
+        VkFormat              depth_format;
+      } pipeline_rendering;
+    } ext;
+  
   };
 
   // ----------------------------------------------------------
