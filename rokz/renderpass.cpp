@@ -36,7 +36,7 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   auto DP_n = ATTACH_DEPTHSTENCIL;
   render_pass.attach_desc[DP_n] = {}; 
   // render_pass.attach_desc[dp_in].format         = depth_format;
-  rokz::FindDepthFormat (render_pass.attach_desc[DP_n].format, physdev);
+  ut::FindDepthFormat (render_pass.attach_desc[DP_n].format, physdev);
   render_pass.attach_desc[DP_n].samples        = msaa_samples; // VK_SAMPLE_COUNT_1_BIT;
   render_pass.attach_desc[DP_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
   render_pass.attach_desc[DP_n].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;

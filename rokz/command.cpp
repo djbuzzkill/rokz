@@ -130,7 +130,7 @@ VkImageMemoryBarrier& transition_barrier_mask (
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::TransitionImageLayout (VkImage              image,
+void rokz::cx::TransitionImageLayout (VkImage              image,
                                   VkFormat             format,
                                   const VkImageLayout& old_layout,
                                   const VkImageLayout& new_layout,
@@ -168,7 +168,7 @@ void rokz::TransitionImageLayout (VkImage              image,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
+VkCommandBuffer rokz::cx::BeginCommandList (const VkCommandPool& command_pool,
                                         const VkDevice& device) {
 
   VkCommandBufferAllocateInfo alloc_info {};
@@ -198,7 +198,7 @@ VkCommandBuffer rokz::BeginCommandList (const VkCommandPool& command_pool,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
+void rokz::cx::EndCommandList (VkCommandBuffer&     command_buffer,
                            const VkQueue&       queue,
                            const VkCommandPool& command_pool,
                            const VkDevice&      device) {
@@ -220,7 +220,7 @@ void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::CopyBufferToImage (VkImage&          image,
+void rokz::cx::CopyBufferToImage (VkImage&          image,
                               const VkBuffer    buffer,
                               uint32_t width,   uint32_t height, 
                               const VkQueue&       queue,

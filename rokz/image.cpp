@@ -31,7 +31,7 @@ VkMemoryAllocateInfo& rokz::cx::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkM
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
   alloc_info.allocationSize = mem_reqs.size;
-  rokz::FindMemoryType (alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
+  ut::FindMemoryType (alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
                         prop_flags, physdev);
 
   return alloc_info; 

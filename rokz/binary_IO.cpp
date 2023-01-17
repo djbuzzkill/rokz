@@ -25,14 +25,14 @@ namespace rokz {
 	
       case SeekMode::Rel:
 	
-	if (in_bounds_incl<size_t> (offs+offset, 0, max_size))
+	if (ut::in_bounds_incl<size_t> (offs+offset, 0, max_size))
 	  offs += offset; 
 
 	break;
 
       case SeekMode::End:
 
-	if (in_bounds_excl<size_t> (offs + offset , 0, max_size))
+	if (ut::in_bounds_excl<size_t> (offs + offset , 0, max_size))
 	  offs = max_size + offset;
 
 	break;
@@ -95,12 +95,12 @@ namespace rokz {
 	break;
 	//
       case SeekMode::Rel:
-	if (in_bounds_incl<size_t> (offs+offset, 0, max_size))
+	if (ut::in_bounds_incl<size_t> (offs+offset, 0, max_size))
 	  offs += offset; 
 	break;
 	// 
       case SeekMode::End:
-	if (in_bounds_excl<size_t> (offs + offset , 0, max_size))
+	if (ut::in_bounds_excl<size_t> (offs + offset , 0, max_size))
 	  offs = max_size + offset;
 	break;
       }      
@@ -118,7 +118,7 @@ namespace rokz {
 
       size_t write_len = len; 
 
-      if (!in_bounds_incl<size_t> (offs+len, 0, max_size)) {
+      if (!ut::in_bounds_incl<size_t> (offs+len, 0, max_size)) {
 	printf ("[%s:|%i] max_size:%zu  \n",   __FUNCTION__, __LINE__, max_size);
 	printf ("[%s:|%i] offs:%zu  \n",   __FUNCTION__, __LINE__, offs);
 	printf ("[%s:|%i] len:%zu  \n",   __FUNCTION__, __LINE__, len);
@@ -169,12 +169,12 @@ namespace rokz {
 	break;
 	//
       case SeekMode::Rel:
-	if (in_bounds_incl<size_t> (offs+offset, 0, max_size))
+	if (ut::in_bounds_incl<size_t> (offs+offset, 0, max_size))
 	  std::fseek (f.get(), offset, SEEK_CUR); 
 	break;
 	// 
       case SeekMode::End:
-	if (in_bounds_excl<size_t> (offs + offset , 0, max_size))
+	if (ut::in_bounds_excl<size_t> (offs + offset , 0, max_size))
 	  std::fseek (f.get(), offset, SEEK_END); 
 	  
 	break;

@@ -85,7 +85,7 @@ bool rokz::cx::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
   desc_sets.resize(num_sets);
   VkResult res = vkAllocateDescriptorSets (device, &alloc_info, &desc_sets[0]); 
 
-  const char*   res_str = rokz::Get_VkResult_string (res); 
+  const char*   res_str = ut::VkResult_2_string (res); 
 
   switch (res)
     {

@@ -9,6 +9,7 @@
 
 namespace rokz {
 
+  namespace ut { 
   // ---------------------------------------------------
   //
   // ---------------------------------------------------
@@ -86,8 +87,8 @@ namespace rokz {
   }
 
 
-  const char* Get_VkResult_string (VkResult r); 
-
+  const char* VkResult_2_string (VkResult r); 
+}
 }
 
 

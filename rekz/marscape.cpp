@@ -208,7 +208,7 @@ void SetupMarsDepthBuffer (Glob& glob) {
 
   VkFormat depth_format;
 
-  if (rokz::FindDepthFormat (depth_format, glob.physical_device.handle)) {
+  if (rokz::ut::FindDepthFormat (depth_format, glob.physical_device.handle)) {
 
     rokz::cx::CreateInfo_2D_depthstencil (glob.depth_image.ci,
                                       depth_format, 
@@ -220,7 +220,7 @@ void SetupMarsDepthBuffer (Glob& glob) {
     rokz::cx::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
     rokz::cx::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
 
-    rokz::TransitionImageLayout; 
+    rokz::cx::TransitionImageLayout; 
     //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
   }
 }
@@ -880,11 +880,11 @@ int mars_run (const std::vector<std::string>& args) {
   rokz::cx::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
   rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
 
-  glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device); 
+  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
 
 
   VkDeviceSize min_uniform_buffer_offset_alignment =
-    rokz::MinUniformBufferOffsetAlignment (glob.physical_device);
+    rokz::ut::MinUniformBufferOffsetAlignment (glob.physical_device);
 
   glob.queue_priority = 1.0f;
   if (glob.physical_device.family_indices.graphics.has_value ()) {

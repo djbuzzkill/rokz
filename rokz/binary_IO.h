@@ -50,13 +50,13 @@ namespace rokz {
   };
   
 
-  struct read_stream : public byte_stream, public reader, public destructor {
+  struct read_stream : public byte_stream, public reader, public ut::destructor {
 
   protected:
     read_stream () : byte_stream(), reader () {}
   }; 
 
-  struct write_stream : public byte_stream, public writer, public destructor {
+  struct write_stream : public byte_stream, public writer, public ut::destructor {
   protected:
     write_stream () : byte_stream(), writer () {}
   };

@@ -117,7 +117,7 @@ VkInstanceCreateInfo& rokz::cx::CreateInfo (VkInstanceCreateInfo& ci,
   printf ("%s VkInstanceCreateInfo \n", __FUNCTION__); 
   
   required_extensions.clear (); 
-  for (auto& xs : GetRequiredExtensionNames (extstrs))
+  for (auto& xs : ut::GetRequiredExtensionNames (extstrs))
     required_extensions.push_back (xs.c_str());
 
   ci = {}; 
@@ -131,7 +131,7 @@ VkInstanceCreateInfo& rokz::cx::CreateInfo (VkInstanceCreateInfo& ci,
   vls.clear (); 
   for (auto& vs : GetValidationLayers (vstrs)) vls.push_back (vs.c_str()); 
 
-  if (kEnableValidationLayers && rokz::CheckValidationSupport (vstrs)) {
+  if (kEnableValidationLayers && ut::CheckValidationSupport (vstrs)) {
     printf ("ENABLE VALIDATION LAYERS\n"); 
     ci.enabledLayerCount   = vls.size(); 
     ci.ppEnabledLayerNames = &vls[0]; 

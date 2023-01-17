@@ -149,14 +149,14 @@ bool SetupDarkrootWindow (Glob& glob) {
 // ---------------------------------------------------------------------
 // load texture to device memory
 // ---------------------------------------------------------------------
-bool LoadTexture_color_sampling (rokz::Image&        image,
-                           VkFormat                  format,
-                           const VkExtent2D&         ext2d,
-                           const void*               srcimage,
-                           const VmaAllocator&       allocator, 
-                           const VkQueue&            queue, 
-                           const rokz::CommandPool&  commandpool, 
-                           const rokz::Device&       device) {
+bool LoadTexture_color_sampling (rokz::Image&             image,
+                                 VkFormat                 format,
+                                 const VkExtent2D&        ext2d,
+                                 const void*              srcimage,
+                                 const VmaAllocator&      allocator, 
+                                 const VkQueue&           queue, 
+                                 const rokz::CommandPool& commandpool, 
+                                 const rokz::Device&      device) {
 
   //size_t image_size = image_width * image_height *  bytes_per_pixel; 
   auto image_size = SizeOfComponents (format)
@@ -186,14 +186,14 @@ bool LoadTexture_color_sampling (rokz::Image&        image,
   }
 
   //VK_FORMAT_R8G8B8A8_SRGB
-  rokz::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_UNDEFINED,
+  rokz::cx::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_UNDEFINED,
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                queue, commandpool.handle, device.handle);
 
-  rokz::CopyBufferToImage (image.handle, stage_buff.handle, ext2d.width, ext2d.height,
+  rokz::cx::CopyBufferToImage (image.handle, stage_buff.handle, ext2d.width, ext2d.height,
                            queue, commandpool.handle, device.handle);
 
-  rokz::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+  rokz::cx::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                queue, commandpool.handle, device.handle);
 
@@ -481,7 +481,7 @@ void SetupDarkDepthBuffer (Glob& glob) {
   uint32_t wd = scg.swapchain.ci.imageExtent.width; 
   uint32_t ht = scg.swapchain.ci.imageExtent.height;   
 
-  if (rokz::FindDepthFormat (glob.depth_format, glob.physical_device.handle)) {
+  if (rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle)) {
 
     rokz::cx::CreateInfo_2D_depthstencil (glob.depth_image.ci,
                                       glob.depth_format, 
@@ -494,7 +494,7 @@ void SetupDarkDepthBuffer (Glob& glob) {
     rokz::cx::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
     rokz::cx::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
 
-    rokz::TransitionImageLayout (glob.depth_image.handle, glob.depth_format,
+    rokz::cx::TransitionImageLayout (glob.depth_image.handle, glob.depth_format,
                                  VK_IMAGE_LAYOUT_UNDEFINED,
                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                  glob.queues.graphics, glob.command_pool.handle, glob.device.handle);
@@ -589,7 +589,7 @@ void SetupDarkMultisampleColorResource (Glob& glob) {
   rokz::cx::CreateInfo (glob.msaa_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.msaa_color_image);
   rokz::cx::CreateImageView (glob.msaa_color_imageview, glob.msaa_color_imageview.ci, glob.device.handle);
 
-  rokz::TransitionImageLayout (glob.msaa_color_image.handle, swapchain_format,
+  rokz::cx::TransitionImageLayout (glob.msaa_color_image.handle, swapchain_format,
                                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                glob.queues.graphics, glob.command_pool.handle, glob.device.handle);
 
@@ -1511,7 +1511,7 @@ bool RenderFrame_dynamic (Glob&                   glob,
   UpdateDarkUniforms (glob, curr_frame, dt); 
 
 
-  rokz::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
+  rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
                                glob.surface_format.format, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                                glob.queues.graphics, glob.command_pool.handle, device.handle);
@@ -1556,7 +1556,7 @@ bool RenderFrame_dynamic (Glob&                   glob,
   }
 
 
-  rokz::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
+  rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
                                glob.surface_format.format,
                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -1619,10 +1619,10 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::cx::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
   rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
 
-  glob.msaa_samples = rokz::MaxUsableSampleCount (glob.physical_device); 
+  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
 
   VkDeviceSize min_uniform_buffer_offset_alignment =
-    rokz::MinUniformBufferOffsetAlignment (glob.physical_device);
+    rokz::ut::MinUniformBufferOffsetAlignment (glob.physical_device);
 
   printf ( "----------> min_uniform_buffer_offset_alignment [%zu]\n", min_uniform_buffer_offset_alignment); 
 //VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
@@ -1708,7 +1708,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
     
-    rokz::TransitionImageLayout (scg.images[iimg].handle,
+    rokz::cx::TransitionImageLayout (scg.images[iimg].handle,
                                  glob.surface_format.format,
                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                  glob.queues.graphics, glob.command_pool.handle, glob.device.handle);
@@ -1725,7 +1725,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
                           glob.device); 
 #endif
 
-  rokz::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
+  rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
   // ^ this is called again in  SetupDarkDepthBuffer, but we need it for Object Pipeline
   SetupObjectPipeline (glob.obj_pipeline,
                        //glob.render_pass,

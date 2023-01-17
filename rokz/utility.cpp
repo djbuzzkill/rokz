@@ -6,7 +6,7 @@ using namespace rokz;
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CheckValidationSupport (const std::vector<std::string>& vlayers) {
+bool rokz::ut::CheckValidationSupport (const std::vector<std::string>& vlayers) {
 
   printf ("%s\n", __FUNCTION__); 
 
@@ -38,7 +38,7 @@ bool rokz::CheckValidationSupport (const std::vector<std::string>& vlayers) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-std::vector<std::string>& rokz::GetRequiredExtensionNames (std::vector<std::string>& extstrs) {
+std::vector<std::string>& rokz::ut::GetRequiredExtensionNames (std::vector<std::string>& extstrs) {
   // GLFW REQ'D EXTENSIONS
   uint32_t extcount = 0;
   const char **glfw_exts; 
@@ -58,7 +58,7 @@ std::vector<std::string>& rokz::GetRequiredExtensionNames (std::vector<std::stri
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
+bool rokz::ut::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags, const VkPhysicalDevice& physdev) {
     
   VkPhysicalDeviceMemoryProperties mem_props;
   vkGetPhysicalDeviceMemoryProperties(physdev, &mem_props);
@@ -78,7 +78,7 @@ bool rokz::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMemoryP
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-bool rokz::FindSupportedFormat (VkFormat&                    out,
+bool rokz::ut::FindSupportedFormat (VkFormat&                    out,
                                 const std::vector<VkFormat>& candidates,
                                 VkImageTiling                tiling,
                                 VkFormatFeatureFlags         features, 
@@ -105,7 +105,7 @@ bool rokz::FindSupportedFormat (VkFormat&                    out,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev) {
+bool rokz::ut::FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev) {
 
   std::vector<VkFormat> candidates = 
     {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
@@ -120,14 +120,14 @@ bool rokz::FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physdev) 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::HasStencilComponent(VkFormat format) {
+bool rokz::ut::HasStencilComponent(VkFormat format) {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkSampleCountFlagBits rokz::MaxUsableSampleCount  (VkPhysicalDevice physdev) {
+VkSampleCountFlagBits rokz::ut::MaxUsableSampleCount  (VkPhysicalDevice physdev) {
     VkPhysicalDeviceProperties phys_dev_props;
     vkGetPhysicalDeviceProperties (physdev, &phys_dev_props);
 
@@ -193,7 +193,7 @@ const std::map<VkResult, const char*>  kVulkanResult_ERROR_STRINGS = {
 
 const char* kVULKAN_ERROR_NOT_FOUND = "ERROR STRING NOT FOUND"; 
 
-const char* rokz::Get_VkResult_string (VkResult r) {
+const char* rokz::ut::VkResult_2_string (VkResult r) {
   
   if (kVulkanResult_ERROR_STRINGS.count (r)) {
     return kVulkanResult_ERROR_STRINGS.at(r);
