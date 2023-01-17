@@ -181,6 +181,12 @@ namespace rokz {
   }; 
 
   // --------------------------------------------------------
+  struct Sampler {
+    VkSampler           handle; 
+    VkSamplerCreateInfo ci;
+  };
+
+  // --------------------------------------------------------
   struct RenderSyncCreateInfo {
 
     RenderSyncCreateInfo () : semaphore (), fence () {
@@ -314,6 +320,21 @@ namespace rokz {
     std::array<VkAttachmentReference, ATTACHMENT_INDEX_MAX>   attach_ref;
     std::vector<VkSubpassDescription>                         subpass_descs;
     std::vector<VkSubpassDependency>                          dependencies;
+  };
+
+  // --------------------------------------------------------------------
+  // VK 1.3 | dynamic rendering 
+  // --------------------------------------------------------------------
+  struct RenderingInfoGroup {
+
+    VkRenderingInfo                        ri;
+    std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
+    VkRenderingAttachmentInfo              depth_attachment_info;
+
+    std::vector<VkClearValue>              clear_colors;  // = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    VkClearValue                           clear_depth; //  = {{
+
+    VkRect2D                               render_area; 
   };
 
   // --------------------------------------------------------

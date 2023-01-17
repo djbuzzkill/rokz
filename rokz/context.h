@@ -99,43 +99,8 @@ namespace rokz {
 
     bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
 
-  // -------------------------------------------------------------------------
-  //
-  // -------------------------------------------------------------------------
-  bool               RecreateSwapchain (Swapchain&                          swapchain,
-                                        std::vector<Image>&                 swapchain_images, 
-                                        std::vector<Framebuffer>&           framebuffers,
-                                        std::vector<ImageView>&             image_views, 
 
-                                        RenderPass&                         render_pass, 
-                                        Image&                              depth_image, 
-                                        ImageView&                          depth_imageview,
-
-                                        Image&                              multisamp_color_image, 
-                                        ImageView&                          multisamp_color_imageview,
-
-                                        const Device&                         device,
-                                        const VmaAllocator&                   allocator,
-                                        GLFWwindow*                           glfwin); 
-
-  } // core
-
-
-
-
-
-
-
-
-
-  
-
-  
-  //bool               CreateRenderPass (VkRenderPass& render_pass, VkRenderPassCreateInfo& create_info, VkFormat swapchain_format, const VkDevice& device); 
-
-  
-
-  VkCommandPoolCreateInfo&             CreateInfo (VkCommandPoolCreateInfo& ci, uint32_t queue_family_index);
+    VkCommandPoolCreateInfo&     CreateInfo (VkCommandPoolCreateInfo& ci, uint32_t queue_family_index);
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -156,33 +121,30 @@ namespace rokz {
                            const VkDevice&                    device); 
 
 
-  bool RecordCommandBuffer(VkCommandBuffer &command_buffer,
-                           const VkPipeline pipeline,
-                           const VkBuffer& vertex_buffer, 
-                           const VkExtent2D &ext2d,
-                           const VkFramebuffer &framebuffer,
-                           const RenderPass &render_pass,
-                           const VkDevice &device) ; 
-
-  bool RecordCommandBuffer_indexed (VkCommandBuffer&       command_buffer,
-                                    const Pipeline&        pipeline,
-                                    const VkDescriptorSet& desc_set, 
-                                    const VkBuffer&        vertex_buffer, 
-                                    const VkBuffer&        index_buffer, 
-                                    const VkExtent2D&      ext2d,
-                                    const VkFramebuffer&   framebuffer,
-                                    const RenderPass&      render_pass,
-                                    const VkDevice&        device); 
-
-  
-  // -------------------------------------------------------------------------
-  //
-  // -------------------------------------------------------------------------
   bool CreateRenderSync (RenderSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
 
-  // ---------------------------------------------------------------------
+
+  } // cx
+
+  // -------------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  bool               RecreateSwapchain (Swapchain&                          swapchain,
+                                        std::vector<Image>&                 swapchain_images, 
+                                        std::vector<Framebuffer>&           framebuffers,
+                                        std::vector<ImageView>&             image_views, 
+
+                                        RenderPass&                         render_pass, 
+                                        Image&                              depth_image, 
+                                        ImageView&                          depth_imageview,
+
+                                        Image&                              multisamp_color_image, 
+                                        ImageView&                          multisamp_color_imageview,
+
+                                        const Device&                         device,
+                                        const VmaAllocator&                   allocator,
+                                        GLFWwindow*                           glfwin); 
+
   void CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
                          std::vector<ImageView>&     fb_image_views,
 

@@ -25,13 +25,6 @@ namespace rokz {
                               const VkQueue&       queue,
                               const VkCommandPool& command_pool,
                               const VkDevice&      device); 
-  // --------------------------------------------------------
-  void  CopyBuffer (rokz::BufferStruc&           dst,
-                    const rokz::BufferStruc&     src,
-                    VkDeviceSize                 size,
-                    const VkQueue&               queue,
-                    const VkCommandPool&         command_pool,
-                    const VkDevice&              device);
 
   // --------------------------------------------------------
   void CopyBufferToImage (VkImage&        image,

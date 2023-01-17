@@ -14,9 +14,14 @@ namespace rokz {
   constexpr VkImageUsageFlags kDepthStencilUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; 
   constexpr VkImageUsageFlags kColorTargetUsage  = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; 
 
-  VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image); 
-  bool CreateImageView (ImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
-  bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
+
+
+  namespace cx {
+    VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image); 
+    bool CreateImageView (ImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
+    bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
+
+  
   
   // ------------------------------------------------------------------
   bool CreateImage (Image& image, const VkDevice& device); 
@@ -64,7 +69,9 @@ namespace rokz {
   // <---------------------------------------------------------------------------VMA
 
 
+  }
 
+  
 
   bool LoadImage (Image& image, VkFormat format, void* image_source); 
 

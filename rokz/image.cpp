@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateImage (Image& image, const VkDevice& device) {
+bool rokz::cx::CreateImage (Image& image, const VkDevice& device) {
   printf ("%s\n", __FUNCTION__);  
 
   if (vkCreateImage (device, &image.ci, nullptr, &image.handle) != VK_SUCCESS) {
@@ -22,7 +22,7 @@ bool rokz::CreateImage (Image& image, const VkDevice& device) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkMemoryAllocateInfo& rokz::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev) {
+VkMemoryAllocateInfo& rokz::cx::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev) {
 
   VkMemoryRequirements mem_reqs;
   vkGetImageMemoryRequirements(device, image, &mem_reqs);
@@ -40,7 +40,7 @@ VkMemoryAllocateInfo& rokz::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkMemor
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
+bool rokz::cx::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
   printf ("%s\n", __FUNCTION__);  
 
   if (vkAllocateMemory (device, &image.alloc_info, nullptr, &image.mem) != VK_SUCCESS) {
@@ -61,7 +61,7 @@ bool rokz::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
+bool rokz::cx::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
 
   //printf ("%s\n", __FUNCTION__);  
 
@@ -76,7 +76,7 @@ bool rokz::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, cons
 // ---------------------------------------------------------------------
 // CreateInfo for images from swapchain
 // ---------------------------------------------------------------------
-VkImageCreateInfo& rokz::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci) {
+VkImageCreateInfo& rokz::cx::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci) {
   // printf ("%s VMA\n", __FUNCTION__); 
   ci = {}; 
   ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -102,7 +102,7 @@ VkImageCreateInfo& rokz::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCre
 // ---------------------------------------------------------------------
 // CreateINFO for imageview from image 
 // ---------------------------------------------------------------------
-VkImageViewCreateInfo& rokz::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
+VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
 
   // printf ("%s\n", __FUNCTION__);  
 
@@ -128,7 +128,7 @@ VkImageViewCreateInfo& rokz::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspec
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateImageViews (std::vector<ImageView>&   imageviews,
+bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
                             const std::vector<Image>&  images,
                             const Device&              device) {
 
@@ -154,7 +154,7 @@ bool rokz::CreateImageViews (std::vector<ImageView>&   imageviews,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::Destroy (Image& image, const VkDevice& device) {
+void rokz::cx::Destroy (Image& image, const VkDevice& device) {
 
     vkDestroyImage (device, image.handle, nullptr);
     vkFreeMemory   (device, image.mem, nullptr);
@@ -164,7 +164,7 @@ void rokz::Destroy (Image& image, const VkDevice& device) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rokz::Destroy (ImageView& iv, const VkDevice& device) {
+void rokz::cx::Destroy (ImageView& iv, const VkDevice& device) {
 
   vkDestroyImageView(device, iv.handle, nullptr);
 }
@@ -173,7 +173,7 @@ void rokz::Destroy (ImageView& iv, const VkDevice& device) {
 // ---------------------------------------------------------------------
 // VMA
 // ---------------------------------------------------------------------
-bool rokz::CreateImage (Image& image, VmaAllocator const& allocator) {
+bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
   image.alloc_ci = {};
   image.alloc_ci.usage = VMA_MEMORY_USAGE_AUTO;
 
@@ -189,7 +189,7 @@ bool rokz::CreateImage (Image& image, VmaAllocator const& allocator) {
 // ---------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------
-void rokz::Destroy (Image& image, VmaAllocator const& allocator) {
+void rokz::cx::Destroy (Image& image, VmaAllocator const& allocator) {
   vmaDestroyImage (allocator, image.handle, image.allocation); 
 }
 
@@ -197,7 +197,7 @@ void rokz::Destroy (Image& image, VmaAllocator const& allocator) {
 // ---------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------
-VkImageCreateInfo& rokz::CreateInfo_2D (VkImageCreateInfo&    ci,
+VkImageCreateInfo& rokz::cx::CreateInfo_2D (VkImageCreateInfo&    ci,
                                         VkFormat              format,
                                         VkImageUsageFlags     usage_flags, 
                                         VkSampleCountFlagBits num_samples,

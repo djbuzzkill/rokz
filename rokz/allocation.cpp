@@ -1,10 +1,21 @@
 #include "allocation.h"
 
 
+
+VmaAllocatorCreateInfo& rokz::cx::CreateInfo (VmaAllocatorCreateInfo& ci, const Instance& instance, const Device& device, const PhysicalDevice& phydev) {
+
+  ci.vulkanApiVersion = VK_API_VERSION_1_3;
+  ci.flags            = 0;
+  ci.physicalDevice   = phydev.handle;
+  ci.device           = device.handle;
+  ci.instance         = instance.handle;
+  return ci;
+}
+
 // ---------------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------------
-VmaAllocationCreateInfo& AllocCreateInfo_local    (VmaAllocationCreateInfo& ci){
+VmaAllocationCreateInfo& rokz::cx::AllocCreateInfo_local    (VmaAllocationCreateInfo& ci){
 
   ci = {};
   ci.usage = VMA_MEMORY_USAGE_AUTO;
@@ -14,7 +25,7 @@ VmaAllocationCreateInfo& AllocCreateInfo_local    (VmaAllocationCreateInfo& ci){
 // ---------------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------------
-VmaAllocationCreateInfo& rokz::AllocCreateInfo_stage (VmaAllocationCreateInfo& alloc_info) {
+VmaAllocationCreateInfo& rokz::cx::AllocCreateInfo_stage (VmaAllocationCreateInfo& alloc_info) {
   
   alloc_info = {};
   alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -26,7 +37,7 @@ VmaAllocationCreateInfo& rokz::AllocCreateInfo_stage (VmaAllocationCreateInfo& a
 // ---------------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------------
-VmaAllocationCreateInfo& rokz::AllocCreateInfo_device (VmaAllocationCreateInfo& alloc_info) {
+VmaAllocationCreateInfo& rokz::cx::AllocCreateInfo_device (VmaAllocationCreateInfo& alloc_info) {
   
   alloc_info = {};
   alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
@@ -38,7 +49,7 @@ VmaAllocationCreateInfo& rokz::AllocCreateInfo_device (VmaAllocationCreateInfo& 
 // ---------------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------------
-VmaAllocationCreateInfo& rokz::AllocCreateInfo_mapped (VmaAllocationCreateInfo& ci) {
+VmaAllocationCreateInfo& rokz::cx::AllocCreateInfo_mapped (VmaAllocationCreateInfo& ci) {
   ci = {}; 
 
   ci.usage = VMA_MEMORY_USAGE_AUTO;
@@ -53,13 +64,13 @@ VmaAllocationCreateInfo& rokz::AllocCreateInfo_mapped (VmaAllocationCreateInfo& 
 // ---------------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------------
-void rokz::UnmapMemory (VmaAllocation const& allocation, VmaAllocator const& allocator) {
+void rokz::cx::UnmapMemory (VmaAllocation const& allocation, VmaAllocator const& allocator) {
 
   vmaUnmapMemory (allocator, allocation); 
 
 }
 
-bool rokz::MapMemory (void** pmapped, VmaAllocation const& allocation,  VmaAllocator const& allocator) {
+bool rokz::cx::MapMemory (void** pmapped, VmaAllocation const& allocation,  VmaAllocator const& allocator) {
   
   if (VK_SUCCESS != vmaMapMemory (allocator, allocation, pmapped)) {
     printf ("[FAILED] %s vmaMapMemory\n", __FUNCTION__); 

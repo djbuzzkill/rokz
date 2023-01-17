@@ -119,9 +119,8 @@ VkImageMemoryBarrier& transition_barrier_mask (
     barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT ;
   }
 
-  
   else {
-     printf ("[ERROR] unknown layout transition\n");
+    printf ("%s --> [ERROR] UNHANDLED TRANSITION \n", __FUNCTION__);
   }
 
   return barrier;
@@ -216,28 +215,6 @@ void rokz::EndCommandList (VkCommandBuffer&     command_buffer,
   vkQueueWaitIdle(queue);
 
   vkFreeCommandBuffers (device, command_pool, 1, &command_buffer);
-}
-
-
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void  rokz::CopyBuffer (rokz::BufferStruc&       dst,
-                        const rokz::BufferStruc& src,
-                        VkDeviceSize             size,
-                        const VkQueue&           queue,
-                        const VkCommandPool&     command_pool,
-                        const VkDevice&          device) {
-
-  VkCommandBuffer command_buffer = BeginCommandList (command_pool, device);
-
-  VkBufferCopy copy_region{};
-  copy_region.size = size;
-  vkCmdCopyBuffer (command_buffer, src.handle, dst.handle, 1, &copy_region);
-
-  EndCommandList (command_buffer, queue, command_pool, device);  
-
 }
 
 // --------------------------------------------------------------------

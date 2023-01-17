@@ -451,7 +451,7 @@ bool rokz::cx::GetSwapChainImages (std::vector<Image> &swapchain_images,
   swapchain_images.resize(image_count);
   for (size_t i = 0; i < image_count; ++i) {
     // Createinfo for image from swapchain
-    rokz::CreateInfo (swapchain_images[i].ci, swapchain.ci); 
+    rokz::cx::CreateInfo (swapchain_images[i].ci, swapchain.ci); 
     swapchain_images[i].handle = vk_images[i];
   }
   
@@ -520,7 +520,7 @@ bool rokz::cx::GetSwapChainImages (std::vector<Image> &swapchain_images,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkCommandPoolCreateInfo& rokz::CreateInfo ( VkCommandPoolCreateInfo& ci, uint32_t queue_family_index) {
+VkCommandPoolCreateInfo& rokz::cx::CreateInfo ( VkCommandPoolCreateInfo& ci, uint32_t queue_family_index) {
 
   ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   ci.pNext = nullptr;
@@ -533,7 +533,7 @@ VkCommandPoolCreateInfo& rokz::CreateInfo ( VkCommandPoolCreateInfo& ci, uint32_
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateCommandPool (VkCommandPool& command_pool,const VkCommandPoolCreateInfo& create_info, const VkDevice& device) {
+bool rokz::cx::CreateCommandPool (VkCommandPool& command_pool,const VkCommandPoolCreateInfo& create_info, const VkDevice& device) {
 
   if (vkCreateCommandPool(device, &create_info, nullptr, &command_pool) != VK_SUCCESS) {
     printf ("failed to create command pool!");
@@ -569,7 +569,7 @@ bool rokz::CreateCommandPool (VkCommandPool& command_pool,const VkCommandPoolCre
 //
 // ---------------------------------------------------------------------
 
-VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, uint32_t commandbuffers,  const VkCommandPool& commandpool) 
+VkCommandBufferAllocateInfo& rokz::cx::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, uint32_t commandbuffers,  const VkCommandPool& commandpool) 
 {
   alloc_info = {};
   alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -580,7 +580,7 @@ VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& al
   return alloc_info;
 }
 
-VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool) 
+VkCommandBufferAllocateInfo& rokz::cx::AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool) 
 {
   // alloc_info = {};
   // alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -599,7 +599,7 @@ VkCommandBufferAllocateInfo& rokz::AllocateInfo (VkCommandBufferAllocateInfo& al
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateCommandBuffers (std::vector<VkCommandBuffer>& commandbuffers,
+bool rokz::cx::CreateCommandBuffers (std::vector<VkCommandBuffer>& commandbuffers,
                                const VkCommandBufferAllocateInfo& alloc_info, 
                                const VkDevice &device) {
 
@@ -616,7 +616,7 @@ bool rokz::CreateCommandBuffers (std::vector<VkCommandBuffer>& commandbuffers,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
+bool rokz::cx::CreateCommandBuffer(VkCommandBuffer &command_buffer,
                                const VkCommandBufferAllocateInfo& alloc_info, 
                                const VkDevice &device) {
 
@@ -628,174 +628,11 @@ bool rokz::CreateCommandBuffer(VkCommandBuffer &command_buffer,
   return true; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::RecordCommandBuffer(VkCommandBuffer &command_buffer,
-                               const VkPipeline pipeline,
-                               const VkBuffer& vertex_buffer, 
-                               const VkExtent2D &ext2d,
-                               const VkFramebuffer &framebuffer,
-                               const RenderPass &render_pass,
-                               const VkDevice &device) {
-
-  VkCommandBufferBeginInfo begin_info {};
-  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.pNext = nullptr;
- begin_info.flags = 0;                  // 
-  begin_info.pInheritanceInfo = nullptr; // 
-
-  if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
-     printf ("failed to begin recording command buffer!");
-     return false; 
-  }
-  // begin command list
-  VkRenderPassBeginInfo pass_info{};
-  VkClearValue clear_values[2] = {};
-  clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  clear_values[1].depthStencil = {1.0f, 0};
-  //clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  
-  pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  pass_info.pNext = nullptr;
-  pass_info.renderPass = render_pass.handle; 
-  pass_info.framebuffer = framebuffer; 
-  pass_info.renderArea.offset = {0, 0};
-  pass_info.renderArea.extent = ext2d;
-  pass_info.clearValueCount = 2; 
-  pass_info.pClearValues = clear_values; 
-
-  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-  VkViewport viewport{};
-  viewport.x = 0.0f;
-  viewport.y = 0.0f;
-  viewport.width = static_cast<float>(ext2d.width);
-  viewport.height = static_cast<float>(ext2d.height);
-  viewport.minDepth = 0.0f;
-  viewport.maxDepth = 1.0f;
-  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-
-  VkRect2D scissor{};
-  scissor.offset = {0, 0};
-  scissor.extent = ext2d;
-  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-
-  VkBuffer vertex_buffers[] = {vertex_buffer};
-  VkDeviceSize offsets[] = {0};
-  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-  
-  vkCmdDraw (command_buffer, 3, 1, 0, 0);
-  
-  vkCmdEndRenderPass(command_buffer);
-
-  // end 
-  if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
-    printf ("failed to record command buffer!");
-    return false; 
-  }
-  
-  //printf ("BAI %s\n", __FUNCTION__); 
-  return true;
-}
 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::RecordCommandBuffer_indexed (VkCommandBuffer        &command_buffer,
-                                        const Pipeline&        pipeline,
-                                        const VkDescriptorSet& desc_set, 
-                                        const VkBuffer&        vertex_buffer, 
-                                        const VkBuffer&        index_buffer, 
-                                        const VkExtent2D&      ext2d,
-                                        const VkFramebuffer&   framebuffer,
-                                        const RenderPass&      render_pass,
-                                        const VkDevice&        device) {
-
-  VkCommandBufferBeginInfo begin_info {};
-  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.pNext = nullptr;
-  begin_info.flags = 0;                  // 
-  begin_info.pInheritanceInfo = nullptr; // 
-
-  if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
-     printf ("failed to begin recording command buffer!");
-     return false; 
-  }
-
-
-  VkClearValue clear_values[3] = {};
-  clear_values[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  clear_values[1].depthStencil = {1.0f, 0};
-  clear_values[2].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-
-  // begin command list
-  VkRenderPassBeginInfo pass_info{};
-  pass_info.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  pass_info.pNext             = nullptr;
-  pass_info.renderPass        = render_pass.handle; 
-  pass_info.framebuffer       = framebuffer; 
-  pass_info.renderArea.offset = {0, 0};
-  pass_info.renderArea.extent = ext2d;
-  pass_info.clearValueCount   = 3; 
-  pass_info.pClearValues      = clear_values; // ?does this match attachment order
-
-
-  vkCmdBindPipeline    (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
-  vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-  VkViewport viewport{};
-  viewport.x = 0.0f;
-  viewport.y = 0.0f;
-  viewport.width = static_cast<float>(ext2d.width);
-  viewport.height = static_cast<float>(ext2d.height);
-  viewport.minDepth = 0.0f;
-  viewport.maxDepth = 1.0f;
-  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-
-  VkRect2D scissor{};
-  scissor.offset = {0, 0};
-  scissor.extent = ext2d;
-  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-  vkCmdBindDescriptorSets (command_buffer,
-                           VK_PIPELINE_BIND_POINT_GRAPHICS,
-                           pipeline.layout.handle,
-                           0,
-                           1,
-                           &desc_set, //&descriptorSets[currentFrame],
-                           0,
-                           nullptr);
-
-  
-  VkBuffer vertex_buffers[] = {vertex_buffer};
-  VkDeviceSize offsets[] = {0};
-  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-  vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT16);
-
-  vkCmdDrawIndexed (command_buffer, 12, 1, 0, 0, 0);
-  
-  vkCmdEndRenderPass(command_buffer);
-
-  // end 
-  if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
-    printf ("failed to record command buffer!");
-    return false; 
-  }
-  
-  //printf ("BAI %s\n", __FUNCTION__); 
-  return true;
-}
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateRenderSync (RenderSync&      sync,
+bool rokz::cx::CreateRenderSync (RenderSync&      sync,
                              RenderSyncCreateInfo& create_info,
                              const VkDevice& device) {
 
@@ -835,7 +672,7 @@ void rokz::cx::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& d
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::cx::RecreateSwapchain(Swapchain&                             swapchain,
+bool rokz::RecreateSwapchain(Swapchain&                             swapchain,
                              std::vector<Image>&                    swapchain_images,
 
                              std::vector<Framebuffer>&              framebuffers,
@@ -879,9 +716,9 @@ bool rokz::cx::RecreateSwapchain(Swapchain&                             swapchai
                     swapchain, device, allocator);
 
   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
-  bool swapchain_res    = CreateSwapchain (swapchain, device);
-  bool imageviews_res   = CreateImageViews (imageviews, swapchain_images, device);
-  bool framebuffers_res = CreateFramebuffers (framebuffers,
+  bool swapchain_res    = rokz::cx::CreateSwapchain (swapchain, device);
+  bool imageviews_res   = rokz::cx::CreateImageViews (imageviews, swapchain_images, device);
+  bool framebuffers_res = rokz::CreateFramebuffers (framebuffers,
                                               imageviews,
                                               render_pass,
                                               swapchain.ci.imageExtent,
@@ -917,11 +754,11 @@ void rokz::CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
     vkDestroyImageView(device.handle, fb_imageview.handle, nullptr);
   }
 
-  rokz::Destroy (msaa_color_image, allocator);
-  rokz::Destroy (msaa_color_imageview, device.handle);
+  rokz::cx::Destroy (msaa_color_image, allocator);
+  rokz::cx::Destroy (msaa_color_imageview, device.handle);
 
-  rokz::Destroy (depth_image, allocator);
-  rokz::Destroy (depth_imageview, device.handle);
+  rokz::cx::Destroy (depth_image, allocator);
+  rokz::cx::Destroy (depth_imageview, device.handle);
 
   vkDestroySwapchainKHR(device.handle, swapchain.handle, nullptr);
 }

@@ -9,91 +9,47 @@
 
 namespace rokz {
 
-// ---------------------------------------------------------------------
-  struct BufferStruc {
-    VkBuffer              handle;
-    VkDeviceMemory        mem; 
-    VkBufferUsageFlags    usage_flags; 
-    VkMemoryPropertyFlags mem_prop_flags;
-    VkBufferCreateInfo    create_info; 
-    VkMemoryAllocateInfo  alloc_info;
-    VkIndexType           index_type;
-  }; 
+  namespace cx { 
+    VkBufferCreateInfo& CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem); 
+    VkBufferCreateInfo& CreateInfo_IB_16_stage  (VkBufferCreateInfo& ci, uint32_t num_elem); 
+    VkBufferCreateInfo& CreateInfo_IB_16_local  (VkBufferCreateInfo& ci, uint32_t num_elem); 
 
-  // move from transfer buffer to device buffer
-  // bool MoveToBuffer_XB2DB (BufferStruc&         buff_dst, // device buffer
-  //                          BufferStruc&         buff_src, // user buffer, 
-  //                          size_t               size,
-  //                          const VkCommandPool& command_pool, 
-  //                          const VkQueue&       que, 
-  //                          const VkDevice&      device); 
+    VkBufferCreateInfo& CreateInfo_VB_device    (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv);
+    VkBufferCreateInfo& CreateInfo_VB_stage     (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv);
 
-  // ---------------------------------------------------------------------
-  // 
-  // ---------------------------------------------------------------------
-  bool CreateBuffer (BufferStruc& buffstruc, const VkDevice& device, const VkPhysicalDevice& physdev); 
+    VkBufferCreateInfo& CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes);
+    VkBufferCreateInfo& CreateInfo_uniform      (VkBufferCreateInfo& ci, size_t size_e, size_t num_e); 
+    VmaAllocationCreateInfo& CreateInfo_default (VmaAllocationCreateInfo& ci) ; 
+    //
+    bool                CreateBuffer         (Buffer&, VmaAllocator const& allocator);
+    bool                CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator); 
 
-  //  transfer buffer
-  bool CreateVertexBuffer_transfer (BufferStruc& buffstruc, 
-                                    size_t sizeof_elem,
-                                    size_t num_elem, 
-                                    const VkDevice& device,
-                                    const VkPhysicalDevice& physdev); 
-  // create device buffer
-  bool CreateVertexBuffer_device (BufferStruc& buffstruc, 
-                                  size_t sizeof_elem,
-                                  size_t num_elem, 
-                                  const VkDevice& device,
-                                  const VkPhysicalDevice& physdev); 
-  //
-  // lock user memory vb
-  bool MapBuffer   (void** mappedmem, BufferStruc& vb, const VkDevice& device);
-  void UnmapBuffer (BufferStruc& vb, const VkDevice& device); 
-  // 
-  void DestroyBuffer (BufferStruc& buf, const VkDevice &device); 
+    bool MoveToBuffer_XB2DB (Buffer&         buff_dst, // device buffer
+                             Buffer&         buff_src, // user buffer, 
+                             size_t               size,
+                             const VkCommandPool& command_pool, 
+                             const VkQueue&       que, 
+                             const VkDevice&      device); 
 
+    inline bool MoveToBuffer_stage_2_dev (Buffer&              buff_dst, // device buffer
+                                          Buffer&              buff_src, // user buffer, 
+                                          size_t               size,
+                                          const VkCommandPool& command_pool, 
+                                          const VkQueue&       que, 
+                                          const VkDevice&      device) {
+      return MoveToBuffer_XB2DB (buff_dst, buff_src, size, command_pool, que, device); 
+    }
 
-  // 
-  //
-  // 
-  VkBufferCreateInfo& CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem); 
-  VkBufferCreateInfo& CreateInfo_IB_16_stage  (VkBufferCreateInfo& ci, uint32_t num_elem); 
-  VkBufferCreateInfo& CreateInfo_IB_16_local  (VkBufferCreateInfo& ci, uint32_t num_elem); 
+    void Destroy (Buffer& buffer, VmaAllocator const& allocator); 
+    // <---------------------------------------------------------------------------------- nu 
 
-  VkBufferCreateInfo& CreateInfo_VB_device    (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv);
-  VkBufferCreateInfo& CreateInfo_VB_stage     (VkBufferCreateInfo& ci, uint32_t vsize, uint32_t numv);
+    inline void* MappedPointer (const Buffer& buff) { 
+      return  buff.alloc_info.pMappedData;
+    }
 
-  VkBufferCreateInfo& CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes);
-  VkBufferCreateInfo& CreateInfo_uniform      (VkBufferCreateInfo& ci, size_t size_e, size_t num_e); 
-  VmaAllocationCreateInfo& CreateInfo_default (VmaAllocationCreateInfo& ci) ; 
-  //
-  bool                CreateBuffer         (Buffer&, VmaAllocator const& allocator);
-  bool                CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator); 
-
-  bool MoveToBuffer_XB2DB (Buffer&         buff_dst, // device buffer
-                           Buffer&         buff_src, // user buffer, 
-                           size_t               size,
-                           const VkCommandPool& command_pool, 
-                           const VkQueue&       que, 
-                           const VkDevice&      device); 
-
-  inline bool MoveToBuffer_stage_2_dev (Buffer&              buff_dst, // device buffer
-                                        Buffer&              buff_src, // user buffer, 
-                                        size_t               size,
-                                        const VkCommandPool& command_pool, 
-                                        const VkQueue&       que, 
-                                        const VkDevice&      device) {
-    return MoveToBuffer_XB2DB (buff_dst, buff_src, size, command_pool, que, device); 
-  }
-
-  void Destroy (Buffer& buffer, VmaAllocator const& allocator); 
-  // <---------------------------------------------------------------------------------- nu 
-
-  inline void* MappedPointer (const Buffer& buff) { 
-    return  buff.alloc_info.pMappedData;
-  }
-  
-}
+  } // <---------------------------------------------------------------------------------- cx
+    
+} // rokz
 
 
 #endif

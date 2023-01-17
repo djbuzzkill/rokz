@@ -10,12 +10,7 @@
 
 namespace rokz{
 
-  bool CreateUniformBuffer (BufferStruc& buffstruc, 
-                            size_t sizeof_elem,
-                            size_t num_elem, 
-                            const VkDevice& device,
-                            const VkPhysicalDevice& physdev); 
-
+  // nada
 }
 
 #endif

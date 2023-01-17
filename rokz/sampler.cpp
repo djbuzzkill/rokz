@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateSampler (Sampler& sampler, const VkDevice& device){
+bool rokz::cx::CreateSampler (rokz::Sampler& sampler, const VkDevice& device){
 
   printf ("%s \n", __FUNCTION__); 
   
@@ -21,7 +21,7 @@ bool rokz::CreateSampler (Sampler& sampler, const VkDevice& device){
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-void rokz::Destroy (Sampler& sampler, const VkDevice& device) {
+void rokz::cx::Destroy (rokz::Sampler& sampler, const VkDevice& device) {
 
   vkDestroySampler(device, sampler.handle, nullptr);
 }
@@ -29,7 +29,7 @@ void rokz::Destroy (Sampler& sampler, const VkDevice& device) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkSamplerCreateInfo& rokz::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
+VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
 
   printf ("%s SamplerCreateInfo \n", __FUNCTION__); 
 

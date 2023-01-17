@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------
 // DesciptorSetLayoutBinding
 // ---------------------------------------------------------------------
-VkDescriptorSetLayoutBinding& rokz::DescriptorSetLayoutBinding (VkDescriptorSetLayoutBinding& out,
+VkDescriptorSetLayoutBinding& rokz::cx::DescriptorSetLayoutBinding (VkDescriptorSetLayoutBinding& out,
                                                                uint32_t                       binding,
                                                                VkDescriptorType               desc_type,
                                                                uint32_t                       descrcount, 
@@ -25,7 +25,7 @@ VkDescriptorSetLayoutBinding& rokz::DescriptorSetLayoutBinding (VkDescriptorSetL
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-VkDescriptorPoolCreateInfo& rokz::CreateInfo (VkDescriptorPoolCreateInfo& ci, uint32_t max_sets,  const std::vector<VkDescriptorPoolSize>& sizes) {
+VkDescriptorPoolCreateInfo& rokz::cx::CreateInfo (VkDescriptorPoolCreateInfo& ci, uint32_t max_sets,  const std::vector<VkDescriptorPoolSize>& sizes) {
   // typedef struct VkDescriptorPoolCreateInfo {
   //   VkStructureType                sType;
   //   const void*                    pNext;
@@ -45,7 +45,7 @@ VkDescriptorPoolCreateInfo& rokz::CreateInfo (VkDescriptorPoolCreateInfo& ci, ui
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateDescriptorPool (DescriptorPool& desc_pool, const VkDevice &device) {
+bool rokz::cx::CreateDescriptorPool (DescriptorPool& desc_pool, const VkDevice &device) {
   //
   if (vkCreateDescriptorPool(device, &desc_pool.ci, nullptr, &desc_pool.handle) != VK_SUCCESS) {
     printf ("[FAILED] %s ", __FUNCTION__);
@@ -58,9 +58,9 @@ bool rokz::CreateDescriptorPool (DescriptorPool& desc_pool, const VkDevice &devi
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkDescriptorSetAllocateInfo& rokz::AllocateInfo (VkDescriptorSetAllocateInfo& alloc_info,
-                                                 const std::vector<VkDescriptorSetLayout>& descrlos,
-                                                 const rokz::DescriptorPool& descrpool) {
+VkDescriptorSetAllocateInfo& rokz::cx::AllocateInfo (VkDescriptorSetAllocateInfo& alloc_info,
+                                                     const std::vector<VkDescriptorSetLayout>& descrlos,
+                                                     const rokz::DescriptorPool& descrpool) {
 
 
   alloc_info = {}; 
@@ -75,7 +75,7 @@ VkDescriptorSetAllocateInfo& rokz::AllocateInfo (VkDescriptorSetAllocateInfo& al
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
+bool rokz::cx::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
                                    uint32_t num_sets,
                                    const VkDescriptorSetAllocateInfo& alloc_info,
                                    const VkDevice &device) {
@@ -104,7 +104,7 @@ bool rokz::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-VkDescriptorSetLayoutCreateInfo& rokz::CreateInfo (VkDescriptorSetLayoutCreateInfo& ci,
+VkDescriptorSetLayoutCreateInfo& rokz::cx::CreateInfo (VkDescriptorSetLayoutCreateInfo& ci,
                                              const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
 
     ci = {};
@@ -119,7 +119,7 @@ VkDescriptorSetLayoutCreateInfo& rokz::CreateInfo (VkDescriptorSetLayoutCreateIn
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, const VkDescriptorSetLayoutCreateInfo& ci,
+bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, const VkDescriptorSetLayoutCreateInfo& ci,
                                       const VkDevice& device) {
 
   if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &dsl) != VK_SUCCESS) {
@@ -133,11 +133,11 @@ bool rokz::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, const VkDescri
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz :: CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSetLayoutCreateInfo& ci,
+bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSetLayoutCreateInfo& ci,
                                         const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                                         const VkDevice& device) {
     
-    CreateInfo (ci,  bindings) ; 
+  CreateInfo (ci,  bindings) ; 
     
     if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &dsl) != VK_SUCCESS) {
       printf ("[FAILED] %s create descriptor set layout", __FUNCTION__);
@@ -149,18 +149,18 @@ bool rokz :: CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptor
 
 
 
-void rokz::Destroy (DescriptorPool& dsl, const VkDevice& device) {
+void rokz::cx::Destroy (DescriptorPool& dsl, const VkDevice& device) {
   vkDestroyDescriptorPool(device, dsl.handle, nullptr);
   
 }
 
-void rokz::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
+void rokz::cx::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
 
   vkDestroyDescriptorSetLayout (device, dsl.handle, nullptr);
 }
 
 
-void rokz::Destroy (DescriptorGroup& dg, const VkDevice& device) {
+void rokz::cx::Destroy (DescriptorGroup& dg, const VkDevice& device) {
 
   Destroy (dg.dslayout, device); 
 }

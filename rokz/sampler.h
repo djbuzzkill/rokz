@@ -8,17 +8,13 @@
 
 namespace rokz {
 
-  struct Sampler {
-    VkSampler           handle; 
-    VkSamplerCreateInfo ci;
-  };
 
-  
-  VkSamplerCreateInfo& CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
-  bool                 CreateSampler (Sampler& sampler, const VkDevice& device); 
-  void                 Destroy (Sampler& sampler, const VkDevice& device); 
-
-}
+  namespace cx { 
+    VkSamplerCreateInfo& CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
+    bool                 CreateSampler (Sampler& sampler, const VkDevice& device); 
+    void                 Destroy (Sampler& sampler, const VkDevice& device); 
+  } // cx
+} // rokz
     
 
 #endif

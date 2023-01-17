@@ -4,7 +4,6 @@
 
 #include "rokz/rokz.h"
 
-#define DARKROOT_DYNAMIC_RENDER_ENABLE 1
 
 namespace darkroot {
 
@@ -150,24 +149,6 @@ namespace darkroot {
   protected:
   };
 
-#ifdef DARKROOT_DYNAMIC_RENDER_ENABLE
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  struct RenderingInfoGroup {
-
-    VkRenderingInfo ri;
-  
-    VkRenderingInfo                        rendering_info;
-    std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
-    VkRenderingAttachmentInfo              depth_attachment_info;
-
-    std::vector<VkClearValue>              clear_colors;  // = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    VkClearValue                           clear_depth; //  = {{
-
-    VkRect2D                               render_area; 
-  };
-#endif
   
 
   // --------------------------------------------------------------------
@@ -203,9 +184,7 @@ namespace darkroot {
     PipelineGroup                grid_pipeline;
 
     // DYNAMIC RENDERING
-#ifdef  DARKROOT_DYNAMIC_RENDER_ENABLE
-    RenderingInfoGroup           rendering_info_group;
-#endif
+    rokz::RenderingInfoGroup     rendering_info_group;
     
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 

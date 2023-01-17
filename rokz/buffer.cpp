@@ -2,49 +2,6 @@
 #include "buffer.h"
 #include <vulkan/vulkan_core.h>
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateBuffer (BufferStruc&            buffstruc, 
-                         const VkDevice&         device,
-                         const VkPhysicalDevice& physdev) {
-
-  printf ("%s\n", __FUNCTION__); 
-
-  if (vkCreateBuffer (device, &buffstruc.create_info, nullptr, &buffstruc.handle) != VK_SUCCESS) {
-    printf ("failed to create buffer!");
-    return false; 
-  }
-  
-  VkMemoryRequirements mem_reqs;
-  vkGetBufferMemoryRequirements(device, buffstruc.handle, &mem_reqs);
-    
-  buffstruc.alloc_info = {}; 
-  buffstruc.alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  buffstruc.alloc_info.allocationSize = mem_reqs.size;
-  rokz::FindMemoryType ( buffstruc.alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, buffstruc.mem_prop_flags, physdev);
-
-  if (vkAllocateMemory(device, &buffstruc.alloc_info, nullptr, &buffstruc.mem) != VK_SUCCESS) {
-    printf ("failed to allocate buffer memory!");
-    return false; 
-  }
-
-  if (VK_SUCCESS != vkBindBufferMemory (device, buffstruc.handle, buffstruc.mem, 0)) {
-    printf ("[%s]  VB memory bind failed\n", __FUNCTION__);
-    return false;
-  }
-
-  return true; 
-} 
-
-void rokz::DestroyBuffer (BufferStruc& buf, const VkDevice &device) {
-
-  vkDestroyBuffer (device, buf.handle, nullptr); 
-  vkFreeMemory (device, buf.mem, nullptr);
-}
-
-
-
 
 
 
@@ -52,7 +9,7 @@ void rokz::DestroyBuffer (BufferStruc& buf, const VkDevice &device) {
 // ---------------------------------------------------------------------
 // VMA
 // ---------------------------------------------------------------------
-bool rokz::CreateBuffer (Buffer& buffer, VmaAllocator const& allocator) {
+bool rokz::cx::CreateBuffer (rokz::Buffer& buffer, VmaAllocator const& allocator) {
 
   if (VK_SUCCESS != vmaCreateBuffer(allocator, &buffer.ci, &buffer.alloc_ci, &buffer.handle, &buffer.allocation, &buffer.alloc_info)) {
 
@@ -66,7 +23,7 @@ bool rokz::CreateBuffer (Buffer& buffer, VmaAllocator const& allocator) {
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VmaAllocationCreateInfo& rokz::CreateInfo_default (VmaAllocationCreateInfo& ci) {
+VmaAllocationCreateInfo& rokz::cx::CreateInfo_default (VmaAllocationCreateInfo& ci) {
 
 
   ci = {};
@@ -85,7 +42,7 @@ VmaAllocationCreateInfo& rokz::CreateInfo_default (VmaAllocationCreateInfo& ci) 
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-bool rokz::CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator) {
+bool rokz::cx::CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator) {
 
   if (VK_SUCCESS != vmaCreateBufferWithAlignment (allocator, &buffer.ci, &buffer.alloc_ci, min_align, &buffer.handle, &buffer.allocation, &buffer.alloc_info)) {
 
@@ -98,7 +55,7 @@ bool rokz::CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllo
 // ---------------------------------------------------------------------
 // transfer buffer
 // ---------------------------------------------------------------------
-VkBufferCreateInfo& rokz::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
+VkBufferCreateInfo& rokz::cx::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   ci.size  = sizeOf_vert * numv; 
@@ -107,7 +64,7 @@ VkBufferCreateInfo& rokz::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t 
   return ci;
 }
 
-VkBufferCreateInfo& rokz::CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
+VkBufferCreateInfo& rokz::cx::CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   ci.size  = sizeOf_vert * numv; 
@@ -120,7 +77,7 @@ VkBufferCreateInfo& rokz::CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t
 // ---------------------------------------------------------------------
 // 4 transfer
 // ---------------------------------------------------------------------
-VkBufferCreateInfo& rokz::CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes) {
+VkBufferCreateInfo& rokz::cx::CreateInfo_buffer_stage (VkBufferCreateInfo& ci, uint32_t sizebytes) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO; 
   ci.pNext = nullptr;
@@ -150,7 +107,7 @@ VkBufferCreateInfo& CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizeb
 // ---------------------------------------------------------------------
 // transfer
 // ---------------------------------------------------------------------
-VkBufferCreateInfo& rokz::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, uint32_t num_elem) {
+VkBufferCreateInfo& rokz::cx::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, uint32_t num_elem) {
 
   const size_t sizeof_index = sizeof (uint16_t);
 
@@ -166,7 +123,7 @@ VkBufferCreateInfo& rokz::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, uint32
 // ---------------------------------------------------------------------
 // in device
 // ---------------------------------------------------------------------
-VkBufferCreateInfo& rokz::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem) {
+VkBufferCreateInfo& rokz::cx::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem) {
 
   const size_t sizeof_index = sizeof (uint16_t);
 
@@ -182,7 +139,7 @@ VkBufferCreateInfo& rokz::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint3
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-bool rokz::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
+bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
                                 Buffer& buff_src, // user buffer, 
                                 size_t size,
                                 const VkCommandPool& command_pool, 
@@ -240,7 +197,7 @@ bool rokz::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VkBufferCreateInfo& rokz::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t sizeOf_elem, size_t num_e) {
+VkBufferCreateInfo& rokz::cx::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t sizeOf_elem, size_t num_e) {
 
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -252,71 +209,13 @@ VkBufferCreateInfo& rokz::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t siz
   return ci; 
 }
 
-                                       
-// bool rokz::CreateUniformBuffer (BufferStruc& buffstruc, 
-//                                 size_t sizeof_elem,
-//                                 size_t num_elem, 
-//                                 const VkDevice& device,
-//                                 const VkPhysicalDevice& physdev){
-
-//   buffstruc.create_info = {};
-//   buffstruc.create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-//   buffstruc.create_info.size  = sizeof_elem * num_elem; 
-//   buffstruc.create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-//   buffstruc.create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  
-//   buffstruc.mem_prop_flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
-//   return rokz::CreateBuffer (buffstruc, device, physdev); 
-// }
-
-// ---------------------------------------------------------------------
-// lock/unlock vb
-// ---------------------------------------------------------------------
-bool rokz::MapBuffer (void** ptr, BufferStruc& vb, const VkDevice& device) { 
-
-  assert (vb.mem_prop_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT); 
-
-  if (vb.mem_prop_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
-    return VK_SUCCESS == vkMapMemory (device, vb.mem, 0, vb.create_info.size, 0, ptr);
-  }
-  
-  return false; 
-}
-
-// 
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-void rokz::UnmapBuffer (BufferStruc& vb, const VkDevice& device) {
-  vkUnmapMemory (device, vb.mem);
-}
-
-
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
-void rokz::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
+void rokz::cx::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
 
   vmaDestroyBuffer (allocator, buffer.handle, buffer.allocation); 
 
 }
-
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
-// bool rokz::MoveToBuffer_user_mem (BufferStruc& dst_vb, const void* src, size_t size, const VkDevice& device) {
-//   void* dst;
-
-//   if (VK_SUCCESS == vkMapMemory (device, dst_vb.mem, 0, dst_vb.create_info.size, 0, &dst)) {
-    
-//     memcpy (dst, src, size);
-//     vkUnmapMemory (device, dst_vb.mem);
-//     return true; 
-//   }
-//   return false;
-// }
-
-
 
 

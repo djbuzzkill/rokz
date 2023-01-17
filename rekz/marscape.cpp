@@ -176,9 +176,9 @@ return false;
 void SetupTerrainSamplers (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
-  rokz::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
+  rokz::cx::CreateInfo (glob.sampler.ci, glob.physical_device.properties);
   
-  rokz::CreateSampler (glob.sampler, glob.device.handle);  
+  rokz::cx::CreateSampler (glob.sampler, glob.device.handle);  
 
 }
 
@@ -210,15 +210,15 @@ void SetupMarsDepthBuffer (Glob& glob) {
 
   if (rokz::FindDepthFormat (depth_format, glob.physical_device.handle)) {
 
-    rokz::CreateInfo_2D_depthstencil (glob.depth_image.ci,
+    rokz::cx::CreateInfo_2D_depthstencil (glob.depth_image.ci,
                                       depth_format, 
                                       glob.msaa_samples,
                                       wd, ht);
-    rokz::AllocCreateInfo_device (glob.depth_image.alloc_ci); 
-    rokz::CreateImage (glob.depth_image, glob.allocator);
+    rokz::cx::AllocCreateInfo_device (glob.depth_image.alloc_ci); 
+    rokz::cx::CreateImage (glob.depth_image, glob.allocator);
 
-    rokz::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
-    rokz::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
+    rokz::cx::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
+    rokz::cx::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
 
     rokz::TransitionImageLayout; 
     //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -286,15 +286,15 @@ void SetupMultisampleColorResource (Glob& glob) {
   VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
   VkFormat    swapchain_format = swapchain.ci.imageFormat; 
 
-  rokz::CreateInfo_2D_color_target (glob.multisamp_color_image.ci, swapchain_format,
+  rokz::cx::CreateInfo_2D_color_target (glob.multisamp_color_image.ci, swapchain_format,
                                     glob.msaa_samples,swapchain_ext.width, swapchain_ext.height);
 
-  rokz::AllocCreateInfo_device (glob.multisamp_color_image.alloc_ci);
-  rokz::CreateImage (glob.multisamp_color_image, glob.allocator);
+  rokz::cx::AllocCreateInfo_device (glob.multisamp_color_image.alloc_ci);
+  rokz::cx::CreateImage (glob.multisamp_color_image, glob.allocator);
 
   // imageview 
-  rokz::CreateInfo (glob.multisamp_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.multisamp_color_image);
-  rokz::CreateImageView (glob.multisamp_color_imageview,
+  rokz::cx::CreateInfo (glob.multisamp_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.multisamp_color_image);
+  rokz::cx::CreateImageView (glob.multisamp_color_imageview,
                          glob.multisamp_color_imageview.ci,
                          glob.device.handle);
 }
@@ -308,22 +308,22 @@ void CleanupMars (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
   for (auto& ub : glob.vma_uniform_buffs) {
-    rokz::Destroy (ub, glob.allocator); 
+    rokz::cx::Destroy (ub, glob.allocator); 
   }
 
   for (auto buf : glob.vma_objparam_buffs) {  
-    rokz::Destroy (buf, glob.allocator);
+    rokz::cx::Destroy (buf, glob.allocator);
   }
 
-  rokz::Destroy (glob.sampler, glob.device.handle); 
-  rokz::Destroy (glob.descriptor_pool, glob.device.handle); 
-  rokz::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
-  rokz::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
-  rokz::Destroy (glob.texture_imageview, glob.device.handle);
+  rokz::cx::Destroy (glob.sampler, glob.device.handle); 
+  rokz::cx::Destroy (glob.descriptor_pool, glob.device.handle); 
+  rokz::cx::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
+  rokz::cx::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
+  rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
 
-  rokz::Destroy (glob.texture_image, glob.allocator);
-  rokz::Destroy (glob.vma_vb_device, glob.allocator);
-  rokz::Destroy (glob.vma_ib_device, glob.allocator);
+  rokz::cx::Destroy (glob.texture_image, glob.allocator);
+  rokz::cx::Destroy (glob.vma_vb_device, glob.allocator);
+  rokz::cx::Destroy (glob.vma_ib_device, glob.allocator);
   
   Cleanup (glob.terrain_pipeline.pipeline.handle,
            glob.frame_group.framebuffers, glob.frame_group.imageviews,
@@ -382,7 +382,7 @@ bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
   //rokz::Init (glob.desc_set_layout_bindings[0],
 
   // MVPTransform
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
                                     0,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                     1,
@@ -394,33 +394,33 @@ bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
   //                                   1,
   //                                   VK_SHADER_STAGE_VERTEX_BIT);
   // PatchParams
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
                                     2,
                                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                     kPatchCount, 
                                     VK_SHADER_STAGE_VERTEX_BIT);
 
   // HEIGHT map
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
                                     3,
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
                                     kPatchCount, 
                                     VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
   // NORMAL map
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[3],
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[3],
                                     4,
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
                                     kPatchCount, 
                                     VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
 
   // COLOR image
-  rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[4],
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[4],
                                     5,
                                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
                                     kPatchCount, 
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
-  if (!rokz::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
+  if (!rokz::cx::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
                                         descrgroup.dslayout.ci,
                                         descrgroup.dslayout.bindings,
                                         device.handle)) {
@@ -456,9 +456,9 @@ bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
   // could have also said: 
   //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
   // but that wouldnt work
-  rokz::AllocateInfo (dg.alloc_info , descrlos, descpool);
+  rokz::cx::AllocateInfo (dg.alloc_info , descrlos, descpool);
   
-  if (!rokz::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, device.handle)) {
+  if (!rokz::cx::AllocateDescriptorSets (dg.descrsets, kMaxFramesInFlight, dg.alloc_info, device.handle)) {
     printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
     return false;
   }
@@ -755,16 +755,16 @@ bool SetupMarsUniforms (mars::Glob& glob) {
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
 
 
-    rokz::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
-    rokz::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
-    if (!rokz::CreateBuffer (uniform_buffs[i], glob.allocator)) {
+    rokz::cx::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
+    rokz::cx::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
+    if (!rokz::cx::CreateBuffer (uniform_buffs[i], glob.allocator)) {
       printf (" --> [FAIL]  create MVPTransform \n"); 
       return false; 
     }
 
-    rokz::CreateInfo_uniform (objparams[i].ci, mars::SizeOf_PatchUBO, 128);
-    rokz::AllocCreateInfo_mapped (objparams[i].alloc_ci);
-    if (!rokz::CreateBuffer (objparams[i], glob.allocator)) {
+    rokz::cx::CreateInfo_uniform (objparams[i].ci, mars::SizeOf_PatchUBO, 128);
+    rokz::cx::AllocCreateInfo_mapped (objparams[i].alloc_ci);
+    if (!rokz::cx::CreateBuffer (objparams[i], glob.allocator)) {
       printf (" --> [FAIL]  create SceneObjParam \n"); 
       return false; 
     }
@@ -798,9 +798,9 @@ void UpdateMarsUniforms (mars::Glob& glob, uint32_t current_frame, double dt) {
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
   mats.proj[1][1] *= -1;
 
-  memcpy (rokz::MappedPointer (glob.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
+  memcpy (rokz::cx::MappedPointer (glob.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
  
-  if (mars::PatchUBO* obj = reinterpret_cast<mars::PatchUBO*> (rokz::MappedPointer (glob.vma_objparam_buffs[current_frame]))) {
+  if (mars::PatchUBO* obj = reinterpret_cast<mars::PatchUBO*> (rokz::cx::MappedPointer (glob.vma_objparam_buffs[current_frame]))) {
   
     glm::vec3 va, vb;
     unit_angle_xz (va, 5.0 * sim_timef ); 
@@ -957,7 +957,7 @@ int mars_run (const std::vector<std::string>& args) {
   rokz::cx::GetSwapChainImages (frame_group.images, frame_group.swapchain, glob.device.handle); 
 
 
-  rokz::CreateImageViews (frame_group.imageviews, frame_group.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rokz::cx::CreateImageViews (frame_group.imageviews, frame_group.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
 
   rokz::CreateRenderPass (glob.render_pass,

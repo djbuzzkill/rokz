@@ -6,7 +6,7 @@
 // --------------------------------------------------------------------
 // nue
 // --------------------------------------------------------------------
-VkResult rokz::AcquireFrame (Swapchain& swapchain, RenderSync& render_sync, uint32_t& image_index, const Device& device) {
+VkResult rokz::cx::AcquireFrame (Swapchain& swapchain, RenderSync& render_sync, uint32_t& image_index, const Device& device) {
 
   vkWaitForFences(device.handle, 1, &render_sync.in_flight_fen, VK_TRUE, UINT64_MAX);
     
@@ -24,7 +24,7 @@ VkResult rokz::AcquireFrame (Swapchain& swapchain, RenderSync& render_sync, uint
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-VkPresentInfoKHR& rokz::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
+VkPresentInfoKHR& rokz::cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
                                      const std::vector<VkSwapchainKHR>& swapchains,
                                      const std::vector<VkSemaphore>& signal_sems) { 
   //printf ("SIZE --> signal_sems[%zu]\n", signal_sems.size()); 
@@ -43,15 +43,15 @@ VkPresentInfoKHR& rokz::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rokz::PresentFrame (VkQueue& present_que, const VkPresentInfoKHR& pi) { 
-  //rokz::FrameGroup& frame_group = glob.frame_group;
+bool rokz::cx::PresentFrame (VkQueue& present_que, const VkPresentInfoKHR& pi) { 
+  //rokz::cx::FrameGroup& frame_group = glob.frame_group;
  return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
 }
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rokz::PresentFrame (VkQueue& present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, rokz::RenderSync& render_sync) { 
+bool rokz::cx::PresentFrame (VkQueue& present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, rokz::RenderSync& render_sync) { 
 
   std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
   std::vector<VkSwapchainKHR>  swapchains = { swapchain.handle };
@@ -67,7 +67,7 @@ bool rokz::PresentFrame (VkQueue& present_que, const rokz::Swapchain& swapchain,
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VkRenderingAttachmentInfo& rokz::AttachmentInfo (VkRenderingAttachmentInfo& ai,
+VkRenderingAttachmentInfo& rokz::cx::AttachmentInfo (VkRenderingAttachmentInfo& ai,
 
                                                  VkImageView                imageview ,
                                                  VkImageLayout              image_layout,
@@ -98,7 +98,7 @@ VkRenderingAttachmentInfo& rokz::AttachmentInfo (VkRenderingAttachmentInfo& ai,
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VkRenderingInfo& rokz::RenderingInfo (VkRenderingInfo& ri,
+VkRenderingInfo& rokz::cx::RenderingInfo (VkRenderingInfo& ri,
                                  const VkRect2D&                               render_area,
                                  uint32_t                                      layer_count,
                                  uint32_t                                      view_mask,
@@ -107,7 +107,6 @@ VkRenderingInfo& rokz::RenderingInfo (VkRenderingInfo& ri,
                                  const VkRenderingAttachmentInfoKHR*           stencil_attachment)
 
 {
-
 
   printf ("%s  -> color_attachments_size[%zu]\n", __FUNCTION__,  color_attachments.size());
   
