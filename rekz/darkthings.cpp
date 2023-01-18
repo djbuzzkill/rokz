@@ -2,6 +2,9 @@
 
 #include "darkrootgarden.h"
 
+#include <IL/il.h>
+#include <IL/ilu.h>
+
 
 namespace darkroot {
   
@@ -773,3 +776,109 @@ void SetupDarkGeometry (Glob& glob) {
 }
 
 #endif // DARKROOT_ENABLE_RENDERABLE_TEST
+
+
+
+// -------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------
+int darkroot::OpenImageFile (const std::string& fqname, DevILOpenFileCB cb, void* up) {
+
+  DevILImageProps props; 
+
+  ilInit ();
+  ilBindImage (ilGenImage ());
+
+  int res = 0;
+  if (ilLoadImage(fqname.c_str())) {
+    
+    printf ("Opened [%s]\n", fqname.c_str() ); 
+    props.width    = ilGetInteger (IL_IMAGE_WIDTH); 
+    props.height   = ilGetInteger (IL_IMAGE_HEIGHT);
+    props.depth    = ilGetInteger (IL_IMAGE_DEPTH);
+    props.bytes_per_pixel= ilGetInteger (IL_IMAGE_BYTES_PER_PIXEL); 
+    props.bpp      = ilGetInteger (IL_IMAGE_BPP);
+    props.type     = ilGetInteger (IL_IMAGE_TYPE);
+    props.format   = ilGetInteger (IL_IMAGE_FORMAT);
+
+
+    res = cb (ilGetData (), props, up); 
+
+    ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
+
+  }
+
+  ilShutDown ();
+  return res; 
+}
+
+
+// ---------------------------------------------------------------------
+// load texture to device memory
+// ---------------------------------------------------------------------
+bool darkroot::LoadTexture_color_sampling (rokz::Image&             image,
+                                           VkFormat                 format,
+                                           const VkExtent2D&        ext2d,
+                                           const void*              srcimage,
+                                           const VmaAllocator&      allocator, 
+                                           const VkQueue&           queue, 
+                                           const rokz::CommandPool& commandpool, 
+                                           const rokz::Device&      device) {
+
+  //size_t image_size = image_width * image_height *  bytes_per_pixel; 
+  auto image_size = SizeOfComponents (format)
+                  * NumberOfComponents (format)
+                  * ext2d.width * ext2d.height;
+  assert (image_size); 
+
+  rokz::Buffer stage_buff; 
+  
+  rokz::cx::CreateInfo_buffer_stage (stage_buff.ci, image_size);
+  rokz::cx::AllocCreateInfo_stage (stage_buff.alloc_ci);
+  rokz::cx::CreateBuffer (stage_buff, allocator); 
+
+  void* mapped = nullptr; 
+  if (rokz::cx::MapMemory (&mapped, stage_buff.allocation, allocator)) { 
+  
+    const uint8_t* image_data = reinterpret_cast<const unsigned char*> (srcimage); 
+    std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
+  }
+  rokz::cx::UnmapMemory (stage_buff.allocation, allocator);
+
+  rokz::cx::CreateInfo_2D_color_sampling  (image.ci, VK_SAMPLE_COUNT_1_BIT, ext2d.width, ext2d.height);
+  rokz::cx::AllocCreateInfo_device (image.alloc_ci);
+  if (!rokz::cx::CreateImage (image, allocator)) {
+    printf ("[FAILED] %s setup test texture", __FUNCTION__);
+    return false;
+  }
+
+  //VK_FORMAT_R8G8B8A8_SRGB
+  rokz::cx::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_UNDEFINED,
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               queue, commandpool.handle, device.handle);
+
+  rokz::cx::CopyBufferToImage (image.handle, stage_buff.handle, ext2d.width, ext2d.height,
+                           queue, commandpool.handle, device.handle);
+
+  rokz::cx::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                               queue, commandpool.handle, device.handle);
+
+  rokz::cx::Destroy (stage_buff, allocator); 
+  return true; 
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+void darkroot::SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent) {
+
+  const VkOffset2D offs0 {0, 0};
+
+  vps.viewports.resize (1);
+  vps.scissors.resize (1);
+  
+  vps.scissors[0] = { offs0, swapchain_extent };
+  rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
+
+}

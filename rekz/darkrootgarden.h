@@ -85,5 +85,9 @@ namespace darkroot {
                          rokz::Image& depth_image,           rokz::ImageView& depth_imageview,
                          rokz::Image& multisamp_color_image, rokz::ImageView& multisamp_color_imageview,
                          const VmaAllocator& allocator, GLFWwindow* glfwin, const rokz::Device& device); 
+
+
+  void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
+
 }
 #endif

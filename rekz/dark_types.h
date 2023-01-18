@@ -7,6 +7,9 @@
 
 namespace darkroot {
 
+  // --------------------------------------------------------------------
+  // Geometry
+  // --------------------------------------------------------------------
   struct PushConstants {
 
     glm::ivec4 drawIDs; 
@@ -16,8 +19,57 @@ namespace darkroot {
     // w: unused
 
   }; 
+  
 
-  //    3.14159265f;
+  // --------------------------------------------------------------------
+  // Geometry
+  // --------------------------------------------------------------------
+  struct KeyState {
+
+    std::map<int, int> keys; 
+  };
+
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+  struct MouseState {
+
+    int inside; 
+    
+    int left_butt;   
+    int right_butt;  
+    int middle_butt; 
+    
+    int x_prev;
+    int y_prev;
+  }; 
+
+
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+  template<typename Ty> struct PolarCoord {
+    Ty theta; // "longitude"
+    Ty phi;   // "latitude"
+  }; 
+
+  typedef PolarCoord<float>  Polarf;
+  typedef PolarCoord<double> Polard;
+  
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+  struct InputState {
+
+    std::map<int, int> keys;
+    MouseState         mouse;
+    Polarf             polar;
+  };
+
+  
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
   struct PipelineGroup { 
 
     rokz::Pipeline        pipeline;
@@ -25,6 +77,7 @@ namespace darkroot {
 
     
   };
+
   // --------------------------------------------------------------------
   // Geometry
   // --------------------------------------------------------------------
@@ -156,6 +209,8 @@ namespace darkroot {
   // --------------------------------------------------------------------
   struct Glob {
 
+
+    InputState input_state;
     //#ifdef GLOB_COMMENT_OUT   
     enum { MaxFramesInFlight = 2 }; 
     Glob();
@@ -229,6 +284,40 @@ namespace darkroot {
 
   };
   // --------------------------------------------------------------------
+
+
+  // ---------------------------------------------------------------------
+  // image handling - should we keep
+  // ---------------------------------------------------------------------
+  struct DevILImageProps {
+
+    int width          ;//= ilGetInteger (IL_IMAGE_WIDTH); 
+    int height         ;//= ilGetInteger (IL_IMAGE_HEIGHT);
+    int depth          ;//= ilGetInteger (IL_IMAGE_DEPTH);
+    int bytes_per_pixel; //= ilGetInteger (IL_IMAGE_BYTES_PER_PIXEL); 
+    int bpp            ;//= ilGetInteger (IL_IMAGE_BPP);
+    int type           ;//= ilGetInteger (IL_IMAGE_TYPE);
+    int format         ;//= ilGetInteger (IL_IMAGE_FORMAT); 
+  };
+
+
+  typedef int (*DevILOpenFileCB) (const unsigned char* dat, const DevILImageProps& props, void* up); 
+
+  int OpenImageFile (const std::string& fqname, DevILOpenFileCB cb, void* up);
+
+  // ---------------------------------------------------------------------
+  // load texture to device memory
+  // ---------------------------------------------------------------------
+  bool LoadTexture_color_sampling (rokz::Image&             image,
+                                 VkFormat                 format,
+                                 const VkExtent2D&        ext2d,
+                                 const void*              srcimage,
+                                 const VmaAllocator&      allocator, 
+                                 const VkQueue&           queue, 
+                                 const rokz::CommandPool& commandpool, 
+                                 const rokz::Device&      device);
+  
+  
   
 } // darkroot
 
