@@ -25,7 +25,11 @@ void darkroot::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
     }
     else {
       input_state.mouse.inside = 0;
-      printf ("%s MOUSE EXIT\n", __FUNCTION__); 
+      printf ("%s MOUSE EXIT\n", __FUNCTION__);
+
+      input_state.mouse.x_prev = -1;
+      input_state.mouse.y_prev = -1;
+      
       // The cursor left the content area of the window
     }
 
@@ -92,10 +96,28 @@ void darkroot::win_event::on_mouse_move (GLFWwindow* window, double xpos, double
 
     if (input_state.mouse.inside) {
 
-      printf ("%s [xpos:%f | ypos:%f]\n" ,__FUNCTION__,  xpos, ypos); 
+      int ipos_x = static_cast<int> (xpos);
+      int ipos_y = static_cast<int> (ypos);
+      
+      if (input_state.mouse.x_prev == -1 || input_state.mouse.y_prev == -1) {
+        input_state.mouse.x_prev = ipos_x ;
+        input_state.mouse.y_prev = ipos_y ;
+
+        input_state.mouse.dx = 0;
+        input_state.mouse.dy = 0;
+        
+      }
+      else {
+
+        input_state.mouse.dx = ipos_x - input_state.mouse.x_prev;
+        input_state.mouse.dy = ipos_y - input_state.mouse.y_prev;
+
+        input_state.mouse.x_prev = ipos_x ;
+        input_state.mouse.y_prev = ipos_y ;
+      }
+      //printf ("%s [dx:%i | dy:%i]\n" ,__FUNCTION__, input_state.mouse.dx, input_state.mouse.dy); 
 
     }
-    
   }  
 }
 

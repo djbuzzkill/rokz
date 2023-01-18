@@ -42,6 +42,9 @@ namespace darkroot {
     
     int x_prev;
     int y_prev;
+
+    int dx;
+    int dy;
   }; 
 
 
