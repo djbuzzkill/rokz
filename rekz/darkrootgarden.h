@@ -9,10 +9,12 @@
 
 #include "dark_types.h"
 
+#define ROKZ_USE_DEVICE_INITIALIZATION 1
 
 namespace darkroot {
 
   const float kPi = glm::pi<float> ();  
+  const float k2Pi = 2 * glm::pi<float> ();  
 
   //
   struct SceneObjParam {

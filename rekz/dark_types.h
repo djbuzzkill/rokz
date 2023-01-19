@@ -40,8 +40,8 @@ namespace darkroot {
     int right_butt;  
     int middle_butt; 
     
-    int x_prev;
-    int y_prev;
+    int x_pos;
+    int y_pos;
 
     int dx;
     int dy;
@@ -52,8 +52,8 @@ namespace darkroot {
   // 
   // --------------------------------------------------------------------
   template<typename Ty> struct PolarCoord {
-    Ty theta; // "longitude"
-    Ty phi;   // "latitude"
+    Ty theta; // "longitude" 0-360
+    Ty phi;   // "latitude"  -90 - +90
   }; 
 
   typedef PolarCoord<float>  Polarf;
@@ -217,58 +217,60 @@ namespace darkroot {
     //#ifdef GLOB_COMMENT_OUT   
     enum { MaxFramesInFlight = 2 }; 
     Glob();
-  
-    VkFormat                         depth_format;
-    VkSurfaceFormatKHR               surface_format;
 
-    rokz::Instance                   instance;
-    rokz::PhysicalDevice             physical_device;
-    rokz::Device                     device;
-  
-    struct { VkQueue graphics; VkQueue present; } queues;
+    // device props
+    VkFormat                     depth_format;
+    VkSurfaceFormatKHR           surface_format;
+    VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
 
-    VmaAllocator                     allocator;
-
+    // system
+    rokz::Instance               instance;
+    rokz::PhysicalDevice         physical_device;
+    rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
+
+
+    
     rokz::FrameSequencing        frame_sequence;
     rokz::SwapchainSupportInfo   swapchain_support_info;
 
     // global pools
-    rokz::CommandPool            command_pool;
+    //    rokz::CommandPool            command_pool;
     rokz::DescriptorPool         descr_pool;
 
-    // 
+    // pipelines
     PipelineGroup                obj_pipeline;
     PipelineGroup                grid_pipeline;
 
     // DYNAMIC RENDERING
     rokz::RenderingInfoGroup     rendering_info_group;
     
+
+
+    // attachement set
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
-
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
   
-    VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
 
-    rokz::Buffer                 vma_ib_device;
-    rokz::Buffer                 vma_vb_device;
+    // scene objects 
+    float obj_theta[2];
 
-
-
+    // object data
+    rokz::Buffer                vma_ib_device;
+    rokz::Buffer                vma_vb_device;
     // image/texture
     rokz::Image                 texture_image; 
     rokz::ImageView             texture_imageview; 
     rokz::Sampler               sampler;
 
+    // pipeline resources
     std::vector<rokz::Buffer>   vma_uniform_buffs;
-    //  std::vector<void*>          uniform_mapped_pointers; 
-
     std::vector<rokz::Buffer>   vma_objparam_buffs;
-    //  std::vector<void*>          uniform_param_pointers; 
 
-  
+
+    // window
     rokz::Window                window;
     VkSurfaceKHR                surface; // 
     bool                        fb_resize; 
@@ -276,14 +278,8 @@ namespace darkroot {
     //VkViewport                  viewport;
     //VkRect2D                    scissor_rect; 
 
-    float                       queue_priority;
     double                      sim_time; 
     float                       dt;
-  
-    // DarkrootMesh                darkmesh;
-    // DarkRenderable             darkobj;
-    // HalfEdge::BRep             darkboundary;
-    // std::vector<Renderable*>   renderables;
 
   };
   // --------------------------------------------------------------------

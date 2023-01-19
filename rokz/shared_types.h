@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include <vulkan/vulkan_core.h>
+#include "vk_mem_alloc.h"
 
 namespace rokz { 
   // ---------------------------------------------------
@@ -90,6 +91,18 @@ namespace rokz {
     QueueFamilyIndices         family_indices;
   }; 
 
+
+  struct Allocator {
+    VmaAllocator           handle;
+    VmaAllocatorCreateInfo ci;  
+  };
+  
+  // --------------------------------------------------------
+  struct CommandPool {
+    VkCommandPool           handle;
+    VkCommandPoolCreateInfo ci; 
+  };
+
   // --------------------------------------------------------
   struct Device {
 
@@ -99,6 +112,13 @@ namespace rokz {
     VkDevice                             handle;
     VkDeviceCreateInfo                   ci;
     std::vector<VkDeviceQueueCreateInfo> queue_ci;
+
+    CommandPool                          command_pool;
+    Allocator                            allocator;
+
+    struct { VkQueue graphics; VkQueue present; } queues;
+    struct { float graphics; float present; } priority;
+
     // device extensions strings
     std::vector<const char*> dxs; 
     std::vector<std::string> dxstrs; 
@@ -337,11 +357,11 @@ namespace rokz {
     VkRect2D                               render_area; 
   };
 
-  // --------------------------------------------------------
-  struct CommandPool {
-    VkCommandPool           handle;
-    VkCommandPoolCreateInfo ci; 
-  };
+  // // --------------------------------------------------------
+  // struct CommandPool {
+  //   VkCommandPool           handle;
+  //   VkCommandPoolCreateInfo ci; 
+  // };
 
   // --------------------------------------------------------
   struct CommandBufferGroup {
