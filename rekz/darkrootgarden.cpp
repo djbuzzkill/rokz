@@ -1,22 +1,7 @@
 
-#include "rekz.h"
 #include "darkrootgarden.h"
 // 
-#include <GLFW/glfw3.h>
 
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/fwd.hpp>
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <vulkan/vulkan_core.h>
-
-//#define VMA_IMPLEMENTATION
-#include "rekz/dark_types.h"
-#include "rokz/command.h"
-#include "rokz/descriptor.h"
-#include "rokz/shared_types.h"
-#include "vk_mem_alloc.h"
- 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -49,6 +34,7 @@ const std::vector<VkVertexInputAttributeDescription> kDarkvertBindingAttributeDe
     VK_FORMAT_R32G32B32_SFLOAT,    // .format   
     offsetof(DarkrootVert, pos),  // .offset   
   },
+
   VkVertexInputAttributeDescription { // color
     1,                              
     0, 
@@ -68,6 +54,7 @@ const std::vector<VkVertexInputAttributeDescription> kDarkvertBindingAttributeDe
     VK_FORMAT_R32G32_SFLOAT,
     offsetof(DarkrootVert, txc0), 
   }
+
 }; 
 
 // --------------------------------------------------------------------
@@ -1099,6 +1086,12 @@ bool RenderFrame_dynamic (Glob&                   glob,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
+bool InitializeInstance ();
+bool InitializeSurface  ();
+//bool SelectPhysicalDevice ();
+bool IniitializeDevice  ();
+
+
 bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device) {
 
 
@@ -1122,7 +1115,6 @@ bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Win
 
   //printf ( "----------> min_uniform_buffer_offset_alignment [%zu]\n", min_uniform_buffer_offset_alignment); 
   //VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
-  
   // if (glob.physical_device.family_indices.graphics.has_value ()) {
   //   printf ("HAS_VALUE:TRUE\n"); 
   //   printf ("  graphics[%u]\n", glob.physical_device.family_indices.graphics.value ()); 
@@ -1130,18 +1122,14 @@ bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Win
   // else  {
   //   printf ("HAS_VALUE:FALSE\n"); 
   // }
-
   device.priority.graphics = 1.0f;
   device.priority.present  = 1.0f;
 
   device.queue_ci.resize  (2); 
   // VkQueueCreateInfo
-  rokz::cx::CreateInfo (device.queue_ci[0], physical_device.family_indices.graphics.value () , &device.priority.graphics);
-  rokz::cx::CreateInfo (device.queue_ci[1], physical_device.family_indices.present.value  () , &device.priority.present);
+  rokz::cx::CreateInfo (device.queue_ci[0], physical_device.family_indices.graphics.value (), &device.priority.graphics);
+  rokz::cx::CreateInfo (device.queue_ci[1], physical_device.family_indices.present.value  (), &device.priority.present);
 
-
-  printf ("IUYGNDYJH [%i]\n", __LINE__); 
-  
   // device info
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
   physical_device.features.samplerAnisotropy = VK_TRUE;
@@ -1151,7 +1139,6 @@ bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Win
   dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
   dynamic_rendering_feature.pNext = nullptr;
   dynamic_rendering_feature.dynamicRendering = VK_TRUE;
-  printf ("IUYGNDYJH [%i]\n", __LINE__); 
 
   rokz::cx::CreateInfo (device.ci,
                         &dynamic_rendering_feature, 
@@ -1164,7 +1151,6 @@ bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Win
   rokz::cx::CreateInfo             (device.command_pool.ci, physical_device.family_indices.graphics.value());
   rokz::cx::CreateCommandPool      (device.command_pool.handle, device.command_pool.ci, device.handle);
   printf ("IUYGNDYJH [%i]\n", __LINE__); 
-  
   // get queue handle
   rokz::cx::GetDeviceQueue (&device.queues.graphics, physical_device.family_indices.graphics.value(), device.handle);
   rokz::cx::GetDeviceQueue (&device.queues.present,  physical_device.family_indices.present.value(), device.handle);
@@ -1175,14 +1161,10 @@ bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Win
   // vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
 
   // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  //VmaAllocatorCreateInfo allocatorCreateInfo = {};
-  device.allocator.ci = {}; 
   rokz::cx::CreateInfo (device.allocator.ci, instance, device, physical_device); 
   vmaCreateAllocator(&device.allocator.ci, &device.allocator.handle);
-  printf ("IUYGNDYJH [%i]\n", __LINE__); 
 
-  
-  return false;
+  return true;
 }
 
 // --------------------------------------------------------------------
@@ -1249,7 +1231,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // CREATE INSTANCE AND DEVICE
   InitializeDevice (glob.instance,
-                    glob.device, glob.window,
+                    glob.device,
+                    glob.window,
                     glob.surface,
                     glob.physical_device);
 
@@ -1406,7 +1389,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
     glob.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
     
-
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q))
       run = false;

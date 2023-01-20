@@ -13,7 +13,6 @@
 #include <vulkan/vulkan_core.h>
 
 //#define VMA_IMPLEMENTATION
-#include "rekz/mars_types.h"
 #include "rokz/descriptor.h"
 #include "rokz/shared_types.h"
 #include "vk_mem_alloc.h"
@@ -30,11 +29,9 @@ namespace mars {
   const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
   const VkExtent2D    kTestExtent  = { 800, 600 };
 
-
   const size_t        kPatchCount  = 100;
-
   // --------------------------------------------------------------------
-  //
+  // 
   // --------------------------------------------------------------------
   const VkVertexInputBindingDescription kVertexBindingDesc =  {
     0,                            // binding    

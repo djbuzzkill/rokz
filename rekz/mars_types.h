@@ -1,6 +1,6 @@
 
-#ifndef MARS_GLOB_INCLUDE
-#define MARS_GLOB_INCLUDE
+#ifndef MARS_TYPES_INCLUDE
+#define MARS_TYPES_INCLUDE
 
 #include "rokz/rokz.h"
 
@@ -37,11 +37,10 @@ namespace mars {
   // --------------------------------------------------------------------
   //    3.14159265f;
   // --------------------------------------------------------------------
-  struct PatchParams {
+  struct PatchParams { // UBO
     glm::mat4 model;
   }; 
 
-  
   // --------------------------------------------------------------------
   //    3.14159265f;
   // --------------------------------------------------------------------

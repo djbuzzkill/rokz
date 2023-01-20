@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "utility.h"
-#include "shared_types.h"
+#include "rokz_types.h"
 #include "buffer.h"
 
 

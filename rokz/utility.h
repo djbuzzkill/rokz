@@ -4,7 +4,7 @@
 #define ROKZ_UTILITY_INCLUDE
 
 #include "common.h"
-#include "shared_types.h"
+#include "rokz_types.h"
 //#include "binary_IO.h"
 
 namespace rokz {

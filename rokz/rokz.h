@@ -8,6 +8,8 @@
 /* #include "rokz_funcs.h" */
 
 
+#include "common.h"
+#include "rokz_types.h"
 
 #include "context.h"
 #include "command.h"
@@ -29,6 +31,7 @@
 #include "binary_IO.h"
 #include "defaults.h"
 #include "rokz/binary_IO.h"
+
 
 
 

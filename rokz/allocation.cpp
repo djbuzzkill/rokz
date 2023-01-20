@@ -4,6 +4,9 @@
 
 VmaAllocatorCreateInfo& rokz::cx::CreateInfo (VmaAllocatorCreateInfo& ci, const Instance& instance, const Device& device, const PhysicalDevice& phydev) {
 
+
+  ci = {};
+
   ci.vulkanApiVersion = VK_API_VERSION_1_3;
   ci.flags            = 0;
   ci.physicalDevice   = phydev.handle;

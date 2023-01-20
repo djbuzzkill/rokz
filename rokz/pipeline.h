@@ -3,7 +3,7 @@
 #define ROKZ_PIPELINE_H
 
 #include "common.h"
-#include "shared_types.h"
+#include "rokz_types.h"
 #include <vulkan/vulkan_core.h>
 
 

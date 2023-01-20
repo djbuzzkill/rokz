@@ -31,7 +31,7 @@ set (ROKZ_HEADER_FILES
   # rokz_types.h
   # rokz_funcs.h
   file.h
-  shared_types.h
+  rokz_types.h
   common.h
 )
 

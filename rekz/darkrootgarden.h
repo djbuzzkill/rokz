@@ -4,10 +4,27 @@
 #ifndef DARKROOT_GARDEN_INCLUDE
 #define DARKROOT_GARDEN_INCLUDE
 
-#include "rokz/common.h"
+#include "rekz.h"
 
 
 #include "dark_types.h"
+#include <GLFW/glfw3.h>
+
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/fwd.hpp>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <vulkan/vulkan_core.h>
+
+#include "rekz/dark_types.h"
+
+#include "rokz/common.h"
+#include "rokz/command.h"
+#include "rokz/descriptor.h"
+#include "rokz/rokz_types.h"
+
+
+
 
 #define ROKZ_USE_DEVICE_INITIALIZATION 1
 
