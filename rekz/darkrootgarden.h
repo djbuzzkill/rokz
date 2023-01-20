@@ -1,32 +1,9 @@
 
-
-
 #ifndef DARKROOT_GARDEN_INCLUDE
 #define DARKROOT_GARDEN_INCLUDE
 
-#include "rekz.h"
-
-
 #include "dark_types.h"
-#include <GLFW/glfw3.h>
 
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/fwd.hpp>
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <vulkan/vulkan_core.h>
-
-#include "rekz/dark_types.h"
-
-#include "rokz/common.h"
-#include "rokz/command.h"
-#include "rokz/descriptor.h"
-#include "rokz/rokz_types.h"
-
-
-
-
-#define ROKZ_USE_DEVICE_INITIALIZATION 1
 
 namespace darkroot {
 
@@ -34,31 +11,10 @@ namespace darkroot {
   const float k2Pi = 2 * glm::pi<float> ();  
 
   //
-  struct SceneObjParam {
-    glm::mat4 modelmat;
-    //  glm::mat4 unused0;
-  };
-
   //
   const size_t SizeOf_SceneObjParam = sizeof (SceneObjParam); 
 
-  const DarkrootMesh& DarkOctohedron (); 
-
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  namespace win_event { 
-    void on_resize (GLFWwindow* window, int width, int height); 
-    void on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods); 
-    void on_mouse_enter (GLFWwindow* window, int entered);
-    void on_mouse_move (GLFWwindow* window, double xpos, double ypos); 
-    void on_mouse_button (GLFWwindow* window, int button, int action, int mods); 
-  }
-
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  HalfEdge::BRep& BuildBoundaryRep (HalfEdge::BRep& brep, const DarkrootMesh& geom); 
+  const DarkMesh& DarkOctohedron (); 
 
   // --------------------------------------------------------------------
   // 
@@ -67,6 +23,9 @@ namespace darkroot {
   uint32_t SizeOfComponents (VkFormat format);
 
 
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
   void CleanupSwapchain (std::vector<rokz::ImageView>& sc_image_views,
                          rokz::Image&                msaa_color_image,
                          rokz::ImageView&            msaa_color_imageview,
@@ -78,6 +37,9 @@ namespace darkroot {
                          const rokz::Device&         device,
                          const VmaAllocator&         allocator); 
 
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
   void Cleanup (VkPipeline&                 pipeline,
                 //std::vector<Framebuffer>&         framebuffers,
                 std::vector<rokz::ImageView>&           imageviews,
@@ -99,6 +61,9 @@ namespace darkroot {
                 VmaAllocator&                     allocator, 
                 VkInstance&                       inst);
   
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
   bool RecreateSwapchain(rokz::Swapchain&  swapchain,
                          std::vector<rokz::Image>& swapchain_images, std::vector<rokz::ImageView>& imageviews,
                          rokz::Image& depth_image,           rokz::ImageView& depth_imageview,
@@ -106,7 +71,7 @@ namespace darkroot {
                          const VmaAllocator& allocator, GLFWwindow* glfwin, const rokz::Device& device); 
 
 
-  void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
+  //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
 
 }
 #endif

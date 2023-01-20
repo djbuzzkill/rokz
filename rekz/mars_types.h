@@ -3,10 +3,17 @@
 #define MARS_TYPES_INCLUDE
 
 #include "rokz/rokz.h"
+#include "rekz.h"
 
 
 namespace mars {
 
+
+  typedef rekz::Vertex_pos_nrm_txc_col MarsVert; 
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  typedef rekz::TriMesh<MarsVert> MarsMesh;
   // --------------------------------------------------------------------
   // Geometry
   // --------------------------------------------------------------------
@@ -19,7 +26,7 @@ namespace mars {
   };
 
   // --------------------------------------------------------------------
-  // Geometry
+  // UBO
   // --------------------------------------------------------------------
   struct ViewParams {
 
@@ -42,57 +49,9 @@ namespace mars {
   }; 
 
   // --------------------------------------------------------------------
-  //    3.14159265f;
-  // --------------------------------------------------------------------
-  struct PipelineGroup { 
-
-    rokz::Pipeline        pipeline;
-    rokz::DescriptorGroup descrgroup;
-  };
-
-  // --------------------------------------------------------------------
-  // Geometry
-  // --------------------------------------------------------------------
-  template<typename VTy, typename IndTy>
-    struct GeometryData {
-
-      typedef  VTy         VertexType; 
-      typedef  IndTy       IndexType; 
-
-      enum { VertexSize = sizeof(VTy) }; 
-      enum { IndexSize  = sizeof(IndTy) }; 
-  
-      std::vector<VTy> verts;
-      std::vector<IndTy> indices;
-    }; 
-
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  template<typename VTy> 
-    using TriMesh = GeometryData<VTy, uint16_t>; 
-
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  struct Vertex_pos_nrm_txc_col {
-    glm::vec3 pos; 
-    glm::vec3 nrm; 
-    glm::vec3 col; 
-    glm::vec2 txc0; 
-  };
-
-  typedef Vertex_pos_nrm_txc_col MarsVert; 
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  typedef TriMesh<MarsVert> MarsMesh;
-
-  // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
   struct Glob {
-
 
     enum { MaxFramesInFlight = 2 }; 
 
@@ -113,8 +72,8 @@ namespace mars {
     rokz::DescriptorPool         descriptor_pool;
     // rokz::DescriptorGroup        descrgroup; 
     // rokz::Pipeline               pipeline; 
-    PipelineGroup                terrain_pipeline;
-    PipelineGroup                grid_pipeline;
+    rekz::PipelineGroup          terrain_pipeline;
+    rekz::PipelineGroup          grid_pipeline;
 
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
@@ -138,9 +97,10 @@ namespace mars {
   
     rokz::Window                window;
     VkSurfaceKHR                surface; // 
-    bool                        fb_resize; 
 
-    float                       queue_priority;
+
+    rekz::InputState            input_state;
+    //    float                       queue_priority;
     double                      sim_time; 
     float                       dt;
 

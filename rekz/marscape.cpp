@@ -1,20 +1,6 @@
 
-#include "rekz.h"
 #include "marscape.h"
 // 
-#include <GLFW/glfw3.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
-
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/fwd.hpp>
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <vulkan/vulkan_core.h>
-
-//#define VMA_IMPLEMENTATION
-#include "rokz/descriptor.h"
-#include "vk_mem_alloc.h"
 
 #define ROKZ_USE_VMA_ALLOCATION 1
 
@@ -114,10 +100,10 @@ bool SetupMarsWindow (Glob& glob) {
   glfwInit();
   rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
 
-  glfwSetFramebufferSizeCallback (glob.window.glfw_window, window_handler::on_resize ); 
-  glfwSetKeyCallback (glob.window.glfw_window, window_handler::on_keypress);
-  glfwSetCursorPosCallback(glob.window.glfw_window, window_handler::on_mouse_move);
-  glfwSetMouseButtonCallback(glob.window.glfw_window, window_handler::on_mouse_button);
+  glfwSetFramebufferSizeCallback (glob.window.glfw_window, rekz::win_event::on_resize ); 
+  glfwSetKeyCallback (glob.window.glfw_window, rekz::win_event::on_keypress);
+  glfwSetCursorPosCallback(glob.window.glfw_window, rekz::win_event::on_mouse_move);
+  glfwSetMouseButtonCallback(glob.window.glfw_window, rekz::win_event::on_mouse_button);
   return true;
 }
 
@@ -431,7 +417,7 @@ bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupTerrainDescriptorSets (PipelineGroup& pipelinegroup,
+bool SetupTerrainDescriptorSets (rekz::PipelineGroup& pipelinegroup,
 
                                 const std::vector<rokz::Buffer>& vma_uniform_buffs,
                                 const std::vector<rokz::Buffer>& vma_objparam_buffs,
@@ -664,7 +650,7 @@ bool SetupGlobalDescriptorPool (Glob& glob) {
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupTerrainPipeline (PipelineGroup& pipelinegroup,
+bool SetupTerrainPipeline (rekz::PipelineGroup& pipelinegroup,
                           const rokz::ViewportState& vps,
                           const rokz::RenderPass& renderpass,
                           const std::filesystem::path& fspath,
@@ -859,7 +845,7 @@ int mars_run (const std::vector<std::string>& args) {
 
   Glob glob; // *globmem; // something representing the app state
   glob.dt = 0.0;
-  glob.fb_resize = false; 
+  glob.input_state.fb_resize = false; 
 
   
   SetupMarsWindow (glob); 
@@ -882,7 +868,10 @@ int mars_run (const std::vector<std::string>& args) {
   VkDeviceSize min_uniform_buffer_offset_alignment =
     rokz::ut::MinUniformBufferOffsetAlignment (glob.physical_device);
 
-  glob.queue_priority = 1.0f;
+  glob.device.priority.graphics = 1.0f;
+  glob.device.priority.present = 1.0;
+  
+  
   if (glob.physical_device.family_indices.graphics.has_value ()) {
     printf ("HAS_VALUE:TRUE\n"); 
     printf ("  graphics[%u]\n", glob.physical_device.family_indices.graphics.value ()); 
@@ -893,8 +882,8 @@ int mars_run (const std::vector<std::string>& args) {
 
   glob.device.queue_ci.resize  (2); 
   // VkQueueCreateInfo
-  rokz::cx::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.queue_priority);
-  rokz::cx::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.queue_priority);
+  rokz::cx::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.device.priority.graphics);
+  rokz::cx::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.device.priority.present );
   
   // device info
   //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 

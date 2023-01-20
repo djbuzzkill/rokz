@@ -1,21 +1,14 @@
-
-#include "dark_types.h"
-#include "darkrootgarden.h"
-#include <GLFW/glfw3.h>
-
-
-
-
-
-
+//
+//
+#include "rekz.h"
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void darkroot::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
+void rekz::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
 
-  if (darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer (window))) {
+  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
 
-    InputState& input_state = g->input_state;
+    rekz::InputState& input_state = *is;
     
     if (entered) {
 
@@ -32,18 +25,18 @@ void darkroot::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
       // The cursor left the content area of the window
     }
   }
-  // darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer (window)); 
+  // rekz::Glob* g = reinterpret_cast<rekz::Glob*> (glfwGetWindowUserPointer (window)); 
 }
 
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void darkroot::win_event::on_resize (GLFWwindow* window, int width, int height) {
+void rekz::win_event::on_resize (GLFWwindow* window, int width, int height) {
   // printf ("%s \n", __FUNCTION__); 
-  if (darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer (window))) {
+  if (rekz::InputState* g = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
 
-    //reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer(window))->fb_resize = true;
+    //reinterpret_cast<rekz::Glob*> (glfwGetWindowUserPointer(window))->fb_resize = true;
     g->fb_resize = true;
 
   }
@@ -53,11 +46,11 @@ void darkroot::win_event::on_resize (GLFWwindow* window, int width, int height) 
 // --------------------------------------------------------------------
 // KEY PRESS
 // --------------------------------------------------------------------
-void darkroot::win_event::on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
+void rekz::win_event::on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-  if (darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer (window))) {
+  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
 
-    InputState& input_state = g->input_state;
+    rekz::InputState& input_state = *is;
     switch (action) {
 
       // GLFW_PRESS
@@ -85,11 +78,11 @@ void darkroot::win_event::on_keypress (GLFWwindow* window, int key, int scancode
 // --------------------------------------------------------------------
 // MOUSE MOVEMENT
 // --------------------------------------------------------------------
-void darkroot::win_event::on_mouse_move (GLFWwindow* window, double xpos, double ypos) {
+void rekz::win_event::on_mouse_move (GLFWwindow* window, double xpos, double ypos) {
   //printf ("%s [xpos:%f | ypos:%f]\n" ,__FUNCTION__,  xpos, ypos); 
-  if (darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer (window))) {
+  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
 
-    InputState& input_state = g->input_state;
+    rekz::InputState& input_state = *is;
 
     if (input_state.mouse.inside) {
 
@@ -121,11 +114,11 @@ void darkroot::win_event::on_mouse_move (GLFWwindow* window, double xpos, double
 // --------------------------------------------------------------------
 // MOUSE BUTTON
 // --------------------------------------------------------------------
-void darkroot::win_event::on_mouse_button (GLFWwindow* window, int button, int action, int mods)
+void rekz::win_event::on_mouse_button (GLFWwindow* window, int button, int action, int mods)
 {
-  if (darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (glfwGetWindowUserPointer (window))) {
+  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
 
-    InputState& input_state = g->input_state;
+    rekz::InputState& input_state = *is;
     switch (action) {
 
       // GLFW_PRESS

@@ -14,12 +14,12 @@ set (REKZ_HEADER_FILES
 	
 set (REKZ_SOURCE_FILES
   texture_tool.cpp
-  dark_window_event.cpp
+  rekz_win_handler.cpp
   darkrootgarden.cpp
   darkthings.cpp
 
   marscape.cpp
-  mars_window_handler.cpp
+#  mars_window_handler.cpp
   mars_things.cpp
   
   #  test_rokz_hpp.cpp

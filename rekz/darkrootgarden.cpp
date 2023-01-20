@@ -19,7 +19,7 @@ using namespace darkroot;
 // --------------------------------------------------------------------
 const VkVertexInputBindingDescription kDarkVertexBindingDesc =  {
   0,                            // binding    
-  sizeof (DarkrootVert),       // stride      
+  sizeof (DarkVert),       // stride      
   VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
 }; 
 
@@ -32,27 +32,27 @@ const std::vector<VkVertexInputAttributeDescription> kDarkvertBindingAttributeDe
     0,                             // .location 
     0,                             // .binding  
     VK_FORMAT_R32G32B32_SFLOAT,    // .format   
-    offsetof(DarkrootVert, pos),  // .offset   
+    offsetof(DarkVert, pos),  // .offset   
   },
 
   VkVertexInputAttributeDescription { // color
     1,                              
     0, 
     VK_FORMAT_R32G32B32_SFLOAT,
-    offsetof(DarkrootVert, nrm), 
+    offsetof(DarkVert, nrm), 
   },
 
   VkVertexInputAttributeDescription { // color
     2,                              
     0, 
     VK_FORMAT_R32G32B32_SFLOAT,
-    offsetof(DarkrootVert, col), 
+    offsetof(DarkVert, col), 
   },
   VkVertexInputAttributeDescription { // tex coord
     3,                             
     0, 
     VK_FORMAT_R32G32_SFLOAT,
-    offsetof(DarkrootVert, txc0), 
+    offsetof(DarkVert, txc0), 
   }
 
 }; 
@@ -104,13 +104,13 @@ bool SetupDarkWindow (Glob& glob) {
 
   rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
 
-  glfwSetFramebufferSizeCallback (glob.window.glfw_window, win_event::on_resize ); 
-  glfwSetKeyCallback (glob.window.glfw_window, win_event::on_keypress);
-  glfwSetCursorPosCallback(glob.window.glfw_window, win_event::on_mouse_move);
-  glfwSetMouseButtonCallback(glob.window.glfw_window, win_event::on_mouse_button);
-  glfwSetCursorEnterCallback (glob.window.glfw_window, win_event::on_mouse_enter); 
+  glfwSetFramebufferSizeCallback (glob.window.glfw_window, rekz::win_event::on_resize ); 
+  glfwSetKeyCallback (glob.window.glfw_window, rekz::win_event::on_keypress);
+  glfwSetCursorPosCallback(glob.window.glfw_window, rekz::win_event::on_mouse_move);
+  glfwSetMouseButtonCallback(glob.window.glfw_window, rekz::win_event::on_mouse_button);
+  glfwSetCursorEnterCallback (glob.window.glfw_window, rekz::win_event::on_mouse_enter); 
                               
-  glfwSetWindowUserPointer (glob.window.glfw_window, &glob);
+  glfwSetWindowUserPointer (glob.window.glfw_window, &glob.input_state);
 
 
   //glfwSetCursorEnterCallback(window, rokz);
@@ -233,11 +233,11 @@ bool SetupObjectUniforms (Glob& glob) {
 // -------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------
-int darkroot_file_handler (const unsigned char* dat, const DevILImageProps& props, void* up) {
+int darkroot_file_handler (const unsigned char* dat, const rekz::DevILImageProps& props, void* up) {
 
   darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (up); 
   
-  if (LoadTexture_color_sampling (g->texture_image, VK_FORMAT_R8G8B8A8_SRGB ,
+  if (rekz::LoadTexture_color_sampling (g->texture_image, VK_FORMAT_R8G8B8A8_SRGB ,
                                   VkExtent2D { (uint32_t) props.width, (uint32_t) props.height },
                                   dat, g->device.allocator.handle, g->device.queues.graphics, 
                                   g->device.command_pool, g->device)) {
@@ -263,7 +263,7 @@ bool SetupObjectTextureAndSampler (Glob& glob) {
   //   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
    const std::string fq_test_file = data_root + "/texture/out_0_blue-texture-image-hd_rgba.png";  
 
-   int res =  OpenImageFile (fq_test_file, darkroot_file_handler, &glob); 
+   int res =  rekz::OpenImageFile (fq_test_file, darkroot_file_handler, &glob); 
   
    if (res == 0) {
      rokz::cx::CreateInfo (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
@@ -295,24 +295,24 @@ bool SetupObjResources (darkroot::Glob& glob) {
   SetupObjectTextureAndSampler;
   
 
-  const DarkrootMesh& darkmesh = darkroot::DarkOctohedron (); 
+  const DarkMesh& darkmesh = darkroot::DarkOctohedron (); 
 
   void* pmapped  = nullptr;
   rokz::Buffer vb_x; 
-  rokz::cx::CreateInfo_VB_stage (vb_x.ci, DarkrootMesh::VertexSize, darkmesh.verts.size());
+  rokz::cx::CreateInfo_VB_stage (vb_x.ci, DarkMesh::VertexSize, darkmesh.verts.size());
   rokz::cx::AllocCreateInfo_stage (vb_x.alloc_ci);
   rokz::cx::CreateBuffer (vb_x, glob.device.allocator.handle);
   if (rokz::cx::MapMemory (&pmapped, vb_x.allocation, glob.device.allocator.handle)) {
-    memcpy (pmapped, &darkmesh.verts[0], DarkrootMesh::VertexSize * darkmesh.verts.size()); 
+    memcpy (pmapped, &darkmesh.verts[0], DarkMesh::VertexSize * darkmesh.verts.size()); 
     rokz::cx::UnmapMemory (vb_x.allocation, glob.device.allocator.handle); 
   }
 
-  rokz::cx::CreateInfo_VB_device (glob.vma_vb_device.ci, DarkrootMesh::VertexSize, darkmesh.verts.size());
+  rokz::cx::CreateInfo_VB_device (glob.vma_vb_device.ci, DarkMesh::VertexSize, darkmesh.verts.size());
   rokz::cx::AllocCreateInfo_device (glob.vma_vb_device.alloc_ci); 
   rokz::cx::CreateBuffer (glob.vma_vb_device, glob.device.allocator.handle); 
 
   //rokz::Transfer_2_Device;
-  rokz::cx::MoveToBuffer_XB2DB (glob.vma_vb_device, vb_x, DarkrootMesh::VertexSize * darkmesh.verts.size(), 
+  rokz::cx::MoveToBuffer_XB2DB (glob.vma_vb_device, vb_x, DarkMesh::VertexSize * darkmesh.verts.size(), 
                             glob.device.command_pool.handle, glob.device.queues.graphics, glob.device.handle); 
 
   rokz::cx::Destroy (vb_x, glob.device.allocator.handle); 
@@ -324,7 +324,7 @@ bool SetupObjResources (darkroot::Glob& glob) {
   rokz::cx::CreateBuffer (ib_x, glob.device.allocator.handle);
 
   if (rokz::cx::MapMemory (&pmapped, ib_x.allocation, glob.device.allocator.handle)) {
-    memcpy (pmapped, &darkmesh.indices[0], DarkrootMesh::IndexSize * darkmesh.indices.size()  ); 
+    memcpy (pmapped, &darkmesh.indices[0], DarkMesh::IndexSize * darkmesh.indices.size()  ); 
     rokz::cx::UnmapMemory (ib_x.allocation, glob.device.allocator.handle); 
   }
   
@@ -332,10 +332,10 @@ bool SetupObjResources (darkroot::Glob& glob) {
   rokz::cx::AllocCreateInfo_device (glob.vma_ib_device.alloc_ci);
   rokz::cx::CreateBuffer (glob.vma_ib_device, glob.device.allocator.handle);
 
-  rokz::cx::MoveToBuffer_XB2DB  (glob.vma_ib_device, ib_x, DarkrootMesh::IndexSize * darkmesh.indices.size (), 
+  rokz::cx::MoveToBuffer_XB2DB  (glob.vma_ib_device, ib_x, DarkMesh::IndexSize * darkmesh.indices.size (), 
                              glob.device.command_pool.handle, glob.device.queues.graphics, glob.device.handle); 
   rokz::cx::Destroy (ib_x, glob.device.allocator.handle); 
-  //DarkrootMesh& dark_mesh = glob.dark_mesh;
+  //DarkMesh& dark_mesh = glob.dark_mesh;
 
   if (!SetupObjectUniforms (glob)) {
     printf ("[FAILED] --> SetupObjectUniforms \n"); 
@@ -584,7 +584,7 @@ bool SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz:
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-bool SetupObjectDescriptorSets (darkroot::PipelineGroup& pipelinegroup,
+bool SetupObjectDescriptorSets (rekz::PipelineGroup& pipelinegroup,
 
                                 const std::vector<rokz::Buffer>& vma_uniform_buffs,
                                 const std::vector<rokz::Buffer>& vma_objparam_buffs,
@@ -741,7 +741,7 @@ bool SetupObjectShaderModules (rokz::Pipeline& pipeline, const std::filesystem::
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
+bool SetupObjectPipeline (rekz::PipelineGroup& pipelinegroup,
                           // const rokz::RenderPass& renderpass,  // using dynamic render pass
                           const std::filesystem::path& fspath,
                           const VkExtent2D& viewport_extent, //const rokz::Swapchain& swapchain,
@@ -758,7 +758,7 @@ bool SetupObjectPipeline (darkroot::PipelineGroup& pipelinegroup,
 
   //
   rokz::Pipeline& pipeline = pipelinegroup.pipeline;
-  SetupViewportState (pipeline.state.viewport, viewport_extent); 
+  rekz::SetupViewportState (pipeline.state.viewport, viewport_extent); 
 
   pipeline.state.colorblend_attachments.resize (1);
 
@@ -885,7 +885,7 @@ bool RecordDynamicRenderPass (Glob& glob,
                               const VkExtent2D&      ext2d,
                               const rokz::Device&    device) {
 
-  const DarkrootMesh& darkmesh = DarkOctohedron ();
+  const DarkMesh& darkmesh = DarkOctohedron ();
   
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1224,7 +1224,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //Default (glob); 
   
   glfwInit();
-  glob.fb_resize = false; 
+  glob.input_state.fb_resize = false; 
   
   //rokz::CreateWindow_glfw (glob.glfwin);
   SetupDarkWindow (glob); 
@@ -1396,7 +1396,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
     //    UpdateDarkroot(glob, glob.dt);
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
-    if (RenderFrame_dynamic (glob, image_index, glob.fb_resize, glob.obj_pipeline.pipeline,
+    if (RenderFrame_dynamic (glob, image_index, glob.input_state.fb_resize, glob.obj_pipeline.pipeline,
                              glob.obj_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
       // no render pass of framebuffer
     }
