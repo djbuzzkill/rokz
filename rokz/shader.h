@@ -3,7 +3,7 @@
 #define ROKZ_SHADER_H
 
 #include "common.h"
-#include "shared_types.h"
+#include "rokz_types.h"
 #include "file.h"
 
 namespace rokz {

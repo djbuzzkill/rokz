@@ -6,7 +6,7 @@
 #include "image.h"
 #include "pipeline.h"
 #include "framebuffer.h"
-#include "rokz/shared_types.h"
+//#include "rokz/shared_types.h"
 #include "shader.h"
 #include "window.h"
 #include "descriptor.h"

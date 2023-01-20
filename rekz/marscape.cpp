@@ -14,7 +14,6 @@
 
 //#define VMA_IMPLEMENTATION
 #include "rokz/descriptor.h"
-#include "rokz/shared_types.h"
 #include "vk_mem_alloc.h"
 
 #define ROKZ_USE_VMA_ALLOCATION 1
