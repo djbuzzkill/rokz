@@ -1,5 +1,6 @@
 
 #include "rekz.h"              // 
+#include "rokz/rokz_types.h"
 
 
 //#include "rokz/rokz.h"
@@ -444,11 +445,9 @@ bool rekz::LoadTexture_color_sampling (rokz::Image&             image,
   return true; 
 }
 
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
 void rekz::SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent) {
 
   const VkOffset2D offs0 {0, 0};
@@ -461,10 +460,20 @@ void rekz::SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swap
 
 }
 
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+
+// rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
+  //                              glob.surface,
+  //                              glob.physical_device.handle);
+
+  //rokz::SwapchainGroup& scg = glob.swapchain_group;
+
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-
 int test_rokz (const std::vector<std::string>& args); 
 int test_rokz_hpp (const std::vector<std::string>& args); 
 int texture_tool (const std::vector<std::string>& args); 
@@ -482,7 +491,7 @@ int main (int argv, char** argc) {
 
   //   test_time (); 
   //test_rokz (args); 
-  darkroot_basin  (args);
+   darkroot_basin  (args);
   //mars_run  (args);
   // test_rokz_hpp (args); 
   // texture_tool (args); 

@@ -424,8 +424,11 @@ namespace rokz {
   }; 
   
   //
-
-
+  // struct Surface {
+  
+  //   VkSurfaceKHR       handle;
+  //   VkSurfaceFormatKHR format;
+  // };
 
 
 } // namespace rokz

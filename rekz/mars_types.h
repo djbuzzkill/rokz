@@ -42,7 +42,7 @@ namespace mars {
   };
 
   // --------------------------------------------------------------------
-  //    3.14159265f;
+  //  UBO
   // --------------------------------------------------------------------
   struct PatchParams { // UBO
     glm::mat4 model;
@@ -58,52 +58,65 @@ namespace mars {
     rokz::Instance               instance;
     rokz::PhysicalDevice         physical_device;
     rokz::Device                 device;
-  
-    struct { VkQueue graphics; 
-             VkQueue present; }  queues;
-
-    VmaAllocator                 allocator;
     rokz::SwapchainGroup         frame_group;
-    rokz::FrameSequencing        frame_sequence;
-
     rokz::SwapchainSupportInfo   swapchain_support_info;
+    rokz::FrameSequencing        frame_sequence;
+    // pipeline resource
+    std::vector<rokz::Buffer>    vma_uniform_buffs;
+    std::vector<rokz::Buffer>    vma_objparam_buffs;
 
-    rokz::CommandPool            command_pool;
-    rokz::DescriptorPool         descriptor_pool;
+    VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
+    VkFormat                     depth_format;
+    VkSurfaceFormatKHR           surface_format;
+
+    rokz::DescriptorPool         descriptor_pool; 
     // rokz::DescriptorGroup        descrgroup; 
     // rokz::Pipeline               pipeline; 
     rekz::PipelineGroup          terrain_pipeline;
     rekz::PipelineGroup          grid_pipeline;
 
+    // DYNAMIC RENDERING - no more renderpass
+    rokz::RenderingInfoGroup     rendering_info_group;
+
+    // ATTACHEMENT SET 
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
-
     rokz::Image                  multisamp_color_image;
     rokz::ImageView              multisamp_color_imageview; 
-  
-    VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
 
+    // DATA 
     rokz::Buffer                 vma_ib_device;
     rokz::Buffer                 vma_vb_device;
-
-    rokz::RenderPass             render_pass; 
     // image/texture
     rokz::Image                 texture_image; 
     rokz::ImageView             texture_imageview; 
     rokz::Sampler               sampler;
 
-    std::vector<rokz::Buffer>   vma_uniform_buffs;
-    std::vector<rokz::Buffer>   vma_objparam_buffs;
   
     rokz::Window                window;
     VkSurfaceKHR                surface; // 
 
 
-    rekz::InputState            input_state;
-    //    float                       queue_priority;
+    rekz::InputState            input_state; // <-- use with window handlers
+
     double                      sim_time; 
     float                       dt;
 
+
+    /////////////////////////////////////////////////////////////////////////
+#ifndef MARS_GOING_AWAY_SOON 
+    rokz::CommandPool            command_pool; //<-- now part of Device
+
+    bool fb_resize; 
+    rokz::RenderPass             render_pass; 
+
+    struct { VkQueue graphics; 
+             VkQueue present; }  queues;
+    VmaAllocator                 allocator;
+#endif
+    /////////////////////////////////////////////////////////////////////////
+
+    
   };
   // --------------------------------------------------------------------
   

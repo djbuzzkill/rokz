@@ -2,8 +2,8 @@
 #include "marscape.h"
 // 
 
-#define ROKZ_USE_VMA_ALLOCATION 1
-
+//#define ROKZ_USE_VMA_ALLOCATION 1
+#define  MARS_USE_NEW_DEV_INIT 1
 namespace mars {
 
   template<typename VTy> 
@@ -11,9 +11,8 @@ namespace mars {
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
+  //const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
   const VkExtent2D    kTestExtent  = { 800, 600 };
-
   const size_t        kPatchCount  = 100;
   // --------------------------------------------------------------------
   // 
@@ -837,90 +836,40 @@ bool RenderMarsFrame (mars::Glob&           glob,
 }
 
 
+mars::Glob& InitMarsGlob (mars::Glob& glob) {
+
+  glob.dt       = 0.0;
+  glob.sim_time = 0.0;
+  glob.input_state.fb_resize = false; 
+
+  return glob;
+}
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 int mars_run (const std::vector<std::string>& args) {
   printf ("%s\n", __FUNCTION__);
 
-  Glob glob; // *globmem; // something representing the app state
-  glob.dt = 0.0;
-  glob.input_state.fb_resize = false; 
-
+  Glob glob; //
+  InitMarsGlob (glob);
+  
+  auto mars_path = std::filesystem::path ("/home/djbuzzkill/owenslake/rokz/");
   
   SetupMarsWindow (glob); 
 
-  rokz::cx::AppInfo_default (glob.instance.app_info);
+#ifdef MARS_USE_NEW_DEV_INIT
 
-  rokz::cx::CreateInfo (glob.instance.ci,
-                    glob.instance.required_extensions,
-                    glob.instance.extension_strings,
-                    glob.instance.vals, glob.instance.validation_strings, 
-                    glob.instance.app_info); 
-
-  rokz::cx::CreateInstance  (glob.instance.handle, glob.instance.ci);
-  rokz::cx::CreateSurface   (&glob.surface, glob.window.glfw_window, glob.instance.handle);
+  rokz::InitializeInstance (glob.instance); 
+  rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
   rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
+  rokz::ConfigureDevice ( glob.physical_device , VK_TRUE); 
+  rokz::InitializeDevice (glob.device,glob.physical_device, glob.instance);
 
-  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
-
-
-  VkDeviceSize min_uniform_buffer_offset_alignment =
-    rokz::ut::MinUniformBufferOffsetAlignment (glob.physical_device);
-
-  glob.device.priority.graphics = 1.0f;
-  glob.device.priority.present = 1.0;
+#else
+  assert (false);
+#endif
   
-  
-  if (glob.physical_device.family_indices.graphics.has_value ()) {
-    printf ("HAS_VALUE:TRUE\n"); 
-    printf ("  graphics[%u]\n", glob.physical_device.family_indices.graphics.value ()); 
-  }
-  else  {
-    printf ("HAS_VALUE:FALSE\n"); 
-  }
-
-  glob.device.queue_ci.resize  (2); 
-  // VkQueueCreateInfo
-  rokz::cx::CreateInfo (glob.device.queue_ci[0], glob.physical_device.family_indices.graphics.value () , &glob.device.priority.graphics);
-  rokz::cx::CreateInfo (glob.device.queue_ci[1], glob.physical_device.family_indices.present.value  () , &glob.device.priority.present );
-  
-  // device info
-  //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
-  glob.physical_device.features.samplerAnisotropy = VK_TRUE;
-
-  rokz::cx::CreateInfo (glob.device.ci,
-                    glob.device.vals, glob.device.valstrs, 
-                    glob.device.dxs, glob.device.dxstrs, 
-                    glob.device.queue_ci, &glob.physical_device.features);
-
-  rokz::cx::CreateLogicalDevice (&glob.device.handle, &glob.device.ci, glob.physical_device.handle); 
-
-  // get queue handle
-  rokz::cx::GetDeviceQueue (&glob.queues.graphics, glob.physical_device.family_indices.graphics.value(), glob.device.handle);
-  rokz::cx::GetDeviceQueue (&glob.queues.present,  glob.physical_device.family_indices.present.value(), glob.device.handle);
-  // VMA SECTION
-  // VmaVulkanFunctions vulkanFunctions = {};
-  // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-  // vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
-
-  
-  VmaAllocatorCreateInfo allocatorCreateInfo = {};
-  allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
-  allocatorCreateInfo.physicalDevice   = glob.physical_device.handle;
-  allocatorCreateInfo.device           = glob.device.handle;
-  allocatorCreateInfo.instance         = glob.instance.handle;
-
-  allocatorCreateInfo.flags = 0;
-
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  vmaCreateAllocator(&allocatorCreateInfo, &glob.allocator);
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  
+  printf ("%s [%i]\n", __FUNCTION__, __LINE__); 
   rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
                                glob.surface,
                                glob.physical_device.handle);
@@ -931,11 +880,11 @@ int mars_run (const std::vector<std::string>& args) {
   frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
   
   rokz::cx::CreateInfo_default (frame_group.swapchain.ci,  
-                            frame_group.swapchain.family_indices,
-                            glob.surface,
-                            kTestExtent, 
-                            glob.swapchain_support_info, 
-                            glob.physical_device);
+                                glob.surface,
+                                frame_group.swapchain.family_indices,
+                                kTestExtent, 
+                                glob.swapchain_support_info, 
+                                glob.physical_device);
 
   rokz::cx::CreateSwapchain (frame_group.swapchain, glob.device); 
   
@@ -944,7 +893,7 @@ int mars_run (const std::vector<std::string>& args) {
 
   rokz::cx::CreateImageViews (frame_group.imageviews, frame_group.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
-
+  // no renderpass
   rokz::CreateRenderPass (glob.render_pass,
                           frame_group.swapchain.ci.imageFormat,
                           glob.msaa_samples,
@@ -952,10 +901,12 @@ int mars_run (const std::vector<std::string>& args) {
                           glob.physical_device.handle);
 
 
-  
+  // move into Setup*Pipeline
   SetupViewportState (glob.terrain_pipeline.pipeline.state.viewport, glob.frame_group.swapchain.ci.imageExtent); 
 
   // SetupGridscape ();
+
+#ifdef MARS_ENABLE_TERRAIN_PIPELINE  
   SetupTerrainPipeline (glob.terrain_pipeline,
                         glob.terrain_pipeline.pipeline.state.viewport,
                         glob.render_pass,
@@ -965,7 +916,12 @@ int mars_run (const std::vector<std::string>& args) {
                         glob.device); 
   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.frame_group.swapchain);
 
-printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
+
+#endif //  MARS_ENABLE_TERRAIN_PIPELINE
+
+  
+
+  printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
 #ifdef HIDE_MARS_RUN 
 
 

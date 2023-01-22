@@ -10,6 +10,8 @@
 #include "shader.h"
 #include "window.h"
 #include "descriptor.h"
+#include "allocation.h"
+#include "command.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -147,6 +149,90 @@ VkInstanceCreateInfo& rokz::cx::CreateInfo (VkInstanceCreateInfo& ci,
 }
 
 
+
+// -------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------
+VkDeviceQueueCreateInfo& rokz::cx::CreateInfo (VkDeviceQueueCreateInfo& info,
+                                           uint32_t que_fam_index,
+                                           float* q_priority){
+
+  printf ("%s VkDeviceQueueCreateInfo [%u]\n", __FUNCTION__, que_fam_index);
+  
+  info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO; 
+  info.pNext = nullptr;
+  info.flags            = 0; 
+  info.queueFamilyIndex = que_fam_index ; // glob.queue_fams.graphics.value();
+
+  info.queueCount       = 1; 
+  info.pQueuePriorities = q_priority;
+
+  return info; 
+}
+
+// -------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------
+VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo& info,
+                                          std::vector<const char*>& vls, std::vector<std::string>& vstrs,
+                                          std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
+                                          const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
+                                          const VkPhysicalDeviceFeatures* devfeats) {
+
+  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
+
+  dxstrs.clear (); 
+  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
+    
+  vls.clear ();
+  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
+  
+  info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  info.pNext                 = nullptr;
+  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
+  info.ppEnabledExtensionNames= &dxs[0]; 
+
+  info.queueCreateInfoCount  = queuecreateinfos.size();   
+  info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
+  info.pEnabledFeatures      = devfeats; // &glob.device_features;
+  info.enabledLayerCount     = vls.size();   
+  info.ppEnabledLayerNames   = &vls[0]; 
+  return info;
+}
+
+
+VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo& info,
+                                          const void* next, 
+                                          std::vector<const char*>& vls, std::vector<std::string>& vstrs,
+                                          std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
+                                          const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
+                                          const VkPhysicalDeviceFeatures* devfeats) {
+
+
+  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
+
+  dxstrs.clear (); 
+  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
+    
+  vls.clear ();
+  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
+  
+  info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  info.pNext                 = next;
+  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
+  info.ppEnabledExtensionNames= &dxs[0]; 
+
+  info.queueCreateInfoCount  = queuecreateinfos.size();   
+  info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
+  info.pEnabledFeatures      = devfeats; // &glob.device_features;
+  info.enabledLayerCount     = vls.size();   
+  info.ppEnabledLayerNames   = &vls[0]; 
+  return info;
+}
+
+
+
+
 //
 //
 //
@@ -174,87 +260,6 @@ int rokz::cx::CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& 
   
   return 0;
 }
-
-// -------------------------------------------------------------------------
-//
-// -------------------------------------------------------------------------
-VkDeviceQueueCreateInfo& rokz::cx::CreateInfo (VkDeviceQueueCreateInfo& info,
-                                           uint32_t que_fam_index,
-                                           float* q_priority){
-
-  printf ("%s VkDeviceQueueCreateInfo [%u]\n", __FUNCTION__, que_fam_index);
-  
-  info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO; 
-  info.pNext = nullptr;
-  info.flags            = 0; 
-  info.queueFamilyIndex = que_fam_index ; // glob.queue_fams.graphics.value();
-
-  info.queueCount       = 1; 
-  info.pQueuePriorities = q_priority;
-
-  return info; 
-}
-
-// -------------------------------------------------------------------------
-//
-// -------------------------------------------------------------------------
-VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo&       info,
-                                      std::vector<const char*>& vls, std::vector<std::string>& vstrs,
-                                      std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
-                                      const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
-                                      VkPhysicalDeviceFeatures* devfeats) {
-
-  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
-
-  dxstrs.clear (); 
-  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
-    
-  vls.clear ();
-  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
-  
-  info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  info.pNext                 = nullptr;
-  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
-  info.ppEnabledExtensionNames= &dxs[0]; 
-
-  info.queueCreateInfoCount  = queuecreateinfos.size();   
-  info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
-  info.pEnabledFeatures      = devfeats; // &glob.device_features;
-  info.enabledLayerCount     = vls.size();   
-  info.ppEnabledLayerNames   = &vls[0]; 
-  return info;
-}
-
-
-VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo&       info,
-                                          const void* next, 
-                                          std::vector<const char*>& vls, std::vector<std::string>& vstrs,
-                                          std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
-                                          const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
-                                          VkPhysicalDeviceFeatures* devfeats) {
-
-
-  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
-
-  dxstrs.clear (); 
-  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
-    
-  vls.clear ();
-  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
-  
-  info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  info.pNext                 = next;
-  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
-  info.ppEnabledExtensionNames= &dxs[0]; 
-
-  info.queueCreateInfoCount  = queuecreateinfos.size();   
-  info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
-  info.pEnabledFeatures      = devfeats; // &glob.device_features;
-  info.enabledLayerCount     = vls.size();   
-  info.ppEnabledLayerNames   = &vls[0]; 
-  return info;
-}
-
 
 // -------------------------------------------------------------------------
 //
@@ -353,11 +358,11 @@ VkExtent2D rokz::cx::ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilit
 // nu
 // ---------------------------------------------------------------------
 VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR&   ci, 
-                                                    std::vector<uint32_t>&  family_indices,
-                                                    VkSurfaceKHR                surface,
-                                                    const VkExtent2D&           extent, 
-                                                    const SwapchainSupportInfo& swapchain_support_info, 
-                                                    const PhysicalDevice&       physdev) {
+                                                        VkSurfaceKHR                surface,
+                                                        const std::vector<uint32_t>&      family_indices,
+                                                        const VkExtent2D&           extent, 
+                                                        const SwapchainSupportInfo& swapchain_support_info, 
+                                                        const PhysicalDevice&       physdev) {
   printf ("%s\n", __FUNCTION__);
 
   VkSurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat (swapchain_support_info.formats);
@@ -382,14 +387,69 @@ VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR
   
   // QueueFamilyIndices que_fam_inds; 
   // FindQueueFamilies (que_fam_inds, surface, physdev);
-  family_indices.clear (); 
-  family_indices.push_back (physdev.family_indices.graphics.value());
-  family_indices.push_back (physdev.family_indices.present.value ());
+  // family_indices.clear (); 
+  // family_indices.push_back (physdev.family_indices.graphics.value());
+  // family_indices.push_back (physdev.family_indices.present.value ());
  
   if (physdev.family_indices.graphics != physdev.family_indices.present) {
     printf ("[VK_SHARING_MODE_CONCURRENT]\n");
     ci.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
     ci.queueFamilyIndexCount = family_indices.size();;
+    ci.pQueueFamilyIndices = &family_indices[0];
+  } else {
+    printf ("[VK_SHARING_MODE_EXCLUSIVE]\n");
+    ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    ci.queueFamilyIndexCount = 0;     
+    ci.pQueueFamilyIndices = nullptr; 
+  }
+
+  ci.preTransform   = swapchain_support_info.capabilities.currentTransform;
+  ci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  ci.presentMode    = present_mode; 
+  ci.clipped        = VK_TRUE;
+  ci.oldSwapchain   = VK_NULL_HANDLE;
+
+  return ci;
+}
+
+VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR&   ci, 
+                                                        VkSurfaceKHR                surface,
+                                                        const std::vector<uint32_t>&      family_indices,
+                                                        const VkExtent2D&           extent, 
+                                                        const SwapchainSupportInfo& swapchain_support_info) {
+  printf ("%s\n", __FUNCTION__);
+
+  VkSurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat (swapchain_support_info.formats);
+  VkPresentModeKHR   present_mode        = ChooseSwapPresentMode   (swapchain_support_info.present_modes);
+  //VkExtent2D         extent              = ChooseSwapExtent        (swapchain_support_info.capabilities, win.glfw_window);
+  
+  uint32_t image_count = swapchain_support_info.capabilities.minImageCount + 1; 
+  if (swapchain_support_info.capabilities.maxImageCount > 0 && image_count > swapchain_support_info.capabilities.maxImageCount) {
+    image_count = swapchain_support_info.capabilities.maxImageCount;
+  }
+
+  ci = {};
+  ci.sType         = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  ci.pNext         = nullptr;
+  ci.surface       = surface;
+  ci.minImageCount = image_count;
+  ci.imageFormat   = swap_surface_format.format;
+  ci.imageColorSpace = swap_surface_format.colorSpace;
+  ci.imageExtent = extent;
+  ci.imageArrayLayers = 1;
+  ci.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  
+  // QueueFamilyIndices que_fam_inds; 
+  // FindQueueFamilies (que_fam_inds, surface, physdev);
+  // family_indices.clear (); 
+  // family_indices.push_back (physdev.family_indices.graphics.value());
+  // family_indices.push_back (physdev.family_indices.present.value ());
+
+  if (family_indices.size () > 1) {
+    // if > 1, assume physdev.family_indices.graphics != physdev.family_indices.present)
+    printf ("[VK_SHARING_MODE_CONCURRENT]\n");
+    ci.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    ci.queueFamilyIndexCount = family_indices.size();
     ci.pQueueFamilyIndices = &family_indices[0];
   } else {
     printf ("[VK_SHARING_MODE_EXCLUSIVE]\n");
@@ -1035,3 +1095,122 @@ bool rokz::cx::SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR
 }
 
 
+
+
+// -------------------------------------------------------------------------------------------
+// uses rokz::cx::CreateInstance (VkInstance& instance,...
+// need to expose appinfo?
+// -------------------------------------------------------------------------------------------
+bool rokz::InitializeInstance (rokz::Instance& instance) {
+  rokz::cx::AppInfo_default (instance.app_info);
+
+  rokz::cx::CreateInfo (instance.ci,
+                        instance.required_extensions,
+                        instance.extension_strings,
+                        instance.vals, instance.validation_strings, 
+                        instance.app_info); 
+
+  return rokz::cx::CreateInstance (instance.handle, instance.ci);
+}
+
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+bool rokz::InitializeDevice (rokz::Device&               device,
+                                 const rokz::PhysicalDevice& physical_device,
+                                 const rokz::Instance&       instance) {
+
+  device.priority.graphics = 1.0f;
+  device.priority.present  = 1.0f;
+
+  device.queue_ci.resize  (2); 
+  // VkQueueCreateInfo
+  rokz::cx::CreateInfo (device.queue_ci[0], physical_device.family_indices.graphics.value (), &device.priority.graphics);
+  rokz::cx::CreateInfo (device.queue_ci[1], physical_device.family_indices.present.value  (), &device.priority.present);
+
+  // device info
+  //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
+
+  // * 01/15/2023 - use dynamic rendering pass 
+  VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature {};
+  dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+  dynamic_rendering_feature.pNext = nullptr;
+  dynamic_rendering_feature.dynamicRendering = VK_TRUE;
+
+  rokz::cx::CreateInfo (device.ci,
+                        &dynamic_rendering_feature, 
+                        device.vals, device.valstrs, 
+                        device.dxs, device.dxstrs, 
+                        device.queue_ci, &physical_device.features);
+
+  rokz::cx::CreateLogicalDevice (&device.handle, &device.ci, physical_device.handle); 
+
+  rokz::cx::CreateInfo             (device.command_pool.ci, physical_device.family_indices.graphics.value());
+  rokz::cx::CreateCommandPool      (device.command_pool.handle, device.command_pool.ci, device.handle);
+
+  // get queue handle
+  rokz::cx::GetDeviceQueue (&device.queues.graphics, physical_device.family_indices.graphics.value(), device.handle);
+  rokz::cx::GetDeviceQueue (&device.queues.present,  physical_device.family_indices.present.value(), device.handle);
+
+  // VMA SECTION
+  // VmaVulkanFunctions vulkanFunctions = {};
+  // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+  // vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
+  rokz::cx::CreateInfo (device.allocator.ci, instance, device, physical_device); 
+  vmaCreateAllocator(&device.allocator.ci, &device.allocator.handle);
+
+  printf ("%s BAI", __FUNCTION__);
+  return true;
+
+}
+  
+// -------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------
+rokz::PhysicalDevice& rokz::ConfigureDevice (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy) {
+
+  // VkDeviceSize min_uniform_buffer_offset_alignment =
+  //   rokz::ut::MinUniformBufferOffsetAlignment (physical_device);
+  physical_device.features.samplerAnisotropy = sampler_anisotropy;
+  return physical_device; 
+}
+
+bool rokz::InitializeSwapchain (rokz::SwapchainGroup& scg,
+                          const rokz::SwapchainSupportInfo& swapchain_support_info,
+                          const VkSurfaceKHR& surface,
+                          const VkExtent2D&   extent, 
+                          const rokz::PhysicalDevice& physdev,
+                          const rokz::Device& device) {
+
+  scg.swapchain.family_indices.clear ();
+  if (physdev.family_indices.graphics != physdev.family_indices.present) {
+    scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value());
+    scg.swapchain.family_indices.push_back (physdev.family_indices.present.value ());
+  }
+  else {
+    scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value ());
+  }
+  
+  rokz::cx::CreateInfo_default (scg.swapchain.ci,  
+                                surface,
+                                scg.swapchain.family_indices,
+                                extent, 
+                                swapchain_support_info);
+
+  rokz::cx::CreateSwapchain (scg.swapchain, device); 
+  
+  rokz::cx::GetSwapChainImages (scg.images, scg.swapchain, device.handle); 
+  rokz::cx::CreateImageViews       (scg.imageviews, scg.images, device); //  (std::vector<VkImageView>& swapchain_imageviews);
+
+  for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
+    // manual transition b/c KHR_dynamic_rendering
+    rokz::cx::TransitionImageLayout (scg.images[iimg].handle,
+                                 scg.swapchain.ci.imageFormat,
+                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                 device.queues.graphics, device.command_pool.handle, device.handle);
+  }
+  // end InitializeSwapchain
+  return true;
+}

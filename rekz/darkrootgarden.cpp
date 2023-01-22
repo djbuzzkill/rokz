@@ -1,5 +1,7 @@
 
 #include "darkrootgarden.h"
+#include "rokz/buffer.h"
+#include "rokz/context.h"
 // 
 
 // --------------------------------------------------------------------
@@ -1028,7 +1030,7 @@ bool RenderFrame_dynamic (Glob&                   glob,
 
   // dynamic_rendering now, we have to manually transition
   rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
-                               glob.surface_format.format, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                               swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                                glob.device.queues.graphics, glob.device.command_pool.handle, device.handle);
   
@@ -1073,7 +1075,7 @@ bool RenderFrame_dynamic (Glob&                   glob,
 
   //  dynamic_rendering now, we have to manually transition
   rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
-                               glob.surface_format.format,
+                               swapchain.ci.imageFormat,
                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                glob.device.queues.graphics, glob.device.command_pool.handle, device.handle);
@@ -1092,80 +1094,6 @@ bool InitializeSurface  ();
 bool IniitializeDevice  ();
 
 
-bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device) {
-
-
-  rokz::cx::AppInfo_default (instance.app_info);
-  //std::vector<const char*> _vls;
-  //std::vector<std::string> vstrs;
-  
-  rokz::cx::CreateInfo (instance.ci,
-                        instance.required_extensions,
-                        instance.extension_strings,
-                        instance.vals, instance.validation_strings, 
-                        instance.app_info); 
-
-  rokz::cx::CreateInstance  (instance.handle, instance.ci);
-  rokz::cx::CreateSurface   (&surface, window.glfw_window, instance.handle);
-  rokz::cx::SelectPhysicalDevice (physical_device, surface, instance.handle);
-
-  //glob.msaa_samples = rokz::ut::MaxUsableSampleCount (physical_device); 
-  VkDeviceSize min_uniform_buffer_offset_alignment =
-    rokz::ut::MinUniformBufferOffsetAlignment (physical_device);
-
-  //printf ( "----------> min_uniform_buffer_offset_alignment [%zu]\n", min_uniform_buffer_offset_alignment); 
-  //VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
-  // if (glob.physical_device.family_indices.graphics.has_value ()) {
-  //   printf ("HAS_VALUE:TRUE\n"); 
-  //   printf ("  graphics[%u]\n", glob.physical_device.family_indices.graphics.value ()); 
-  // }
-  // else  {
-  //   printf ("HAS_VALUE:FALSE\n"); 
-  // }
-  device.priority.graphics = 1.0f;
-  device.priority.present  = 1.0f;
-
-  device.queue_ci.resize  (2); 
-  // VkQueueCreateInfo
-  rokz::cx::CreateInfo (device.queue_ci[0], physical_device.family_indices.graphics.value (), &device.priority.graphics);
-  rokz::cx::CreateInfo (device.queue_ci[1], physical_device.family_indices.present.value  (), &device.priority.present);
-
-  // device info
-  //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
-  physical_device.features.samplerAnisotropy = VK_TRUE;
-
-  // * 01/15/2023 - use dynamic rendering pass 
-  VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature {};
-  dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-  dynamic_rendering_feature.pNext = nullptr;
-  dynamic_rendering_feature.dynamicRendering = VK_TRUE;
-
-  rokz::cx::CreateInfo (device.ci,
-                        &dynamic_rendering_feature, 
-                        device.vals, device.valstrs, 
-                        device.dxs, device.dxstrs, 
-                        device.queue_ci, &physical_device.features);
-
-  rokz::cx::CreateLogicalDevice (&device.handle, &device.ci, physical_device.handle); 
-
-  rokz::cx::CreateInfo             (device.command_pool.ci, physical_device.family_indices.graphics.value());
-  rokz::cx::CreateCommandPool      (device.command_pool.handle, device.command_pool.ci, device.handle);
-  printf ("IUYGNDYJH [%i]\n", __LINE__); 
-  // get queue handle
-  rokz::cx::GetDeviceQueue (&device.queues.graphics, physical_device.family_indices.graphics.value(), device.handle);
-  rokz::cx::GetDeviceQueue (&device.queues.present,  physical_device.family_indices.present.value(), device.handle);
-
-  // VMA SECTION
-  // VmaVulkanFunctions vulkanFunctions = {};
-  // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-  // vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
-
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  rokz::cx::CreateInfo (device.allocator.ci, instance, device, physical_device); 
-  vmaCreateAllocator(&device.allocator.ci, &device.allocator.handle);
-
-  return true;
-}
 
 // --------------------------------------------------------------------
 //
@@ -1197,6 +1125,7 @@ bool InitializeSwapchain (darkroot::Glob& glob) {
 
   return false;
 }
+
 bool CreateAttachementSet () {
 
   // the canvas
@@ -1230,105 +1159,58 @@ int darkroot_basin (const std::vector<std::string>& args) {
   SetupDarkWindow (glob); 
 
   // CREATE INSTANCE AND DEVICE
-  InitializeDevice (glob.instance,
-                    glob.device,
-                    glob.window,
-                    glob.surface,
-                    glob.physical_device);
+  //bool rekz::InitializeInstance (rokz::Instance& instance) {
 
+  rokz::InitializeInstance (glob.instance); 
 
+  rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
+  rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
+  //
+  // InitializeSwapchain ();
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
+                                   glob.surface,
+                                   glob.physical_device.handle);
+  // VkSurfaceFormatKHR swap_surface_format = rokz::cx::ChooseSwapSurfaceFormat (glob.swapchain_support_info.formats);
+  // VkPresentModeKHR   present_mode        = rokz::cx::ChooseSwapPresentMode   (glob.swapchain_support_info.present_modes);
+  rokz::ConfigureDevice    (glob.physical_device , VK_TRUE);
+  rokz::InitializeDevice (glob.device, glob.physical_device, glob.instance);
+  
   // put these somwehere
   glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
 
-
-  
-  //
-  // InitializeSwapchain ();
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
-                               glob.surface,
-                               glob.physical_device.handle);
-
   rokz::SwapchainGroup& scg = glob.swapchain_group;
 
-  scg.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
-  scg.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
-  
-  rokz::cx::CreateInfo_default (scg.swapchain.ci,  
-                                scg.swapchain.family_indices,
-                                glob.surface,
-                                kTestExtent, 
-                                glob.swapchain_support_info, 
-                                glob.physical_device);
-
-  glob.surface_format.format =  scg.swapchain.ci.imageFormat;
-  
-  rokz::cx::CreateSwapchain (scg.swapchain, glob.device); 
-  
-  rokz::cx::GetSwapChainImages (scg.images, scg.swapchain, glob.device.handle); 
-  rokz::cx::CreateImageViews       (scg.imageviews, scg.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
-  printf ("transitions require commands buffers [%i]\n", __LINE__);
-  // rokz::cx::CreateInfo             (glob.command_pool.ci, glob.physical_device.family_indices.graphics.value());
-  // rokz::cx::CreateCommandPool      (glob.command_pool.handle, glob.command_pool.ci, glob.device.handle);
-  for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
-    // manual transition b/c dynamic_rendering
-    rokz::cx::TransitionImageLayout (scg.images[iimg].handle,
-                                 glob.surface_format.format,
-                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                 glob.device.queues.graphics, glob.device.command_pool.handle, glob.device.handle);
-  }
-  // end InitializeSwapchain
-
-
+  // InitializeSwapchain ()
+  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.surface,
+                             kTestExtent, glob.physical_device, glob.device);
 
 #ifdef DARKROOT_ENABLE_GRID
-  SetupGridscapePipeline (glob.grid_pipeline,
-                          glob.grid_pipeline.pipeline.state.viewport, 
-                          glob.render_pass,
-                          dark_path,
-                          glob.swapchain_group.swapchain,
-                          glob.msaa_samples,
-                          glob.device); 
+
+  SetupGridscapePipeline (glob.grid_pipeline, glob.grid_pipeline.pipeline.state.viewport, 
+                          glob.render_pass, dark_path, glob.swapchain_group.swapchain,
+                          glob.msaa_samples, glob.device); 
+
 #endif
 
-
-  //
-  // ^ this is called again in  SetupDarkDepthBuffer, but we need it for Object Pipeline
-  SetupObjectPipeline (glob.obj_pipeline,
-                       //glob.render_pass,
-                       dark_path,
-                       glob.swapchain_group.swapchain.ci.imageExtent,
-                       glob.msaa_samples,
-                       glob.surface_format.format,
-                       glob.depth_format,
-                       glob.device); 
+  SetupObjectPipeline (glob.obj_pipeline, dark_path, glob.swapchain_group.swapchain.ci.imageExtent,
+                       glob.msaa_samples, scg.swapchain.ci.imageFormat, glob.depth_format, glob.device); 
 
   //SetupDarkMultisampleColorResource (glob);
-  CreateMSAAColorImage  (glob.msaa_color_image, 
-                         glob.msaa_color_imageview, 
-                         glob.msaa_samples,
-                         glob.surface_format.format,
-                         glob.device.allocator.handle, 
-                         glob.device.command_pool, 
-                         glob.device.queues.graphics, 
-                         glob.swapchain_group.swapchain.ci.imageExtent,
-                         glob.device);
+  CreateMSAAColorImage  (glob.msaa_color_image, glob.msaa_color_imageview, glob.msaa_samples,
+                         scg.swapchain.ci.imageFormat, glob.device.allocator.handle, glob.device.command_pool, 
+                         glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent, glob.device);
+
   // VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
   // VkFormat    swapchain_format = swapchain.ci.imageFormat; 
   //SetupDarkDepthBuffer (glob);
-  CreateDepthBufferImage (glob.depth_image,
-                          glob.depth_imageview,
-                          //rokz::SwapchainGroup& scg,
-                          glob.msaa_samples, 
-                          glob.depth_format,
-                          glob.device.command_pool,
-                          glob.device.queues.graphics, 
-                          glob.swapchain_group.swapchain.ci.imageExtent,
-                          glob.device.allocator.handle, 
-                          glob.device);
+  CreateDepthBufferImage (glob.depth_image, glob.depth_imageview, glob.msaa_samples, glob.depth_format, 
+                          glob.device.command_pool, glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent,
+                          glob.device.allocator.handle, glob.device);
 
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob) ; 
+
   SetupObjResources (glob);
   if (!SetupObjDescriptorPool (glob)) {
     printf ("[FAILED] --> SetupGlobalDescriptorPool \n"); 

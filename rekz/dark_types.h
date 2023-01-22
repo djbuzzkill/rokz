@@ -7,7 +7,8 @@
 
 namespace darkroot {
 
-  // --------------------------------------------------------------------
+ #define ROKZ_NEW_INIT_SWAPCHAIN 1
+ // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
   typedef rekz::Vertex_pos_nrm_txc_col DarkVert;
@@ -47,7 +48,7 @@ namespace darkroot {
 
     // device props
     VkFormat                     depth_format;
-    VkSurfaceFormatKHR           surface_format;
+    //VkSurfaceFormatKHR           surface_format;
     VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
 
     // system
@@ -55,11 +56,12 @@ namespace darkroot {
     rokz::PhysicalDevice         physical_device;
     rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
-
-
-    
-    rokz::FrameSequencing        frame_sequence;
     rokz::SwapchainSupportInfo   swapchain_support_info;
+    rokz::FrameSequencing        frame_sequence;
+    // pipeline resources
+    std::vector<rokz::Buffer>   vma_uniform_buffs;
+    std::vector<rokz::Buffer>   vma_objparam_buffs;
+    
 
     // global pools
     //    rokz::CommandPool            command_pool;
@@ -73,7 +75,6 @@ namespace darkroot {
     rokz::RenderingInfoGroup     rendering_info_group;
     
 
-
     // attachement set
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
@@ -81,10 +82,7 @@ namespace darkroot {
     rokz::ImageView              msaa_color_imageview; 
   
 
-    // scene objects 
-    float obj_theta[2];
-
-    // object data
+    // DATA
     rokz::Buffer                vma_ib_device;
     rokz::Buffer                vma_vb_device;
     // image/texture
@@ -92,9 +90,8 @@ namespace darkroot {
     rokz::ImageView             texture_imageview; 
     rokz::Sampler               sampler;
 
-    // pipeline resources
-    std::vector<rokz::Buffer>   vma_uniform_buffs;
-    std::vector<rokz::Buffer>   vma_objparam_buffs;
+    float obj_theta[2];     // scene objects 
+
 
 
     // window

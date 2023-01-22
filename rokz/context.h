@@ -35,11 +35,17 @@ namespace rokz {
     bool SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR& surf, const VkInstance& inst); 
 
     VkSwapchainCreateInfoKHR& CreateInfo_default (VkSwapchainCreateInfoKHR&    ci, 
-                                                  std::vector<uint32_t>&       family_indices, 
                                                   VkSurfaceKHR                 surface,
+                                                  const std::vector<uint32_t>&       family_indices, 
                                                   const VkExtent2D&            extent, 
                                                   const SwapchainSupportInfo&  swapchain_support_info, 
                                                   const PhysicalDevice&        physdev); 
+    // like above but no phys dev
+    VkSwapchainCreateInfoKHR& CreateInfo_default (VkSwapchainCreateInfoKHR&   ci, 
+                                                        VkSurfaceKHR                surface,
+                                                        const std::vector<uint32_t>&      family_indices,
+                                                        const VkExtent2D&           extent, 
+                                                        const SwapchainSupportInfo& swapchain_support_info);
 
   
     VkDeviceQueueCreateInfo&  CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
@@ -52,7 +58,7 @@ namespace rokz {
                                           std::vector<std::string>& dxstrs, 
 
                                           const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
-                                          VkPhysicalDeviceFeatures* devfeats); 
+                                          const VkPhysicalDeviceFeatures* devfeats); 
 
 
     VkDeviceCreateInfo&       CreateInfo (VkDeviceCreateInfo&       info,
@@ -64,7 +70,7 @@ namespace rokz {
                                           std::vector<std::string>& dxstrs, 
 
                                           const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
-                                          VkPhysicalDeviceFeatures* devfeats); 
+                                          const VkPhysicalDeviceFeatures* devfeats); 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -75,11 +81,11 @@ namespace rokz {
                                            std::vector<const char*>& vls, 
                                            std::vector<std::string>& vstrs, 
                                            const VkApplicationInfo&  app_info); 
-    //int                CreateInstance (VkInstance& instance, VkApplicationInfo& app_info, VkInstanceCreateInfo& inst_info);  
-    int CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& ci); 
 
-
-
+    int                   CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& ci); 
+    // -------------------------------------------------------------------------------------------
+    //                                             
+    // -------------------------------------------------------------------------------------------
     bool               CreateLogicalDevice (VkDevice* device, const VkDeviceCreateInfo* createinfo, const VkPhysicalDevice& physdev);
 
     void               GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& device); 
@@ -87,18 +93,13 @@ namespace rokz {
     VkExtent2D         ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* win);
   
     bool               CreateSurface (VkSurfaceKHR* surf, GLFWwindow* glfwin, const VkInstance& inst);
-
     // -------------------------------------------------------------------------
     //
     // -------------------------------------------------------------------------
-
-    bool CreateSwapchain (Swapchain& swapchain, const Device& device);
-
-    bool CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
+    bool               CreateSwapchain (Swapchain& swapchain, const Device& device);
+    bool               CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat (const std::vector<VkSurfaceFormatKHR>& available_formats);
-
     bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
-
 
     VkCommandPoolCreateInfo&     CreateInfo (VkCommandPoolCreateInfo& ci, uint32_t queue_family_index);
   // ---------------------------------------------------------------------
@@ -125,6 +126,18 @@ namespace rokz {
 
 
   } // cx
+
+
+  
+  bool               InitializeInstance  (rokz::Instance& instance); 
+  PhysicalDevice&    ConfigureDevice     (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy); 
+  bool               InitializeDevice    (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
+  bool               InitializeSwapchain (rokz::SwapchainGroup& scg,
+                                          const rokz::SwapchainSupportInfo& swapchain_support_info,
+                                          const VkSurfaceKHR& surface,
+                                          const VkExtent2D&   extent, 
+                                          const rokz::PhysicalDevice& physdev,
+                                          const rokz::Device& device) ; 
 
   // -------------------------------------------------------------------------
   //

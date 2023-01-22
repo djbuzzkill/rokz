@@ -96,9 +96,9 @@ namespace rekz {
 
   
   // --------------------------------------------------------------------
-  // 
+  // UserPointer data
   // --------------------------------------------------------------------
-  struct InputState {
+  struct InputState { 
 
     std::map<int, int> keys;
     MouseState         mouse;
@@ -274,6 +274,21 @@ namespace rekz {
     void on_mouse_button (GLFWwindow* window, int button, int action, int mods); 
   }
 
+  bool InitializeSwapchain (rokz::SwapchainGroup& scg,
+                            const rokz::SwapchainSupportInfo& swapchain_support_info,
+                            const VkSurfaceKHR& surface,
+                            const VkExtent2D&   extent, 
+                            const rokz::PhysicalDevice& physdev,
+                            const rokz::Device& device) ; 
+
+  
+  //
+  // actually Initize,Instance,SurfaceAndDevice ()
+  // bool InitializeInstance (rokz::Instance& instance); 
+  // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
+  // bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device); 
+
+  
 }
 
 
