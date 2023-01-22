@@ -113,8 +113,6 @@ bool SetupDarkWindow (Glob& glob) {
   glfwSetCursorEnterCallback (glob.window.glfw_window, rekz::win_event::on_mouse_enter); 
                               
   glfwSetWindowUserPointer (glob.window.glfw_window, &glob.input_state);
-
-
   //glfwSetCursorEnterCallback(window, rokz);
   // typedef struct GLFWcursor GLFWcursor;
   // typedef void (* GLFWerrorfun)(int error_code, const char* description);
@@ -399,37 +397,37 @@ bool CreateDepthBufferImage (rokz::Image&          depth_image,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void SetupDarkDepthBuffer (Glob& glob) {
+// void SetupDarkDepthBuffer (Glob& glob) {
 
-  printf ("%s\n", __FUNCTION__); 
+//   printf ("%s\n", __FUNCTION__); 
 
-  rokz::SwapchainGroup& scg = glob.swapchain_group;
+//   rokz::SwapchainGroup& scg = glob.swapchain_group;
 
-  //
-  uint32_t wd = scg.swapchain.ci.imageExtent.width; 
-  uint32_t ht = scg.swapchain.ci.imageExtent.height;   
+//   //
+//   uint32_t wd = scg.swapchain.ci.imageExtent.width; 
+//   uint32_t ht = scg.swapchain.ci.imageExtent.height;   
 
-  if (rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle)) {
+//   if (rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle)) {
 
-    rokz::cx::CreateInfo_2D_depthstencil (glob.depth_image.ci,
-                                      glob.depth_format, 
-                                      glob.msaa_samples,
-                                      wd, ht);
+//     rokz::cx::CreateInfo_2D_depthstencil (glob.depth_image.ci,
+//                                       glob.depth_format, 
+//                                       glob.msaa_samples,
+//                                       wd, ht);
 
-    rokz::cx::AllocCreateInfo_device (glob.depth_image.alloc_ci); 
-    rokz::cx::CreateImage (glob.depth_image, glob.device.allocator.handle);
+//     rokz::cx::AllocCreateInfo_device (glob.depth_image.alloc_ci); 
+//     rokz::cx::CreateImage (glob.depth_image, glob.device.allocator.handle);
 
-    rokz::cx::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
-    rokz::cx::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
+//     rokz::cx::CreateInfo (glob.depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, glob.depth_image); 
+//     rokz::cx::CreateImageView (glob.depth_imageview, glob.depth_imageview.ci, glob.device.handle);
 
-    // manual transition b/c dynamic_rendering
-    rokz::cx::TransitionImageLayout (glob.depth_image.handle, glob.depth_format,
-                                 VK_IMAGE_LAYOUT_UNDEFINED,
-                                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                 glob.device.queues.graphics, glob.device.command_pool.handle, glob.device.handle);
+//     // manual transition b/c dynamic_rendering
+//     rokz::cx::TransitionImageLayout (glob.depth_image.handle, glob.depth_format,
+//                                  VK_IMAGE_LAYOUT_UNDEFINED,
+//                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+//                                  glob.device.queues.graphics, glob.device.command_pool.handle, glob.device.handle);
 
-  } 
-}
+//   } 
+// }
 
 // --------------------------------------------------------------------
 //
@@ -458,36 +456,35 @@ bool CreateMSAAColorImage  (rokz::Image&          color_image,
                                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                queue, device.command_pool.handle, device.handle);
   return true;
-
 }
 
 // --------------------------------------------------------------------
 // VMA
 // --------------------------------------------------------------------
-void SetupDarkMultisampleColorResource (Glob& glob) {
+// void SetupDarkMultisampleColorResource (Glob& glob) {
 
-  printf ("%s\n", __FUNCTION__); 
+//   printf ("%s\n", __FUNCTION__); 
 
-  rokz::Swapchain& swapchain = glob.swapchain_group.swapchain; 
+//   rokz::Swapchain& swapchain = glob.swapchain_group.swapchain; 
   
-  VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
-  VkFormat    swapchain_format = swapchain.ci.imageFormat; 
+//   VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
+//   VkFormat    swapchain_format = swapchain.ci.imageFormat; 
 
-  rokz::cx::CreateInfo_2D_color_target (glob.msaa_color_image.ci, swapchain_format,
-                                    glob.msaa_samples,swapchain_ext.width, swapchain_ext.height);
+//   rokz::cx::CreateInfo_2D_color_target (glob.msaa_color_image.ci, swapchain_format,
+//                                     glob.msaa_samples,swapchain_ext.width, swapchain_ext.height);
 
-  rokz::cx::AllocCreateInfo_device (glob.msaa_color_image.alloc_ci);
-  rokz::cx::CreateImage (glob.msaa_color_image, glob.device.allocator.handle);
+//   rokz::cx::AllocCreateInfo_device (glob.msaa_color_image.alloc_ci);
+//   rokz::cx::CreateImage (glob.msaa_color_image, glob.device.allocator.handle);
 
-  // imageview 
-  rokz::cx::CreateInfo (glob.msaa_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.msaa_color_image);
-  rokz::cx::CreateImageView (glob.msaa_color_imageview, glob.msaa_color_imageview.ci, glob.device.handle);
-  // dynamic_rendering
-  rokz::cx::TransitionImageLayout (glob.msaa_color_image.handle, swapchain_format,
-                               VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                               glob.device.queues.graphics, glob.device.command_pool.handle, glob.device.handle);
+//   // imageview 
+//   rokz::cx::CreateInfo (glob.msaa_color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.msaa_color_image);
+//   rokz::cx::CreateImageView (glob.msaa_color_imageview, glob.msaa_color_imageview.ci, glob.device.handle);
+//   // dynamic_rendering
+//   rokz::cx::TransitionImageLayout (glob.msaa_color_image.handle, swapchain_format,
+//                                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+//                                glob.device.queues.graphics, glob.device.command_pool.handle, glob.device.handle);
 
-}
+// }
 
 // --------------------------------------------------------------------
 //
@@ -633,7 +630,7 @@ bool SetupObjectDescriptorSets (rekz::PipelineGroup& pipelinegroup,
     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
     image_info.imageView   = texture_imageview.handle;
     image_info.sampler     = sampler.handle;
-  //
+    //
     std::array<VkWriteDescriptorSet, 3>  descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;    
@@ -751,20 +748,19 @@ bool SetupObjectPipeline (rekz::PipelineGroup& pipelinegroup,
                           VkFormat color_format,
                           VkFormat depth_format,
                           const rokz::Device& device) {
-
+  //
   SetupObjectDescriptorLayout;
   SetupObjectShaderModules;
   
   //
   SetupObjectShaderModules (pipelinegroup.pipeline, fspath, device);
-
   //
   rokz::Pipeline& pipeline = pipelinegroup.pipeline;
   rekz::SetupViewportState (pipeline.state.viewport, viewport_extent); 
 
   pipeline.state.colorblend_attachments.resize (1);
-
   rokz::ColorBlendState_default (pipeline.state.colorblend_attachments[0]); 
+
   rokz::DynamicState_default (pipeline.state.dynamics); 
   //
   rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
@@ -778,7 +774,6 @@ bool SetupObjectPipeline (rekz::PipelineGroup& pipelinegroup,
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
   SetupObjectDescriptorLayout (pipelinegroup.descrgroup, device); 
-
   //
   rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
                                       pipelinegroup.pipeline.layout.ci,
@@ -792,8 +787,6 @@ bool SetupObjectPipeline (rekz::PipelineGroup& pipelinegroup,
   rokz::CreateInfo  (pipeline.ext.pipeline_rendering.ci,
                      pipeline.ext.pipeline_rendering.color_formats,
                      depth_format); 
-
-  
   //
   rokz::CreateInfo (pipelinegroup.pipeline.ci,
                     pipelinegroup.pipeline.layout.handle,
@@ -1162,17 +1155,13 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //bool rekz::InitializeInstance (rokz::Instance& instance) {
 
   rokz::InitializeInstance (glob.instance); 
-
   rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
   rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
   //
-  // InitializeSwapchain ();
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
-                                   glob.surface,
-                                   glob.physical_device.handle);
-  // VkSurfaceFormatKHR swap_surface_format = rokz::cx::ChooseSwapSurfaceFormat (glob.swapchain_support_info.formats);
-  // VkPresentModeKHR   present_mode        = rokz::cx::ChooseSwapPresentMode   (glob.swapchain_support_info.present_modes);
-  rokz::ConfigureDevice    (glob.physical_device , VK_TRUE);
+
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.surface, glob.physical_device.handle);
+
+  rokz::ConfigureDevice  (glob.physical_device , VK_TRUE);
   rokz::InitializeDevice (glob.device, glob.physical_device, glob.instance);
   
   // put these somwehere
@@ -1187,9 +1176,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 #ifdef DARKROOT_ENABLE_GRID
 
-  SetupGridscapePipeline (glob.grid_pipeline, glob.grid_pipeline.pipeline.state.viewport, 
-                          glob.render_pass, dark_path, glob.swapchain_group.swapchain,
-                          glob.msaa_samples, glob.device); 
+  SetupGridscapePipeline (glob.grid_pipeline, glob.grid_pipeline.pipeline.state.viewport,glob.render_pass,
+                          dark_path, glob.swapchain_group.swapchain, glob.msaa_samples, glob.device); 
 
 #endif
 
@@ -1201,8 +1189,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
                          scg.swapchain.ci.imageFormat, glob.device.allocator.handle, glob.device.command_pool, 
                          glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent, glob.device);
 
-  // VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
-  // VkFormat    swapchain_format = swapchain.ci.imageFormat; 
   //SetupDarkDepthBuffer (glob);
   CreateDepthBufferImage (glob.depth_image, glob.depth_imageview, glob.msaa_samples, glob.depth_format, 
                           glob.device.command_pool, glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent,

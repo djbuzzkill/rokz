@@ -1,9 +1,12 @@
 
 #include "marscape.h"
+#include "rekz/mars_types.h"
 // 
+#include "grid_pipeline.h"
+
+
 
 //#define ROKZ_USE_VMA_ALLOCATION 1
-#define  MARS_USE_NEW_DEV_INIT 1
 namespace mars {
 
   template<typename VTy> 
@@ -14,47 +17,8 @@ namespace mars {
   //const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
   const VkExtent2D    kTestExtent  = { 800, 600 };
   const size_t        kPatchCount  = 100;
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  const VkVertexInputBindingDescription kVertexBindingDesc =  {
-    0,                            // binding    
-    sizeof (MarsVert),       // stride      
-    VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
-  }; 
 
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  const std::vector<VkVertexInputAttributeDescription> kBindingAttributeDesc = {
-
-    VkVertexInputAttributeDescription { // pos
-      0,                             // .location 
-      0,                             // .binding  
-      VK_FORMAT_R32G32B32_SFLOAT,    // .format   
-      offsetof(MarsVert, pos),  // .offset   
-    },
-    VkVertexInputAttributeDescription { // color
-      1,                              
-      0, 
-      VK_FORMAT_R32G32B32_SFLOAT,
-      offsetof(MarsVert, nrm), 
-    },
-
-    VkVertexInputAttributeDescription { // color
-      2,                              
-      0, 
-      VK_FORMAT_R32G32B32_SFLOAT,
-      offsetof(MarsVert, col), 
-    },
-    VkVertexInputAttributeDescription { // tex coord
-      3,                             
-      0, 
-      VK_FORMAT_R32G32_SFLOAT,
-      offsetof(MarsVert, txc0), 
-    }
-  }; 
-
+  
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
@@ -65,21 +29,6 @@ namespace mars {
     return v; 
   }
 
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
-  void SetupViewportState (rokz::ViewportState & vps, VkExtent2D& swapchain_extent) {
-
-    const VkOffset2D offs0 {0, 0};
-
-    vps.viewports.resize (1);
-    vps.scissors.resize (1);
-  
-    vps.scissors[0] = { offs0, swapchain_extent };
-    rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
-    //
-
-  }
 
 } // MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS MARS 
 
@@ -94,15 +43,19 @@ using namespace mars;
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool SetupMarsWindow (Glob& glob) {
+bool SetupMarsWindow (rokz::Window& window, void* user_pointer) {
 
   glfwInit();
-  rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
+  rokz::CreateWindow (window, kTestExtent.width , kTestExtent.height, "wut"); 
 
-  glfwSetFramebufferSizeCallback (glob.window.glfw_window, rekz::win_event::on_resize ); 
-  glfwSetKeyCallback (glob.window.glfw_window, rekz::win_event::on_keypress);
-  glfwSetCursorPosCallback(glob.window.glfw_window, rekz::win_event::on_mouse_move);
-  glfwSetMouseButtonCallback(glob.window.glfw_window, rekz::win_event::on_mouse_button);
+  glfwSetFramebufferSizeCallback (window.glfw_window, rekz::win_event::on_resize ); 
+  glfwSetKeyCallback (window.glfw_window, rekz::win_event::on_keypress);
+  glfwSetCursorPosCallback(window.glfw_window, rekz::win_event::on_mouse_move);
+  glfwSetMouseButtonCallback(window.glfw_window, rekz::win_event::on_mouse_button);
+  glfwSetCursorEnterCallback (window.glfw_window, rekz::win_event::on_mouse_enter); 
+
+    glfwSetWindowUserPointer (window.glfw_window, user_pointer);
+
   return true;
 }
 
@@ -177,15 +130,28 @@ void SetupPatchGeometry (Glob& glob) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void SetupMarsDepthBuffer (Glob& glob) {
+
+
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+void SetupAttachmentSetup () {
+}
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+void SetupMSAADepthBuffer (Glob& glob) {
+
   printf ("%s\n", __FUNCTION__); 
 
-  rokz::SwapchainGroup& frame_group = glob.frame_group;
+  rokz::SwapchainGroup& swapchain_group = glob.swapchain_group;
 
 
   //
-  uint32_t wd = frame_group.swapchain.ci.imageExtent.width; 
-  uint32_t ht = frame_group.swapchain.ci.imageExtent.height;   
+  uint32_t wd = swapchain_group.swapchain.ci.imageExtent.width; 
+  uint32_t ht = swapchain_group.swapchain.ci.imageExtent.height;   
 
   VkFormat depth_format;
 
@@ -204,65 +170,14 @@ void SetupMarsDepthBuffer (Glob& glob) {
     rokz::cx::TransitionImageLayout; 
     //(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
   }
+
 }
 
+void SetupMSAAColorAttachmentImage (Glob& glob) {
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-bool SetupTerrainShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
-
-  printf ("%s \n", __FUNCTION__); 
-  
-  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
-  std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
-  // 1 VERTEX SHADER
-  // 2 TESS CONTROLLER
-  // 3 TESS EVALUATOR
-  // 4 FRAGMENT SHADER 
-  shader_modules.resize  (4);
-  shader_stage_create_infos.resize(4);
-  //
-  // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_vert.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle)) {
-    printf ("[FAILED] -->  \n", vert_file_path.string().c_str()); 
-    return false; }
-  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
-
-  //
-  // TESS CONTROL
-  std::filesystem::path tesco_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_tesc.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[1], tesco_file_path.string(), device.handle)) {
-    printf ("[FAILED] -->  \n", tesco_file_path.string().c_str()); 
-    return false; }
-  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, shader_modules[1].handle); 
-
-  //
-  // TESSS EVAL
-  std::filesystem::path tesev_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_tese.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[2], tesev_file_path.string(), device.handle)) {
-    printf ("[FAILED] -->  \n", tesev_file_path.string().c_str()); 
-    return false;
-  }
-  rokz::CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, shader_modules[2].handle); 
-
-  //
-  // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"mars/pipeline/terrain/shader/mars_terrain_frag.spv" ;
-  if (!rokz::CreateShaderModule (shader_modules[3], frag_file_path.string(), device.handle)) {
-    printf ("[FAILED] -->  \n", frag_file_path.string().c_str()); 
-    return false; }
-  rokz::CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[3].handle); 
-  //
-  return true;
-}
-
-
-void SetupMultisampleColorResource (Glob& glob) {
   printf ("%s\n", __FUNCTION__); 
 
-  rokz::Swapchain& swapchain = glob.frame_group.swapchain; 
+  rokz::Swapchain& swapchain = glob.swapchain_group.swapchain; 
   
   VkExtent2D& swapchain_ext    = swapchain.ci.imageExtent;
   VkFormat    swapchain_format = swapchain.ci.imageFormat; 
@@ -307,9 +222,9 @@ void CleanupMars (Glob& glob) {
   rokz::cx::Destroy (glob.vma_ib_device, glob.allocator);
   
   Cleanup (glob.terrain_pipeline.pipeline.handle,
-           glob.frame_group.framebuffers, glob.frame_group.imageviews,
+           glob.swapchain_group.framebuffers, glob.swapchain_group.imageviews,
 
-           glob.frame_group.swapchain,
+           glob.swapchain_group.swapchain,
            glob.surface,
            glob.command_pool.handle,
            glob.frame_sequence.syncs, 
@@ -344,72 +259,7 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
 
   "color textures"; 
     
-
-  
   return false;
-}
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool SetupMarsDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
-
-  printf ("%s", __FUNCTION__); 
-
-  //  UniformBinding
-  //  SamplerBinding
-  descrgroup.dslayout.bindings.resize (6);
-  //rokz::Init (glob.desc_set_layout_bindings[0],
-
-  // MVPTransform
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
-                                    0,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    1,
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-  // ViewParams dont need yet rly
-  // rokz::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[x],
-  //                                   1,
-  //                                   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-  //                                   1,
-  //                                   VK_SHADER_STAGE_VERTEX_BIT);
-  // PatchParams
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
-                                    2,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    kPatchCount, 
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-
-  // HEIGHT map
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
-                                    3,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
-                                    kPatchCount, 
-                                    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
-  // NORMAL map
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[3],
-                                    4,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
-                                    kPatchCount, 
-                                    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
-
-  // COLOR image
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[4],
-                                    5,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, //VK_DESCRIPTOR_TYPE_SAMPLER
-                                    kPatchCount, 
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
-
-  if (!rokz::cx::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
-                                        descrgroup.dslayout.ci,
-                                        descrgroup.dslayout.bindings,
-                                        device.handle)) {
-    printf (" --> [FAILED] \n"); 
-    return false;
-  }
-
-  return true; 
 }
 
 
@@ -631,6 +481,7 @@ bool SetupTerrainDescriptorSets (rekz::PipelineGroup& pipelinegroup,
   // return true;
 
 
+  assert (false);
   return false;
 }
 
@@ -641,80 +492,17 @@ bool SetupTerrainDescriptorSets (rekz::PipelineGroup& pipelinegroup,
 // ---------------------------------------------------------------------
 bool SetupGlobalDescriptorPool (Glob& glob) {
 
+  assert (false);
   return false;
 }
 
 
+bool SetupTerrainDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool SetupTerrainPipeline (rekz::PipelineGroup& pipelinegroup,
-                          const rokz::ViewportState& vps,
-                          const rokz::RenderPass& renderpass,
-                          const std::filesystem::path& fspath,
-                          const rokz::Swapchain& swapchain,
-                          VkSampleCountFlagBits msaa_samples,
-                          const rokz::Device& device) {
-
-  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-
-  //rokz::FrameGroup& frame_group = glob.frame_group;
-  if (!SetupTerrainShaderModules (pipelinegroup.pipeline, fspath, device)) {
-    printf ("[FAILED] --> SetupTesselationShaderModules \n");
-    return false;
-  }
-
-  pipelinegroup.pipeline.state.colorblend_attachments.resize (1);
-  rokz::ColorBlendState_default (pipelinegroup.pipeline.state.colorblend_attachments[0]); 
-  rokz::DynamicState_default    (pipelinegroup.pipeline.state.dynamics); 
-
-  rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
-  rokz::CreateInfo (psci.tesselation, 4); // <-- is 4 points right? 
-  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
-  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
-  rokz::CreateInfo (psci.vertexinputstate, kVertexBindingDesc, kBindingAttributeDesc); 
-  rokz::CreateInfo (psci.viewport_state, vps);
-  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST); 
-  rokz::CreateInfo (psci.rasterizer); 
-  rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.colorblend_attachments); 
-  rokz::CreateInfo (psci.multisampling, msaa_samples); 
-  rokz::CreateInfo (psci.depthstencilstate); 
-  SetupMarsDescriptorLayout (  pipelinegroup.descrgroup, device); 
-
-
-  //
-  rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
-                                      pipelinegroup.pipeline.layout.ci,
-                                      sizeof(mars::PushConstants), 
-                                      pipelinegroup.descrgroup.dslayout.handle,
-                                      device.handle);
-
-
-  //
-  rokz::CreateInfo (pipelinegroup.pipeline.ci,
-                    pipelinegroup.pipeline.layout.handle,
-                    
-                    renderpass.handle,                    
-                    psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
-                    &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-                    &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-                    &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-                    &psci.tesselation,                 // tesselation 
-                    &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-                    &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-                    &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-                    &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-                    &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
-
-  if (!rokz::CreateGraphicsPipeline (pipelinegroup.pipeline, device.handle)) {     //const VkDevice                           b          device)
-    printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
-    return false;
-  }
-
-  return true;
-
+  assert (false);
+  return false;
 }
+
 
 // ---------------------------------------------------------------------
 //
@@ -767,7 +555,7 @@ void UpdateMarsUniforms (mars::Glob& glob, uint32_t current_frame, double dt) {
 
   float sim_timef = glob.sim_time;
 
-  float asp = (float)glob.frame_group.swapchain.ci.imageExtent.width / (float)glob.frame_group.swapchain.ci.imageExtent.height;
+  float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
     
   glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
   // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
@@ -796,33 +584,40 @@ void UpdateMarsUniforms (mars::Glob& glob, uint32_t current_frame, double dt) {
   }
 }
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-//void SetupDarkroot () { printf ("%s\n", __FUNCTION__); }
-//void ShutdownDarkroot () { printf ("%s\n", __FUNCTION__); }
-//void UpdateInput (Glob& glob, double dt) { }
-void UpdateDarkroot (Glob& glob, double dt) { }
+
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+bool SetupGridShaderModules (rokz::Pipeline& pipeline, std::string& fspath, rokz::Device& device) {
+
+  pipeline;
+  fspath;
+  device;
+
+  return false;
+}
 
 // ---------------------------------------------------------------------
 // RecordDarkCommandBuffer_indexed
 // ---------------------------------------------------------------------
-bool RecordMarsRenderPass_indexed (Glob& glob, 
-                                   VkCommandBuffer        &command_buffer,
-                                   const rokz::Pipeline&        pipeline,
-                                   const VkDescriptorSet& desc_set, 
-                                   const VkBuffer&        vertex_buffer, 
-                                   const VkBuffer&        index_buffer, 
-                                   const VkExtent2D&      ext2d,
-                                   const VkFramebuffer&   framebuffer,
-                                   const rokz::RenderPass&      render_pass,
-                                   const VkDevice&        device) {
+bool RecordDynamicRender (Glob& glob, 
+                          VkCommandBuffer        &command_buffer,
+                          const rokz::Pipeline&        pipeline,
+                          const VkDescriptorSet& desc_set, 
+                          const VkBuffer&        vertex_buffer, 
+                          const VkBuffer&        index_buffer, 
+                          const VkExtent2D&      ext2d,
+                          const VkFramebuffer&   framebuffer,
+                          const rokz::RenderPass&      render_pass,
+                          const VkDevice&        device) {
+
   return false;
 }
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool RenderMarsFrame (mars::Glob&           glob,
+bool RenderFrame (mars::Glob&           glob,
                       uint32_t&               image_index,
                       bool&                   resize,
                       rokz::RenderPass&       renderpass, 
@@ -836,6 +631,9 @@ bool RenderMarsFrame (mars::Glob&           glob,
 }
 
 
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 mars::Glob& InitMarsGlob (mars::Glob& glob) {
 
   glob.dt       = 0.0;
@@ -844,6 +642,7 @@ mars::Glob& InitMarsGlob (mars::Glob& glob) {
 
   return glob;
 }
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -852,69 +651,71 @@ int mars_run (const std::vector<std::string>& args) {
 
   Glob glob; //
   InitMarsGlob (glob);
+  rokz::SwapchainGroup&  scg        = glob.swapchain_group;
+  rokz::FrameSequencing& framesyncs = glob.frame_sequence;
   
   auto mars_path = std::filesystem::path ("/home/djbuzzkill/owenslake/rokz/");
   
-  SetupMarsWindow (glob); 
 
-#ifdef MARS_USE_NEW_DEV_INIT
+
+  SetupMarsWindow (glob.window, &glob.input_state); 
+
 
   rokz::InitializeInstance (glob.instance); 
   rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
   rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
+
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.surface, glob.physical_device.handle);
+
   rokz::ConfigureDevice ( glob.physical_device , VK_TRUE); 
   rokz::InitializeDevice (glob.device,glob.physical_device, glob.instance);
 
-#else
-  assert (false);
-#endif
+  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
+  rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
   
-  printf ("%s [%i]\n", __FUNCTION__, __LINE__); 
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
-                               glob.surface,
-                               glob.physical_device.handle);
 
-  rokz::SwapchainGroup& frame_group = glob.frame_group;
-
-  frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.graphics.value());
-  frame_group.swapchain.family_indices.push_back (glob.physical_device.family_indices.present.value ());
-  
-  rokz::cx::CreateInfo_default (frame_group.swapchain.ci,  
-                                glob.surface,
-                                frame_group.swapchain.family_indices,
-                                kTestExtent, 
-                                glob.swapchain_support_info, 
-                                glob.physical_device);
-
-  rokz::cx::CreateSwapchain (frame_group.swapchain, glob.device); 
-  
-  rokz::cx::GetSwapChainImages (frame_group.images, frame_group.swapchain, glob.device.handle); 
-
-
-  rokz::cx::CreateImageViews (frame_group.imageviews, frame_group.images, glob.device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.surface,
+                             kTestExtent, glob.physical_device, glob.device);
 
   // no renderpass
-  rokz::CreateRenderPass (glob.render_pass,
-                          frame_group.swapchain.ci.imageFormat,
-                          glob.msaa_samples,
-                          glob.device.handle,
-                          glob.physical_device.handle);
+// bool SetupGridPipeline (rekz::PipelineGroup& pipelinegroup,
+//                         const std::filesystem::path& fspath,
+//                         const VkExtent2D& viewport_extent, //const rokz::Swapchain& swapchain,
+//                         VkSampleCountFlagBits msaa_samples,
+//                         VkFormat color_format,
+//                         VkFormat depth_format,
+//                         uint32_t sizeof_push_constants, 
+//                         const rokz::Device& device) {
 
-
-  // move into Setup*Pipeline
-  SetupViewportState (glob.terrain_pipeline.pipeline.state.viewport, glob.frame_group.swapchain.ci.imageExtent); 
-
+  rekz::SetupGridPipeline (glob.grid_pipeline,
+                           mars_path,
+                           kTestExtent, //const rokz::Swapchain& swapchain,
+                           glob.msaa_samples, 
+                           glob.swapchain_group.swapchain.ci.imageFormat,
+                           glob.depth_format,
+                           sizeof(PushConstants), 
+                           glob.device);
   // SetupGridscape ();
 
+  
 #ifdef MARS_ENABLE_TERRAIN_PIPELINE  
+  SetupGridscapePipeline (glob.grid_pipeline,
+                          glob.grid_pipeline.pipeline.state.viewport,
+                          glob.render_pass,
+                          dark_path,
+                          glob.swapchain_group.swapchain,
+                          glob.msaa_samples,
+                          glob.device); 
+
+
   SetupTerrainPipeline (glob.terrain_pipeline,
                         glob.terrain_pipeline.pipeline.state.viewport,
                         glob.render_pass,
                         mars::data_root,
-                        glob.frame_group.swapchain,
+                        glob.swapchain_group.swapchain,
                         glob.msaa_samples,
                         glob.device); 
-  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.frame_group.swapchain);
+  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
 
 #endif //  MARS_ENABLE_TERRAIN_PIPELINE
@@ -922,29 +723,26 @@ int mars_run (const std::vector<std::string>& args) {
   
 
   printf ("[ HIDE_MARS_RUN | %i ]\n", __LINE__ + 1);
-#ifdef HIDE_MARS_RUN 
 
-
- SetupMultisampleColorResource (glob);
-
-  SetupMarsDepthBuffer (glob);
+  //  rekz::SetupMSAA (glob);
+  
+  //  SetupMarsDepthBuffer (glob);
   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 
 
   
-  rokz::CreateFramebuffers (frame_group.swapchain_framebuffers, frame_group.swapchain_imageviews, glob.render_pass,
-                            frame_group.swapchain.ci.imageExtent, glob.multisamp_color_imageview.handle,
-                            glob.depth_imageview.handle, glob.device); 
+  // rokz::CreateFramebuffers (swapchain_group.swapchain_framebuffers, swapchain_group.swapchain_imageviews, glob.render_pass,
+  //                           swapchain_group.swapchain.ci.imageExtent, glob.multisamp_color_imageview.handle,
+  //                           glob.depth_imageview.handle, glob.device); 
 
-  rokz::CreateInfo (glob.command_pool.ci, glob.physical_device.family_indices.graphics.value());
-  rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci, glob.device.handle);
+  // rokz::CreateInfo (glob.command_pool.ci, glob.physical_device.family_indices.graphics.value());
+  // rokz::CreateCommandPool (glob.command_pool.handle, glob.command_pool.ci, glob.device.handle);
 
 
   //SetupPatchGeometry (glob); 
 
 
   "Setup Index+Vertex Buffers";
-
   SetupTerrainResources (glob); 
   // rokz::Buffer vb_x; 
   // rokz::CreateInfo_VB_stage (vb_x.ci, DarkrootMesh::VertexSize, glob.darkmesh.verts.size());
@@ -1006,7 +804,8 @@ int mars_run (const std::vector<std::string>& args) {
     return false;
   }
 
-  
+
+#ifdef MARS_TERRAIN_ENABLE 
   if (!SetupTerrainDescriptorSets (glob.obj_pipeline,
                                    glob.vma_uniform_buffs,
                                    glob.vma_objparam_buffs,
@@ -1017,24 +816,32 @@ int mars_run (const std::vector<std::string>& args) {
     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
     return false;
   }
+#endif
+
+  if (!rekz::SetupGridDescriptorSets (glob.grid_pipeline, glob.vma_uniform_buffs,
+                                      glob.descriptor_pool, glob.device)) {
+    printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
+    return false;
+  }
+
+  
   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 
+  //swapchain_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
 
-
-  //frame_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
-  frame_group.syncs.resize (kMaxFramesInFlight);
-  frame_group.command_buffers.resize (kMaxFramesInFlight);
+  framesyncs.syncs.resize (kMaxFramesInFlight);
+  framesyncs.command_buffers.resize (kMaxFramesInFlight);
   
-  rokz::AllocateInfo (frame_group.command_buffer_alloc_info, glob.command_pool.handle); 
+  rokz::cx::AllocateInfo (framesyncs.command_buffer_alloc_info, glob.command_pool.handle); 
 
   // 
   for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
     // sep
-    rokz::CreateCommandBuffer(frame_group.command_buffers[i], 
-                              frame_group.command_buffer_alloc_info,
+    rokz::cx::CreateCommandBuffer(framesyncs.command_buffers[i], 
+                              framesyncs.command_buffer_alloc_info,
                               glob.device.handle);
 
-    rokz::CreateRenderSync (glob.frame_group.syncs[i], frame_group.render_sync_create_info, glob.device.handle);
+    rokz::cx::CreateRenderSync (framesyncs.syncs[i], framesyncs.syncs[i].ci, glob.device.handle);
   }
 
   // SetupDarkroot ();
@@ -1069,8 +876,8 @@ int mars_run (const std::vector<std::string>& args) {
     
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
-    if (RenderMarsFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.obj_pipeline.pipeline,
-                         glob.obj_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
+    if (RenderFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.grid_pipeline.pipeline,
+                     glob.grid_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
 
     }
     else {
@@ -1097,7 +904,6 @@ int mars_run (const std::vector<std::string>& args) {
   // CLEAN UP
   CleanupMars (glob); 
 
-#endif
 
   printf ("%[LEAVING] --> %s\n", __FUNCTION__);
   return 0; 
@@ -1108,13 +914,14 @@ int mars_run (const std::vector<std::string>& args) {
 //
 // --------------------------------------------------------------------
 template<typename ElTy> 
-struct RGB_gen {
+struct RGBx {
   ElTy r;
   ElTy g;
   ElTy b;
 };
 
-typedef RGB_gen<unsigned char> RGBu8; 
+
+typedef RGBx<unsigned char> RGBu8; 
 
 int mars_prelim (const std::vector<std::string>& args) {
   printf ("%s\n", __FUNCTION__);
@@ -1183,13 +990,174 @@ int mars_prelim (const std::vector<std::string>& args) {
 }
 
 
-//
-//
-bool SetupOutlinePipeline () {
 
-  "shaders"; 
-  "descriptor sets";
-  "pipeline layout";
- 
-  return false;
+
+
+
+
+
+
+#ifdef MARS_TERRAIN_ENABLE 
+
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+  const VkVertexInputBindingDescription kVertexBindingDesc =  {
+    0,                            // binding    
+    sizeof (MarsVert),       // stride      
+    VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
+  }; 
+
+  const std::vector<VkVertexInputAttributeDescription> kVertexInputAttributeDesc = {
+
+    VkVertexInputAttributeDescription { // pos
+      0,                             // .location 
+      0,                             // .binding  
+      VK_FORMAT_R32G32B32_SFLOAT,    // .format   
+      offsetof(MarsVert, pos),  // .offset   
+    },
+    VkVertexInputAttributeDescription { // color
+      1,                              
+      0, 
+      VK_FORMAT_R32G32B32_SFLOAT,
+      offsetof(MarsVert, nrm), 
+    },
+
+    VkVertexInputAttributeDescription { // color
+      2,                              
+      0, 
+      VK_FORMAT_R32G32B32_SFLOAT,
+      offsetof(MarsVert, col), 
+    },
+    VkVertexInputAttributeDescription { // tex coord
+      3,                             
+      0, 
+      VK_FORMAT_R32G32_SFLOAT,
+      offsetof(MarsVert, txc0), 
+    }
+  }; 
+
+// ---------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------
+bool SetupTerrainPipeline (rekz::PipelineGroup& pipelinegroup,
+                          const rokz::ViewportState& vps,
+                          const rokz::RenderPass& renderpass,
+                          const std::filesystem::path& fspath,
+                          const rokz::Swapchain& swapchain,
+                          VkSampleCountFlagBits msaa_samples,
+                          const rokz::Device& device) {
+
+  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+
+  //rokz::FrameGroup& swapchain_group = glob.swapchain_group;
+  if (!SetupTerrainShaderModules (pipelinegroup.pipeline, fspath, device)) {
+    printf ("[FAILED] --> SetupTesselationShaderModules \n");
+    return false;
+  }
+
+  pipelinegroup.pipeline.state.colorblend_attachments.resize (1);
+  rokz::ColorBlendState_default (pipelinegroup.pipeline.state.colorblend_attachments[0]); 
+  rokz::DynamicState_default    (pipelinegroup.pipeline.state.dynamics); 
+
+  rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
+  rokz::CreateInfo (psci.tesselation, 4); // <-- is 4 points right? 
+  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.dynamicstate, pipelinegroup.pipeline.state.dynamics); 
+  rokz::CreateInfo (psci.vertexinputstate, kVertexBindingDesc, mars::kVertexInputAttributeDesc); 
+  rokz::CreateInfo (psci.viewport_state, vps);
+  rokz::CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST); 
+  rokz::CreateInfo (psci.rasterizer); 
+  rokz::CreateInfo (psci.colorblendstate, pipelinegroup.pipeline.state.colorblend_attachments); 
+  rokz::CreateInfo (psci.multisampling, msaa_samples); 
+  rokz::CreateInfo (psci.depthstencilstate); 
+
+  SetupTerrainDescriptorLayout (pipelinegroup.descrgroup, device); 
+
+
+  //
+  rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
+                                      pipelinegroup.pipeline.layout.ci,
+                                      sizeof(mars::PushConstants), 
+                                      pipelinegroup.descrgroup.dslayout.handle,
+                                      device.handle);
+
+
+  //
+  rokz::CreateInfo (pipelinegroup.pipeline.ci,
+                    pipelinegroup.pipeline.layout.handle,
+                    
+                    renderpass.handle,                    
+                    psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+                    &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+                    &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+                    &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+                    &psci.tesselation,                 // tesselation 
+                    &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+                    &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+                    &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+                    &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+                    &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+
+  if (!rokz::CreateGraphicsPipeline (pipelinegroup.pipeline, device.handle)) {     //const VkDevice                           b          device)
+    printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
+    return false;
+  }
+
+  return true;
+
 }
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+bool SetupTerrainShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+
+  printf ("%s \n", __FUNCTION__); 
+  
+  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
+  std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
+  // 1 VERTEX SHADER
+  // 2 TESS CONTROLLER
+  // 3 TESS EVALUATOR
+  // 4 FRAGMENT SHADER 
+  shader_modules.resize  (4);
+  shader_stage_create_infos.resize(4);
+  //
+  // VERT SHADER 
+  std::filesystem::path vert_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_vert.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", vert_file_path.string().c_str()); 
+    return false; }
+  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
+
+  //
+  // TESS CONTROL
+  std::filesystem::path tesco_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_tesc.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[1], tesco_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", tesco_file_path.string().c_str()); 
+    return false; }
+  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, shader_modules[1].handle); 
+
+  //
+  // TESSS EVAL
+  std::filesystem::path tesev_file_path  = fspath/"mars/pipeline/terrain/shader/mars_terrain_tese.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[2], tesev_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", tesev_file_path.string().c_str()); 
+    return false;
+  }
+  rokz::CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, shader_modules[2].handle); 
+
+  //
+  // FRAG SHADER
+  std::filesystem::path frag_file_path = fspath/"mars/pipeline/terrain/shader/mars_terrain_frag.spv" ;
+  if (!rokz::CreateShaderModule (shader_modules[3], frag_file_path.string(), device.handle)) {
+    printf ("[FAILED] -->  \n", frag_file_path.string().c_str()); 
+    return false; }
+  rokz::CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[3].handle); 
+  //
+  return true;
+}
+
+
+#endif

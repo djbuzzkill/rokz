@@ -55,10 +55,11 @@ namespace mars {
 
     enum { MaxFramesInFlight = 2 }; 
 
+
     rokz::Instance               instance;
     rokz::PhysicalDevice         physical_device;
     rokz::Device                 device;
-    rokz::SwapchainGroup         frame_group;
+    rokz::SwapchainGroup         swapchain_group;
     rokz::SwapchainSupportInfo   swapchain_support_info;
     rokz::FrameSequencing        frame_sequence;
     // pipeline resource

@@ -7,9 +7,12 @@ project (rekz)
   
 set (REKZ_HEADER_FILES
     rekz.h
+    grid_pipeline.h
     dark_types.h
     darkrootgarden.h
     mars_types.h
+
+
   )
 	
 set (REKZ_SOURCE_FILES
@@ -21,7 +24,7 @@ set (REKZ_SOURCE_FILES
   marscape.cpp
 #  mars_window_handler.cpp
   mars_things.cpp
-  
+grid_pipeline.cpp  
   #  test_rokz_hpp.cpp
   # test_rokz.cpp
   rekz.cpp
