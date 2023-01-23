@@ -9,22 +9,29 @@
 namespace mars {
 
 
-  typedef rekz::Vertex_pos_nrm_txc_col MarsVert; 
-  // --------------------------------------------------------------------
+  typedef rekz::RGBx<unsigned char>    RGBu8; 
   //
+  typedef rekz::Vertex_pos_nrm_txc_col MarsVert; 
+  typedef rekz::TriMesh<MarsVert>      MarsMesh;
   // --------------------------------------------------------------------
-  typedef rekz::TriMesh<MarsVert> MarsMesh;
+  // 
+  // --------------------------------------------------------------------
+  const float         kPi                =  glm::pi<float> ();  
+  const VkExtent2D    kWinExtent         = { 800, 600 };
+  const size_t        kPatchCount        = 100;
+  const size_t        kMaxFramesInFlight = 2; 
+  //
+
   // --------------------------------------------------------------------
   // Geometry
   // --------------------------------------------------------------------
   struct PushConstants {
-    glm::ivec4 objectIDs;
-    // x: object index
-    // y: unused
-    // z: unused
-    // w: unused
-  };
 
+    glm::ivec4 objectIDs;
+    glm::vec4  color4f;
+  };
+  
+ 
   // --------------------------------------------------------------------
   // UBO
   // --------------------------------------------------------------------
@@ -41,12 +48,6 @@ namespace mars {
     
   };
 
-  // --------------------------------------------------------------------
-  //  UBO
-  // --------------------------------------------------------------------
-  struct PatchParams { // UBO
-    glm::mat4 model;
-  }; 
 
   // --------------------------------------------------------------------
   //
@@ -61,7 +62,7 @@ namespace mars {
     rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
     rokz::SwapchainSupportInfo   swapchain_support_info;
-    rokz::FrameSequencing        frame_sequence;
+    rokz::FrameSync              frame_sync;
     // pipeline resource
     std::vector<rokz::Buffer>    vma_uniform_buffs;
     std::vector<rokz::Buffer>    vma_objparam_buffs;
@@ -80,18 +81,19 @@ namespace mars {
     rokz::RenderingInfoGroup     rendering_info_group;
 
     // ATTACHEMENT SET 
-    rokz::Image                  depth_image;
-    rokz::ImageView              depth_imageview; 
-    rokz::Image                  multisamp_color_image;
-    rokz::ImageView              multisamp_color_imageview; 
+    rokz::Image                  msaa_depth_image;
+    rokz::ImageView              msaa_depth_imageview; 
+    rokz::Image                  msaa_color_image;
+    rokz::ImageView              msaa_color_imageview; 
 
     // DATA 
+    
     rokz::Buffer                 vma_ib_device;
     rokz::Buffer                 vma_vb_device;
     // image/texture
-    rokz::Image                 texture_image; 
-    rokz::ImageView             texture_imageview; 
-    rokz::Sampler               sampler;
+    // rokz::Image                 texture_image; 
+    // rokz::ImageView             texture_imageview; 
+    // rokz::Sampler               sampler;
 
   
     rokz::Window                window;
@@ -108,18 +110,23 @@ namespace mars {
 #ifndef MARS_GOING_AWAY_SOON 
     rokz::CommandPool            command_pool; //<-- now part of Device
 
-    bool fb_resize; 
-    rokz::RenderPass             render_pass; 
+    bool fb_resize;                            //<-- InputState::fb_resize
+    rokz::RenderPass             render_pass;  //<-- no use 
 
-    struct { VkQueue graphics; 
-             VkQueue present; }  queues;
-    VmaAllocator                 allocator;
+    struct { VkQueue graphics;                 //<-- now part of Device
+             VkQueue present; }  queues;       
+    VmaAllocator                 allocator;    //<-- in device too
 #endif
     /////////////////////////////////////////////////////////////////////////
 
     
   };
+
+
   // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  glm::vec3& unit_angle_xz (glm::vec3& v, float theta); 
   
 } // mars
 

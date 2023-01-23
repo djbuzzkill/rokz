@@ -826,7 +826,7 @@ void rokz::CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
 
 
 
-void Destroy (rokz::FrameSequencing& fs, const rokz::Device& device) {
+void Destroy (rokz::FrameSync& fs, const rokz::Device& device) {
   
 
   for (size_t i = 0; i < fs.syncs.size (); ++i) {

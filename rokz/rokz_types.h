@@ -414,7 +414,7 @@ namespace rokz {
   };
 
   // --------------------------------------------------------
-  struct FrameSequencing {
+  struct FrameSync {
 
     VkCommandBufferAllocateInfo  command_buffer_alloc_info;
     std::vector<VkCommandBuffer> command_buffers;

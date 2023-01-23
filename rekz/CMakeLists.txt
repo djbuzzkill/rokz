@@ -10,6 +10,7 @@ set (REKZ_HEADER_FILES
     grid_pipeline.h
     dark_types.h
     darkrootgarden.h
+    dark_obj_pipeline.h
     mars_types.h
 
 
@@ -19,6 +20,7 @@ set (REKZ_SOURCE_FILES
   texture_tool.cpp
   rekz_win_handler.cpp
   darkrootgarden.cpp
+  dark_obj_pipeline.cpp
   darkthings.cpp
 
   marscape.cpp

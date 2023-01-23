@@ -10,6 +10,7 @@ namespace darkroot {
   const float kPi = glm::pi<float> ();  
   const float k2Pi = 2 * glm::pi<float> ();  
 
+  const size_t        kSceneObjCount = 128;
   //
   //
   const size_t SizeOf_SceneObjParam = sizeof (SceneObjParam); 

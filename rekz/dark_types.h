@@ -56,7 +56,7 @@ namespace darkroot {
     rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
     rokz::SwapchainSupportInfo   swapchain_support_info;
-    rokz::FrameSequencing        frame_sequence;
+    rokz::FrameSync              frame_sync;
     // pipeline resources
     std::vector<rokz::Buffer>   vma_uniform_buffs;
     std::vector<rokz::Buffer>   vma_objparam_buffs;

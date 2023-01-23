@@ -8,16 +8,7 @@
 
 namespace mars { 
 
-  const float kPi = glm::pi<float> ();  
-  //
-
-  struct PatchUBO {
-    glm::mat4 modelmat;
-    //  glm::mat4 unused0;
-  };
-
-  //
-  const size_t SizeOf_PatchUBO = sizeof (PatchUBO); 
+  
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------

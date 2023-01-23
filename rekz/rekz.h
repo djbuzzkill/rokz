@@ -16,6 +16,13 @@
 
 namespace rekz {
 
+  template<typename ElTy> 
+  struct RGBx {
+    ElTy r;
+    ElTy g;
+    ElTy b;
+  };
+
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
@@ -271,6 +278,32 @@ namespace rekz {
   // --------------------------------------------------------------------
   void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent);
   
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  bool CreateDepthBufferImage (rokz::Image&          depth_image,
+                               rokz::ImageView&      depth_imageview,
+                               //rokz::SwapchainGroup& scg,
+                               VkSampleCountFlagBits msaa_samples, 
+                               VkFormat              depth_format,
+                               const rokz::CommandPool& command_pool,
+                               const VkQueue&        queue, 
+                               const VkExtent2D&     ext,
+                               const VmaAllocator&   allocator,
+                               const rokz::Device&   device); 
+
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  bool CreateMSAAColorImage  (rokz::Image&          color_image, 
+                              rokz::ImageView&      color_imageview, 
+                              VkSampleCountFlagBits msaa_samples,
+                              VkFormat              image_format,
+                              const VmaAllocator&   allocator, 
+                              const rokz::CommandPool& command_pool, 
+                              const VkQueue&        queue, 
+                              const VkExtent2D&     ext,
+                              const rokz::Device&   device); 
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
