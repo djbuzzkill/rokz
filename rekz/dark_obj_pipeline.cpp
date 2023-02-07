@@ -1,9 +1,11 @@
 
 #include "dark_obj_pipeline.h"
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 
 
 const size_t max_frames_in_flight  = darkroot::Glob::MaxFramesInFlight; 
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -50,6 +52,40 @@ namespace darkroot {
 
   }; 
 }
+
+
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+bool  darkroot::SetupObjectShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+
+  printf ("%s \n", __FUNCTION__); 
+
+  
+  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
+  std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
+
+  shader_modules.resize  (2);
+  shader_stage_create_infos.resize(2);
+  // VERT SHADER 
+  std::filesystem::path vert_file_path  = fspath/"data/shader/darkroot_vertex.spv" ;
+
+  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
+    return false; 
+  
+  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
+  
+  // FRAG SHADER
+  std::filesystem::path frag_file_path = fspath/"data/shader/darkroot_fragment.spv" ;
+
+  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device.handle))
+    return false; 
+  
+  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
+  //
+  return true; 
+}
+
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
@@ -60,17 +96,9 @@ bool darkroot::SetupObjDescriptorPool (Glob& glob) {
   rokz::DescriptorPool& dp = glob.descr_pool;
   
   dp.sizes.resize (3); 
-  dp.sizes[0] = {} ; //
-  dp.sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  dp.sizes[0].descriptorCount = static_cast<uint32_t>(max_frames_in_flight);
-
-  dp.sizes[1] = {} ; //
-  dp.sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  dp.sizes[1].descriptorCount = static_cast<uint32_t>( 128 * max_frames_in_flight);
-
-  dp.sizes[2] = {} ; //
-  dp.sizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  dp.sizes[2].descriptorCount = static_cast<uint32_t>(max_frames_in_flight);
+  dp.sizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, max_frames_in_flight }; 
+  dp.sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  128 * max_frames_in_flight} ; //
+  dp.sizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, max_frames_in_flight } ; //
 
   rokz::cx::CreateInfo ( dp.ci, max_frames_in_flight, dp.sizes); 
   
@@ -80,6 +108,52 @@ bool darkroot::SetupObjDescriptorPool (Glob& glob) {
   }
 
  return true; 
+}
+
+
+// --------------------------------------------------------------------
+// SetupDarkDescriptorSetLayout (
+// --------------------------------------------------------------------
+bool darkroot::SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
+
+  printf ("%s", __FUNCTION__); 
+
+  //  UniformBinding
+  //  SamplerBinding
+  descrgroup.dslayout.bindings.resize (3);
+  //rokz::Init (glob.desc_set_layout_bindings[0],
+
+  // MVPTransform
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
+                                    0,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    1,
+                                    VK_SHADER_STAGE_VERTEX_BIT);
+
+  // SceneObjParams
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
+                                    1,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    128, 
+                                    VK_SHADER_STAGE_VERTEX_BIT);
+
+  // sammpler+image
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
+                                    2,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    1, 
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+
+  if (!rokz::cx::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
+                                        descrgroup.dslayout.ci,
+                                        descrgroup.dslayout.bindings,
+                                        device.handle)) {
+    printf (" --> [FAILED] \n"); 
+    return false;
+  }
+
+  printf (" --> true\n"); 
+  return true; 
 }
 
 // ---------------------------------------------------------------------
@@ -175,9 +249,9 @@ bool darkroot::SetupObjectDescriptorSets (rekz::PipelineGroup& pipelinegroup,
   
 }  
 
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------
 //
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------
 bool darkroot::SetupObjectPipeline (rekz::PipelineGroup& pipelinegroup,
                           // const rokz::RenderPass& renderpass,  // using dynamic render pass
                           const std::filesystem::path& fspath,
@@ -248,87 +322,4 @@ bool darkroot::SetupObjectPipeline (rekz::PipelineGroup& pipelinegroup,
   return true;
 
 }
-
-// --------------------------------------------------------------------
-// SetupDarkDescriptorSetLayout (
-// --------------------------------------------------------------------
-bool darkroot::SetupObjectDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
-
-  printf ("%s", __FUNCTION__); 
-
-  //  UniformBinding
-  //  SamplerBinding
-  descrgroup.dslayout.bindings.resize (3);
-  //rokz::Init (glob.desc_set_layout_bindings[0],
-
-  // MVPTransform
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
-                                    0,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    1,
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-
-  // SceneObjParams
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[1],
-                                    1,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    128, 
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-
-  // sammpler+image
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[2],
-                                    2,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    1, 
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
-
-  if (!rokz::cx::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
-                                        descrgroup.dslayout.ci,
-                                        descrgroup.dslayout.bindings,
-                                        device.handle)) {
-    printf (" --> [FAILED] \n"); 
-    return false;
-  }
-
-  printf (" --> true\n"); 
-  return true; 
-}
-
-
-
-  
-
-
- // ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool  darkroot::SetupObjectShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
-
-  printf ("%s \n", __FUNCTION__); 
-
-  
-  std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
-  std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
-
-  shader_modules.resize  (2);
-  shader_stage_create_infos.resize(2);
-  // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"data/shader/darkroot_vertex.spv" ;
-
-  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
-    return false; 
-  
-  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
-  
-  // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"data/shader/darkroot_fragment.spv" ;
-
-  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device.handle))
-    return false; 
-  
-  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
-  //
-  return true; 
-}
-
 

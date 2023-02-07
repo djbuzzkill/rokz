@@ -15,10 +15,10 @@ namespace rokz {
     // ----------------------------------------------------------------------------
     VkPresentInfoKHR& PresentInfo  (VkPresentInfoKHR& pi, uint32_t& image_index, const std::vector<VkSwapchainKHR>& swapchains,  const std::vector<VkSemaphore>& signal_sems); 
 
-    VkResult          AcquireFrame (Swapchain& swapchain, RenderSync& render_sync, uint32_t& image_index, const Device&  device); 
+    VkResult          AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
 
-    bool              PresentFrame (VkQueue& present_que, const Swapchain& swapchain, uint32_t& image_index, RenderSync& render_sync); 
-    bool              PresentFrame (VkQueue& present_que, const VkPresentInfoKHR& pi); 
+    bool              PresentFrame (VkQueue present_que, const Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync); 
+    bool              PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi); 
 
 
     // ----------------------------------------------------------------------------

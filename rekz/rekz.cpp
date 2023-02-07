@@ -554,22 +554,25 @@ int texture_tool (const std::vector<std::string>& args);
 int test_ouput (const std::vector<std::string>& args); 
 int test_time (); 
 int darkroot_basin (const std::vector<std::string>& args);
-
 int mars_run (const std::vector<std::string>& args);
 int mars_prelim (const std::vector<std::string>& args);
+bool test_grid_geom_gen ();
 
 // --------------------------------------------------------------------
 int main (int argv, char** argc) {
 
   const std::vector<std::string> args (argc, argc + argv);
 
-  //   test_time (); 
-  //test_rokz (args); 
-   darkroot_basin  (args);
+
+  darkroot_basin  (args);
   //mars_run  (args);
+
   // test_rokz_hpp (args); 
   // texture_tool (args); 
   //test_ouput (args);
+  //test_grid_geom_gen ();
+  //test_time (); 
+  //test_rokz (args); 
   
   printf ("lolz bai %s\n", __FUNCTION__); 
   return 0; 

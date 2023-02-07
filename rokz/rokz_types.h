@@ -209,16 +209,6 @@ namespace rokz {
     VkSamplerCreateInfo ci;
   };
 
-  // --------------------------------------------------------
-  struct RenderSyncCreateInfo {
-
-    RenderSyncCreateInfo () : semaphore (), fence () {
-    }
-    
-    VkSemaphoreCreateInfo  semaphore;
-    VkFenceCreateInfo      fence;
-
-  }; 
   
   // ---------------------------------------------------------------------
   struct Framebuffer {
@@ -400,10 +390,19 @@ namespace rokz {
   // }; 
 
   // --------------------------------------------------------
-  struct RenderSync {
+  struct RenderSyncCreateInfo {
 
-    RenderSync () :image_available_sem (), render_finished_sem (), in_flight_fen () {
+    RenderSyncCreateInfo () : semaphore (), fence () {
     }
+    
+    VkSemaphoreCreateInfo  semaphore;
+    VkFenceCreateInfo      fence;
+
+  }; 
+  // --------------------------------------------------------
+  struct FrameSync {
+    // This should actually be called FrameSync
+    FrameSync () : image_available_sem (), render_finished_sem (), in_flight_fen () {    }
       
     VkSemaphore image_available_sem;
     VkSemaphore render_finished_sem;
@@ -412,16 +411,32 @@ namespace rokz {
     RenderSyncCreateInfo ci;
 
   };
-
   // --------------------------------------------------------
-  struct FrameSync {
-
+  //
+  // --------------------------------------------------------
+  struct FrameParams {
+    FrameSync        sync;
+    VkCommandBuffer  comb;
+  };  
+  // --------------------------------------------------------
+  //
+  // --------------------------------------------------------
+  struct FrameSyncGroup {
+    //
     VkCommandBufferAllocateInfo  command_buffer_alloc_info;
-    std::vector<VkCommandBuffer> command_buffers;
-    //rokz::RenderSyncCreateInfo     render_sync_create_info;
     // kMaxFramesInFlight
-    std::vector<rokz::RenderSync> syncs;
+    std::vector<VkCommandBuffer> command_buffers;
+    std::vector<FrameSync> syncs;
+
+    //rokz::RenderSyncCreateInfo     render_sync_create_info;
+
+
+    //std::vector<FrameParams> frameparams; // kMaxFramesInFlight
+    
   }; 
+  
+  //typedef FrameSync FrameSyncGroup; 
+
   
   //
   // struct Surface {

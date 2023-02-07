@@ -104,9 +104,6 @@ namespace rekz {
     
     int x_pos;
     int y_pos;
-
-    int dx;
-    int dy;
   }; 
 
   
@@ -117,8 +114,6 @@ namespace rekz {
 
     std::map<int, int> keys;
     MouseState         mouse;
-    Polarf             polar;
-
     bool               fb_resize; 
   };
 

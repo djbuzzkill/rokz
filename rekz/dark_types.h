@@ -35,6 +35,30 @@ namespace darkroot {
     //  glm::mat4 unused0;
   };
 
+
+  template<typename Ty>  struct Trait {
+
+    int    Fn ();
+    float  Fl ();
+    Ty     Ft ();
+    
+  };
+
+
+  // ---------------------------------------------------------------------
+  // 
+  // ---------------------------------------------------------------------
+  struct ResetSwapchainCB {
+
+  public:
+  
+    virtual bool ResetSwapchain  (const rokz::Window& win, const VmaAllocator& allocator, const rokz::Device& device) = 0;
+
+  protected:
+  
+    ResetSwapchainCB () {}
+  };
+
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
@@ -56,34 +80,30 @@ namespace darkroot {
     rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
     rokz::SwapchainSupportInfo   swapchain_support_info;
-    rokz::FrameSync              frame_sync;
+    rokz::FrameSyncGroup         framesyncgroup;
+
     // pipeline resources
-    std::vector<rokz::Buffer>   vma_uniform_buffs;
-    std::vector<rokz::Buffer>   vma_objparam_buffs;
-    
-
-    // global pools
-    //    rokz::CommandPool            command_pool;
+    std::vector<rokz::Buffer>    vma_uniform_buffs;
+    std::vector<rokz::Buffer>    vma_objparam_buffs;
+    // global descriptor pool
     rokz::DescriptorPool         descr_pool;
-
     // pipelines
-    rekz::PipelineGroup         obj_pipeline;
-    rekz::PipelineGroup         grid_pipeline;
+    rekz::PipelineGroup          obj_pipeline;
 
+    rekz::PipelineGroup          grid_pipeline;
     // DYNAMIC RENDERING
     rokz::RenderingInfoGroup     rendering_info_group;
     
-
     // attachement set
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
   
-
     // DATA
     rokz::Buffer                vma_ib_device;
     rokz::Buffer                vma_vb_device;
+
     // image/texture
     rokz::Image                 texture_image; 
     rokz::ImageView             texture_imageview; 
@@ -91,8 +111,11 @@ namespace darkroot {
 
     float obj_theta[2];     // scene objects 
 
-
-
+    rekz::Polarf                view_orie;
+    int                         prev_x;
+    int                         prev_y; 
+    int                         prev_inside;
+    
     // window
     rokz::Window                window;
     VkSurfaceKHR                surface; // 
@@ -100,7 +123,12 @@ namespace darkroot {
 
     //VkViewport                  viewport;
     //VkRect2D                    scissor_rect; 
+ 
+    std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
 
+
+
+    
     double                      sim_time; 
     float                       dt;
 

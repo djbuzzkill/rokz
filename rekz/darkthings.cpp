@@ -137,7 +137,7 @@ void darkroot::Cleanup (VkPipeline&                 pipeline,
                         rokz::Swapchain&                  swapchain,
                         VkSurfaceKHR&                     surf,
                         VkCommandPool&                    command_pool,
-                        std::vector<rokz::RenderSync>&     syncs, 
+                        std::vector<rokz::FrameSync>&     syncs, 
                         std::vector<rokz::ShaderModule>&  shader_modules,
                         VkPipelineLayout&                 pipeline_layout,
                         //rokz::RenderPass&                 render_pass,
@@ -182,19 +182,19 @@ void darkroot::Cleanup (VkPipeline&                 pipeline,
 
 
 
-bool darkroot::RecreateSwapchain(rokz::Swapchain&  swapchain,
+bool darkroot::RecreateSwapchain(rokz::Swapchain&  swapchain, const rokz::Window& win, 
                                  std::vector<rokz::Image>& swapchain_images, std::vector<rokz::ImageView>& imageviews,
                                  rokz::Image& depth_image, rokz::ImageView& depth_imageview,
                                  rokz::Image& multisamp_color_image, rokz::ImageView& multisamp_color_imageview,
-                                 const VmaAllocator& allocator, GLFWwindow* glfwin, const rokz::Device& device) {
+                                 const VmaAllocator& allocator, const rokz::Device& device) {
 
   printf ("%s\n", __FUNCTION__);
 
   int width = 0, height = 0;
-  glfwGetFramebufferSize(glfwin, &width, &height);
+  glfwGetFramebufferSize(win.glfw_window, &width, &height);
 
   while (width == 0 || height == 0) {
-    glfwGetFramebufferSize(glfwin, &width, &height);
+    glfwGetFramebufferSize(win.glfw_window, &width, &height);
     glfwWaitEvents();
   }
   
@@ -211,6 +211,61 @@ bool darkroot::RecreateSwapchain(rokz::Swapchain&  swapchain,
   bool imageviews_res   = rokz::cx::CreateImageViews (imageviews, swapchain_images, device);
 
   return (swapchain_res && imageviews_res); 
+}
+
+
+
+
+// ---------------------------------------------------------------------
+// RenderFrame_dynamic <-- RecordDynamicRenderPass 
+// ---------------------------------------------------------------------
+struct DarkResetSwapchain : public darkroot::ResetSwapchainCB
+  {
+  public:
+  
+    DarkResetSwapchain (rokz::Swapchain& sc, 
+                        std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
+                        rokz::Image& dp, rokz::ImageView& dpiv,  
+                        rokz::Image& mscim, rokz::ImageView&  mscimv)
+      : ResetSwapchainCB ()
+      , swapchain (sc)
+      , swapchain_images (scis)
+      , swapchain_imageviews (scivs)
+      , depth_image (dp)
+      , depth_imageview(dpiv)
+      , msaa_color_image(mscim)
+      , msaa_color_imageview(mscimv) { 
+    }
+    
+    //
+    virtual bool ResetSwapchain (const rokz::Window& win, const VmaAllocator& allocator,  const rokz::Device& device) {
+      return darkroot::RecreateSwapchain (swapchain, win, 
+                                          swapchain_images, swapchain_imageviews,
+                                          depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
+                                          msaa_color_image, msaa_color_imageview,
+                                          allocator, device);
+    }
+    
+  protected:
+    
+    rokz::Swapchain&              swapchain;
+    std::vector<rokz::Image>&     swapchain_images;
+    std::vector<rokz::ImageView>& swapchain_imageviews;
+    
+    rokz::Image&                  depth_image;
+    rokz::ImageView&              depth_imageview;  //
+    rokz::Image&                  msaa_color_image;
+    rokz::ImageView&              msaa_color_imageview; 
+};
+
+
+std::shared_ptr<darkroot::ResetSwapchainCB> darkroot::CreateSwapchainResetter (rokz::Swapchain& sc, 
+                                                           std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
+                                                           rokz::Image& dp, rokz::ImageView& div,
+                                                           rokz::Image& mscim, rokz::ImageView& mscimv) {
+
+  return std::make_shared<DarkResetSwapchain> (sc, scis, scivs, dp, div, mscim, mscimv); 
+
 }
 
 
@@ -380,5 +435,6 @@ void SetupDarkGeometry (Glob& glob) {
 }
 
 #endif // DARKROOT_ENABLE_RENDERABLE_TEST
+
 
 

@@ -26,7 +26,7 @@ set (REKZ_SOURCE_FILES
   marscape.cpp
 #  mars_window_handler.cpp
   mars_things.cpp
-grid_pipeline.cpp  
+  grid_pipeline.cpp  
   #  test_rokz_hpp.cpp
   # test_rokz.cpp
   rekz.cpp

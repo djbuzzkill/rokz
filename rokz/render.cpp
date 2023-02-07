@@ -6,7 +6,7 @@
 // --------------------------------------------------------------------
 // nue
 // --------------------------------------------------------------------
-VkResult rokz::cx::AcquireFrame (Swapchain& swapchain, RenderSync& render_sync, uint32_t& image_index, const Device& device) {
+VkResult rokz::cx::AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device& device) {
 
   vkWaitForFences(device.handle, 1, &render_sync.in_flight_fen, VK_TRUE, UINT64_MAX);
     
@@ -43,7 +43,7 @@ VkPresentInfoKHR& rokz::cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_i
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rokz::cx::PresentFrame (VkQueue& present_que, const VkPresentInfoKHR& pi) { 
+bool rokz::cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
   //rokz::cx::FrameGroup& frame_group = glob.frame_group;
  return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
 }
@@ -51,7 +51,7 @@ bool rokz::cx::PresentFrame (VkQueue& present_que, const VkPresentInfoKHR& pi) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rokz::cx::PresentFrame (VkQueue& present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, rokz::RenderSync& render_sync) { 
+bool rokz::cx::PresentFrame (VkQueue present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
 
   std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
   std::vector<VkSwapchainKHR>  swapchains = { swapchain.handle };

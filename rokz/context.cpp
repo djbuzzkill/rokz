@@ -692,7 +692,7 @@ bool rokz::cx::CreateCommandBuffer(VkCommandBuffer &command_buffer,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::cx::CreateRenderSync (RenderSync&      sync,
+bool rokz::cx::CreateFrameSync (FrameSync&      sync,
                              RenderSyncCreateInfo& create_info,
                              const VkDevice& device) {
 
@@ -826,13 +826,13 @@ void rokz::CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
 
 
 
-void Destroy (rokz::FrameSync& fs, const rokz::Device& device) {
+void Destroy (rokz::FrameSyncGroup& fsg, const rokz::Device& device) {
   
 
-  for (size_t i = 0; i < fs.syncs.size (); ++i) {
-    vkDestroySemaphore(device.handle, fs.syncs[i].image_available_sem, nullptr);
-    vkDestroySemaphore(device.handle, fs.syncs[i].render_finished_sem, nullptr);
-    vkDestroyFence (device.handle, fs.syncs[i].in_flight_fen, nullptr);
+  for (size_t i = 0; i < fsg.syncs.size (); ++i) {
+    vkDestroySemaphore(device.handle, fsg.syncs[i].image_available_sem, nullptr);
+    vkDestroySemaphore(device.handle, fsg.syncs[i].render_finished_sem, nullptr);
+    vkDestroyFence (device.handle, fsg.syncs[i].in_flight_fen, nullptr);
   }
 
 
@@ -842,17 +842,17 @@ void Destroy (rokz::FrameSync& fs, const rokz::Device& device) {
 // ---------------------------------------------------------------------
 // DESTROY ALL THE THINGS
 // ---------------------------------------------------------------------
-void rokz::Cleanup (VkPipeline&                 pipeline,
-              std::vector<Framebuffer>&         framebuffers,
-              std::vector<ImageView>&           imageviews,
+void rokz::Cleanup (VkPipeline&                  pipeline,
+              std::vector<Framebuffer>&          framebuffers,
+              std::vector<ImageView>&            imageviews,
 
-              rokz::Swapchain&                  swapchain,
-              VkSurfaceKHR&                     surf,
-              VkCommandPool&                    command_pool,
-              std::vector<rokz::RenderSync>&     syncs, 
-              std::vector<rokz::ShaderModule>&  shader_modules,
-              VkPipelineLayout&                 pipeline_layout,
-              rokz::RenderPass&                 render_pass,
+              rokz::Swapchain&                   swapchain,
+              VkSurfaceKHR&                      surf,
+              VkCommandPool&                     command_pool,
+                    std::vector<rokz::FrameSync>& fsyncs, 
+              std::vector<rokz::ShaderModule>&   shader_modules,
+              VkPipelineLayout&                  pipeline_layout,
+              rokz::RenderPass&                  render_pass,
 
                    rokz::Image&                      msaa_color_image,
               rokz::ImageView&                  msaa_color_imageview,
@@ -884,10 +884,10 @@ void rokz::Cleanup (VkPipeline&                 pipeline,
   vkDestroySurfaceKHR (inst, surf, nullptr);
   vkDestroyCommandPool (device.handle, command_pool, nullptr);
 
-  for (size_t i = 0; i < syncs.size (); ++i) {
-    vkDestroySemaphore(device.handle, syncs[i].image_available_sem, nullptr);
-    vkDestroySemaphore(device.handle, syncs[i].render_finished_sem, nullptr);
-    vkDestroyFence (device.handle, syncs[i].in_flight_fen, nullptr);
+  for (size_t i = 0; i < fsyncs.size (); ++i) {
+    vkDestroySemaphore(device.handle, fsyncs[i].image_available_sem, nullptr);
+    vkDestroySemaphore(device.handle, fsyncs[i].render_finished_sem, nullptr);
+    vkDestroyFence (device.handle, fsyncs[i].in_flight_fen, nullptr);
   }
 
   for (auto shmod : shader_modules) {

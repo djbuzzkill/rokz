@@ -3,6 +3,8 @@
 #include "dark_obj_pipeline.h"
 #include "rokz/buffer.h"
 #include "rokz/context.h"
+#include "rokz/rokz_types.h"
+#include <vulkan/vulkan_core.h>
 // 
 
 // --------------------------------------------------------------------
@@ -133,7 +135,7 @@ bool SetupDynamicRenderingInfo (darkroot::Glob& glob) {
 
 
 // -----------------------------------------------------------------------------
-//
+// basically populates the AttachmentInfo
 // -----------------------------------------------------------------------------
 void UpdateDynamicRenderingInfo (darkroot::Glob& glob, uint32_t image_index) {
   //printf ("%s\n", __FUNCTION__); 
@@ -358,7 +360,7 @@ void CleanupDarkroot (Glob& glob) {
            glob.swapchain_group.swapchain,
            glob.surface,
            glob.device.command_pool.handle,
-           glob.frame_sync.syncs, 
+           glob.framesyncgroup.syncs, 
            glob.obj_pipeline.pipeline.shader_modules,
            glob.obj_pipeline.pipeline.layout.handle, 
            glob.msaa_color_image, glob.msaa_color_imageview,
@@ -384,6 +386,12 @@ glm::vec3& unit_angle_xz (glm::vec3& v, float theta) {
   return v; 
 }
 
+glm::vec3& unit_angle_yz (glm::vec3& v, float theta) {
+  v.x = 0.0;
+  v.y = cos (theta) ;
+  v.z = -sinf (theta) ;
+  return v; 
+}
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -392,6 +400,7 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
   glob.sim_time += dt;
   //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
 
+  
   float sim_timef = glob.sim_time;
   float dtF = static_cast <float> (dt);
   float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
@@ -402,7 +411,38 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
   // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
   rokz::MVPTransform mats; 
   mats.model = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-  mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+#ifndef WATlolwut // >>>>>>>>
+
+  if (glob.input_state.mouse.inside != glob.prev_inside) { 
+    glob.prev_x = glob.input_state.mouse.x_pos;
+    glob.prev_y = glob.input_state.mouse.y_pos;
+    glob.prev_inside = glob.input_state.mouse.inside; 
+  }
+
+    
+  int mouse_dx = glob.input_state.mouse.x_pos - glob.prev_x;
+  int mouse_dy = glob.input_state.mouse.y_pos - glob.prev_y; 
+
+  if (std::abs(mouse_dx) > 100 || std::abs(mouse_dy) > 100) {
+    printf ("[ dx:%i, dy:%i ]\n" , mouse_dx, mouse_dy);
+  }
+
+  glob.prev_x = glob.input_state.mouse.x_pos;
+  glob.prev_y = glob.input_state.mouse.y_pos;
+
+  const float ratef     = k2Pi * 0.0003f;
+  glob.view_orie.theta -= mouse_dx * ratef;
+  glob.view_orie.phi   -= mouse_dy * ratef;
+
+#endif // <<<<<
+  
+  mats.view = glm::rotate (glm::mat4(1), glob.view_orie.theta, glm::vec3(0.0f, 1.0f, 0.0f)) * 
+    //glm::rotate (glm::mat4(1), glob.view_orie.phi, glm::vec3(1.0f, 0.0f, 0.0f)) *
+    glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
+
+  // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
   mats.proj[1][1] *= -1;
 
@@ -418,7 +458,7 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
 
     
-    glob.obj_theta[0] += glob.input_state.mouse.dx * dtF * darkroot::k2Pi;
+    glob.obj_theta[0] += mouse_dx * dtF * darkroot::k2Pi;
     
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, glob.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
@@ -532,64 +572,134 @@ bool RecordDynamicRenderPass (Glob& glob,
   return true;
 }
 
+
+// #define REKZ_BREAK_UP_RENDER_FRAME_PROC 1
+#ifdef  REKZ_BREAK_UP_RENDER_FRAME_PROC
 // ---------------------------------------------------------------------
-// RenderFrame_dynamic <-- RecordDynamicRenderPass 
+//  
 // ---------------------------------------------------------------------
-bool RenderFrame_dynamic (Glob&                   glob,
-                          uint32_t&               image_index,
-                          bool&                   resize,
-                          //rokz::RenderPass&       renderpass, 
-                          const rokz::Pipeline&   pipeline,
-                          const VkDescriptorSet&  descr_set, 
-                          uint32_t                curr_frame,
-                          double                  dt) {
+int FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const rokz::Device& device) {
 
-  const rokz::Device&             device      = glob.device; 
-  rokz::SwapchainGroup&           scg = glob.swapchain_group;
-
-  rokz::Swapchain&                swapchain              = scg.swapchain; 
-  std::vector<rokz::Image>&       swapchain_images       = scg.images; 
-  std::vector<rokz::ImageView>&   swapchain_imageviews   = scg.imageviews; 
-
-  rokz::Image&                    depth_image            = glob.depth_image;
-  rokz::ImageView&                depth_imageview        = glob.depth_imageview; 
+  rokz::Swapchain& swapchain = scg.swapchain;
   
-  rokz::Image&                    msaa_color_image       = glob.msaa_color_image; 
-  rokz::ImageView&                msaa_color_imageview   = glob.msaa_color_imageview; 
-
-  VmaAllocator&                   allocator              = glob.device.allocator.handle;
-  rokz::Window&                   window                 = glob.window;
-
-  rokz::RenderSync&               render_sync            = glob.frame_sync.syncs[curr_frame];
-    // glob.syncs;
-
-  VkResult acquire_res = rokz::cx::AcquireFrame (glob.swapchain_group.swapchain, render_sync, image_index, device); 
   
+  // dynamic_rendering now, we have to manually transition
+  rokz::cx::TransitionImageLayout (scg.images[image_index].handle,
+                                   swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+                                   device.queues.graphics, device.command_pool.handle, device.handle);
+
+  if (VK_SUCCESS ==  vkResetCommandBuffer (command_buffer, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
+    return 0; 
+  }
+    
+
+  assert (0); // +UpdateDynamicRenderingInfo
+  //UpdateDynamicRenderingInfo (glob, image_index);
+
+  return __LINE__;
+}
+
+
+// ---------------------------------------------------------------------
+//  
+// ---------------------------------------------------------------------
+struct DrawSequence {
+
+public:
+  // replace RecordDynamicRenderPass (glob,
+  virtual int Exec (VkCommandBuffer comb, const rokz::Device& device) = 0;
+
+protected:
+  DrawSequence () {}
+}; 
+
+
+typedef std::vector<DrawSequence> DrawSequences;
+// ---------------------------------------------------------------------
+//  
+// ---------------------------------------------------------------------
+int FrameDrawEnd (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const rokz::RenderSync& rendersync, const rokz::Device& device) {
+
+  rokz::Swapchain& swapchain = scg.swapchain;
+  
+
+  VkSubmitInfo submit_info {};
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  VkSemaphore wait_semaphores[]      = {rendersync.image_available_sem};
+  VkSemaphore signal_semaphores[]    = {rendersync.render_finished_sem }; 
+  VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+  submit_info.pWaitDstStageMask    = wait_stages;
+
+  submit_info.waitSemaphoreCount   = 1;
+  submit_info.pWaitSemaphores      = wait_semaphores;
+  submit_info.signalSemaphoreCount = 1; 
+  submit_info.pSignalSemaphores    = signal_semaphores; 
+  submit_info.commandBufferCount   = 1;
+  submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
+
+  if (vkQueueSubmit (device.queues.graphics, 1, &submit_info, rendersync.in_flight_fen) != VK_SUCCESS) {
+    printf("failed to submit draw command buffer!");
+    return false; 
+  }
+
+  //  dynamic_rendering now, we have to manually transition
+  rokz::cx::TransitionImageLayout (scg.images[image_index].handle,
+                                   swapchain.ci.imageFormat,
+                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+                                   VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                   device.queues.graphics, device.command_pool.handle, device.handle);
+
+  
+  return rokz::cx::PresentFrame (device.queues.present, scg.swapchain, image_index, rendersync); 
+
+}
+
+// ---------------------------------------------------------------------
+//  
+// ---------------------------------------------------------------------
+bool RenderFrame_dynamic_pass (rokz::SwapchainGroup&             scg, 
+                               uint32_t&                         image_index,
+                               bool&                             resize,
+                               //rokz::RenderPass&       renderpass, 
+                               const rokz::Pipeline&             pipeline,
+                               const VkDescriptorSet&            descr_set, 
+                               uint32_t                          curr_frame,
+                               double                            dt,
+                               std::shared_ptr<ResetSwapchainCB> swapchain_reset,
+                               const rokz::Device&               device )
+{
+  
+
+  
+  const VmaAllocator&         allocator    = device.allocator.handle;
+  rokz::Window&         window       = glob.window;
+  rokz::RenderSync&     render_sync  = glob.frame_sync.syncs[curr_frame];
+  VkResult              acquire_res  = rokz::cx::AcquireFrame (scg.swapchain, render_sync, image_index, device); 
+
   if (acquire_res == VK_ERROR_OUT_OF_DATE_KHR || acquire_res == VK_SUBOPTIMAL_KHR || resize) {
     resize = false; 
-    return darkroot::RecreateSwapchain (swapchain, 
-                                        swapchain_images, swapchain_imageviews,
-                                        depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
-                                        msaa_color_image, msaa_color_imageview,
-                                        allocator, window.glfw_window, device);
-  } 
+    return swapchain_reset->ResetSwapchain (window, allocator, device); 
+  }
   else if (acquire_res != VK_SUCCESS) {
     printf("failed to acquire swap chain image!");
     return false;
+  
   }
 
-  //printf ("[%s] line:%i\n", __FUNCTION__, __LINE__); 
-  // this is wat works right now
-  UpdateDarkUniforms (glob, curr_frame, dt); 
+  assert (false); // -UpdateDarkUniforms
+  //UpdateDarkUniforms (glob, curr_frame, dt); 
 
 
   // dynamic_rendering now, we have to manually transition
-  rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
-                               swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+  rokz::cx::TransitionImageLayout (scg.images[image_index].handle,
+                               scg.swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                               glob.device.queues.graphics, glob.device.command_pool.handle, device.handle);
+                               device.queues.graphics, device.command_pool.handle, device.handle);
   
   VkCommandBuffer&   command_buffer = glob.frame_sync.command_buffers[curr_frame]; 
+
   rokz::Buffer&      vma_vb_device  = glob.vma_vb_device;
   rokz::Buffer&      vma_ib_device  = glob.vma_ib_device; 
 
@@ -599,6 +709,9 @@ bool RenderFrame_dynamic (Glob&                   glob,
   // RecordDarkRenderPaass
   UpdateDynamicRenderingInfo (glob, image_index); 
 
+  // 
+  // construct render sequence
+  // generate render sequence
   RecordDynamicRenderPass (glob,
                            command_buffer,
                            pipeline,
@@ -640,6 +753,119 @@ bool RenderFrame_dynamic (Glob&                   glob,
   
 }
 
+#endif //  REKZ_BREAK_UP_RENDER_FRAME_PROC
+
+// ---------------------------------------------------------------------
+// RenderFrame_dynamic <-- RecordDynamicRenderPass 
+// ---------------------------------------------------------------------
+bool RenderFrame_dynamic_pass (Glob&                   glob,
+                               uint32_t&               image_index,
+                               bool&                   resize,
+                               //rokz::RenderPass&       renderpass, 
+                               const rokz::Pipeline&   pipeline,
+                               const VkDescriptorSet&  descr_set, 
+                               uint32_t                curr_frame,
+                               double                  dt) {
+
+  const rokz::Device&             device      = glob.device; 
+  rokz::SwapchainGroup&           scg = glob.swapchain_group;
+
+  rokz::Swapchain&                swapchain              = scg.swapchain; 
+  std::vector<rokz::Image>&       swapchain_images       = scg.images; 
+  std::vector<rokz::ImageView>&   swapchain_imageviews   = scg.imageviews; 
+
+  rokz::Image&                    depth_image            = glob.depth_image;
+  rokz::ImageView&                depth_imageview        = glob.depth_imageview; 
+  
+  rokz::Image&                    msaa_color_image       = glob.msaa_color_image; 
+  rokz::ImageView&                msaa_color_imageview   = glob.msaa_color_imageview; 
+
+  VmaAllocator&                   allocator              = glob.device.allocator.handle;
+  rokz::Window&                   window                 = glob.window;
+
+
+
+  rokz::FrameSync&          framesync            = glob.framesyncgroup.syncs[curr_frame];
+  VkResult acquire_res = rokz::cx::AcquireFrame (glob.swapchain_group.swapchain, framesync , image_index, device); 
+  
+  if (acquire_res == VK_ERROR_OUT_OF_DATE_KHR || acquire_res == VK_SUBOPTIMAL_KHR || resize) {
+    resize = false; 
+    return darkroot::RecreateSwapchain (swapchain, window,
+                                        swapchain_images, swapchain_imageviews,
+                                        depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
+                                        msaa_color_image, msaa_color_imageview,
+                                        allocator, device);
+  } 
+  else if (acquire_res != VK_SUCCESS) {
+    printf("failed to acquire swap chain image!");
+    return false;
+  }
+
+  //printf ("[%s] line:%i\n", __FUNCTION__, __LINE__); 
+  // this is wat works right now
+  UpdateDarkUniforms (glob, curr_frame, dt); 
+
+
+  // dynamic_rendering now, we have to manually transition
+  rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
+                               swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+                               glob.device.queues.graphics, glob.device.command_pool.handle, device.handle);
+  
+  VkCommandBuffer&   command_buffer = glob.framesyncgroup.command_buffers[curr_frame]; 
+  rokz::Buffer&      vma_vb_device  = glob.vma_vb_device;
+  rokz::Buffer&      vma_ib_device  = glob.vma_ib_device; 
+
+  vkResetCommandBuffer (command_buffer, 0); //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
+
+  //RecordDarkRenderPass (command_buffer,
+  // RecordDarkRenderPaass
+  UpdateDynamicRenderingInfo (glob, image_index); 
+
+  // 
+  // construct render sequence
+  // generate render sequence
+  RecordDynamicRenderPass (glob,
+                           command_buffer,
+                           pipeline,
+                           descr_set, 
+                           vma_vb_device.handle, 
+                           vma_ib_device.handle,
+                           swapchain.ci.imageExtent,
+                           glob.device );
+  
+  VkSubmitInfo submit_info {};
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  VkSemaphore wait_semaphores[]      = {framesync.image_available_sem};
+  VkSemaphore signal_semaphores[]    = {framesync.render_finished_sem }; 
+  VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+  submit_info.pWaitDstStageMask    = wait_stages;
+
+  submit_info.waitSemaphoreCount   = 1;
+  submit_info.pWaitSemaphores      = wait_semaphores;
+  submit_info.signalSemaphoreCount = 1; 
+  submit_info.pSignalSemaphores    = signal_semaphores; 
+  submit_info.commandBufferCount   = 1;
+  submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
+
+  if (vkQueueSubmit (glob.device.queues.graphics, 1, &submit_info, framesync.in_flight_fen) != VK_SUCCESS) {
+    printf("failed to submit draw command buffer!");
+    return false; 
+  }
+
+  //  dynamic_rendering now, we have to manually transition
+  rokz::cx::TransitionImageLayout (glob.swapchain_group.images[image_index].handle,
+                               swapchain.ci.imageFormat,
+                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+                               VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                               glob.device.queues.graphics, glob.device.command_pool.handle, device.handle);
+
+  
+  return rokz::cx::PresentFrame (glob.device.queues.present, glob.swapchain_group.swapchain, image_index, glob.framesyncgroup.syncs[curr_frame]); 
+  
+}
+
 bool CreateAttachementSet () {
 
   // the canvas
@@ -664,6 +890,12 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glob.dt = 0.0;
   glob.obj_theta[0] =   0.0;
   glob.obj_theta[1] =   0.0;
+
+  glob.view_orie.theta = 0.0f;
+  glob.view_orie.phi   = kPi;
+  glob.prev_x = 0;
+  glob.prev_y = 0;
+
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
 
   auto dark_path = std::filesystem::path ( "/home/djbuzzkill/owenslake/rokz/");
@@ -718,6 +950,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // rekz::CreateDepthBufferImage (glob.depth_image, glob.depth_imageview, glob.msaa_samples, glob.depth_format, 
   //                         glob.device.command_pool, glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent,
   //                         glob.device.allocator.handle, glob.device);
+  glob.swapchain_reset_cb = CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+                                                     glob.depth_image, glob.depth_imageview,
+                                                     glob.msaa_color_image, glob.msaa_color_imageview); 
 
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob) ; 
@@ -741,16 +976,16 @@ int darkroot_basin (const std::vector<std::string>& args) {
   
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);
-  rokz::FrameSync& framesync = glob.frame_sync;
+  rokz::FrameSyncGroup& fsg = glob.framesyncgroup;
   // !! 
-  framesync.command_buffers.resize (kMaxFramesInFlight);
-  framesync.syncs.resize           (kMaxFramesInFlight);
-  rokz::cx::AllocateInfo (framesync.command_buffer_alloc_info, glob.device.command_pool.handle); 
+  fsg.command_buffers.resize (kMaxFramesInFlight);
+  fsg.syncs.resize           (kMaxFramesInFlight);
+  rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.device.command_pool.handle); 
 
   for (size_t i = 0; i < Glob::MaxFramesInFlight; ++i) {
     // ^^ 'CreateCommandBuffers' should be called, we call it 
-    rokz::cx::CreateCommandBuffer(framesync.command_buffers[i], framesync.command_buffer_alloc_info,glob.device.handle);
-    rokz::cx::CreateRenderSync (framesync.syncs[i], framesync.syncs[i].ci, glob.device.handle);
+    rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], fsg.command_buffer_alloc_info,glob.device.handle);
+    rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
   }
 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
@@ -789,7 +1024,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
     //    UpdateDarkroot(glob, glob.dt);
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
-    if (RenderFrame_dynamic (glob, image_index, glob.input_state.fb_resize, glob.obj_pipeline.pipeline,
+    if (RenderFrame_dynamic_pass (glob, image_index, glob.input_state.fb_resize, glob.obj_pipeline.pipeline,
                              glob.obj_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
       // no render pass of framebuffer
     }
@@ -822,3 +1057,27 @@ int darkroot_basin (const std::vector<std::string>& args) {
   return 0;
 }
 
+
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+
+
+const std::string sbcs[] = {
+  "k2",
+  // passport
+  // excavator
+  "ride",
+  // warpig
+  // superpig
+  // peaceseeker
+  "capita",
+  // indoor survival
+  "jones",
+  "yes", 
+  "korua",
+  // transition finder
+  "rome",
+  // national
+}; 

@@ -90,23 +90,13 @@ void rekz::win_event::on_mouse_move (GLFWwindow* window, double xpos, double ypo
       int ipos_y = static_cast<int> (ypos);
       
       if (input_state.mouse.x_pos == -1 || input_state.mouse.y_pos == -1) {
-        input_state.mouse.x_pos = ipos_x ;
-        input_state.mouse.y_pos = ipos_y ;
-
-        input_state.mouse.dx = 0;
-        input_state.mouse.dy = 0;
-        
+        input_state.mouse.x_pos = ipos_x;
+        input_state.mouse.y_pos = ipos_y;
       }
       else {
-
-        input_state.mouse.dx = ipos_x - input_state.mouse.x_pos;
-        input_state.mouse.dy = ipos_y - input_state.mouse.y_pos;
-
-        input_state.mouse.x_pos = ipos_x ;
-        input_state.mouse.y_pos = ipos_y ;
-
+        input_state.mouse.x_pos = ipos_x;
+        input_state.mouse.y_pos = ipos_y;
       }
-      // printf ("%s [dx:%i | dy:%i]\n" ,__FUNCTION__, input_state.mouse.dx, input_state.mouse.dy); 
     }
   }  
 }

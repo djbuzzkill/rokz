@@ -122,7 +122,8 @@ namespace rokz {
                            const VkDevice&                    device); 
 
 
-  bool CreateRenderSync (RenderSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
+    //  bool CreateRenderSync (RenderSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
+  bool CreateFrameSync (FrameSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
 
 
   } // cx
@@ -179,7 +180,7 @@ namespace rokz {
                 rokz::Swapchain&                  swapchain,
                 VkSurfaceKHR&                     surf,
                 VkCommandPool&                    command_pool,
-                 std::vector<rokz::RenderSync>&    syncs, 
+                 std::vector<rokz::FrameSync>&    syncs, 
                 std::vector<rokz::ShaderModule>&  shader_modules,
                 VkPipelineLayout&                 pipeline_layout,
                 rokz::RenderPass&                 render_pass,

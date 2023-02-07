@@ -8,7 +8,6 @@
 #include <vulkan/vulkan_core.h>
 
 
-
 //#define ROKZ_USE_VMA_ALLOCATION 1
 // --------------------------------------------------------------------
 // 
@@ -39,7 +38,7 @@ bool SetupMarsWindow (rokz::Window& window, void* user_pointer) {
   glfwSetMouseButtonCallback(window.glfw_window, rekz::win_event::on_mouse_button);
   glfwSetCursorEnterCallback (window.glfw_window, rekz::win_event::on_mouse_enter); 
 
-    glfwSetWindowUserPointer (window.glfw_window, user_pointer);
+  glfwSetWindowUserPointer (window.glfw_window, user_pointer);
 
   return true;
 }
@@ -52,7 +51,7 @@ bool SetupGridUniforms (Glob& glob) {
 
   VkDevice const&            device        = glob.device.handle;
   VkPhysicalDevice const&    physdev       = glob.physical_device.handle;
-  std::vector<rokz::Buffer>& uniform_buffs = glob.vma_uniform_buffs;
+  std::vector<rokz::Buffer>& uniform_buffs = glob.uniform_mvp;
   
   uniform_buffs.resize (kMaxFramesInFlight);
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
@@ -75,13 +74,14 @@ bool SetupGridUniforms (Glob& glob) {
 // -----------------------------------------------------------------------------
 bool SetupGridResources (Glob& glob) {
 
-  float     kGridDim   = 100.0f;
-  uint32_t  kGridTiles = 10; 
+  float     kGridDimSize = 100.0f;
+  uint32_t  kGridTiles   = 10; 
 
-  uint32_t num_grid_verts = (kGridTiles + 1) * (kGridTiles + 1);
-
-
-  uint32_t num_grid_inds = 69; 
+  float grid_offset = kGridDimSize / 2; 
+  float grid_step_size = kGridDimSize / kGridTiles; 
+  
+  uint32_t grid_vert_dim  = kGridTiles + 1;                  
+  uint32_t num_grid_verts = grid_vert_dim * grid_vert_dim;
 
   // VERTEX BUFFER
   {
@@ -90,10 +90,19 @@ bool SetupGridResources (Glob& glob) {
     rokz::cx::AllocCreateInfo_stage (vb_stage.alloc_ci);
     rokz::cx::CreateBuffer (vb_stage, glob.device.allocator.handle);
     if (void* mappedp = rokz::cx::MappedPointer (vb_stage)) {
+      rekz::GridVert* vertp = reinterpret_cast<rekz::GridVert*> (mappedp);
+      
+      for (uint32_t iz = 0; iz < grid_vert_dim; ++iz) {
+        for (uint32_t ix = 0; ix < grid_vert_dim; ++ix) {
 
-      // do shit
-      
-      
+          vertp[grid_vert_dim * iz + ix].pos.x =  (grid_step_size * ix) - grid_offset;
+          vertp[grid_vert_dim * iz + ix].pos.y =  0.0f;
+          vertp[grid_vert_dim * iz + ix].pos.z =  (grid_step_size * iz) - grid_offset;
+
+          vertp[grid_vert_dim * iz + ix].col = glm::vec3 (0.2f, 0.2f, 0.9f); 
+        }
+      }
+        
       rokz::cx::UnmapMemory (vb_stage.allocation, glob.device.allocator.handle); 
     }
     //
@@ -108,6 +117,7 @@ bool SetupGridResources (Glob& glob) {
   }
   
   
+  uint32_t num_grid_inds = (2 * grid_vert_dim) + (2 * grid_vert_dim); 
   // INDEX BUFFER
   {
     rokz::Buffer ib_stage;
@@ -115,8 +125,24 @@ bool SetupGridResources (Glob& glob) {
     rokz::cx::AllocCreateInfo_stage (ib_stage.alloc_ci);
     rokz::cx::CreateBuffer (ib_stage, glob.device.allocator.handle);
     if (void* mappedp = rokz::cx::MappedPointer (ib_stage)) {
+      uint16_t* indexp = reinterpret_cast<uint16_t*> (mappedp); 
+      // Z goes x-row 
+      // |  |  0  1  2  3  4  5  6  7  8  9 10
+      // v  | 11 12 13 14 15 16 17 18 19 20 21
+      for (uint32_t iz = 0; iz < grid_vert_dim; ++iz) {
+        *indexp++ = iz * grid_vert_dim;
+        *indexp++ = (iz * grid_vert_dim) + kGridTiles;
+      }
 
-      // ...
+      // X--> x goes z-col
+      //  0   1   2
+      //  |   |   |
+      //  V   v   V
+      // 110 111 112
+      for (uint32_t ix = 0; ix < grid_vert_dim; ++ix) {
+        *indexp++ = ix;
+        *indexp++ = kGridTiles * grid_vert_dim + ix;
+      }
 
       rokz::cx::UnmapMemory (ib_stage.allocation, glob.device.allocator.handle); 
     
@@ -153,17 +179,15 @@ void UpdateGridUniforms (Glob& glob, uint32_t current_frame, double dt) {
   float dtF = static_cast <float> (dt);
   float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
     
-  glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
-  // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
-  // printf ("v1 * m0 = <%f, %f, %f, %f>  \n",  v1.x, v1.y, v1.z, v1.w); 
-  // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
-  rokz::MVPTransform mats; 
-  mats.model = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+  //glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
+
+  rokz::MVPTransform mats;  
+  mats.model = glm::mat4(1.0); // <-- always at origin
   mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
   mats.proj[1][1] *= -1;
 
-  memcpy (rokz::cx::MappedPointer (glob.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
+  memcpy (rokz::cx::MappedPointer (glob.uniform_mvp[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
 }
 
 // -----------------------------------------------------------------------------
@@ -246,17 +270,10 @@ void CleanupMars (Glob& glob) {
   
   printf ("%s \n", __FUNCTION__); 
 
-  for (auto& ub : glob.vma_uniform_buffs) {
+  for (auto& ub : glob.uniform_mvp) {
     rokz::cx::Destroy (ub, glob.allocator); 
   }
 
-  for (auto buf : glob.vma_objparam_buffs) {  
-    rokz::cx::Destroy (buf, glob.allocator);
-  }
-
-  //rokz::cx::Destroy (glob.sampler, glob.device.handle); 
-  //rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
-  //rokz::cx::Destroy (glob.texture_image, glob.allocator);
 
   rokz::cx::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
 
@@ -272,7 +289,7 @@ void CleanupMars (Glob& glob) {
            glob.swapchain_group.swapchain,
            glob.surface,
            glob.command_pool.handle,
-           glob.frame_sync.syncs, 
+           glob.framesyncgroup.syncs, 
            glob.terrain_pipeline.pipeline.shader_modules,
            glob.terrain_pipeline.pipeline.layout.handle, 
            glob.render_pass,
@@ -336,25 +353,19 @@ bool SetupMarsUniforms (mars::Glob& glob) {
   VkDevice const&          device = glob.device.handle;
   VkPhysicalDevice const&  physdev = glob.physical_device.handle;
 
-  std::vector<rokz::Buffer>& uniform_buffs = glob.vma_uniform_buffs;
-  std::vector<rokz::Buffer>& objparams   = glob.vma_objparam_buffs;
+  std::vector<rokz::Buffer>& uniform_mvp_transform = glob.uniform_mvp;
+  //std::vector<rokz::Buffer>& objparams   = glob.vma_objparam_buffs;
   
-  uniform_buffs.resize (kMaxFramesInFlight);
-  //mapped_ptrs.resize (kMaxFramesInFlight); 
-  objparams.resize (kMaxFramesInFlight);
-  //objparam_ptrs.resize (kMaxFramesInFlight);
+  uniform_mvp_transform.resize (kMaxFramesInFlight);
   
   for (size_t i = 0; i <  kMaxFramesInFlight; i++) {
+    rokz::cx::CreateInfo_uniform     (uniform_mvp_transform[i].ci, rokz::kSizeOf_MVPTransform, 1); 
+    rokz::cx::AllocCreateInfo_mapped (uniform_mvp_transform[i].alloc_ci); 
 
-
-    rokz::cx::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
-    rokz::cx::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
-    if (!rokz::cx::CreateBuffer (uniform_buffs[i], glob.allocator)) {
+    if (!rokz::cx::CreateBuffer (uniform_mvp_transform[i], glob.allocator)) {
       printf (" --> [FAIL]  create MVPTransform \n"); 
       return false; 
     }
-
-
   }
 
   printf (" --> [true] \n"); 
@@ -384,7 +395,7 @@ void UpdateMarsUniforms (mars::Glob& glob, uint32_t current_frame, double dt) {
   mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
   mats.proj[1][1] *= -1;
 
-  memcpy (rokz::cx::MappedPointer (glob.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
+  memcpy (rokz::cx::MappedPointer (glob.uniform_mvp[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
  
 }
 
@@ -444,8 +455,8 @@ int mars_run (const std::vector<std::string>& args) {
 
   Glob glob; //
   InitMarsGlob (glob);
-  rokz::SwapchainGroup&  scg        = glob.swapchain_group;
-  rokz::FrameSync&       framesyncs = glob.frame_sync;
+  rokz::SwapchainGroup&  scg   = glob.swapchain_group;
+  rokz::FrameSyncGroup&  fsg   = glob.framesyncgroup; 
   
   auto mars_path = std::filesystem::path ("/home/djbuzzkill/owenslake/rokz/");
   
@@ -540,7 +551,7 @@ int mars_run (const std::vector<std::string>& args) {
 
 #ifdef MARS_TERRAIN_ENABLE 
   if (!SetupTerrainDescriptorSets (glob.obj_pipeline,
-                                   glob.vma_uniform_buffs,
+                                   glob.uniform_mvp,
                                    glob.vma_objparam_buffs,
                                    glob.texture_imageview,
                                    glob.sampler,
@@ -551,7 +562,7 @@ int mars_run (const std::vector<std::string>& args) {
   }
 #endif
 
-  if (!rekz::SetupGridDescriptorSets (glob.grid_pipeline, glob.vma_uniform_buffs,
+  if (!rekz::SetupGridDescriptorSets (glob.grid_pipeline, glob.uniform_mvp,
                                       glob.descriptor_pool, glob.device)) {
     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
     return false;
@@ -561,19 +572,19 @@ int mars_run (const std::vector<std::string>& args) {
 
   //swapchain_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
 
-  framesyncs.syncs.resize (kMaxFramesInFlight);
-  framesyncs.command_buffers.resize (kMaxFramesInFlight);
+  fsg.syncs.resize (kMaxFramesInFlight);
+  fsg.command_buffers.resize (kMaxFramesInFlight);
   
-  rokz::cx::AllocateInfo (framesyncs.command_buffer_alloc_info, glob.command_pool.handle); 
+  rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.command_pool.handle); 
 
   // 
   for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
     // sep
-    rokz::cx::CreateCommandBuffer(framesyncs.command_buffers[i], 
-                              framesyncs.command_buffer_alloc_info,
+    rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], 
+                              fsg.command_buffer_alloc_info,
                               glob.device.handle);
 
-    rokz::cx::CreateRenderSync (framesyncs.syncs[i], framesyncs.syncs[i].ci, glob.device.handle);
+    rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
   }
 
   // SetupDarkroot ();
@@ -635,7 +646,6 @@ int mars_run (const std::vector<std::string>& args) {
 
   // CLEAN UP
   CleanupMars (glob); 
-
 
   printf ("%[LEAVING] --> %s\n", __FUNCTION__);
   return 0; 
@@ -888,7 +898,7 @@ bool SetupTerrainShaderModules (rokz::Pipeline& pipeline, const std::filesystem:
 // ---------------------------------------------------------------------
 bool SetupTerrainDescriptorSets (rekz::PipelineGroup& pipelinegroup,
 
-                                const std::vector<rokz::Buffer>& vma_uniform_buffs,
+                                const std::vector<rokz::Buffer>& uniform_mvp,
                                 const std::vector<rokz::Buffer>& vma_objparam_buffs,
 
                                 const rokz::ImageView& texture_imageview, 
@@ -921,13 +931,13 @@ bool SetupTerrainDescriptorSets (rekz::PipelineGroup& pipelinegroup,
 
     // MVPTransform
     VkDescriptorBufferInfo mvp_info{};
-    mvp_info.buffer     = 0; // vma_uniform_buffs[i].handle;
+    mvp_info.buffer     = 0; // uniform_mvp[i].handle;
     mvp_info.offset     = 0;
     mvp_info.range      = sizeof (rokz::MVPTransform); 
 
     // mar::ViewParams
     VkDescriptorBufferInfo view_info{};
-    view_info.buffer     = 0; // vma_uniform_buffs[i].handle;
+    view_info.buffer     = 0; // uniform_mvp[i].handle;
     view_info.offset     = 0;
     view_info.range      = sizeof (mars::ViewParams); 
     //  mars::PatchParams
@@ -1112,4 +1122,7 @@ void SetupPatchGeometry (Glob& glob) {
 
 
 #endif
+
+
+
 

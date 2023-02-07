@@ -25,7 +25,8 @@ VkDescriptorSetLayoutBinding& rokz::cx::DescriptorSetLayoutBinding (VkDescriptor
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-VkDescriptorPoolCreateInfo& rokz::cx::CreateInfo (VkDescriptorPoolCreateInfo& ci, uint32_t max_sets,  const std::vector<VkDescriptorPoolSize>& sizes) {
+VkDescriptorPoolCreateInfo& rokz::cx::CreateInfo (VkDescriptorPoolCreateInfo& ci, uint32_t max_sets,
+                                                  const std::vector<VkDescriptorPoolSize>& sizes) {
   // typedef struct VkDescriptorPoolCreateInfo {
   //   VkStructureType                sType;
   //   const void*                    pNext;

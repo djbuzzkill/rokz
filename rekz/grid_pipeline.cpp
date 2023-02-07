@@ -1,7 +1,5 @@
-//
-#include "grid_pipeline.h"
-#include <vulkan/vulkan_core.h>
 
+#include "grid_pipeline.h"
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
@@ -49,13 +47,15 @@ bool SetupGridShaderModules (rokz::Pipeline& pipeline, const std::filesystem::pa
   if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
     return false; 
   
+  // for pipeline state ci
   rokz::CreateInfo (pss_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
   
   // FRAG SHADER
   std::filesystem::path frag_file_path = fspath/"data/shader/gridscape_frag.spv" ;
   if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device.handle))
     return false; 
-  
+
+  // for pipeline state ci
   rokz::CreateInfo (pss_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
   //
   return true; 
@@ -66,30 +66,53 @@ bool SetupGridShaderModules (rokz::Pipeline& pipeline, const std::filesystem::pa
 // 
 // ---------------------------------------------------------------------
 bool rekz::SetupGridDescriptorPool (rokz::DescriptorPool& dp, uint32_t num_pools, const rokz::Device& device) {
-
   printf ("%s \n", __FUNCTION__); 
-  //SetupDescriptorPool (glob.descr_pool, glob.device);
   
   dp.sizes.resize (1); 
-  dp.sizes[0] = {} ; //
-  dp.sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  dp.sizes[0].descriptorCount = static_cast<uint32_t>(num_pools);
+  dp.sizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, num_pools} ;  // MVPTransform struc
 
   rokz::cx::CreateInfo ( dp.ci, num_pools, dp.sizes); 
-  
   if (!rokz::cx::CreateDescriptorPool (dp, device.handle)) {
     printf ("[FAILED] %s", __FUNCTION__);
     return false; 
   }
 
- return true; 
+  return true; 
 }
+
+// ---------------------------------------------------------------------
+// Setup 'DescriptorLayout' is how it looks
+// ---------------------------------------------------------------------
+bool SetupGridDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
+
+  printf ("%s", __FUNCTION__); 
+
+
+  descrgroup.dslayout.bindings.resize (1);
+  // MVPTransform
+  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
+                                        0,
+                                        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                        1,
+                                        VK_SHADER_STAGE_VERTEX_BIT);
+  // 
+  if (!rokz::cx::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
+                                            descrgroup.dslayout.ci,
+                                            descrgroup.dslayout.bindings,
+                                            device.handle)) {
+    printf (" --> [FAILED] \n"); 
+    return false;
+  }
+
+  return true; 
+}
+
 
 // ---------------------------------------------------------------------
 // Setup 'DescriptorSets' is how it works
 // ---------------------------------------------------------------------
 bool rekz::SetupGridDescriptorSets (rekz::PipelineGroup&              pipelinegroup,
-                                    const std::vector<rokz::Buffer>&  vma_uniform_buffs,
+                                    const std::vector<rokz::Buffer>&  vma_uniform_buffs, // MVPTransform
                                     const rokz::DescriptorPool&       descpool,
                                     const rokz::Device&               device) {
   assert (false); 
@@ -112,7 +135,9 @@ bool rekz::SetupGridDescriptorSets (rekz::PipelineGroup&              pipelinegr
     return false;
   }
   //
+
   for (uint32_t iframe = 0; iframe < num_frames_in_flight; ++iframe) {
+
     VkDescriptorBufferInfo buffer_info{};
     buffer_info.buffer     = vma_uniform_buffs[iframe].handle;
     buffer_info.offset     = 0;
@@ -136,38 +161,6 @@ bool rekz::SetupGridDescriptorSets (rekz::PipelineGroup&              pipelinegr
 
   return false;
 }
-
-// ---------------------------------------------------------------------
-// Setup 'DescriptorLayout' is how it looks
-// ---------------------------------------------------------------------
-bool SetupGridDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
-
-  printf ("%s", __FUNCTION__); 
-
-  //  UniformBinding
-  //  SamplerBinding
-  //rokz::Init (glob.desc_set_layout_bindings[0],
-
-  descrgroup.dslayout.bindings.resize (1);
-  // MVPTransform
-  rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
-                                    0,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    1,
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-  // 
-  if (!rokz::cx::CreateDescriptorSetLayout (descrgroup.dslayout.handle,
-                                        descrgroup.dslayout.ci,
-                                        descrgroup.dslayout.bindings,
-                                        device.handle)) {
-    printf (" --> [FAILED] \n"); 
-    return false;
-  }
-
-  return true; 
-}
-
-
 
 // ---------------------------------------------------------------------
 // 

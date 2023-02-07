@@ -41,6 +41,8 @@ namespace mars {
     alignas(16) glm::vec3 view_dir;
     alignas(16) glm::vec3 view_up;
 
+    rekz::Polarf             orie;
+
     float field_of_view; 
     float aspect;
     float near_dist;
@@ -49,6 +51,11 @@ namespace mars {
   };
 
 
+
+  struct buff_geom {
+    rokz::Buffer ib_device;
+    rokz::Buffer vb_device;
+  };
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
@@ -62,10 +69,10 @@ namespace mars {
     rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
     rokz::SwapchainSupportInfo   swapchain_support_info;
-    rokz::FrameSync              frame_sync;
+    rokz::FrameSyncGroup         framesyncgroup;
     // pipeline resource
-    std::vector<rokz::Buffer>    vma_uniform_buffs;
-    std::vector<rokz::Buffer>    vma_objparam_buffs;
+    std::vector<rokz::Buffer>    uniform_mvp;
+    //    std::vector<rokz::Buffer>    vma_objparam_buffs;
 
     VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
     VkFormat                     depth_format;
@@ -87,24 +94,21 @@ namespace mars {
     rokz::ImageView              msaa_color_imageview; 
 
     // DATA 
-    
     rokz::Buffer                 vma_ib_device;
     rokz::Buffer                 vma_vb_device;
     // image/texture
     // rokz::Image                 texture_image; 
     // rokz::ImageView             texture_imageview; 
     // rokz::Sampler               sampler;
-
-  
     rokz::Window                window;
     VkSurfaceKHR                surface; // 
 
-
+    ViewParams                  view_state;
+    
     rekz::InputState            input_state; // <-- use with window handlers
 
     double                      sim_time; 
     float                       dt;
-
 
     /////////////////////////////////////////////////////////////////////////
 #ifndef MARS_GOING_AWAY_SOON 
