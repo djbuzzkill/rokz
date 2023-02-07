@@ -238,12 +238,12 @@ struct DarkResetSwapchain : public darkroot::ResetSwapchainCB
     }
     
     //
-    virtual bool ResetSwapchain (const rokz::Window& win, const VmaAllocator& allocator,  const rokz::Device& device) {
+    virtual bool ResetSwapchain (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
       return darkroot::RecreateSwapchain (swapchain, win, 
                                           swapchain_images, swapchain_imageviews,
                                           depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
                                           msaa_color_image, msaa_color_imageview,
-                                          allocator, device);
+                                          allocator.handle, device);
     }
     
   protected:

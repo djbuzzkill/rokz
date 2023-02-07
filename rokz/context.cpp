@@ -693,7 +693,7 @@ bool rokz::cx::CreateCommandBuffer(VkCommandBuffer &command_buffer,
 //
 // ---------------------------------------------------------------------
 bool rokz::cx::CreateFrameSync (FrameSync&      sync,
-                             RenderSyncCreateInfo& create_info,
+                             FrameSyncCreateInfo& create_info,
                              const VkDevice& device) {
 
   printf ("%s\n", __FUNCTION__);

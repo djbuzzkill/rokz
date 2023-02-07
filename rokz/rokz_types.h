@@ -94,7 +94,7 @@ namespace rokz {
     QueueFamilyIndices         family_indices;
   }; 
 
-
+  // --------------------------------------------------------
   struct Allocator {
     VmaAllocator           handle;
     VmaAllocatorCreateInfo ci;  
@@ -371,28 +371,12 @@ namespace rokz {
     std::vector<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
 
     // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
-    // rokz::RenderSyncCreateInfo     render_sync_create_info;
-
-    // // kMaxFramesInFlight
-    // std::vector<rokz::RenderSync>  syncs;
-    // std::vector<VkCommandBuffer>   command_buffers;
   }; 
 
   // --------------------------------------------------------
+  struct FrameSyncCreateInfo {
 
-  // template<int NFrames> 
-  // struct FrameSequencing {
-  //   VkCommandBufferAllocateInfo    command_buffer_alloc_info;
-  //   rokz::RenderSyncCreateInfo     render_sync_create_info;
-  //   // kMaxFramesInFlight
-  //   std::array<rokz::RenderSync, NFrames> syncs;
-  //   std::array<VkCommandBuffer, NFrames>  command_buffers;
-  // }; 
-
-  // --------------------------------------------------------
-  struct RenderSyncCreateInfo {
-
-    RenderSyncCreateInfo () : semaphore (), fence () {
+    FrameSyncCreateInfo () : semaphore (), fence () {
     }
     
     VkSemaphoreCreateInfo  semaphore;
@@ -403,23 +387,14 @@ namespace rokz {
   struct FrameSync {
     // This should actually be called FrameSync
     FrameSync () : image_available_sem (), render_finished_sem (), in_flight_fen () {    }
-      
+    
     VkSemaphore image_available_sem;
     VkSemaphore render_finished_sem;
     VkFence     in_flight_fen;
 
-    RenderSyncCreateInfo ci;
+    FrameSyncCreateInfo ci;
 
   };
-  // --------------------------------------------------------
-  //
-  // --------------------------------------------------------
-  struct FrameParams {
-    FrameSync        sync;
-    VkCommandBuffer  comb;
-  };  
-  // --------------------------------------------------------
-  //
   // --------------------------------------------------------
   struct FrameSyncGroup {
     //
@@ -427,23 +402,8 @@ namespace rokz {
     // kMaxFramesInFlight
     std::vector<VkCommandBuffer> command_buffers;
     std::vector<FrameSync> syncs;
-
-    //rokz::RenderSyncCreateInfo     render_sync_create_info;
-
-
-    //std::vector<FrameParams> frameparams; // kMaxFramesInFlight
-    
   }; 
-  
-  //typedef FrameSync FrameSyncGroup; 
 
-  
-  //
-  // struct Surface {
-  
-  //   VkSurfaceKHR       handle;
-  //   VkSurfaceFormatKHR format;
-  // };
 
 
 } // namespace rokz

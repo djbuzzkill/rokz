@@ -52,7 +52,7 @@ namespace darkroot {
 
   public:
   
-    virtual bool ResetSwapchain  (const rokz::Window& win, const VmaAllocator& allocator, const rokz::Device& device) = 0;
+    virtual bool ResetSwapchain  (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
 
   protected:
   

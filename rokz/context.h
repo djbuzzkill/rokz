@@ -122,8 +122,7 @@ namespace rokz {
                            const VkDevice&                    device); 
 
 
-    //  bool CreateRenderSync (RenderSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
-  bool CreateFrameSync (FrameSync& sync, RenderSyncCreateInfo& create_info, const VkDevice& device);
+  bool CreateFrameSync (FrameSync& sync, FrameSyncCreateInfo& create_info, const VkDevice& device);
 
 
   } // cx
