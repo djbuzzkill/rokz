@@ -2,6 +2,7 @@
 
 #include "descriptor.h"
 #include "utility.h"
+#include <vulkan/vulkan_core.h>
 
 
 // ---------------------------------------------------------------------
@@ -158,11 +159,15 @@ void rokz::cx::Destroy (DescriptorPool& dsl, const VkDevice& device) {
 void rokz::cx::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
 
   vkDestroyDescriptorSetLayout (device, dsl.handle, nullptr);
+
+  
 }
 
 
-void rokz::cx::Destroy (DescriptorGroup& dg, const VkDevice& device) {
+void rokz::cx::Free (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device) {
 
-  Destroy (dg.dslayout, device); 
+  vkFreeDescriptorSets (device, descrpool.handle, descriptorsets.size(), &descriptorsets[0] ); 
+
+  //Destroy (dg.dslayout, device); 
 }
   

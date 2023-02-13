@@ -4,6 +4,7 @@
 
 #include "rokz/rokz.h"
 #include "rekz.h"
+#include <vulkan/vulkan_core.h>
 
 namespace darkroot {
 
@@ -44,6 +45,35 @@ namespace darkroot {
     
   };
 
+  // ---------------------------------------------------------------------
+  // ?? is a pipeline  tied to a drawsequence?  
+  // --  DrawPolygons is part of obj_pipeline 
+  // ---------------------------------------------------------------------
+  struct DrawSequence {
+
+    virtual int Exec (VkCommandBuffer comb, const rokz::Pipeline& pl, const VkDescriptorSet* ds) = 0;
+
+
+    // ?? maybe u update is fn (pipeline) -> DrawSequence<Pipeline>:: UpdateDescriptors ()
+    //
+    //       -> DrawSequence<PipelineA> :: UpdateDescriptors (data)
+    //       -> DrawSequence<PipelineA> :: Exec (data)
+    //
+    //       -> DrawSequence<PipelineB> :: UpdateDescriptors (data)
+    //       -> DrawSequence<PipelineB> :: Exec (data)
+
+    virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) = 0; 
+    // ?? who owns the descriptor set, should it be allocated with the drawseq or the pipeline
+    
+  protected:
+
+    DrawSequence () {}
+
+  }; 
+
+
+  typedef std::vector<DrawSequence> DrawSequences;
+
 
   // ---------------------------------------------------------------------
   // 
@@ -82,15 +112,21 @@ namespace darkroot {
     rokz::SwapchainSupportInfo   swapchain_support_info;
     rokz::FrameSyncGroup         framesyncgroup;
 
-    // pipeline resources
-    std::vector<rokz::Buffer>    vma_uniform_buffs;
-    std::vector<rokz::Buffer>    vma_objparam_buffs;
     // global descriptor pool
-    rokz::DescriptorPool         descr_pool;
-    // pipelines
-    rekz::PipelineGroup          obj_pipeline;
+    //rokz::DescriptorPool         descr_pool;
 
-    rekz::PipelineGroup          grid_pipeline;
+    // pipelines
+    rokz::Pipeline               pipeline_objs;
+    rokz::Pipeline               pipeline_grid;
+
+    rekz::PipelineDef            pipeline_def_obj; 
+    rekz::PipelineDef            pipeline_def_grid;
+    
+    rokz::DescriptorGroup        descrgroup_objs;
+    rokz::DescriptorGroup        descrgroup_grid;
+    
+
+    
     // DYNAMIC RENDERING
     rokz::RenderingInfoGroup     rendering_info_group;
     
@@ -100,14 +136,18 @@ namespace darkroot {
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
   
-    // DATA
-    rokz::Buffer                vma_ib_device;
-    rokz::Buffer                vma_vb_device;
+    // pipeline resources
+    std::vector<rokz::Buffer>    vma_uniform_buffs;
+    std::vector<rokz::Buffer>    vma_objparam_buffs;
+
+    // DATA     <-- moved to DrawPolygon
+    // rokz::Buffer                vma_ib_device;
+    // rokz::Buffer                vma_vb_device;
 
     // image/texture
-    rokz::Image                 texture_image; 
-    rokz::ImageView             texture_imageview; 
-    rokz::Sampler               sampler;
+    // rokz::Image                 texture_image; 
+    // rokz::ImageView             texture_imageview; 
+    // rokz::Sampler               sampler;
 
     float obj_theta[2];     // scene objects 
 
@@ -123,12 +163,10 @@ namespace darkroot {
 
     //VkViewport                  viewport;
     //VkRect2D                    scissor_rect; 
- 
+
+    std::shared_ptr<darkroot::DrawSequence>     polygons; 
     std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
 
-
-
-    
     double                      sim_time; 
     float                       dt;
 

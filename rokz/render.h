@@ -21,6 +21,10 @@ namespace rokz {
     bool              PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi); 
 
 
+    int               FrameDrawBegin (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const VkRenderingInfo& ri, const Device& device);
+    //int               FrameDrawBegin (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const Device& device);
+    int               FrameDrawEnd   (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device);
+
     // ----------------------------------------------------------------------------
     // dyanmic rendering | vk 1.3
     // ----------------------------------------------------------------------------

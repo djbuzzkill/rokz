@@ -87,7 +87,8 @@ bool SetupGridDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
 
   printf ("%s", __FUNCTION__); 
 
-
+#ifdef REKZ_GRID_HIDE_SETUPGRIDDESCRIPTORLAYOUT
+  
   descrgroup.dslayout.bindings.resize (1);
   // MVPTransform
   rokz::cx::DescriptorSetLayoutBinding (descrgroup.dslayout.bindings[0],
@@ -103,7 +104,8 @@ bool SetupGridDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
     printf (" --> [FAILED] \n"); 
     return false;
   }
-
+#endif
+  
   return true; 
 }
 
@@ -111,9 +113,9 @@ bool SetupGridDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::D
 // ---------------------------------------------------------------------
 // Setup 'DescriptorSets' is how it works
 // ---------------------------------------------------------------------
-bool rekz::SetupGridDescriptorSets (rekz::PipelineGroup&              pipelinegroup,
+bool rekz::SetupGridDescriptorSets (rokz::DescriptorGroup&            dg,
                                     const std::vector<rokz::Buffer>&  vma_uniform_buffs, // MVPTransform
-                                    const rokz::DescriptorPool&       descpool,
+                                    const rokz::DescriptorSetLayout&  dslo, //const rokz::DescriptorPool& descpool,
                                     const rokz::Device&               device) {
   assert (false); 
 
@@ -121,14 +123,14 @@ bool rekz::SetupGridDescriptorSets (rekz::PipelineGroup&              pipelinegr
 
   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
 
-  rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
+  //rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
  
   // use same layout for both allocations
-  std::vector<VkDescriptorSetLayout> descrlos (num_frames_in_flight, dg.dslayout.handle);
+  std::vector<VkDescriptorSetLayout> descrlos (num_frames_in_flight, dslo.handle);
   // could have also said: 
   //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
   // but that wouldnt work
-  rokz::cx::AllocateInfo (dg.alloc_info , descrlos, descpool);
+  rokz::cx::AllocateInfo (dg.alloc_info , descrlos, dg.pool);
   
   if (!rokz::cx::AllocateDescriptorSets (dg.descrsets, num_frames_in_flight, dg.alloc_info, device.handle)) {
     printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
@@ -166,7 +168,7 @@ bool rekz::SetupGridDescriptorSets (rekz::PipelineGroup&              pipelinegr
 // 
 // ---------------------------------------------------------------------
 
-bool rekz::SetupGridPipeline (rekz::PipelineGroup& pipelinegroup,
+bool rekz::SetupGridPipeline (rokz::Pipeline& pipeline,
                         const std::filesystem::path& fspath,
                         const VkExtent2D& viewport_extent, //const rokz::Swapchain& swapchain,
                         VkSampleCountFlagBits msaa_samples,
@@ -178,10 +180,10 @@ bool rekz::SetupGridPipeline (rekz::PipelineGroup& pipelinegroup,
   SetupGridPipeline;
                              
   //
-  SetupGridShaderModules (pipelinegroup.pipeline, fspath, device); 
+  SetupGridShaderModules (pipeline, fspath, device); 
 
   //
-  rokz::Pipeline& pipeline = pipelinegroup.pipeline;
+  //rokz::Pipeline& pipeline = pipelinegroup.pipeline;
   rekz::SetupViewportState (pipeline.state.viewport, viewport_extent); 
 
   pipeline.state.colorblend_attachments.resize (1);
@@ -189,7 +191,7 @@ bool rekz::SetupGridPipeline (rekz::PipelineGroup& pipelinegroup,
   rokz::ColorBlendState_default (pipeline.state.colorblend_attachments[0]); 
   rokz::DynamicState_default (pipeline.state.dynamics); 
   //
-  rokz::PipelineStateCreateInfo& psci = pipelinegroup.pipeline.state.ci;
+  rokz::PipelineStateCreateInfo& psci = pipeline.state.ci;
   rokz::CreateInfo (psci.tesselation, 69); 
   rokz::CreateInfo (psci.dynamicstate, pipeline.state.dynamics); 
   rokz::CreateInfo (psci.vertexinputstate, kGridVertexBindingDesc, kGridVertInputAttributeDesc); 
@@ -200,7 +202,11 @@ bool rekz::SetupGridPipeline (rekz::PipelineGroup& pipelinegroup,
   rokz::CreateInfo (psci.multisampling, msaa_samples); 
   rokz::CreateInfo (psci.depthstencilstate); 
 
-  if (!SetupGridDescriptorLayout (pipelinegroup.descrgroup, device)) {
+  assert (false); // SetupGridDescriptorLayout
+
+#ifdef REKZ_HIDE_SETUPGRIDPIPELINE
+  
+    if (!SetupGridDescriptorLayout (pipelinegroup.descrgroup, device)) {
     printf ("[FAILED] ->  SetupGridDescriptorLayout in <%s | l:%i>", __FUNCTION__, __LINE__); 
     return false; 
   }
@@ -237,7 +243,8 @@ bool rekz::SetupGridPipeline (rekz::PipelineGroup& pipelinegroup,
     printf ("[FAILED] --> CreateGraphicsPipeline \n"); 
     return false;
   }
-
+#endif
+  
   return true;
 
 }

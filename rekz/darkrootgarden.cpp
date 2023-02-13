@@ -18,6 +18,7 @@ const VkExtent2D    kTestExtent  = { 800, 600 };
 //
 using namespace darkroot; 
 
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -29,13 +30,13 @@ Glob::Glob()
   , depth_image()
   , depth_imageview()
   , msaa_samples ()
-  , vma_ib_device()
-  , vma_vb_device()
-  , texture_image()
-  , texture_imageview()
-  , sampler()
+  // , vma_ib_device()
+  // , vma_vb_device()
+  // , texture_image()
+  // , texture_imageview()
+  // , sampler()
   , vma_uniform_buffs()
-  , descr_pool()
+    //  , descr_pool()
   , window()
   , physical_device()
   , swapchain_support_info()
@@ -62,9 +63,7 @@ bool LoadVertexBuffer_static();
 // --------------------------------------------------------------------
 bool SetupDarkWindow (Glob& glob) {
 
-
   rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
-
   glfwSetFramebufferSizeCallback (glob.window.glfw_window, rekz::win_event::on_resize ); 
   glfwSetKeyCallback (glob.window.glfw_window, rekz::win_event::on_keypress);
   glfwSetCursorPosCallback(glob.window.glfw_window, rekz::win_event::on_mouse_move);
@@ -132,7 +131,6 @@ bool SetupDynamicRenderingInfo (darkroot::Glob& glob) {
   rokz::cx::RenderingInfo (rig.ri, rig.render_area, 1, 0, rig.color_attachment_infos, &rig.depth_attachment_info, nullptr);
   return true;
 }
-
 
 // -----------------------------------------------------------------------------
 // basically populates the AttachmentInfo
@@ -209,11 +207,12 @@ bool SetupRenderingAttachments (Glob& glob) {
   return true;
 }
 
-
 // -------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------
 int darkroot_image_handler (const unsigned char* dat, const rekz::DevILImageProps& props, void* up) {
+
+#ifdef  DARKROOT_HIDE_darkroot_image_handler 
 
   darkroot::Glob* g = reinterpret_cast<darkroot::Glob*> (up); 
   
@@ -223,7 +222,9 @@ int darkroot_image_handler (const unsigned char* dat, const rekz::DevILImageProp
                                   g->device.command_pool, g->device)) {
     return 0;  
   }
-
+#endif
+ 
+  
   return __LINE__;
 } 
 
@@ -232,6 +233,11 @@ int darkroot_image_handler (const unsigned char* dat, const rekz::DevILImageProp
 // -------------------------------------------------------------------------
 bool SetupObjectTextureAndSampler (Glob& glob) {
 
+  int res = ~0; 
+
+#ifdef   DARKROOT_HIDE_SetupObjectTextureAndSampler
+
+    
   printf ("%s \n", __FUNCTION__); 
   //rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
   const char*  test_image_files[] = { 
@@ -243,7 +249,7 @@ bool SetupObjectTextureAndSampler (Glob& glob) {
   //   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
    const std::string fq_test_file = data_root + "/texture/out_0_blue-texture-image-hd_rgba.png";  
 
-   int res =  rekz::OpenImageFile (fq_test_file, darkroot_image_handler, &glob); 
+   res =  rekz::OpenImageFile (fq_test_file, darkroot_image_handler, &glob); 
   
    if (res == 0) {
      rokz::cx::CreateInfo (glob.texture_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, glob.texture_image);  
@@ -260,6 +266,7 @@ bool SetupObjectTextureAndSampler (Glob& glob) {
      }
    }
 
+#endif
    return (res == 0); 
 }
 
@@ -268,9 +275,14 @@ bool SetupObjectTextureAndSampler (Glob& glob) {
 // -----------------------------------------------------------------------------
 bool SetupObjResources (darkroot::Glob& glob) { 
 
+  #ifdef DARKROOT_HIDE_SetupObjResources
+
   // used in here:
   SetupObjectUniforms;
   SetupObjectTextureAndSampler;
+
+  // maybe this shouldnt be called in here 
+  //SetupObjectDescriptorLayout (descrgroup, device); 
   
 
   const DarkMesh& darkmesh = darkroot::DarkOctohedron (); 
@@ -327,6 +339,9 @@ bool SetupObjResources (darkroot::Glob& glob) {
     return false;
   }
 
+
+#endif
+  
   return true;
 }
 
@@ -335,6 +350,8 @@ bool SetupObjResources (darkroot::Glob& glob) {
 // --------------------------------------------------------------------
 void CleanupDarkroot (Glob& glob) {
 
+
+  
   printf ("%s \n", __FUNCTION__); 
 
   for (auto& ub : glob.vma_uniform_buffs) {
@@ -345,24 +362,31 @@ void CleanupDarkroot (Glob& glob) {
     rokz::cx::Destroy (buf, glob.device.allocator.handle);
   }
 
-  rokz::cx::Destroy (glob.sampler, glob.device.handle); 
-  rokz::cx::Destroy (glob.descr_pool, glob.device.handle); 
-  rokz::cx::Destroy (glob.obj_pipeline.descrgroup, glob.device.handle); 
-  rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
+  // dont bother freeing if pool is destroyed anyways
+  //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
+  rokz::cx::Destroy (glob.descrgroup_objs.pool, glob.device.handle); 
+  rokz::cx::Destroy (glob.pipeline_def_obj.layout.descriptor, glob.device.handle); 
 
-  rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
-  rokz::cx::Destroy (glob.vma_vb_device, glob.device.allocator.handle);
-  rokz::cx::Destroy (glob.vma_ib_device, glob.device.allocator.handle);
+  // moved to DrawPolygon
+  // rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
+  // rokz::cx::Destroy (glob.sampler, glob.device.handle); 
+  // rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
+
+  assert (false); // >>>>>>>>>>>
+  // rokz::cx::Destroy (glob.vma_vb_device, glob.device.allocator.handle);
+  // rokz::cx::Destroy (glob.vma_ib_device, glob.device.allocator.handle);
+  // <<<<<<<<<<
+
   
-  Cleanup (glob.obj_pipeline.pipeline.handle,
+  Cleanup (glob.pipeline_objs.handle,
            glob.swapchain_group.imageviews,
 
            glob.swapchain_group.swapchain,
            glob.surface,
            glob.device.command_pool.handle,
            glob.framesyncgroup.syncs, 
-           glob.obj_pipeline.pipeline.shader_modules,
-           glob.obj_pipeline.pipeline.layout.handle, 
+           glob.pipeline_objs.shader_modules,
+           glob.pipeline_def_obj.layout.pipeline.handle,  
            glob.msaa_color_image, glob.msaa_color_imageview,
 
            glob.depth_image, glob.depth_imageview,
@@ -475,6 +499,7 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
 // ---------------------------------------------------------------------
 bool RecordDynamicRenderPass (Glob& glob, 
                               VkCommandBuffer        &command_buffer,
+                              const rekz::PipelineDef&     pipelinedef, 
                               const rokz::Pipeline&  pipeline,
                               const VkDescriptorSet& desc_set, 
                               const VkBuffer&        vertex_buffer, 
@@ -508,7 +533,6 @@ bool RecordDynamicRenderPass (Glob& glob,
   scissor.offset = {0, 0};
   scissor.extent = ext2d;
 
-
   // 
   // [glob.rendering_info_group.ri] is updated in the calling function
   //
@@ -523,7 +547,7 @@ bool RecordDynamicRenderPass (Glob& glob,
 
   vkCmdBindDescriptorSets (command_buffer,
                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                           pipeline.layout.handle,
+                           pipelinedef.layout.pipeline.handle, // pipeline.layout.handle,
                            0,
                            1,
                            &desc_set, //&descriptorSets[currentFrame],
@@ -549,7 +573,7 @@ bool RecordDynamicRenderPass (Glob& glob,
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
 
     vkCmdPushConstants (command_buffer,
-                        pipeline.layout.handle,
+                        pipelinedef.layout.pipeline.handle, // pipeline.layout.handle,
                         shader_stages,
                         0,
                         sizeof(darkroot::PushConstants),
@@ -570,83 +594,6 @@ bool RecordDynamicRenderPass (Glob& glob,
   
   //printf ("BAI %s\n", __FUNCTION__); 
   return true;
-}
-
-
-// ---------------------------------------------------------------------
-//  
-// ---------------------------------------------------------------------
-struct DrawSequence {
-
-public:
-  // replace RecordDynamicRenderPass (glob,
-  virtual int Exec (VkCommandBuffer comb, const rokz::Device& device) = 0;
-
-protected:
-  DrawSequence () {}
-}; 
-
-
-typedef std::vector<DrawSequence> DrawSequences;
-
-// ---------------------------------------------------------------------
-//  
-// ---------------------------------------------------------------------
-int FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const rokz::Device& device) {
-
-  rokz::Swapchain& swapchain = scg.swapchain;
-  
-  // dynamic_rendering now, we have to manually transition
-  rokz::cx::TransitionImageLayout (scg.images[image_index].handle,
-                                   swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                                   device.queues.graphics, device.command_pool.handle, device.handle);
-
-  if (VK_SUCCESS == vkResetCommandBuffer (command_buffer, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
-    return 0; 
-  }
-
-  return __LINE__;
-}
-
-
-// ---------------------------------------------------------------------
-//  
-// ---------------------------------------------------------------------
-int FrameDrawEnd (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const rokz::FrameSync& framesync, const rokz::Device& device) {
-
-  rokz::Swapchain& swapchain = scg.swapchain;
-
-  VkSubmitInfo submit_info {};
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  VkSemaphore wait_semaphores[]      = {framesync.image_available_sem};
-  VkSemaphore signal_semaphores[]    = {framesync.render_finished_sem }; 
-  VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-  submit_info.pWaitDstStageMask    = wait_stages;
-
-  submit_info.waitSemaphoreCount   = 1;
-  submit_info.pWaitSemaphores      = wait_semaphores;
-  submit_info.signalSemaphoreCount = 1; 
-  submit_info.pSignalSemaphores    = signal_semaphores; 
-  submit_info.commandBufferCount   = 1;
-  submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
-
-  if (vkQueueSubmit (device.queues.graphics, 1, &submit_info, framesync.in_flight_fen) != VK_SUCCESS) {
-    printf("failed to submit draw command buffer!");
-    return false; 
-  }
-
-  //  dynamic_rendering now, we have to manually transition
-  rokz::cx::TransitionImageLayout (scg.images[image_index].handle,
-                                   swapchain.ci.imageFormat,
-                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                                   VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                   device.queues.graphics, device.command_pool.handle, device.handle);
-
-  
-  return rokz::cx::PresentFrame (device.queues.present, scg.swapchain, image_index, framesync); 
-
 }
 
      
@@ -785,7 +732,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   printf ( " Mv = v is the correct order \n"); 
 
-
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
 
@@ -841,8 +787,16 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 #endif
 
-  SetupObjectPipeline (glob.obj_pipeline, dark_path, glob.swapchain_group.swapchain.ci.imageExtent,
-                       glob.msaa_samples, scg.swapchain.ci.imageFormat, glob.depth_format, glob.device); 
+  assert (false); 
+  DefineObjectDescriptorLayout (glob.pipeline_def_obj.layout.descriptor, glob.device); 
+  // SetupObjectDescriptorLayout/DefineObjectDescriptorLayout used to be
+  // called from inside  SetupObjectPipeline
+  
+  SetupObjectPipeline (glob.pipeline_objs,
+                       glob.pipeline_def_obj.layout.pipeline, 
+                       glob.pipeline_def_obj.layout.descriptor, dark_path,
+                       glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
+                       scg.swapchain.ci.imageFormat, glob.depth_format, glob.device); 
 
 
   SetupRenderingAttachments (glob); 
@@ -859,11 +813,18 @@ int darkroot_basin (const std::vector<std::string>& args) {
                                                      glob.depth_image, glob.depth_imageview,
                                                      glob.msaa_color_image, glob.msaa_color_imageview); 
 
-  // for BeginRendering ()
+
+
+                                                 // for BeginRendering ()
   SetupDynamicRenderingInfo (glob) ; 
 
+// SetupObjResources (glob.polygons, glob.device);
+// SetupObjectUniforms (glob.vma_uniform_buffs, glob.vma_objparam_buffs, glob.device);
+// SetupObjectTextureAndSampler
+  
   SetupObjResources (glob);
-  if (!SetupObjDescriptorPool (glob)) {
+  
+  if (!SetupObjDescriptorPool (glob.descrgroup_objs.pool, glob.device)) {
     printf ("[FAILED] --> SetupGlobalDescriptorPool \n"); 
     return false;
   }
@@ -871,6 +832,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // * DescriptorLayout is created in SetupObjectPipeline this is done here
   // * b/c SetupGrlobalDescriptorPool is just barely above us
 
+#ifdef DARKROOT_FN_CALL_SODS 
   // this is where all the VkWriteDescriptorSet's r
   if (!SetupObjectDescriptorSets (glob.obj_pipeline,            glob.vma_uniform_buffs,
                                   glob.vma_objparam_buffs,      glob.texture_imageview,
@@ -878,6 +840,10 @@ int darkroot_basin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> SetupObjectDescriptorSets \n"); 
     return false;
   }
+
+  glob.polygons = std::make_shared<DrawSequence> (69);
+
+#endif 
   
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);
@@ -914,6 +880,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   auto t0 = std::chrono::high_resolution_clock::now(); 
 
   auto then = t0; 
+
   while (countdown && run && !glfwWindowShouldClose(glob.window.glfw_window)) {
 
     glfwPollEvents(); 
@@ -926,6 +893,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
     if (glob.input_state.keys.count (GLFW_KEY_Q))
       run = false;
 
+    //
+    // get image index up here
     uint32_t image_index; 
     VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain, glob.framesyncgroup.syncs[curr_frame] , image_index, glob.device); 
     
@@ -944,9 +913,11 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
       UpdateDynamicRenderingInfo (glob, image_index);
 
-      FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
-                      image_index, glob.device);
+      rokz::cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
+                                image_index, glob.rendering_info_group.ri, glob.device);
 
+
+#ifdef  DARKROOT_HIDE_DRAW_CALL
       // Draw seqs...
       RecordDynamicRenderPass (glob,
                                glob.framesyncgroup.command_buffers[curr_frame],
@@ -956,8 +927,14 @@ int darkroot_basin (const std::vector<std::string>& args) {
                                glob.vma_ib_device.handle,
                                glob.swapchain_group.swapchain.ci.imageExtent,
                                glob.device );
+#else
 
-      FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
+      
+      // Draw seqs...
+      
+#endif
+      
+      rokz::cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
     }
     

@@ -77,10 +77,29 @@ namespace rekz {
   // --------------------------------------------------------------------
   //    3.14159265f;
   // --------------------------------------------------------------------
+  #ifdef NO_MORE_PIPELINE_GROUP
+  
+
   struct PipelineGroup { 
 
     rokz::Pipeline        pipeline;
-    rokz::DescriptorGroup descrgroup;
+
+    // put this in the DrawSequence accessible 
+    // rokz::DescriptorGroup descrgroup;
+  };
+#endif
+  
+
+
+  struct PipelineDef {
+
+    struct {
+
+      rokz::DescriptorSetLayout descriptor; //
+      rokz::PipelineLayout      pipeline;
+
+    } layout ;
+    
   };
 
   // --------------------------------------------------------------------

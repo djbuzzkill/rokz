@@ -274,34 +274,37 @@ void CleanupMars (Glob& glob) {
     rokz::cx::Destroy (ub, glob.allocator); 
   }
 
-
-  rokz::cx::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
+  assert (false); // rokz::cx::Destroy (glob.terrain_pipeline.descrgroup
+  //rokz::cx::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
 
   rokz::cx::Destroy (glob.descriptor_pool, glob.device.handle); 
-  rokz::cx::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
+
+  assert (false); // rokz::cx::Destroy (glob.grid_pipeline.descrgroup, 
+  //rokz::cx::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
 
   rokz::cx::Destroy (glob.vma_vb_device, glob.allocator);
   rokz::cx::Destroy (glob.vma_ib_device, glob.allocator);
   
-  Cleanup (glob.terrain_pipeline.pipeline.handle,
-           glob.swapchain_group.framebuffers, glob.swapchain_group.imageviews,
+  assert (false); // Cleanup
+  // Cleanup (glob.terrain_pipeline.pipeline.handle,
+  //          glob.swapchain_group.framebuffers, glob.swapchain_group.imageviews,
 
-           glob.swapchain_group.swapchain,
-           glob.surface,
-           glob.command_pool.handle,
-           glob.framesyncgroup.syncs, 
-           glob.terrain_pipeline.pipeline.shader_modules,
-           glob.terrain_pipeline.pipeline.layout.handle, 
-           glob.render_pass,
+  //          glob.swapchain_group.swapchain,
+  //          glob.surface,
+  //          glob.command_pool.handle,
+  //          glob.framesyncgroup.syncs, 
+  //          glob.terrain_pipeline.pipeline.shader_modules,
+  //          glob.terrain_pipeline.pipeline.layout.handle, 
+  //          glob.render_pass,
 
-           glob.msaa_color_image, glob.msaa_color_imageview,
+  //          glob.msaa_color_image, glob.msaa_color_imageview,
 
-           glob.msaa_depth_image, glob.msaa_depth_imageview,
+  //          glob.msaa_depth_image, glob.msaa_depth_imageview,
 
-           glob.window.glfw_window,
-           glob.device,
-           glob.allocator, 
-           glob.instance.handle);
+  //          glob.window.glfw_window,
+  //          glob.device,
+  //          glob.allocator, 
+  //          glob.instance.handle);
 
   glfwTerminate();
 
@@ -561,9 +564,9 @@ int mars_run (const std::vector<std::string>& args) {
     return false;
   }
 #endif
-
-  if (!rekz::SetupGridDescriptorSets (glob.grid_pipeline, glob.uniform_mvp,
-                                      glob.descriptor_pool, glob.device)) {
+  
+  if (!rekz::SetupGridDescriptorSets (glob.descrgroup_grid, glob.uniform_mvp,
+                                      glob.pipeline_def_grid.layout.descriptor, glob.device)) {
     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
     return false;
   }
@@ -619,13 +622,15 @@ int mars_run (const std::vector<std::string>& args) {
     
     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
     uint32_t image_index; 
-    if (RenderFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.grid_pipeline.pipeline,
-                     glob.grid_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
 
-    }
-    else {
-      run = false;
-    }
+assert (false); // RenderFrame
+    // if (RenderFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.grid_pipeline.pipeline,
+    //                  glob.grid_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
+
+    // }
+    // else {
+    //   run = false;
+    // }
     
     // how long did we take
     auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;

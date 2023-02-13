@@ -42,7 +42,9 @@ namespace rokz {
 
   constexpr size_t kSizeOf_MVPTransform = sizeof (rokz::MVPTransform);
   
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
   struct QueueFamilyIndices {
 
     QueueFamilyIndices () : graphics (), present () {
@@ -52,9 +54,9 @@ namespace rokz {
     MaybeIndex present; 
   };
 
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------
   //
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------
 
   struct Window {
 
@@ -64,7 +66,9 @@ namespace rokz {
     GLFWwindow*  glfw_window;
   };
 
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
   struct Instance {
 
     Instance () : handle (VK_NULL_HANDLE), ci(), required_extensions (), app_info () {
@@ -82,7 +86,9 @@ namespace rokz {
     VkApplicationInfo        app_info;
   };
 
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
   struct PhysicalDevice {
     PhysicalDevice () : handle (VK_NULL_HANDLE),
       properties (),  features (), family_indices () {}
@@ -94,19 +100,22 @@ namespace rokz {
     QueueFamilyIndices         family_indices;
   }; 
 
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct Allocator {
     VmaAllocator           handle;
     VmaAllocatorCreateInfo ci;  
   };
   
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct CommandPool {
     VkCommandPool           handle;
     VkCommandPoolCreateInfo ci; 
   };
 
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct Device {
 
     Device () : handle (VK_NULL_HANDLE) , ci (), queue_ci () {
@@ -131,7 +140,8 @@ namespace rokz {
 
   }; 
   
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct ShaderModule {
 
     ShaderModule () : handle (VK_NULL_HANDLE), bin (), ci () {
@@ -142,7 +152,8 @@ namespace rokz {
     VkShaderModuleCreateInfo       ci;
   };
 
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct Buffer {
     VkBuffer                handle;
     VkBufferCreateInfo      ci; 
@@ -151,7 +162,8 @@ namespace rokz {
     VmaAllocationInfo       alloc_info;
   }; 
 
-  // ------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct Image {
 
     Image () : handle (VK_NULL_HANDLE), ci (), mem (), alloc_info (), 
@@ -169,7 +181,8 @@ namespace rokz {
   
   }; 
 
-  // ------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
   struct ImageView {
     ImageView() : handle (VK_NULL_HANDLE), ci () { 
     }
@@ -179,6 +192,8 @@ namespace rokz {
   };
 
   // ---------------------------------------------------------------------
+  // ?? where should these go
+  // ---------------------------------------------------------------------
   struct DescriptorPool {
 
     VkDescriptorPool                  handle;
@@ -186,6 +201,8 @@ namespace rokz {
     VkDescriptorPoolCreateInfo        ci;
   };
 
+  // ---------------------------------------------------------------------
+  // ?? a DrawSequence should own these
   // ---------------------------------------------------------------------
   struct DescriptorSetLayout { 
     VkDescriptorSetLayout                     handle;    
@@ -195,11 +212,18 @@ namespace rokz {
   }; 
 
   // ---------------------------------------------------------------------
+  //
+  // ---------------------------------------------------------------------
+
   struct DescriptorGroup {
-    
+
+    DescriptorPool pool; // <-- put pool in here
+
+    // these are the final thing created
     std::vector<VkDescriptorSet>   descrsets;
-    rokz::DescriptorSetLayout      dslayout;
     VkDescriptorSetAllocateInfo    alloc_info;
+
+    //DescriptorSetLayout descriptor; <-- should be part of pipeline definition
 
   }; 
 
@@ -255,7 +279,9 @@ namespace rokz {
 
   }; 
 
-  // --------------------------------------------------------
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct PipelineLayout {
     PipelineLayout () : handle (VK_NULL_HANDLE) , ci () {
     }
@@ -264,15 +290,33 @@ namespace rokz {
     VkPipelineLayoutCreateInfo  ci;
   };
 
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
+  struct LayoutGroup {
 
-  // --------------------------------------------------------
+    LayoutGroup () : pipeline(), descriptor () {
+    }
+    // how  it looks        
+    PipelineLayout      pipeline; 
+    DescriptorSetLayout descriptor;
+  };
+  
+
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct Pipeline {
-    Pipeline () : handle (VK_NULL_HANDLE), ci (), layout (), state () {
+    Pipeline () : handle (VK_NULL_HANDLE), ci ()
+                  //, layout ()
+                , state () {
     }
     
     VkPipeline                       handle; 
     VkGraphicsPipelineCreateInfo     ci;
-    PipelineLayout                   layout; 
+    //PipelineLayout                   layout; // move to pipeline-def
+
+
     PipelineState                    state;
     std::vector<rokz::ShaderModule>  shader_modules; 
     // EXTENSIONS
@@ -286,7 +330,9 @@ namespace rokz {
   
   };
 
-  // ----------------------------------------------------------
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct SwapchainSupportInfo {
     SwapchainSupportInfo () : capabilities (), formats (), present_modes () {
     }
@@ -296,7 +342,9 @@ namespace rokz {
     std::vector<VkPresentModeKHR>   present_modes;    
   };
 
-  // ----------------------------------------------------------
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct Swapchain {
     Swapchain () : handle (VK_NULL_HANDLE), ci (), family_indices () {
     }
