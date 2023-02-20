@@ -13,6 +13,9 @@ const size_t max_frames_in_flight  = darkroot::Glob::MaxFramesInFlight;
 namespace darkroot { 
 
 
+  // --------------------------------------------------------------------
+  // vert input binding, diffrnt from input attriubutes
+  // --------------------------------------------------------------------
   const VkVertexInputBindingDescription kDarkVertexBindingDesc =  {
     0,                            // binding    
     sizeof (DarkVert),       // stride      
@@ -20,7 +23,7 @@ namespace darkroot {
   }; 
 
   // --------------------------------------------------------------------
-  //
+  // vert atribute desc
   // --------------------------------------------------------------------
   const std::vector<VkVertexInputAttributeDescription> kDarkvertBindingAttributeDesc = {
 
@@ -54,6 +57,50 @@ namespace darkroot {
   }; 
 }
 
+
+// --------------------------------------------------------------------
+// SetupDarkDescriptorSetLayout (
+// --------------------------------------------------------------------
+bool darkroot::DeclObjectDescriptorLayout (rokz::DescriptorSetLayout& dslo, const rokz::Device& device) {
+
+  printf ("%s", __FUNCTION__); 
+
+  //  UniformBinding
+  //  SamplerBinding
+
+  dslo.bindings.resize (3);
+  //rokz::Init (glob.desc_set_layout_bindings[0],
+
+  // MVPTransform
+  rokz::cx::DescriptorSetLayoutBinding (dslo.bindings[0],
+                                    0,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    1,
+                                    VK_SHADER_STAGE_VERTEX_BIT);
+
+  // SceneObjParams
+  rokz::cx::DescriptorSetLayoutBinding (dslo.bindings[1],
+                                    1,
+                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    128, 
+                                    VK_SHADER_STAGE_VERTEX_BIT);
+
+  // sammpler+image
+  rokz::cx::DescriptorSetLayoutBinding (dslo.bindings[2],
+                                    2,
+                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                    1, 
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+
+
+  if (!rokz::cx::CreateDescriptorSetLayout (dslo.handle, dslo.ci, dslo.bindings, device.handle)) {
+    printf (" --> [FAILED] \n"); 
+    return false;
+  }
+
+  printf (" --> true\n"); 
+  return true; 
+}
 
 // ----------------------------------------------------------------------------------------
 //
@@ -115,49 +162,6 @@ bool darkroot::SetupObjDescriptorPool (rokz::DescriptorPool& dp, const rokz::Dev
  return true; 
 }
 
-// --------------------------------------------------------------------
-// SetupDarkDescriptorSetLayout (
-// --------------------------------------------------------------------
-bool darkroot::DefineObjectDescriptorLayout (rokz::DescriptorSetLayout& dslo, const rokz::Device& device) {
-
-  printf ("%s", __FUNCTION__); 
-
-  //  UniformBinding
-  //  SamplerBinding
-
-  dslo.bindings.resize (3);
-  //rokz::Init (glob.desc_set_layout_bindings[0],
-
-  // MVPTransform
-  rokz::cx::DescriptorSetLayoutBinding (dslo.bindings[0],
-                                    0,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    1,
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-
-  // SceneObjParams
-  rokz::cx::DescriptorSetLayoutBinding (dslo.bindings[1],
-                                    1,
-                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    128, 
-                                    VK_SHADER_STAGE_VERTEX_BIT);
-
-  // sammpler+image
-  rokz::cx::DescriptorSetLayoutBinding (dslo.bindings[2],
-                                    2,
-                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                    1, 
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
-
-
-  if (!rokz::cx::CreateDescriptorSetLayout (dslo.handle, dslo.ci, dslo.bindings, device.handle)) {
-    printf (" --> [FAILED] \n"); 
-    return false;
-  }
-
-  printf (" --> true\n"); 
-  return true; 
-}
 
 // ---------------------------------------------------------------------
 // 
@@ -186,8 +190,8 @@ bool darkroot::SetupObjectDescriptorSets (rokz::DescriptorGroup&           descr
     printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
     return false;
   }
-  //
 
+  //
   for (uint32_t i = 0; i < max_frames_in_flight; i++) {
     // wtf does this do
     VkDescriptorBufferInfo buffer_info{};
@@ -250,8 +254,42 @@ bool darkroot::SetupObjectDescriptorSets (rokz::DescriptorGroup&           descr
   
 }  
 
+
 // ----------------------------------------------------------------------------------------
 //
+// ----------------------------------------------------------------------------------------
+bool darkroot:: InitializeObjectPipelineLayout ( rokz::PipelineLayout& layout, const rokz::DescriptorSetLayout& dslo) {
+
+  assert(false);
+  // glob.pipeline_def_obj.layout.pipeline; <-- this is created in SetupObjectPipeline()
+  // should we make a Define*PipelineLayout ()
+
+  return false; 
+}
+
+
+// ----------------------------------------------------------------------------------------
+// proto more orthogonal version
+// ----------------------------------------------------------------------------------------
+bool SetupObjectPipeline (rokz::Pipeline&       pipeline,
+                          const rokz::PipelineLayout& layout,
+                          const std::filesystem::path& fspath,
+                          const VkExtent2D& viewport_extent, //const rokz::Swapchain& swapchain,
+                          VkSampleCountFlagBits msaa_samples,
+                          VkFormat color_format,
+                          VkFormat depth_format,
+                          const rokz::Device& device) {
+
+
+  // proto more orthogonal version
+  // shader setup needs to be dont 
+  
+  return false;
+}
+
+
+// ----------------------------------------------------------------------------------------
+// this should be renamed to CreatePolygonObjPipeline ()
 // ----------------------------------------------------------------------------------------
 bool darkroot::SetupObjectPipeline (rokz::Pipeline&       pipeline,
                                     rokz::PipelineLayout& layout,
@@ -306,6 +344,7 @@ bool darkroot::SetupObjectPipeline (rokz::Pipeline&       pipeline,
   pipeline.ext.pipeline_rendering.color_formats.resize (1);
   pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
 
+  
   rokz::CreateInfo  (pipeline.ext.pipeline_rendering.ci,
                      pipeline.ext.pipeline_rendering.color_formats,
                      depth_format); 

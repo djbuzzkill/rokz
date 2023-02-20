@@ -81,16 +81,12 @@ namespace mars {
     rokz::DescriptorPool         descriptor_pool; 
     // rokz::DescriptorGroup        descrgroup; 
     // rokz::Pipeline               pipeline; 
-    rokz::Pipeline          terrain_pipeline;
-    rokz::Pipeline          grid_pipeline;
 
-    rekz::PipelineDef             pipeline_def_objs;
-    rekz::PipelineDef             pipeline_def_grid;
+    rokz::Pipeline                terr_pipeline;
+    rokz::PipelineLayout          terr_plo;
+    rokz::DescriptorSetLayout     terr_dslo;
 
-
-    rokz::DescriptorGroup        descrgroup_terr;
-    rokz::DescriptorGroup        descrgroup_grid;
-    
+    rokz::DescriptorGroup         terr_descrg;
     
     // DYNAMIC RENDERING - no more renderpass
     rokz::RenderingInfoGroup     rendering_info_group;

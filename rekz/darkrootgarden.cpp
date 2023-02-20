@@ -25,18 +25,10 @@ using namespace darkroot;
 Glob::Glob()
   : instance()
   , device ()
-  , dt ()
-    //  , allocator()
   , depth_image()
   , depth_imageview()
   , msaa_samples ()
-  // , vma_ib_device()
-  // , vma_vb_device()
-  // , texture_image()
-  // , texture_imageview()
-  // , sampler()
   , vma_uniform_buffs()
-    //  , descr_pool()
   , window()
   , physical_device()
   , swapchain_support_info()
@@ -364,8 +356,8 @@ void CleanupDarkroot (Glob& glob) {
 
   // dont bother freeing if pool is destroyed anyways
   //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
-  rokz::cx::Destroy (glob.descrgroup_objs.pool, glob.device.handle); 
-  rokz::cx::Destroy (glob.pipeline_def_obj.layout.descriptor, glob.device.handle); 
+  rokz::cx::Destroy (glob.polys_descrg.pool, glob.device.handle); 
+  rokz::cx::Destroy (glob.polys_dslo, glob.device.handle); 
 
   // moved to DrawPolygon
   // rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
@@ -378,15 +370,15 @@ void CleanupDarkroot (Glob& glob) {
   // <<<<<<<<<<
 
   
-  Cleanup (glob.pipeline_objs.handle,
+  Cleanup (glob.polys_pl.handle,
            glob.swapchain_group.imageviews,
 
            glob.swapchain_group.swapchain,
            glob.surface,
            glob.device.command_pool.handle,
            glob.framesyncgroup.syncs, 
-           glob.pipeline_objs.shader_modules,
-           glob.pipeline_def_obj.layout.pipeline.handle,  
+           glob.polys_pl.shader_modules,
+           glob.polys_plo.handle,  
            glob.msaa_color_image, glob.msaa_color_imageview,
 
            glob.depth_image, glob.depth_imageview,
@@ -482,10 +474,10 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
 
     
-    glob.obj_theta[0] += mouse_dx * dtF * darkroot::k2Pi;
+    glob.polyd.obj_theta[0] += mouse_dx * dtF * darkroot::k2Pi;
     
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
-    obj[0].modelmat = glm::rotate(model0, glob.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
+    obj[0].modelmat = glm::rotate(model0, glob.polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
 //obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     obj[1].modelmat = glm::rotate(model1, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     
@@ -498,14 +490,13 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
 // RecordDarkCommandBuffer_indexed
 // ---------------------------------------------------------------------
 bool RecordDynamicRenderPass (Glob& glob, 
-                              VkCommandBuffer        &command_buffer,
-                              const rekz::PipelineDef&     pipelinedef, 
-                              const rokz::Pipeline&  pipeline,
-                              const VkDescriptorSet& desc_set, 
-                              const VkBuffer&        vertex_buffer, 
-                              const VkBuffer&        index_buffer, 
-                              const VkExtent2D&      ext2d,
-                              const rokz::Device&    device) {
+                              VkCommandBuffer&         command_buffer,
+                              const pipeline_assembly& pa, 
+                              //                              const VkDescriptorSet&  desc_set, // this stays b/c [current_frame]
+                              const VkBuffer&          vertex_buffer, 
+                              const VkBuffer&          index_buffer, 
+                              const VkExtent2D&        ext2d,
+                              const rokz::Device&      device) {
 
   const DarkMesh& darkmesh = DarkOctohedron ();
   
@@ -533,13 +524,14 @@ bool RecordDynamicRenderPass (Glob& glob,
   scissor.offset = {0, 0};
   scissor.extent = ext2d;
 
+  
   // 
   // [glob.rendering_info_group.ri] is updated in the calling function
   //
   vkCmdBeginRendering (command_buffer, &glob.rendering_info_group.ri);
   // vkCmdBeginRenderPass (command_buffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
   
-  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
+  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.pipeline.handle);
 
   vkCmdSetViewport(command_buffer, 0, 1, &viewport);
 
@@ -547,10 +539,10 @@ bool RecordDynamicRenderPass (Glob& glob,
 
   vkCmdBindDescriptorSets (command_buffer,
                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                           pipelinedef.layout.pipeline.handle, // pipeline.layout.handle,
+                           pa.plo, //                         pipelinedef.layout.pipeline.handle, // pipeline.layout.handle,
                            0,
                            1,
-                           &desc_set, //&descriptorSets[currentFrame],
+                           &pa.descrset, //&descriptorSets[currentFrame],
                            0,
                            nullptr);
 
@@ -573,7 +565,7 @@ bool RecordDynamicRenderPass (Glob& glob,
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
 
     vkCmdPushConstants (command_buffer,
-                        pipelinedef.layout.pipeline.handle, // pipeline.layout.handle,
+                        pa.plo, //                        pipelinedef.layout.pipeline.handle, // pipeline.layout.handle,
                         shader_stages,
                         0,
                         sizeof(darkroot::PushConstants),
@@ -730,6 +722,11 @@ bool CreateAttachementSet () {
 // --------------------------------------------------------------------
 int darkroot_basin (const std::vector<std::string>& args) {
 
+
+  std::function<int(float*, int&)> fnob0 = 0; 
+  std::function<int(float*, int&)> fnob1 = nullptr; 
+
+    
   printf ( " Mv = v is the correct order \n"); 
 
   //VkInstance  vkinst;
@@ -738,9 +735,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
   Glob  glob; // *globmem; // something representing the app state
   rokz::SwapchainGroup& scg = glob.swapchain_group;
   
-  glob.dt = 0.0;
-  glob.obj_theta[0] =   0.0;
-  glob.obj_theta[1] =   0.0;
+  glob.polyd.dt = 0.0;
+  glob.polyd.obj_theta[0] =   0.0;
+  glob.polyd.obj_theta[1] =   0.0;
 
   glob.view_orie.theta = 0.0f;
   glob.view_orie.phi   = kPi;
@@ -787,18 +784,31 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 #endif
 
-  assert (false); 
-  DefineObjectDescriptorLayout (glob.pipeline_def_obj.layout.descriptor, glob.device); 
+  assert (false);
+
+  DeclObjectDescriptorLayout (glob.polys_dslo, glob.device); 
+  //  DeclObjectDescriptorLayout (glob.pipeline_def_obj.layout.descriptor, glob.device); 
+
   // SetupObjectDescriptorLayout/DefineObjectDescriptorLayout used to be
   // called from inside  SetupObjectPipeline
+  InitializeObjectPipelineLayout (glob.polys_plo, glob.polys_dslo);
+  // we should move SetupPipelineLayout ()
+  //
   
-  SetupObjectPipeline (glob.pipeline_objs,
-                       glob.pipeline_def_obj.layout.pipeline, 
-                       glob.pipeline_def_obj.layout.descriptor, dark_path,
+  // SetupObjectPipeline (glob.pipeline_objs, glob.pipeline_def_obj.layout.pipeline, 
+  //                      glob.pipeline_def_obj.layout.descriptor, dark_path,
+  //                      glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
+  //                      scg.swapchain.ci.imageFormat, glob.depth_format, glob.device); 
+  SetupObjectPipeline (glob.polys_pl, glob.polys_plo, glob.polys_dslo, dark_path,
                        glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
                        scg.swapchain.ci.imageFormat, glob.depth_format, glob.device); 
 
+// this is how sop would look if layouts  were already done
+// SetupObjectPipeline (glob.pipeline_objs, glob.pipeline_def_obj.layout.pipeline, 
+//                      dark_path, glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
+//                      scg.swapchain.ci.imageFormat, glob.depth_format, glob.device); 
 
+ 
   SetupRenderingAttachments (glob); 
   //SetupDarkMultisampleColorResource (glob);
   // rekz::CreateMSAAColorImage  (glob.msaa_color_image, glob.msaa_color_imageview, glob.msaa_samples,
@@ -813,8 +823,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
                                                      glob.depth_image, glob.depth_imageview,
                                                      glob.msaa_color_image, glob.msaa_color_imageview); 
 
-
-
                                                  // for BeginRendering ()
   SetupDynamicRenderingInfo (glob) ; 
 
@@ -823,8 +831,10 @@ int darkroot_basin (const std::vector<std::string>& args) {
 // SetupObjectTextureAndSampler
   
   SetupObjResources (glob);
+
   
-  if (!SetupObjDescriptorPool (glob.descrgroup_objs.pool, glob.device)) {
+  //  if (!SetupObjDescriptorPool (glob.descrgroup_objs.pool, glob.device)) {
+  if (!SetupObjDescriptorPool (glob.polys_descrg.pool, glob.device)) {
     printf ("[FAILED] --> SetupGlobalDescriptorPool \n"); 
     return false;
   }
@@ -832,6 +842,12 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // * DescriptorLayout is created in SetupObjectPipeline this is done here
   // * b/c SetupGrlobalDescriptorPool is just barely above us
 
+  //    --------------------- *
+  // allocate descriptorsets is done in SODS is that correct ??
+  //
+  // ?? create DescriptorPool + DescriptorSets together
+  //    --------------------- *  
+  
 #ifdef DARKROOT_FN_CALL_SODS 
   // this is where all the VkWriteDescriptorSet's r
   if (!SetupObjectDescriptorSets (glob.obj_pipeline,            glob.vma_uniform_buffs,
@@ -863,7 +879,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   const double time_per_frame_sec = 1.0 / 60.0;
-  glob.dt = time_per_frame_sec; // just do this for now
+  glob.polyd.dt = time_per_frame_sec; // just do this for now
   
   std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
   
@@ -887,7 +903,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
     //start = std::chrono::high_resolution_clock::now();
     auto now = std::chrono::high_resolution_clock::now();    
     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
-    glob.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
+    glob.polyd.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
     
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q))
@@ -909,10 +925,15 @@ int darkroot_basin (const std::vector<std::string>& args) {
     }
     else {
       
-      UpdateDarkUniforms (glob, curr_frame, glob.dt); 
+      UpdateDarkUniforms (glob, curr_frame, glob.polyd.dt); 
+      // Draw seqs...
+      // for (auto drawseq : draw_seqs) {
+      // drawseq->Prerec  (glob.pa_objs,  glob.pa_objs.descrgroup.descrsets[curr_frame],  glob.device);
+      // }
 
       UpdateDynamicRenderingInfo (glob, image_index);
 
+      // Transitioning Layout and stuff in here
       rokz::cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
                                 image_index, glob.rendering_info_group.ri, glob.device);
 
@@ -927,10 +948,35 @@ int darkroot_basin (const std::vector<std::string>& args) {
                                glob.vma_ib_device.handle,
                                glob.swapchain_group.swapchain.ci.imageExtent,
                                glob.device );
+      // + the progressively updated version
+      // | 
+      // v                                 
+      pipeline_assembly pa {
+        glob.polys_pl, glob.polys_plo.handle, glob.polyd.descrgroup.descrsets[curr_frame] }; 
+
+      RecordDynamicRenderPass (glob, glob.framesyncgroup.command_buffers[curr_frame], pa, 
+                               glob.polyd.vb_device.handle, glob.polyd.ib_device.handle, 
+                               glob.swapchain_group.swapchain.ci.imageExtent, glob.device );
+
+
 #else
 
-      
+      pipeline_assembly pa {
+        glob.polys_pl, glob.polys_plo.handle, glob.polyd.descrgroup.descrsets[curr_frame] }; 
+
+      RecordDynamicRenderPass (glob, glob.framesyncgroup.command_buffers[curr_frame], pa, 
+                               glob.polyd.vb_device.handle, glob.polyd.ib_device.handle, 
+                               glob.swapchain_group.swapchain.ci.imageExtent, glob.device );
+
       // Draw seqs...
+      // for (auto drawseq : draw_seqs) {
+      // drawseq->Prep (pa, glob.device)
+      // drawseq->Record (glob.framesyncgroup.command_buffers[curr_frame], glob.pa_objs, 
+      //                  glob.pa_objs.descrgroup.descrsets[curr_frame],  glob.device);
+      // }
+      
+      // PolygonDraw::RecordDrawList (pipeline, frame_sync, device);
+      // GridDraw::RecordDrawList    (pipeline, frame_sync, device);
       
 #endif
       
@@ -988,3 +1034,7 @@ const std::string sbcs[] = {
   "rome",
   // national
 }; 
+
+
+
+

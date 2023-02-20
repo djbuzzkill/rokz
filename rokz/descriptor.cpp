@@ -164,7 +164,7 @@ void rokz::cx::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
 }
 
 
-void rokz::cx::Free (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device) {
+void rokz::cx::FreeDescriptorSets (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device) {
 
   vkFreeDescriptorSets (device, descrpool.handle, descriptorsets.size(), &descriptorsets[0] ); 
 

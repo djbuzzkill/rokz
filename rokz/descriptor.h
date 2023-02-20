@@ -54,13 +54,14 @@ namespace rokz {
                                  const VkDescriptorSetAllocateInfo& alloc_info,
                                  const VkDevice &device); 
 
+    void FreeDescriptorSets (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device); 
+
 
     void Destroy (DescriptorPool& dsl, const VkDevice& device) ;
     void Destroy (DescriptorSetLayout& dsl, const VkDevice& device) ;
 
     //void Destroy (DescriptorGroup& dg, const VkDevice& device) ;
     //void Destroy (DescriptorGroup& dg, const DescriptorPool& dsl, const VkDevice& device); 
-    void Free (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device); 
 
 
   } // cx

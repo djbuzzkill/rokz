@@ -4,6 +4,7 @@
 
 #include "rokz/rokz.h"
 #include "rekz.h"
+#include "rokz/rokz_types.h"
 #include <vulkan/vulkan_core.h>
 
 namespace darkroot {
@@ -37,7 +38,7 @@ namespace darkroot {
   };
 
 
-  template<typename Ty>  struct Trait {
+  template<typename Ty> struct Trait {
 
     int    Fn ();
     float  Fl ();
@@ -45,24 +46,57 @@ namespace darkroot {
     
   };
 
+  // --------------------------------------------------------------------
+  // PolygonData polyd resources the polygon pipeline will use
+  // --------------------------------------------------------------------
+  struct PolygonData { 
+    rokz::Buffer          vb_device;
+    rokz::Buffer          ib_device;
+    rokz::DescriptorGroup descrgroup;
+    // image/texture
+    rokz::Image           texture;   // color texture
+    rokz::ImageView       imageview; // 
+    rokz::Sampler         sampler;   // 
+
+    float obj_theta[2];     // scene objects 
+
+    float                       dt;
+} ;
+
+
+  // --------------------------------------------------------------------
+  struct GridData {
+    // some shit like this
+    rokz::Buffer          vb_device;
+    rokz::Buffer          ib_device;
+    rokz::DescriptorGroup descrgroup;
+    
+  };
+  
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  struct pipeline_assembly  {
+    rokz::Pipeline&       pipeline;
+    VkPipelineLayout      plo;
+    VkDescriptorSet       descrset;
+  }; 
   // ---------------------------------------------------------------------
   // ?? is a pipeline  tied to a drawsequence?  
   // --  DrawPolygons is part of obj_pipeline 
   // ---------------------------------------------------------------------
   struct DrawSequence {
 
-    virtual int Exec (VkCommandBuffer comb, const rokz::Pipeline& pl, const VkDescriptorSet* ds) = 0;
-
-
-    // ?? maybe u update is fn (pipeline) -> DrawSequence<Pipeline>:: UpdateDescriptors ()
+    //virtual int Exec (VkCommandBuffer comb, const rokz::Pipeline& pl, const VkDescriptorSet* ds) = 0;
+    // 
+    // do crap before recording ("UpdateDescriptors()", etc)
+    virtual int Prep (const pipeline_assembly& pa, const rokz::Device& device) = 0; 
     //
-    //       -> DrawSequence<PipelineA> :: UpdateDescriptors (data)
-    //       -> DrawSequence<PipelineA> :: Exec (data)
-    //
-    //       -> DrawSequence<PipelineB> :: UpdateDescriptors (data)
-    //       -> DrawSequence<PipelineB> :: Exec (data)
+    // the draw sequence recording, mebe rename to DrawSeq::Rec() 
+    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet* ds) = 0;
 
-    virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) = 0; 
+
+    //virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) = 0; 
     // ?? who owns the descriptor set, should it be allocated with the drawseq or the pipeline
     
   protected:
@@ -89,6 +123,7 @@ namespace darkroot {
     ResetSwapchainCB () {}
   };
 
+
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
@@ -98,6 +133,11 @@ namespace darkroot {
     //#ifdef GLOB_COMMENT_OUT   
     enum { MaxFramesInFlight = 2 }; 
     Glob();
+
+    // window
+    rokz::Window                window;
+    VkSurfaceKHR                surface; // 
+    //bool                        fb_resize; 
 
     // device props
     VkFormat                     depth_format;
@@ -115,20 +155,27 @@ namespace darkroot {
     // global descriptor pool
     //rokz::DescriptorPool         descr_pool;
 
-    // pipelines
-    rokz::Pipeline               pipeline_objs;
-    rokz::Pipeline               pipeline_grid;
+    // pipelines ; polygons
+    // rokz::Pipeline               pipeline_objs;
+    // rekz::PipelineDef            pipeline_def_obj;  // (decriptorlayout, pipelineoayout)
+    // rokz::DescriptorGroup        descrgroup_objs;   // descriptor group is sorta like a PipelineResource
 
-    rekz::PipelineDef            pipeline_def_obj; 
-    rekz::PipelineDef            pipeline_def_grid;
-    
-    rokz::DescriptorGroup        descrgroup_objs;
-    rokz::DescriptorGroup        descrgroup_grid;
-    
+    // pipeline : grid 
+    // rokz::Pipeline               pipeline_grid;
+    // rekz::PipelineDef            pipeline_def_grid;
+    // rokz::DescriptorGroup        descrgroup_grid;
 
+
+    rokz::Pipeline            polys_pl  ;
+    rokz::PipelineLayout      polys_plo ;
+    rokz::DescriptorSetLayout polys_dslo;
+    rokz::DescriptorGroup     polys_descrg;
     
-    // DYNAMIC RENDERING
-    rokz::RenderingInfoGroup     rendering_info_group;
+    rokz::Pipeline            grid_pl  ;
+    rokz::PipelineLayout      grid_plo ;
+    rokz::DescriptorSetLayout grid_dslo;
+    rokz::DescriptorGroup     grid_descrg;
+
     
     // attachement set
     rokz::Image                  depth_image;
@@ -136,6 +183,10 @@ namespace darkroot {
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
   
+    // DYNAMIC RENDERING
+    rokz::RenderingInfoGroup     rendering_info_group;
+
+
     // pipeline resources
     std::vector<rokz::Buffer>    vma_uniform_buffs;
     std::vector<rokz::Buffer>    vma_objparam_buffs;
@@ -149,17 +200,15 @@ namespace darkroot {
     // rokz::ImageView             texture_imageview; 
     // rokz::Sampler               sampler;
 
-    float obj_theta[2];     // scene objects 
 
+    PolygonData polyd;
+
+    
     rekz::Polarf                view_orie;
     int                         prev_x;
     int                         prev_y; 
     int                         prev_inside;
     
-    // window
-    rokz::Window                window;
-    VkSurfaceKHR                surface; // 
-    //bool                        fb_resize; 
 
     //VkViewport                  viewport;
     //VkRect2D                    scissor_rect; 
@@ -168,7 +217,6 @@ namespace darkroot {
     std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
 
     double                      sim_time; 
-    float                       dt;
 
   };
   // --------------------------------------------------------------------

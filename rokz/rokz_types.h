@@ -217,11 +217,10 @@ namespace rokz {
 
   struct DescriptorGroup {
 
-    DescriptorPool pool; // <-- put pool in here
-
+    DescriptorPool               pool; // <-- put pool in here
+    VkDescriptorSetAllocateInfo  alloc_info;
     // these are the final thing created
-    std::vector<VkDescriptorSet>   descrsets;
-    VkDescriptorSetAllocateInfo    alloc_info;
+    std::vector<VkDescriptorSet> descrsets;
 
     //DescriptorSetLayout descriptor; <-- should be part of pipeline definition
 
@@ -307,9 +306,7 @@ namespace rokz {
   //
   // ------------------------------------------------------------------------
   struct Pipeline {
-    Pipeline () : handle (VK_NULL_HANDLE), ci ()
-                  //, layout ()
-                , state () {
+    Pipeline () : handle (VK_NULL_HANDLE), ci (), state () {
     }
     
     VkPipeline                       handle; 

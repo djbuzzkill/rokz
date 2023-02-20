@@ -91,17 +91,6 @@ namespace rekz {
   
 
 
-  struct PipelineDef {
-
-    struct {
-
-      rokz::DescriptorSetLayout descriptor; //
-      rokz::PipelineLayout      pipeline;
-
-    } layout ;
-    
-  };
-
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------

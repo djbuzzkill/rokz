@@ -485,6 +485,8 @@ int mars_run (const std::vector<std::string>& args) {
                              kWinExtent, glob.physical_device, glob.device);
 
 
+#ifdef MARSCAPE_CALL_SETUP_GRID_PIPELINE_
+  
   rekz::SetupGridPipeline (glob.grid_pipeline,
                            mars_path,
                            kWinExtent, //const rokz::Swapchain& swapchain,
@@ -493,7 +495,7 @@ int mars_run (const std::vector<std::string>& args) {
                            glob.depth_format,
                            sizeof(PushConstants), 
                            glob.device);
-
+#endif
 
   // SetupRenderAttachments
   if (!SetupRenderAttachments (glob)) {
@@ -565,12 +567,14 @@ int mars_run (const std::vector<std::string>& args) {
   }
 #endif
   
+#ifdef MARSCAPE_CALL_SETUP_GRID_DESCRIPTORSETS  
   if (!rekz::SetupGridDescriptorSets (glob.descrgroup_grid, glob.uniform_mvp,
                                       glob.pipeline_def_grid.layout.descriptor, glob.device)) {
     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
     return false;
   }
-
+#endif
+  
   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 
   //swapchain_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);

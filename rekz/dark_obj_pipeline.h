@@ -27,14 +27,17 @@ namespace darkroot {
   //
   // SetupObjectDescriptorLayout should be called DefObjectDescriptorLayout
   // rename (SetupObjectDescriptorLayout) -> DefineObjectDescriptorLayout
-  bool DefineObjectDescriptorLayout  (rokz::DescriptorSetLayout& descrg, const rokz::Device& device); 
+  bool DeclObjectDescriptorLayout  (rokz::DescriptorSetLayout& descrg, const rokz::Device& device); 
   //bool SetupObjectDescriptorLayout (const rokz::DescriptorSetLayout& dslo, const rokz::Device& device); 
 
   
   
   bool SetupObjectShaderModules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device);
-  
-  
+
+  //
+  bool InitializeObjectPipelineLayout (rokz::PipelineLayout& layout, const rokz::DescriptorSetLayout& dslo);
+
+  //
   bool SetupObjectPipeline (rokz::Pipeline& pipeline,
                                     rokz::PipelineLayout& layout,
                             const rokz::DescriptorSetLayout& dslo, 

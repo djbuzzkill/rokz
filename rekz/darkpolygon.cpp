@@ -11,15 +11,6 @@ using namespace darkroot;
 
 //template<typename PipelineTy, typename DataTy>
 //
-struct PolygonData { 
-  rokz::Buffer          vb_device;
-  rokz::Buffer          ib_device;
-  rokz::DescriptorGroup descrgroup;
-  // image/texture
-  rokz::Image           texture;   // color texture
-  rokz::ImageView       imageview; // 
-  rokz::Sampler         sampler;   // 
-} ;
 
 // 
 // these may have different textures, verts, shapes, etc
@@ -32,10 +23,15 @@ PolygonData& InitPolygonData_B (PolygonData& out);
 // -------------------------------------------------------------------------
 struct PolygonDraw : public DrawSequence {
 
-  PolygonDraw (const  PolygonData& dat, const rokz::Device& device, const rokz::PipelineLayout& plo); 
+  PolygonDraw (const PolygonData& d) : polyd (d) {
+  }
+  
+  // do shit before recording ("UpdateDescriptors()", etc)
+  virtual int Prep (const pipeline_assembly& pa, const rokz::Device& device) = 0; 
 
-  virtual int Exec (VkCommandBuffer command_buffer, const rokz::Pipeline& pl, const VkDescriptorSet* ds); 
-  virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device); 
+  //
+  // draw sequence recording (?? record draw sequence) mebe rename to DrawSeq::Rec() 
+  virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet* ds) = 0;
   
   // should SetupObjectDescriptorLayout be called in here? -> no 
   // Storage { 
@@ -50,8 +46,7 @@ struct PolygonDraw : public DrawSequence {
 
   //  rokz::DescriptorGroup       dg; // ???
 
-  const PolygonData&          dat;
-  const rokz::PipelineLayout& pipelinelayout;  // <-- is this necessary
+  const PolygonData&          polyd;
   
 protected:
 
@@ -104,36 +99,15 @@ int obj_image_handler (const unsigned char* dat, const rekz::DevILImageProps& pr
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-PolygonDraw::PolygonDraw (const PolygonData&    d,
-                          const rokz::Device&   device,
-                          const rokz::PipelineLayout& plo)
-  : dat (d), pipelinelayout (plo)
-
-{
-
-  
-#ifdef DARKROOT_HIDE_CONSTRUCTOR
-
-  setup_obj_resources;
-  setup_object_texture_and_sampler;
-  setup_object_uniforms ;
-#endif
-  
-}
 
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int PolygonDraw :: UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) {
-
-  assert ( false );
-  return __LINE__;
-}
   
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int PolygonDraw :: Exec (VkCommandBuffer command_buffer, const rokz::Pipeline& pl, const VkDescriptorSet* ds) {
+int PolygonDraw :: Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const VkDescriptorSet* ds) {
 
   const DarkMesh& darkmesh = DarkOctohedron ();
   // ext2D  used to come from -> swapchain.ci.imageExtent
@@ -148,24 +122,26 @@ int PolygonDraw :: Exec (VkCommandBuffer command_buffer, const rokz::Pipeline& p
   //    VkRect2D scissor{};
   //    scissor.offset = {0, 0};
   //    scissor.extent = ext2d;
-  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pl.handle);
+  vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.pipeline.handle);
 
-  vkCmdSetViewport(command_buffer, 0, 1, &pl.state.viewport.viewports[0]);
 
-  vkCmdSetScissor(command_buffer, 0, 1, &pl.state.viewport.scissors[0]);
+  
+  vkCmdSetViewport(command_buffer, 0, 1, &pa.pipeline.state.viewport.viewports[0]);
+
+  vkCmdSetScissor(command_buffer, 0, 1, &pa.pipeline.state.viewport.scissors[0]);
 
   vkCmdBindDescriptorSets (command_buffer,
                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                           pipelinelayout.handle,
+                           pa.plo, //                           pipelinelayout.handle,
                            0,
                            1, ds, //&descriptorSets[currentFrame],
                            0, nullptr);
 
-  VkBuffer vertex_buffers[] = {dat.vb_device.handle};
+  VkBuffer vertex_buffers[] = {polyd.vb_device.handle};
   VkDeviceSize offsets[] = {0};
 
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-  vkCmdBindIndexBuffer(command_buffer, dat.ib_device.handle, 0, VK_INDEX_TYPE_UINT16);
+  vkCmdBindIndexBuffer(command_buffer, polyd.ib_device.handle, 0, VK_INDEX_TYPE_UINT16);
 
   for (uint32_t i = 0; i < 2; ++i) {
 
@@ -179,7 +155,7 @@ int PolygonDraw :: Exec (VkCommandBuffer command_buffer, const rokz::Pipeline& p
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
 
     vkCmdPushConstants (command_buffer,
-                        pipelinelayout.handle,
+                        pa.plo, 
                         shader_stages,
                         0,
                         sizeof(darkroot::PushConstants),
