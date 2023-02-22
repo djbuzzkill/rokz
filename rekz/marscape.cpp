@@ -817,7 +817,6 @@ bool SetupTerrainPipeline (rekz::PipelineGroup& pipelinegroup,
 
   SetupTerrainDescriptorLayout (pipelinegroup.descrgroup, device); 
 
-
   //
   rokz::CreateGraphicsPipelineLayout (pipelinegroup.pipeline.layout.handle,
                                       pipelinegroup.pipeline.layout.ci,

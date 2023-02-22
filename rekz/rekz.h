@@ -279,11 +279,6 @@ namespace rekz {
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent);
-  
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
   bool CreateDepthBufferImage (rokz::Image&          depth_image,
                                rokz::ImageView&      depth_imageview,
                                //rokz::SwapchainGroup& scg,

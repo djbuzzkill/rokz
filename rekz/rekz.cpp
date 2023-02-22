@@ -445,21 +445,6 @@ bool rekz::LoadTexture_color_sampling (rokz::Image&             image,
   return true; 
 }
 
-// -------------------------------------------------------------------------------------------
-//                                             
-// -------------------------------------------------------------------------------------------
-void rekz::SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent) {
-
-  const VkOffset2D offs0 {0, 0};
-
-  vps.viewports.resize (1);
-  vps.scissors.resize (1);
-  
-  vps.scissors[0] = { offs0, swapchain_extent };
-  rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
-
-}
-
 
 // --------------------------------------------------------------------
 //

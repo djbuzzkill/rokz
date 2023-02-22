@@ -19,6 +19,7 @@ bool rokz::cx::CreateImage (Image& image, const VkDevice& device) {
   return true; 
 }
 
+#ifdef ROKZ_HIDE_CX_ALLOCINFO
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -36,10 +37,13 @@ VkMemoryAllocateInfo& rokz::cx::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkM
 
   return alloc_info; 
 }
+#endif
 
+#ifdef ROKZ_HIDE_CX_ALLOCATEIMAGEMEMORY
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
+
 bool rokz::cx::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
   printf ("%s\n", __FUNCTION__);  
 
@@ -56,7 +60,7 @@ bool rokz::cx::AllocateImageMemory (rokz::Image& image, const VkDevice& device) 
   
   return true; 
 }
-
+#endif
 
 // ---------------------------------------------------------------------
 //
@@ -151,6 +155,8 @@ bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
 }
 
 
+
+#ifdef ROKZ_HIDE_CX_DESTROY_IMAGE
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -159,7 +165,7 @@ void rokz::cx::Destroy (Image& image, const VkDevice& device) {
     vkDestroyImage (device, image.handle, nullptr);
     vkFreeMemory   (device, image.mem, nullptr);
 }
-
+#endif
 
 // --------------------------------------------------------------------
 //
@@ -178,7 +184,7 @@ bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
   image.alloc_ci.usage = VMA_MEMORY_USAGE_AUTO;
 
   printf ("%s VMA\n", __FUNCTION__); 
-  if( VK_SUCCESS != vmaCreateImage (allocator, &image.ci, &image.alloc_ci, &image.handle, &image.allocation, &image.alloc_info_)) {
+  if( VK_SUCCESS != vmaCreateImage (allocator, &image.ci, &image.alloc_ci, &image.handle, &image.allocation, &image.alloc_info)) {
     printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
     return false; 
   }

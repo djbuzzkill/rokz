@@ -28,12 +28,38 @@ namespace rokz {
   typedef std::vector<byte> bytearray; 
 
 
-  // ---------------------------------------------------
-  //
-  // ---------------------------------------------------
+  // -----------------------------------------------------------------------------------
+  // 
+  // -----------------------------------------------------------------------------------
   typedef std::optional<uint32_t> MaybeIndex;
 
-  // ---------------------------------------------------
+
+
+
+  // -----------------------------------------------------------------------------------
+  // not sure what to do with these yet
+  // -----------------------------------------------------------------------------------
+  struct VkObj {
+    //what needs VkDevice for cleanup?
+  protected :
+
+    VkObj (VkDevice& dev) : device (dev) {
+    }
+
+    VkDevice& device;
+  }; 
+
+  struct VMARes {
+    // what needs allocator for cleanup?
+  protected :
+    
+    VMARes (VmaAllocator& a) : allocator (a) {
+    }
+  
+    VmaAllocator& allocator; 
+  }; 
+
+  //  -----------------------------------------------------------------------------------
   struct MVPTransform {
     glm::mat4 model;
     glm::mat4 view;
@@ -118,7 +144,7 @@ namespace rokz {
   // ---------------------------------------------------------------------
   struct Device {
 
-    Device () : handle (VK_NULL_HANDLE) , ci (), queue_ci () {
+    Device () : handle (VK_NULL_HANDLE) , ci (), queue_ci (), physical() {
     }
       
     VkDevice                             handle;
@@ -131,6 +157,8 @@ namespace rokz {
     struct { VkQueue graphics; VkQueue present; } queues;
     struct { float graphics; float present; } priority;
 
+    PhysicalDevice physical;
+    
     // device extensions strings
     std::vector<const char*> dxs; 
     std::vector<std::string> dxstrs; 
@@ -166,18 +194,19 @@ namespace rokz {
   // ---------------------------------------------------------------------
   struct Image {
 
-    Image () : handle (VK_NULL_HANDLE), ci (), mem (), alloc_info (), 
-               alloc_ci (), allocation (),alloc_info_ () {}
+    Image () : handle (VK_NULL_HANDLE), ci (),
+               //, mem (), alloc_info (), 
+               alloc_ci (), allocation (),alloc_info () {}
 
     VkImage              handle;
     VkImageCreateInfo    ci;
-    VkDeviceMemory       mem; 
-    VkMemoryAllocateInfo alloc_info;
+    //VkDeviceMemory       mem; 
+    //    VkMemoryAllocateInfo alloc_info;
     
     // vmaCreateBuffer(glob.allocator, &buffer_info, &allocInfo, &buffer, &allocation, nullptr);
     VmaAllocationCreateInfo alloc_ci; 
     VmaAllocation           allocation;
-    VmaAllocationInfo       alloc_info_;
+    VmaAllocationInfo       alloc_info;
   
   }; 
 
@@ -207,13 +236,15 @@ namespace rokz {
   struct DescriptorSetLayout { 
     VkDescriptorSetLayout                     handle;    
     VkDescriptorSetLayoutCreateInfo           ci;
-    std::vector<VkDescriptorSetLayoutBinding> bindings; 
+
+    // dslo doesnt have to keep its own bindings
+    // std::vector<VkDescriptorSetLayoutBinding> bindings; 
     
   }; 
 
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------
 
   struct DescriptorGroup {
 
@@ -226,14 +257,15 @@ namespace rokz {
 
   }; 
 
-  // --------------------------------------------------------
+  // ------------------------------------------------------------------------
   struct Sampler {
     VkSampler           handle; 
     VkSamplerCreateInfo ci;
   };
-
   
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct Framebuffer {
     Framebuffer () : handle (VK_NULL_HANDLE), ci (), attachments () {
     }
@@ -244,7 +276,9 @@ namespace rokz {
   };
 
 
-  // --------------------------------------------------------
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct PipelineStateCreateInfo {
     PipelineStateCreateInfo () : shader_stages(), colorblendstate(), input_assembly(), vertexinputstate(),
                                  viewport_state(), rasterizer(), multisampling(), depthstencilstate(), dynamicstate() {
@@ -268,7 +302,9 @@ namespace rokz {
     std::vector<VkRect2D>   scissors;
   };
 
-  // --------------------------------------------------------
+  // ------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------
   struct PipelineState {
 
     PipelineStateCreateInfo ci;
@@ -312,7 +348,6 @@ namespace rokz {
     VkPipeline                       handle; 
     VkGraphicsPipelineCreateInfo     ci;
     //PipelineLayout                   layout; // move to pipeline-def
-
 
     PipelineState                    state;
     std::vector<rokz::ShaderModule>  shader_modules; 

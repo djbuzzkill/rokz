@@ -184,7 +184,7 @@ bool rekz::SetupGridPipeline (rokz::Pipeline& pipeline,
 
   //
   //rokz::Pipeline& pipeline = pipelinegroup.pipeline;
-  rekz::SetupViewportState (pipeline.state.viewport, viewport_extent); 
+  rokz::SetupViewportState (pipeline.state.viewport, viewport_extent); 
 
   pipeline.state.colorblend_attachments.resize (1);
 

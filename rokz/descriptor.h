@@ -65,7 +65,26 @@ namespace rokz {
 
 
   } // cx
+
+
+
+  typedef std::vector<VkDescriptorSetLayoutBinding> DSLOBs; 
+  // ----------------------------------------------------------------------------------------------
+  // 
+  // ----------------------------------------------------------------------------------------------
+  bool DefineDescriptorSetLayout (DescriptorSetLayout&                             dslo,
+                                const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+                                const rokz::Device&                              device);
+
+  bool MakeDescriptorPool      (rokz::DescriptorPool& dp, uint32_t mul, 
+                                const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+                                const rokz::Device& device); 
   
+  bool MakeDescriptorSets (std::vector<VkDescriptorSet>& dss, VkDescriptorSetAllocateInfo& alloc_info, uint32_t num_sets,
+                           VkDescriptorSetLayout dslo, const rokz::DescriptorPool& pool, rokz::Device& device);
+
+
+
 } // rokz
 
 

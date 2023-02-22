@@ -2,6 +2,8 @@
 #ifndef DARKROOT_GLOB_INCLUDE
 #define DARKROOT_GLOB_INCLUDE
 
+#include "rokz/utility.h"
+#include "rokz/image.h"
 #include "rokz/rokz.h"
 #include "rekz.h"
 #include "rokz/rokz_types.h"
@@ -61,7 +63,13 @@ namespace darkroot {
     float obj_theta[2];     // scene objects 
 
     float                       dt;
-} ;
+
+    // pipeline resources
+    std::vector<rokz::Buffer>    vma_uniform_buffs;
+    std::vector<rokz::Buffer>    vma_objparam_buffs;
+
+  } ;
+
 
 
   // --------------------------------------------------------------------
@@ -85,7 +93,7 @@ namespace darkroot {
   // ?? is a pipeline  tied to a drawsequence?  
   // --  DrawPolygons is part of obj_pipeline 
   // ---------------------------------------------------------------------
-  struct DrawSequence {
+  struct DrawSequence : public rokz::ut::destructor {
 
     //virtual int Exec (VkCommandBuffer comb, const rokz::Pipeline& pl, const VkDescriptorSet* ds) = 0;
     // 
@@ -94,7 +102,6 @@ namespace darkroot {
     //
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
     virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet* ds) = 0;
-
 
     //virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) = 0; 
     // ?? who owns the descriptor set, should it be allocated with the drawseq or the pipeline
@@ -106,9 +113,9 @@ namespace darkroot {
   }; 
 
 
-  typedef std::vector<DrawSequence> DrawSequences;
-
-
+  std::shared_ptr<DrawSequence> CreatePolygonTextured (const darkroot::PolygonData& d); 
+  std::shared_ptr<DrawSequence> CreatePolygonWireframe (const darkroot::PolygonData& d); 
+  std::shared_ptr<DrawSequence> CreateGridDraw (int dumb); 
   // ---------------------------------------------------------------------
   // 
   // ---------------------------------------------------------------------
@@ -123,16 +130,24 @@ namespace darkroot {
     ResetSwapchainCB () {}
   };
 
-
+ 
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
   struct Glob {
 
-    rekz::InputState input_state;
     //#ifdef GLOB_COMMENT_OUT   
     enum { MaxFramesInFlight = 2 }; 
     Glob();
+
+
+    rekz::Polarf                view_orie;
+    int                         prev_x;
+    int                         prev_y; 
+    int                         prev_inside;
+
+    rekz::InputState            input_state;
+
 
     // window
     rokz::Window                window;
@@ -146,36 +161,24 @@ namespace darkroot {
 
     // system
     rokz::Instance               instance;
-    rokz::PhysicalDevice         physical_device;
+    //rokz::PhysicalDevice         physical_device;
     rokz::Device                 device;
     rokz::SwapchainGroup         swapchain_group;
     rokz::SwapchainSupportInfo   swapchain_support_info;
     rokz::FrameSyncGroup         framesyncgroup;
 
-    // global descriptor pool
-    //rokz::DescriptorPool         descr_pool;
-
-    // pipelines ; polygons
-    // rokz::Pipeline               pipeline_objs;
-    // rekz::PipelineDef            pipeline_def_obj;  // (decriptorlayout, pipelineoayout)
-    // rokz::DescriptorGroup        descrgroup_objs;   // descriptor group is sorta like a PipelineResource
-
-    // pipeline : grid 
-    // rokz::Pipeline               pipeline_grid;
-    // rekz::PipelineDef            pipeline_def_grid;
-    // rokz::DescriptorGroup        descrgroup_grid;
-
-
-    rokz::Pipeline            polys_pl  ;
-    rokz::PipelineLayout      polys_plo ;
-    rokz::DescriptorSetLayout polys_dslo;
-    rokz::DescriptorGroup     polys_descrg;
+    rokz::Pipeline                polys_pl  ;
+    rokz::PipelineLayout          polys_plo ;
+    rokz::DescriptorSetLayout     polys_dslo;
+    rokz::DescriptorGroup         polys_descrg;
+    PolygonData                   polyd;
+    std::shared_ptr<DrawSequence> poly_draw;
     
-    rokz::Pipeline            grid_pl  ;
-    rokz::PipelineLayout      grid_plo ;
-    rokz::DescriptorSetLayout grid_dslo;
-    rokz::DescriptorGroup     grid_descrg;
-
+    rokz::Pipeline                grid_pl  ;
+    rokz::PipelineLayout          grid_plo ;
+    rokz::DescriptorSetLayout     grid_dslo;
+    rokz::DescriptorGroup         grid_descrg;
+    std::shared_ptr<DrawSequence> grid_draw;
     
     // attachement set
     rokz::Image                  depth_image;
@@ -186,33 +189,13 @@ namespace darkroot {
     // DYNAMIC RENDERING
     rokz::RenderingInfoGroup     rendering_info_group;
 
-
-    // pipeline resources
-    std::vector<rokz::Buffer>    vma_uniform_buffs;
-    std::vector<rokz::Buffer>    vma_objparam_buffs;
-
-    // DATA     <-- moved to DrawPolygon
-    // rokz::Buffer                vma_ib_device;
-    // rokz::Buffer                vma_vb_device;
-
-    // image/texture
-    // rokz::Image                 texture_image; 
-    // rokz::ImageView             texture_imageview; 
-    // rokz::Sampler               sampler;
-
-
-    PolygonData polyd;
-
-    
-    rekz::Polarf                view_orie;
-    int                         prev_x;
-    int                         prev_y; 
-    int                         prev_inside;
-    
-
     //VkViewport                  viewport;
     //VkRect2D                    scissor_rect; 
 
+    std::map<std::string, std::shared_ptr<DrawSequence>> draw_seqs; 
+    
+    std::map<DrawSequence*, rokz::DescriptorGroup>       descrgmap; 
+    
     std::shared_ptr<darkroot::DrawSequence>     polygons; 
     std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
 

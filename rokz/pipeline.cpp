@@ -285,10 +285,9 @@ VkPipelineTessellationStateCreateInfo& rokz::CreateInfo (VkPipelineTessellationS
 
 
 // ---------------------------------------------------------------------
-//
+// CreateGraphicsPipelineLayout renamed 
 // ---------------------------------------------------------------------
-
-bool rokz::CreateGraphicsPipelineLayout (
+bool rokz::DefineGraphicsPipelineLayout (
     VkPipelineLayout&            pipeline_layout,
     VkPipelineLayoutCreateInfo&  create_info,
     uint32_t                     push_constant_size,
@@ -513,7 +512,54 @@ bool rokz::CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice devi
 
   return true; 
 
-  }
+}
 
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&                                  ps,
+                                                  VkSampleCountFlagBits                                 msaa_samples,
+                                                  const std::vector<VkVertexInputAttributeDescription>& vert_input_attrib_desc,
+                                                  const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                                  const VkExtent2D&                                     vpext) {
+
+  SetupViewportState (ps.viewport, vpext); 
+
+  ps.colorblend_attachments.resize (1);
+
+  ColorBlendState_default (ps.colorblend_attachments[0]); 
+
+  DynamicState_default (ps.dynamics); 
+  //
+  PipelineStateCreateInfo& psci = ps.ci;
+  CreateInfo (psci.tesselation, 69); 
+  CreateInfo (psci.dynamicstate, ps.dynamics); 
+  CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
+  CreateInfo (psci.viewport_state, ps.viewport);
+  CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  CreateInfo (psci.rasterizer); 
+  CreateInfo (psci.colorblendstate, ps.colorblend_attachments); 
+  CreateInfo (psci.multisampling, msaa_samples); 
+  CreateInfo (psci.depthstencilstate); 
+
+  return ps;
+  
+}
+
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+rokz::ViewportState& rokz::SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent) {
+
+  const VkOffset2D offs0 {0, 0};
+
+  vps.viewports.resize (1);
+  vps.scissors.resize (1);
+  
+  vps.scissors[0] = { offs0, swapchain_extent };
+  rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
+  return vps;
+  
+}
 
 

@@ -78,9 +78,9 @@ VkDescriptorSetAllocateInfo& rokz::cx::AllocateInfo (VkDescriptorSetAllocateInfo
 //
 // ---------------------------------------------------------------------
 bool rokz::cx::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
-                                   uint32_t num_sets,
-                                   const VkDescriptorSetAllocateInfo& alloc_info,
-                                   const VkDevice &device) {
+                                       uint32_t num_sets,
+                                       const VkDescriptorSetAllocateInfo& alloc_info,
+                                       const VkDevice &device) {
 
   printf ("%s\n", __FUNCTION__);
 
@@ -103,11 +103,12 @@ bool rokz::cx::AllocateDescriptorSets (std::vector<VkDescriptorSet>& desc_sets,
 
   return false; 
 }
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
 VkDescriptorSetLayoutCreateInfo& rokz::cx::CreateInfo (VkDescriptorSetLayoutCreateInfo& ci,
-                                             const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
+                                                       const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
 
     ci = {};
     ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -118,13 +119,14 @@ VkDescriptorSetLayoutCreateInfo& rokz::cx::CreateInfo (VkDescriptorSetLayoutCrea
 }
 
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, const VkDescriptorSetLayoutCreateInfo& ci,
-                                      const VkDevice& device) {
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
+bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dslo,
+                                          const VkDescriptorSetLayoutCreateInfo& ci,
+                                          const VkDevice& device) {
 
-  if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &dsl) != VK_SUCCESS) {
+  if (vkCreateDescriptorSetLayout (device, &ci, nullptr, &dslo) != VK_SUCCESS) {
       printf ("[FAILED] %s create descriptor set layout", __FUNCTION__);
       return false; 
     }
@@ -132,9 +134,9 @@ bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, const VkDe
     return true;
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
 bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescriptorSetLayoutCreateInfo& ci,
                                         const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                                         const VkDevice& device) {
@@ -149,7 +151,9 @@ bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescript
     return true;
 }
 
-
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
 
 void rokz::cx::Destroy (DescriptorPool& dsl, const VkDevice& device) {
   vkDestroyDescriptorPool(device, dsl.handle, nullptr);
@@ -159,10 +163,8 @@ void rokz::cx::Destroy (DescriptorPool& dsl, const VkDevice& device) {
 void rokz::cx::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
 
   vkDestroyDescriptorSetLayout (device, dsl.handle, nullptr);
-
   
 }
-
 
 void rokz::cx::FreeDescriptorSets (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device) {
 
@@ -170,4 +172,71 @@ void rokz::cx::FreeDescriptorSets (std::vector<VkDescriptorSet>& descriptorsets,
 
   //Destroy (dg.dslayout, device); 
 }
+
+// ----------------------------------------------------------------------------------------------
+// rokz::CreateDescriptorSetLayout
+// ----------------------------------------------------------------------------------------------
+bool rokz::DefineDescriptorSetLayout (DescriptorSetLayout& dslo, const std::vector<VkDescriptorSetLayoutBinding>& bindings,  const rokz::Device& device) {
+
+  printf ("%s", __FUNCTION__); 
+
+  if (!rokz::cx::CreateDescriptorSetLayout (dslo.handle, dslo.ci, bindings, device.handle)) {
+    printf (" --> [FAILED] \n"); 
+    return false;
+  }
+
+  printf (" --> true\n"); 
+  return true; 
+}
+
+
+
+// -------------------------------------------------------------------------------------------
+//  
+// -------------------------------------------------------------------------------------------
+bool rokz::MakeDescriptorPool (rokz::DescriptorPool& dp, uint32_t mul, 
+                            const std::vector<VkDescriptorSetLayoutBinding>& bindings,
+                            const rokz::Device& device) {
+
+  dp.sizes.resize (bindings.size()); 
+  for (size_t i = 0; i < bindings.size(); ++i) {
+    dp.sizes[i] = { bindings[i].descriptorType, mul * bindings[i].descriptorCount };
+  }
   
+  rokz::cx::CreateInfo ( dp.ci, mul, dp.sizes); 
+  
+  if (!rokz::cx::CreateDescriptorPool (dp, device.handle)) {
+    printf ("[FAILED] %s", __FUNCTION__);
+    return false; 
+  }
+
+ return true; 
+
+}
+
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rokz::MakeDescriptorSets (std::vector<VkDescriptorSet>& dss, VkDescriptorSetAllocateInfo& alloc_info,
+                         uint32_t num_sets, VkDescriptorSetLayout dslo, const rokz::DescriptorPool& pool, rokz::Device& device) {
+  //
+  printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+  //  SetupObjectDescriptorSets does too many things. it:
+  //  - initializes DescriptorGroup::vector<vkDescriptorSets>
+  //  - allocates from descriptor pool, but relies on externally initialized DescriptorPool
+  //  - binds resources to the descriptors vkUpdaateDescriptorSets
+
+  // use same layout for both allocations
+  std::vector<VkDescriptorSetLayout> dslos (num_sets, dslo);
+  // could have also said: 
+  //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
+  // but that wouldnt work
+  rokz::cx::AllocateInfo (alloc_info , dslos, pool);
+  
+  if (!rokz::cx::AllocateDescriptorSets (dss, num_sets, alloc_info, device.handle)) {
+    printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
+    return false;
+  }
+
+  return true;
+}

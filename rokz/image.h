@@ -26,8 +26,9 @@ namespace rokz {
     void Destroy (Image& image, const VkDevice& device);
     void Destroy (ImageView& image, const VkDevice& device);
     // alloc old fashioned way
-    VkMemoryAllocateInfo& AllocInfo (VkMemoryAllocateInfo& alloc_info,  VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev); 
-    bool AllocateImageMemory (Image& image,  const VkDevice& device); 
+
+    // VkMemoryAllocateInfo& AllocInfo (VkMemoryAllocateInfo& alloc_info,  VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev); 
+    // bool AllocateImageMemory (Image& image,  const VkDevice& device); 
 
     // CI for image from swapchain 
     VkImageCreateInfo& CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci);

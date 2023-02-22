@@ -23,6 +23,7 @@ set (REKZ_SOURCE_FILES
   dark_obj_pipeline.cpp
   darkthings.cpp
   darkpolygon.cpp
+  darkpolydata.cpp
 
   marscape.cpp
 #  mars_window_handler.cpp

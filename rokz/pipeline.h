@@ -54,7 +54,7 @@ namespace rokz {
                                      const VkDescriptorSetLayout& desc_set_layout, 
                                      const VkDevice&              device); 
 
-  bool CreateGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
+  bool DefineGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
                                      VkPipelineLayoutCreateInfo&  create_info,
                                      uint32_t                     push_constant_size,
                                      const VkDescriptorSetLayout& desc_set_layout, 
@@ -131,11 +131,29 @@ namespace rokz {
                                                      const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
                                                      const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
                                                      const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state); 
+
+
+
+  ViewportState&  SetupViewportState (ViewportState & vps, const VkExtent2D& swapchain_extent);
+  // ----------------------------------------------------------------------------------------
+  //
+  // ----------------------------------------------------------------------------------------
+
+  PipelineState& PipelineState_default (rokz::PipelineState&                                  ps,
+                                        VkSampleCountFlagBits                                 msaa_samples,
+                                        const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
+                                        const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                        const VkExtent2D&                                     vpext);
+
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
   bool CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice device); 
   
+
+
+
+
 }
   
 #endif
