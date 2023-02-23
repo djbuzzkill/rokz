@@ -64,7 +64,6 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
   //    scissor.extent = ext2d;
   vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.pipeline.handle);
 
-  
   vkCmdSetViewport(command_buffer, 0, 1, &pa.pipeline.state.viewport.viewports[0]);
 
   vkCmdSetScissor(command_buffer, 0, 1, &pa.pipeline.state.viewport.scissors[0]);

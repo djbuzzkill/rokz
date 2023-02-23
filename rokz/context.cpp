@@ -593,7 +593,7 @@ VkCommandPoolCreateInfo& rokz::cx::CreateInfo ( VkCommandPoolCreateInfo& ci, uin
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::cx::CreateCommandPool (VkCommandPool& command_pool,const VkCommandPoolCreateInfo& create_info, const VkDevice& device) {
+bool rokz::cx::CreateCommandPool (VkCommandPool& command_pool, const VkCommandPoolCreateInfo& create_info, const VkDevice& device) {
 
   if (vkCreateCommandPool(device, &create_info, nullptr, &command_pool) != VK_SUCCESS) {
     printf ("failed to create command pool!");
@@ -1177,6 +1177,9 @@ rokz::PhysicalDevice& rokz::ConfigureDevice (rokz::PhysicalDevice& physical_devi
   return physical_device; 
 }
 
+// -------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------
 bool rokz::InitializeSwapchain (rokz::SwapchainGroup& scg,
                           const rokz::SwapchainSupportInfo& swapchain_support_info,
                           const VkSurfaceKHR& surface,

@@ -149,10 +149,9 @@ namespace darkroot {
     rekz::InputState            input_state;
 
 
-    // window
+    // struct Display
     rokz::Window                window;
     VkSurfaceKHR                surface; // 
-    //bool                        fb_resize; 
 
     // device props
     VkFormat                     depth_format;
@@ -167,18 +166,22 @@ namespace darkroot {
     rokz::SwapchainSupportInfo   swapchain_support_info;
     rokz::FrameSyncGroup         framesyncgroup;
 
+    // 
     rokz::Pipeline                polys_pl  ;
     rokz::PipelineLayout          polys_plo ;
     rokz::DescriptorSetLayout     polys_dslo;
-    rokz::DescriptorGroup         polys_descrg;
+    //rokz::DescriptorGroup         polys_descrg;
     PolygonData                   polyd;
     std::shared_ptr<DrawSequence> poly_draw;
     
+    // 
     rokz::Pipeline                grid_pl  ;
     rokz::PipelineLayout          grid_plo ;
     rokz::DescriptorSetLayout     grid_dslo;
-    rokz::DescriptorGroup         grid_descrg;
+    //rokz::DescriptorGroup         grid_descrg;
     std::shared_ptr<DrawSequence> grid_draw;
+    GridData                      gridata;
+
     
     // attachement set
     rokz::Image                  depth_image;
