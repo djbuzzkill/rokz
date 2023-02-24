@@ -35,7 +35,6 @@ std::shared_ptr<DrawSequence> darkroot::CreatePolygonDraw (const PolygonData& d)
 // ------------------------------------------------------------------------------------------------
 int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) {
 
-  
   //static auto startTime = std::chrono::high_resolution_clock::now();
   //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
 
@@ -54,7 +53,6 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
     glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
 
-    //    glob.polyd.obj_theta[0] += mouse_dx * dtF * darkroot::k2Pi;
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
     //obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
