@@ -34,14 +34,18 @@ namespace darkroot {
   // --------------------------------------------------------------------
   // UBO
   // --------------------------------------------------------------------
+#ifdef DARKROOT_MOVE_SceneObjParam_TO_PIPELINE_AND_RENAME_TO_POLYGONPARAM
+
   struct SceneObjParam {
     glm::mat4 modelmat;
     //  glm::mat4 unused0;
   };
 
+#endif
 
+  
   template<typename Ty> struct Trait {
-
+    
     int    Fn ();
     float  Fl ();
     Ty     Ft ();
@@ -52,6 +56,9 @@ namespace darkroot {
   // PolygonData polyd resources the polygon pipeline will use
   // --------------------------------------------------------------------
   struct PolygonData { 
+
+    
+
     rokz::Buffer          vb_device;
     rokz::Buffer          ib_device;
     rokz::DescriptorGroup descrgroup;
@@ -62,11 +69,10 @@ namespace darkroot {
 
     float obj_theta[2];     // scene objects 
 
-    float                       dt;
+    rekz::Polarf                view_orie;
 
     // pipeline resources
-    std::vector<rokz::Buffer>    vma_uniform_buffs;
-    std::vector<rokz::Buffer>    vma_objparam_buffs;
+    std::vector<rokz::Buffer>    vma_poly_uniforms;
 
   } ;
 
@@ -89,6 +95,22 @@ namespace darkroot {
     VkPipelineLayout      plo;
     VkDescriptorSet       descrset;
   }; 
+
+
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  struct shared_globals {
+
+    shared_globals () : viewport_ext (), dt(0.0f), sim_time(0.0f), current_frame (0) {
+    }
+    
+    VkExtent2D     viewport_ext;
+    float          dt;
+    float          sim_time;
+    uint32_t       current_frame;
+
+  }; 
   // ---------------------------------------------------------------------
   // ?? is a pipeline  tied to a drawsequence?  
   // --  DrawPolygons is part of obj_pipeline 
@@ -98,10 +120,10 @@ namespace darkroot {
     //virtual int Exec (VkCommandBuffer comb, const rokz::Pipeline& pl, const VkDescriptorSet* ds) = 0;
     // 
     // do crap before recording ("UpdateDescriptors()", etc)
-    virtual int Prep (const pipeline_assembly& pa, const rokz::Device& device) = 0; 
+    virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
     //
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
-    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet* ds) = 0;
+    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds) = 0;
 
     //virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) = 0; 
     // ?? who owns the descriptor set, should it be allocated with the drawseq or the pipeline
@@ -113,6 +135,7 @@ namespace darkroot {
   }; 
 
 
+  std::shared_ptr<DrawSequence> CreatePolygonDraw (const PolygonData& d); 
   std::shared_ptr<DrawSequence> CreatePolygonTextured (const darkroot::PolygonData& d); 
   std::shared_ptr<DrawSequence> CreatePolygonWireframe (const darkroot::PolygonData& d); 
   std::shared_ptr<DrawSequence> CreateGridDraw (int dumb); 
@@ -141,7 +164,6 @@ namespace darkroot {
     Glob();
 
 
-    rekz::Polarf                view_orie;
     int                         prev_x;
     int                         prev_y; 
     int                         prev_inside;
@@ -172,7 +194,7 @@ namespace darkroot {
     rokz::DescriptorSetLayout     polys_dslo;
     //rokz::DescriptorGroup         polys_descrg;
     PolygonData                   polyd;
-    std::shared_ptr<DrawSequence> poly_draw;
+    std::shared_ptr<DrawSequence> polydraw;
     
     // 
     rokz::Pipeline                grid_pl  ;
@@ -202,7 +224,9 @@ namespace darkroot {
     std::shared_ptr<darkroot::DrawSequence>     polygons; 
     std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
 
-    double                      sim_time; 
+    std::vector<rokz::Buffer>    vma_shared_uniforms;
+
+    shared_globals shared;
 
   };
   // --------------------------------------------------------------------

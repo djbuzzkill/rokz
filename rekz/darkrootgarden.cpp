@@ -46,7 +46,7 @@ Glob::Glob()
   , window()
   , swapchain_support_info()
   , surface(nullptr)
-  , sim_time(0.0)
+  , shared ()
 { 
   // queues.graphics = {};
   // queues.present = {}; 
@@ -76,6 +76,9 @@ bool SetupDisplayWindow  (Glob& glob) {
   glfwSetCursorEnterCallback (glob.window.glfw_window, rekz::win_event::on_mouse_enter); 
                               
   glfwSetWindowUserPointer (glob.window.glfw_window, &glob.input_state);
+
+  printf ("&glob.input_state : %p\n", (void*) &glob.input_state); 
+
   //glfwSetCursorEnterCallback(window, rokz);
   // typedef struct GLFWcursor GLFWcursor;
   // typedef void (* GLFWerrorfun)(int error_code, const char* description);
@@ -98,7 +101,6 @@ bool SetupDisplayWindow  (Glob& glob) {
   // typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* paths[]);
   // typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
   // typedef void (* GLFWjoystickfun)(int jid, int event);
-  glfwSetWindowUserPointer (glob.window.glfw_window, &glob);
   return true;
 }
 
@@ -182,6 +184,12 @@ void CleanupDarkroot (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
   CleanupPolygonData (glob.polyd, glob.device.allocator.handle);
+
+
+  // create by pipeline, but freed here
+  for (auto& ub : glob.vma_shared_uniforms) {
+    rokz::cx::Destroy (ub, glob.device.allocator.handle); 
+  }
   
   // dont bother freeing if pool is destroyed anyways
   //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
@@ -198,8 +206,6 @@ void CleanupDarkroot (Glob& glob) {
   // rokz::cx::Destroy (glob.vma_vb_device, glob.device.allocator.handle);
   // rokz::cx::Destroy (glob.vma_ib_device, glob.device.allocator.handle);
   // <<<<<<<<<<
-
-  
   Cleanup (glob.polys_pl.handle,
            glob.swapchain_group.imageviews,
 
@@ -217,7 +223,7 @@ void CleanupDarkroot (Glob& glob) {
            glob.device,
            glob.device.allocator.handle, 
            glob.instance.handle);
-
+  //
   glfwTerminate();
 }
 
@@ -225,14 +231,14 @@ void CleanupDarkroot (Glob& glob) {
 // --------------------------------------------------------------------
 // 
 // --------------------------------------------------------------------
-glm::vec3& unit_angle_xz (glm::vec3& v, float theta) {
+glm::vec3& darkroot::unit_angle_xz (glm::vec3& v, float theta) {
   v.x = cos (theta) ;
   v.y = 0.0f;
   v.z = -sinf (theta) ;
   return v; 
 }
 
-glm::vec3& unit_angle_yz (glm::vec3& v, float theta) {
+glm::vec3& darkroot::unit_angle_yz (glm::vec3& v, float theta) {
   v.x = 0.0;
   v.y = cos (theta) ;
   v.z = -sinf (theta) ;
@@ -241,14 +247,53 @@ glm::vec3& unit_angle_yz (glm::vec3& v, float theta) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
+void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
+
+  glob.shared.dt = dt;
+  glob.shared.sim_time += dt;
+
+  glob.shared.viewport_ext = glob.swapchain_group.swapchain.ci.imageExtent;
+  
+  // update MVPTransofrm buffer
+  // 
+  //
+
+  float& sim_timef = glob.shared.sim_time;
+  //float dtF = static_cast <float> (dt);
+  float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
+    
+  glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
+  // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
+  // printf ("v1 * m0 = <%f, %f, %f, %f>  \n",  v1.x, v1.y, v1.z, v1.w); 
+  // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
+  rokz::MVPTransform mats; 
+  mats.model = glm::rotate(posmat, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+
+  mats.view = glm::rotate (glm::mat4(1), glob.polyd.view_orie.theta, glm::vec3(0.0f, 1.0f, 0.0f)) * 
+    //glm::rotate (glm::mat4(1), glob.view_orie.phi, glm::vec3(1.0f, 0.0f, 0.0f)) *
+    glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
+
+  // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
+  mats.proj[1][1] *= -1;
+
+  // MVPTransform
+  memcpy (rokz::cx::MappedPointer (glob.polyd.vma_poly_uniforms[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
+  
+}
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
 void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
   //static auto startTime = std::chrono::high_resolution_clock::now();
-  glob.sim_time += dt;
+  glob.shared.sim_time += dt;
   //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
-
+  glob.shared.viewport_ext = glob.swapchain_group.swapchain.ci.imageExtent;
   
-  float sim_timef = glob.sim_time;
-  float dtF = static_cast <float> (dt);
+  float sim_timef = glob.shared.sim_time;
+  //  float dtF = static_cast <float> (dt);
   float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
     
   glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
@@ -266,7 +311,6 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
     glob.prev_inside = glob.input_state.mouse.inside; 
   }
 
-    
   int mouse_dx = glob.input_state.mouse.x_pos - glob.prev_x;
   int mouse_dy = glob.input_state.mouse.y_pos - glob.prev_y; 
 
@@ -278,12 +322,12 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
   glob.prev_y = glob.input_state.mouse.y_pos;
 
   const float ratef     = k2Pi * 0.0003f;
-  glob.view_orie.theta -= mouse_dx * ratef;
-  glob.view_orie.phi   -= mouse_dy * ratef;
+  glob.polyd.view_orie.theta -= mouse_dx * ratef;
+  glob.polyd.view_orie.phi   -= mouse_dy * ratef;
 
 #endif // <<<<<
   
-  mats.view = glm::rotate (glm::mat4(1), glob.view_orie.theta, glm::vec3(0.0f, 1.0f, 0.0f)) * 
+  mats.view = glm::rotate (glm::mat4(1), glob.polyd.view_orie.theta, glm::vec3(0.0f, 1.0f, 0.0f)) * 
     //glm::rotate (glm::mat4(1), glob.view_orie.phi, glm::vec3(1.0f, 0.0f, 0.0f)) *
     glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
 
@@ -293,11 +337,10 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
   mats.proj[1][1] *= -1;
 
   // MVPTransform
-  memcpy (rokz::cx::MappedPointer (glob.polyd.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
-
+  memcpy (rokz::cx::MappedPointer (glob.vma_shared_uniforms[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
 
   // SceneObjParam
-  if (SceneObjParam* obj = reinterpret_cast<SceneObjParam*> (rokz::cx::MappedPointer (glob.polyd.vma_objparam_buffs[current_frame]))) {
+  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (glob.polyd.vma_poly_uniforms[current_frame]))) {
   
     glm::vec3 va, vb;
     unit_angle_xz (va, 5.0 * sim_timef ); 
@@ -306,12 +349,11 @@ void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
     glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
 
-    
-    glob.polyd.obj_theta[0] += mouse_dx * dtF * darkroot::k2Pi;
+    glob.polyd.obj_theta[0] += mouse_dx * (float) dt * darkroot::k2Pi;
     
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, glob.polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
-//obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    //obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     obj[1].modelmat = glm::rotate(model1, sim_timef * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     
   }
@@ -334,6 +376,7 @@ bool RecordDynamicRenderPass (Glob& glob,
   const DarkMesh& darkmesh = DarkOctohedron ();
   
 #ifdef DARKROOT_HIDE_BUFFER_BEGIN_IN_RECORD_DYNAMIC
+  // bc FrameDrawBegin does this already
   printf ("===> %i <=== ]\n", __LINE__);
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -414,12 +457,11 @@ bool RecordDynamicRenderPass (Glob& glob,
   }
 
 
-#ifdef DARKROOT_HIDE_BUFFER_BEGIN_IN_RECORD_DYNAMIC
-
+#ifdef DARKROOT_HIDE_BUFFER_END_IN_RECORD_DYNAMIC
+  // bc FrameDrawEmd does this already
   printf ("===> %i <=== ]\n", __LINE__);
   vkCmdEndRendering (command_buffer);
   // vkCmdEndRenderPass
-
   //
   if (vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
     printf ("[FAILED] record command buffer\n");
@@ -479,7 +521,9 @@ struct DarkLoop {
     std::chrono::system_clock::time_point now =
           std::chrono::high_resolution_clock::now();    
     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
-    glob.polyd.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
+
+    assert (false); // why is there a fixed 'dt' and a variable 'dt'
+    // glob.polyd.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
     
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q))
@@ -506,7 +550,7 @@ struct DarkLoop {
       
       printf ("===> %i <=== ]\n", __LINE__);
 
-      UpdateDarkUniforms (glob, curr_frame, glob.polyd.dt); 
+      UpdateDarkUniforms (glob, curr_frame, glob.shared.dt); 
       // Draw seqs...
       // for (auto drawseq : draw_seqs) {
       // drawseq->Prerec  (glob.pa_objs,  glob.pa_objs.descrgroup.descrsets[curr_frame],  glob.device);
@@ -600,12 +644,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
   Glob  glob; // *globmem; // something representing the app state
   rokz::SwapchainGroup& scg = glob.swapchain_group;
   
-  glob.polyd.dt = 0.0;
   glob.polyd.obj_theta[0] =   0.0;
   glob.polyd.obj_theta[1] =   0.0;
 
-  glob.view_orie.theta = 0.0f;
-  glob.view_orie.phi   = kPi;
   glob.prev_x = 0;
   glob.prev_y = 0;
 
@@ -699,6 +740,11 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //SetupObjResources (glob); <--- replaced by SetupPolygonData
   SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_root, glob.device); 
 
+  
+  // 
+  // 
+  SetupObjectUniforms (glob.vma_shared_uniforms, glob.polyd.vma_poly_uniforms, kMaxFramesInFlight, glob.device);
+
 
   // SetupObjDescriptorPool
   if (!rokz::MakeDescriptorPool(glob.polyd.descrgroup.pool, kMaxFramesInFlight, kObjDescriptorBindings, glob.device)) {
@@ -726,8 +772,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //    --------------------- *  
 
   // Bind*DescriptorSets is part of a pipeline definition
-  if (!BindObjectDescriptorSets (glob.polyd.descrgroup.descrsets, glob.polyd.vma_uniform_buffs,
-                                 glob.polyd.vma_objparam_buffs, glob.polyd.imageview, glob.polyd.sampler,
+  if (!BindObjectDescriptorSets (glob.polyd.descrgroup.descrsets, glob.vma_shared_uniforms,
+                                 glob.polyd.vma_poly_uniforms, glob.polyd.imageview, glob.polyd.sampler,
                                  glob.polys_dslo, glob.device)) {
     // this is where all the VkWriteDescriptorSet's r
     // if (!SetupObjectDescriptorSets (glob.obj_pipeline,            glob.vma_uniform_buffs,
@@ -757,9 +803,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
-  // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   const double time_per_frame_sec = 1.0 / 60.0;
-  glob.polyd.dt = time_per_frame_sec; // just do this for now
+  double Dt = time_per_frame_sec; // just do this for now
   
   std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
   
@@ -770,7 +815,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
   uint32_t   curr_frame = 0; 
   bool       result     = false;
   int        countdown  = 600;
-
   printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
   //
   auto t0 = std::chrono::high_resolution_clock::now(); 
@@ -778,19 +822,27 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // DarkLoop darkloop (glob, time_per_frame_us ); 
   // RunApplicationLoop (darkloop);
+
+  glob.polydraw = CreatePolygonDraw (glob.polyd);
+
   while (countdown && run && !glfwWindowShouldClose(glob.window.glfw_window)) {
 
     printf ("===> %i <=== ]\n", __LINE__);
     glfwPollEvents(); 
+    printf ("===> %i <=== ]\n", __LINE__);
+
     //start = std::chrono::high_resolution_clock::now();
     auto now = std::chrono::high_resolution_clock::now();    
     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
-    glob.polyd.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
+
+    // ???
+    //glob.polyd.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
     
     //UpdateInput(glob, glob.dt);
-    if (glob.input_state.keys.count (GLFW_KEY_Q))
+    if (glob.input_state.keys.count (GLFW_KEY_Q)) {
+      printf ("--> [q] pressed... quitting \n");
       run = false;
-
+    }
     //
     // get image index up here
     uint32_t image_index; 
@@ -799,6 +851,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
       glob.swapchain_reset_cb->ResetSwapchain (glob.window, glob.device.allocator, glob.device);
+      printf ("===> %i <=== ]\n", __LINE__);
       continue;
     }
     else if (acquireres != VK_SUCCESS) {
@@ -806,14 +859,20 @@ int darkroot_basin (const std::vector<std::string>& args) {
       run = false;
     }
     else {
-      printf ("===> %i <=== ]\n", __LINE__);
       
-      UpdateDarkUniforms (glob, curr_frame, glob.polyd.dt); 
       // Draw seqs...
       // for (auto drawseq : draw_seqs) {
       // drawseq->Prerec  (glob.pa_objs,  glob.pa_objs.descrgroup.descrsets[curr_frame],  glob.device);
       // }
 
+      UpdateDarkUniforms (glob, curr_frame, Dt); 
+
+      // UpdateGlobals (glob, curr_frame, Dt);  
+
+      // for drawseq's
+      // glob.polydraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, glob.polyd.descrgroup.descrsets[curr_frame]);
+
+      // make sure the correct swapchain image is used
       UpdateDynamicRenderingInfo (glob, image_index);
 
       // Transitioning Layout and stuff in here
@@ -824,8 +883,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 #ifdef  DARKROOT_HIDE_DRAW_CALL
       // Draw seqs...
-      printf ("===> %i <=== ]\n", __LINE__);
-
       // BeginCommandBuffer is called here
       RecordDynamicRenderPass (glob,
                                glob.framesyncgroup.command_buffers[curr_frame],
@@ -847,16 +904,17 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 
 #else
-      
-      printf ("===> %i <=== ]\n", __LINE__);
 
       pipeline_assembly pa {
         glob.polys_pl, glob.polys_plo.handle, glob.polyd.descrgroup.descrsets[curr_frame] }; 
 
+      // replace with polydraw
       RecordDynamicRenderPass (glob, glob.framesyncgroup.command_buffers[curr_frame], pa, 
                                glob.polyd.vb_device.handle, glob.polyd.ib_device.handle, 
                                glob.swapchain_group.swapchain.ci.imageExtent, glob.device );
-
+      // 
+      //glob.polydraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, glob.polyd.descrgroup.descrsets[curr_frame]);
+      
       // Draw seqs...
       // for (auto drawseq : draw_seqs) {
       // drawseq->Prep (pa, glob.device)
@@ -868,12 +926,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
       // GridDraw::RecordDrawList    (pipeline, frame_sync, device);
       
 #endif
-      
-      printf ("===> %i <=== ]\n", __LINE__);
       rokz::cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
     }
-    
     
     // how long did we take
     auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
@@ -895,6 +950,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // CLEAN UP
   CleanupDarkroot (glob); 
+  printf ("===> %i <=== ]\n", __LINE__);
   
   //  globmem.reset ();
   return 0;

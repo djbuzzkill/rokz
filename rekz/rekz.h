@@ -27,6 +27,13 @@ namespace rekz {
   // 
   // --------------------------------------------------------------------
   template<typename Ty> struct PolarCoord {
+
+    PolarCoord () : theta (0.0f), phi (0.0f) {
+    }
+    
+    PolarCoord (Ty th, Ty ph) : theta (th), phi (ph) {
+    }
+
     Ty theta; // "longitude" 0-360
     Ty phi;   // "latitude"  -90 - +90
   }; 
@@ -104,8 +111,13 @@ namespace rekz {
   // --------------------------------------------------------------------
   struct MouseState {
 
+
+    MouseState () : inside (0), left_butt(0), right_butt(0), 
+                    middle_butt(0), x_pos (0), y_pos(0) {
+    }
+
+
     int inside; 
-    
     int left_butt;   
     int right_butt;  
     int middle_butt; 
@@ -120,6 +132,9 @@ namespace rekz {
   // --------------------------------------------------------------------
   struct InputState { 
 
+    InputState () : keys (), mouse (), fb_resize (false) {
+    }
+    
     std::map<int, int> keys;
     MouseState         mouse;
     bool               fb_resize; 

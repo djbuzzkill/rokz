@@ -84,6 +84,7 @@ bool setup_object_texture_and_sampler (PolygonData& polyd, const std::string& da
 
 
 //#ifdef DARKROOT_HIDE_SETUP_OBJECT_UNIFORMS
+#ifdef DARKROOT_MOVE_SETUP_OBJECT_UNIFORMS_TO_PIPELINE
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
@@ -92,6 +93,10 @@ bool setup_object_uniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vecto
   printf ("%s", __FUNCTION__);
 
   //  VkPhysicalDevice const&  physdev = glob.physical_device.handle;
+
+  // does this belong in pipeline?  
+  // 
+  
   
   uniform_buffs.resize (num_sets);
   //mapped_ptrs.resize (kMaxFramesInFlight); 
@@ -102,14 +107,14 @@ bool setup_object_uniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vecto
     rokz::cx::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
     rokz::cx::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
     if (!rokz::cx::CreateBuffer (uniform_buffs[i], device.allocator.handle)) {
-      printf (" --> [FAIL]  create MVPTransform \n"); 
+      printf (" --> [FAIL]  create MVPTransform buffer \n"); 
       return false; 
     }
 
     rokz::cx::CreateInfo_uniform (objparams[i].ci, SizeOf_SceneObjParam, 128);
     rokz::cx::AllocCreateInfo_mapped (objparams[i].alloc_ci);
     if (!rokz::cx::CreateBuffer (objparams[i], device.allocator.handle)) {
-      printf (" --> [FAIL]  create SceneObjParam \n"); 
+      printf (" --> [FAIL]  create Polygon uniform buffer \n"); 
       return false; 
     }
   }
@@ -118,7 +123,7 @@ bool setup_object_uniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vecto
   return true; 
 }
 
-//#endif
+#endif
 
 
 
@@ -174,12 +179,14 @@ bool setup_obj_resources (PolygonData& polyd, uint32_t max_frames_in_flight,
   rokz::cx::Destroy (ib_x, device.allocator.handle); 
   //DarkMesh& dark_mesh = glob.dark_mesh;
 
+#ifdef DARKROOT_MOVE_SETUP_OBJECT_UNIFORMS_TO_PIPELINE
+  // this should never have been in here 
   if (!setup_object_uniforms (polyd.vma_uniform_buffs, polyd.vma_objparam_buffs,
                               max_frames_in_flight, device)) {
     printf ("[FAILED] --> setup_object_uniforms \n"); 
     return false;
   }
-
+#endif
   
   // bool setup_object_uniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vector<rokz::Buffer>& objparams, 
 //                             const rokz::Device& device) {
@@ -201,7 +208,8 @@ bool setup_obj_resources (PolygonData& polyd, uint32_t max_frames_in_flight,
 //
 // --------------------------------------------------------------------
 PolygonData& darkroot::SetupPolygonData (PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device) {
-
+  pd.view_orie.theta = 0.0f;
+  pd.view_orie.phi   = kPi;
   setup_obj_resources (pd, num_frames, data_root, device) ; 
   return  pd;
 }
@@ -214,11 +222,8 @@ PolygonData& darkroot::CleanupPolygonData (PolygonData& pd, const VmaAllocator& 
     // SetupObjectUniforms ; 
     // SetupObjectTextureAndSampler;
     // SetupObjResources;
-    for (auto& ub : pd.vma_uniform_buffs) {
-      rokz::cx::Destroy (ub, allocator); 
-    }
 
-    for (auto buf : pd.vma_objparam_buffs) {  
+    for (auto buf : pd.vma_poly_uniforms) {  
       rokz::cx::Destroy (buf, allocator);
     }
     

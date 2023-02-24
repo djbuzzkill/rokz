@@ -10,8 +10,6 @@ namespace darkroot {
   const float kPi = glm::pi<float> ();  
   const float k2Pi = 2 * glm::pi<float> ();  
 
-  const size_t kSceneObjCount = 128;
-  const size_t SizeOf_SceneObjParam = sizeof (SceneObjParam); 
 
   const DarkMesh& DarkOctohedron (); 
 
@@ -78,6 +76,8 @@ namespace darkroot {
 
   PolygonData& SetupPolygonData (PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
   PolygonData& CleanupPolygonData (PolygonData& pd, const VmaAllocator& allocator);
+  glm::vec3& unit_angle_xz (glm::vec3& v, float theta);
+  glm::vec3& unit_angle_yz (glm::vec3& v, float theta);
 
 }
 #endif

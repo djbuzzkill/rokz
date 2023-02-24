@@ -7,6 +7,7 @@
 namespace darkroot {
 
 
+  constexpr size_t kMaxObjectCount = 128;
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
@@ -21,6 +22,17 @@ namespace darkroot {
   //                                    
   // ----------------------------------------------------------------------------------------------
   extern const std::vector<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
+
+
+  struct PolygonParam {
+    glm::mat4 modelmat;
+  };
+
+
+
+  
+  bool SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vector<rokz::Buffer>& objparams,
+                            uint32_t num_sets, const rokz::Device& device);
 
   // ?? who owns the descriptor pool. pipeline should not manage descriptor resources
 

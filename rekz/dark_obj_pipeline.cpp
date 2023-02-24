@@ -102,6 +102,44 @@ bool  setup_object_shader_modules  (rokz::Pipeline& pipeline, const std::filesys
 }
 
 
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool darkroot::SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vector<rokz::Buffer>& objparams,
+                            uint32_t num_sets, const rokz::Device& device) {
+ printf ("%s", __FUNCTION__);
+
+  //  VkPhysicalDevice const&  physdev = glob.physical_device.handle;
+
+  // does this belong in pipeline?  
+  // 
+  
+  
+  uniform_buffs.resize (num_sets);
+  objparams.resize (num_sets);
+
+  for (size_t i = 0; i < num_sets; i++) {
+
+    // TODO: do this somewhere else, this isnt truly global, since poly_pipeline creates it
+    rokz::cx::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
+    rokz::cx::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
+    if (!rokz::cx::CreateBuffer (uniform_buffs[i], device.allocator.handle)) {
+      printf (" --> [FAIL]  create MVPTransform buffer \n"); 
+      return false; 
+    }
+ 
+    //
+    rokz::cx::CreateInfo_uniform (objparams[i].ci, sizeof(PolygonParam), kMaxObjectCount);
+    rokz::cx::AllocCreateInfo_mapped (objparams[i].alloc_ci);
+    if (!rokz::cx::CreateBuffer (objparams[i], device.allocator.handle)) {
+      printf (" --> [FAIL]  create Polygon uniform buffer \n"); 
+      return false; 
+    }
+  }
+
+  printf (" --> [true] \n"); 
+  return true; 
+}
 
 // ----------------------------------------------------------------------------------------------
 //                                    
@@ -145,12 +183,14 @@ bool darkroot::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
     buffer_info.buffer     = vma_uniform_buffs[i].handle;
     buffer_info.offset     = 0;
     buffer_info.range      = vma_uniform_buffs[i].ci.size ;
-    
-    std::vector<VkDescriptorBufferInfo>  objparams (kSceneObjCount, VkDescriptorBufferInfo {});
+
+    std::vector<VkDescriptorBufferInfo>
+      objparams (kMaxObjectCount, VkDescriptorBufferInfo {});
+
     for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
       objparams[iobj].buffer   = vma_objparam_buffs[i].handle; //
-      objparams[iobj].offset   = iobj * sizeof(SceneObjParam);         // min_uniform_buffer_offset_alignment ??
-      objparams[iobj].range    = sizeof(SceneObjParam) ;            //glob.vma_objparam_buffs[i].ci.size;
+      objparams[iobj].offset   = iobj * sizeof(PolygonParam);         // min_uniform_buffer_offset_alignment ??
+      objparams[iobj].range    = sizeof(PolygonParam) ;            //glob.vma_objparam_buffs[i].ci.size;
     }
     
     //buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
@@ -572,6 +612,8 @@ bool darkroot::DarkObjDescriptorLayout (rokz::DescriptorSetLayout& dslo, const s
 #endif
 
 
+
+
 #ifdef DARKROOT_HIDE_SETUPOBJDESCRIPTORPOOL
 // -------------------------------------------------------------------------------------------
 //  MakeDescriptorPool  replaces this
@@ -589,7 +631,7 @@ bool darkroot::SetupObjDescriptorPool (rokz::DescriptorPool& dp, const rokz::Dev
   dp.sizes.resize (3);
   // this is bad because it should be defined by the bindings
   dp.sizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, max_frames_in_flight }; 
-  dp.sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  128 * max_frames_in_flight} ; //
+  dp.sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  kMaxObjectCount * max_frames_in_flight} ; //
   dp.sizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, max_frames_in_flight } ; //
 
   rokz::cx::CreateInfo ( dp.ci, max_frames_in_flight, dp.sizes); 

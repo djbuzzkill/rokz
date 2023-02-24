@@ -47,12 +47,12 @@ void rekz::win_event::on_resize (GLFWwindow* window, int width, int height) {
 // KEY PRESS
 // --------------------------------------------------------------------
 void rekz::win_event::on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
-
+  //printf ("[ %s() | ln_%i ]\n", __FUNCTION__,  __LINE__);
   if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
 
     rekz::InputState& input_state = *is;
-    switch (action) {
 
+    switch (action) {
       // GLFW_PRESS
     case GLFW_PRESS:
       input_state.keys[key] = 1; 
@@ -60,19 +60,20 @@ void rekz::win_event::on_keypress (GLFWwindow* window, int key, int scancode, in
       
       // GLFW_RELEASE
     case GLFW_RELEASE:
-      input_state.keys.erase (key); 
+      is->keys.erase (key); 
       break;
 
       // GLFW_REPEAT
     case GLFW_REPEAT:
-      if (input_state.keys.count (key)) 
-        input_state.keys[key]++;
+      if (is->keys.count (key)) 
+        is->keys[key]++;
       else
-        input_state.keys[key] = 1;
+        is->keys[key] = 1;
       break;
     }
-
   }
+
+
 }
 
 // --------------------------------------------------------------------
