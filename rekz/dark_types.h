@@ -32,32 +32,9 @@ namespace darkroot {
   }; 
   
   // --------------------------------------------------------------------
-  // UBO
-  // --------------------------------------------------------------------
-#ifdef DARKROOT_MOVE_SceneObjParam_TO_PIPELINE_AND_RENAME_TO_POLYGONPARAM
-
-  struct SceneObjParam {
-    glm::mat4 modelmat;
-    //  glm::mat4 unused0;
-  };
-
-#endif
-
-  
-  template<typename Ty> struct Trait {
-    
-    int    Fn ();
-    float  Fl ();
-    Ty     Ft ();
-    
-  };
-
-  // --------------------------------------------------------------------
   // PolygonData polyd resources the polygon pipeline will use
   // --------------------------------------------------------------------
   struct PolygonData { 
-
-    
 
     rokz::Buffer          vb_device;
     rokz::Buffer          ib_device;
@@ -112,33 +89,34 @@ namespace darkroot {
 
   }; 
   // ---------------------------------------------------------------------
-  // ?? is a pipeline  tied to a drawsequence?  
-  // --  DrawPolygons is part of obj_pipeline 
+  // ?? a pipeline is tied to a drawlist.. no.
+  // ?? a drawlist is tied to data..       ??
+  // ?? a data is tied to a drawlist..     no
+  // ?? a drawlist is tied to a pipeline.. ??
+
+  // ---------------------------------------------------------------------
+  // Intent is to encapsulate a list of draw commands
+  // DrawLisst renamed to DrawSequence to avoid confusion
   // ---------------------------------------------------------------------
   struct DrawSequence : public rokz::ut::destructor {
 
-    //virtual int Exec (VkCommandBuffer comb, const rokz::Pipeline& pl, const VkDescriptorSet* ds) = 0;
-    // 
     // do crap before recording ("UpdateDescriptors()", etc)
     virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
     //
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
     virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds) = 0;
 
-    //virtual int UpdateDescriptors (const rokz::DescriptorPool& descpool, const rokz::Device& device) = 0; 
-    // ?? who owns the descriptor set, should it be allocated with the drawseq or the pipeline
-    
   protected:
 
-    DrawSequence () {}
+    DrawSequence () {} // dont allow abstract
 
   }; 
 
-
   std::shared_ptr<DrawSequence> CreatePolygonDraw (const PolygonData& d); 
-  std::shared_ptr<DrawSequence> CreatePolygonTextured (const darkroot::PolygonData& d); 
   std::shared_ptr<DrawSequence> CreatePolygonWireframe (const darkroot::PolygonData& d); 
-  std::shared_ptr<DrawSequence> CreateGridDraw (int dumb); 
+  // std::shared_ptr<DrawSequence> CreatePolygonTextured 
+  // std::shared_ptr<DrawSequence> CreateGridDraw 
+
   // ---------------------------------------------------------------------
   // 
   // ---------------------------------------------------------------------
@@ -161,97 +139,54 @@ namespace darkroot {
 
     //#ifdef GLOB_COMMENT_OUT   
     enum { MaxFramesInFlight = 2 }; 
+
     Glob();
-
-
-    int                         prev_x;
-    int                         prev_y; 
-    int                         prev_inside;
-
-    rekz::InputState            input_state;
-
+    // input 
+    rekz::InputState              input_state;
+    int                           prev_x;
+    int                           prev_y; 
+    int                           prev_inside;
+    // system
+    rokz::Instance                instance;
+    rokz::Device                  device;
+    rokz::SwapchainGroup          swapchain_group;
+    rokz::SwapchainSupportInfo    swapchain_support_info;
+    rokz::FrameSyncGroup          framesyncgroup;
+    // DYNAMIC RENDERING, no use renderpass
+    rokz::RenderingInfoGroup     rendering_info_group;
 
     // struct Display
-    rokz::Window                window;
-    VkSurfaceKHR                surface; // 
+    rokz::Window                  window;
+    VkSurfaceKHR                  surface; // 
 
     // device props
-    VkFormat                     depth_format;
-    //VkSurfaceFormatKHR           surface_format;
-    VkSampleCountFlagBits        msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
-
-    // system
-    rokz::Instance               instance;
-    //rokz::PhysicalDevice         physical_device;
-    rokz::Device                 device;
-    rokz::SwapchainGroup         swapchain_group;
-    rokz::SwapchainSupportInfo   swapchain_support_info;
-    rokz::FrameSyncGroup         framesyncgroup;
+    VkFormat                      depth_format;
+    VkSampleCountFlagBits         msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
 
     // 
     rokz::Pipeline                polys_pl  ;
     rokz::PipelineLayout          polys_plo ;
     rokz::DescriptorSetLayout     polys_dslo;
-    //rokz::DescriptorGroup         polys_descrg;
     PolygonData                   polyd;
-    std::shared_ptr<DrawSequence> polydraw;
-    
+    std::shared_ptr<DrawSequence> drawpoly;
     // 
-    rokz::Pipeline                grid_pl  ;
-    rokz::PipelineLayout          grid_plo ;
-    rokz::DescriptorSetLayout     grid_dslo;
-    //rokz::DescriptorGroup         grid_descrg;
-    std::shared_ptr<DrawSequence> grid_draw;
-    GridData                      gridata;
+    // rokz::Pipeline                grid_pl  ;
+    // rokz::PipelineLayout          grid_plo ;
+    // rokz::DescriptorSetLayout     grid_dslo;
+    // std::shared_ptr<DrawSequence> drawgrid;
+    // GridData                      gridata;
 
-    
+    std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
+    std::vector<rokz::Buffer>                   vma_shared_uniforms;
+    shared_globals shared;
+
     // attachement set
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
-  
-    // DYNAMIC RENDERING
-    rokz::RenderingInfoGroup     rendering_info_group;
-
-    //VkViewport                  viewport;
-    //VkRect2D                    scissor_rect; 
-
-    std::map<std::string, std::shared_ptr<DrawSequence>> draw_seqs; 
-    
-    std::map<DrawSequence*, rokz::DescriptorGroup>       descrgmap; 
-    
-    std::shared_ptr<darkroot::DrawSequence>     polygons; 
-    std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
-
-    std::vector<rokz::Buffer>    vma_shared_uniforms;
-
-    shared_globals shared;
-
   };
-  // --------------------------------------------------------------------
-
-
-  
-  
-  
-#ifdef DARkROOT_ENABLE_RENDERABLE
-  // --------------------------------------------------------------------
-  // struct Renderable 
-  // --------------------------------------------------------------------
-  struct Renderable {
-
-    virtual auto SetupRS (VkCommandBuffer commandbuffer) -> int = 0;
-    virtual auto Draw    (VkCommandBuffer commandbuffer) -> void = 0;
-    
-    virtual auto AllocRes (VmaAllocator& alloc) -> int = 0; 
-    virtual auto FreeRes  (VmaAllocator& alloc) -> int = 0; 
-
-  protected:
-    Renderable () = default; 
-  
-  }; 
-#endif
+  // 
 } // darkroot
 
 #endif

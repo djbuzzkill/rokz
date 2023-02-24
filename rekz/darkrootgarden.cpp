@@ -25,11 +25,7 @@ using namespace darkroot;
 template<typename LoopTy>
 inline bool RunApplicationLoop (LoopTy& apploop) {
 
-  while (apploop.cond ()) {
-
-    if (!apploop.loop ())  return false; 
-
-  }
+  while (apploop.cond ()) { if (!apploop.loop ())  return false; }
 
   return true;
 }
@@ -408,7 +404,7 @@ struct DarkLoop {
       UpdateGlobals (glob, curr_frame, Dt);  
 
       // update data needed to record drawlist
-      glob.polydraw->Prep (glob.shared, pa, glob.device); 
+      glob.drawpoly->Prep (glob.shared, pa, glob.device); 
 
       // make sure the correct swapchain image is used
       UpdateDynamicRenderingInfo (glob, image_index);
@@ -421,7 +417,8 @@ struct DarkLoop {
       // EXECUTE DRAW LIST RECORDING 
 
       // for drawseq's
-      glob.polydraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, glob.polyd.descrgroup.descrsets[curr_frame]);
+      glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, glob.polyd.descrgroup.descrsets[curr_frame]);
+      //glob.drawgrid->Exec
       // thats all we are doing for now
       
       // we are done, submit
@@ -566,7 +563,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   std::chrono::system_clock::time_point then = t0; 
 
   // create draw list
-  glob.polydraw = CreatePolygonDraw (glob.polyd);
+  glob.drawpoly = CreatePolygonDraw (glob.polyd);
 
   DarkLoop darkloop (glob, Dt ); 
 
