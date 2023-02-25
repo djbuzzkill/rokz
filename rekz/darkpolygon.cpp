@@ -6,7 +6,7 @@
 
 
 using namespace darkroot;
-
+// should rename darkpolygon.cpp --> darwpolugon.cpp
 // -------------------------------------------------------------------------
 // a DrawSequence should not directly own data but only represent
 // draw instruction + how to  setup  input
@@ -63,6 +63,8 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
   
   return 0;
 }
+
+
 
 // ------------------------------------------------------------------------------------------------
 //
@@ -184,9 +186,6 @@ void update_dark_uniforms (Glob& glob, uint32_t current_frame, double dt) {
   }
 }
 #endif
-
-
-
 
 
 

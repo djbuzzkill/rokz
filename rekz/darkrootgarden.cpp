@@ -520,11 +520,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
   DarkLoop darkloop (glob, Dt ); 
   rokz::FrameLoop  (darkloop);
 
+  
   vkDeviceWaitIdle(glob.device.handle);
-
-  // end loop
-  //ShutdownDarkroot ();
-
   // CLEAN UP
   CleanupDarkroot (glob); 
   printf ("===> %i <=== ]\n", __LINE__);

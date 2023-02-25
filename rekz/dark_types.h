@@ -17,7 +17,7 @@ namespace darkroot {
   typedef rekz::Vertex_pos_nrm_txc_col DarkVert;
 
   // --------------------------------------------------------------------
-  typedef rekz::TriMesh<DarkVert> DarkMesh;
+  typedef rekz::TriMesh<DarkVert>  DarkMesh;
 
   // --------------------------------------------------------------------
   // 
