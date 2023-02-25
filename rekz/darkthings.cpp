@@ -219,7 +219,7 @@ bool darkroot::RecreateSwapchain(rokz::Swapchain&  swapchain, const rokz::Window
 // ---------------------------------------------------------------------
 // RenderFrame_dynamic <-- RecordDynamicRenderPass 
 // ---------------------------------------------------------------------
-struct DarkResetSwapchain : public darkroot::ResetSwapchainCB
+struct DarkResetSwapchain : public rokz::ResetSwapchainCB
   {
   public:
   
@@ -259,7 +259,7 @@ struct DarkResetSwapchain : public darkroot::ResetSwapchainCB
 };
 
 
-std::shared_ptr<darkroot::ResetSwapchainCB> darkroot::CreateSwapchainResetter (rokz::Swapchain& sc, 
+std::shared_ptr<rokz::ResetSwapchainCB> darkroot::CreateSwapchainResetter (rokz::Swapchain& sc, 
                                                            std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
                                                            rokz::Image& dp, rokz::ImageView& div,
                                                            rokz::Image& mscim, rokz::ImageView& mscimv) {

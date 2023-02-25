@@ -8,6 +8,9 @@ project (rokz)
 #  
 set (ROKZ_HEADER_FILES
 
+
+  draw_sequence.h
+  
   rokz.h
   context.h
   descriptor.h

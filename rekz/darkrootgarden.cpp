@@ -18,18 +18,9 @@ const VkExtent2D    kTestExtent  = { 800, 600 };
 //
 //
 using namespace darkroot; 
-
 // ---------------------------------------------------------------------------------------
-// EXPERIMENT EXPERIMENT EXPERIMENT EXPERIMENT EXPERIMENT EXPERIMENT EXPERIMENT EXPERIMENT 
+// 
 // ---------------------------------------------------------------------------------------
-template<typename LoopTy>
-inline bool RunApplicationLoop (LoopTy& apploop) {
-
-  while (apploop.cond ()) { if (!apploop.loop ())  return false; }
-
-  return true;
-}
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -58,6 +49,7 @@ bool GenerateMipMaps (rokz::Image& image, bool generate_mipmap, uint32_t num_mip
 
 bool LoadIndexBuffer_static ();
 bool LoadVertexBuffer_static();
+
 
 // --------------------------------------------------------------------
 //
@@ -105,31 +97,31 @@ bool SetupDisplayWindow  (Glob& glob) {
 // -----------------------------------------------------------------------------
 bool SetupDynamicRenderingInfo (darkroot::Glob& glob) {
 
-  rokz::RenderingInfoGroup& rig = glob.rendering_info_group;
-  rig.clear_colors.resize (1);
-  rig.color_attachment_infos.resize (1);
+  rokz::RenderingInfoGroup& ri = glob.rendering_info_group;
+  ri.clear_colors.resize (1);
+  ri.color_attachment_infos.resize (1);
 
-  rig.clear_colors[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  ri.clear_colors[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   //rig.clear_colors[1].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  rig.clear_depth.depthStencil = {1.0f, 0};
+  ri.clear_depth.depthStencil = {1.0f, 0};
 
-  rokz::cx::AttachmentInfo (rig.color_attachment_infos[0],
+  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
                         glob.msaa_color_imageview.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         VK_RESOLVE_MODE_AVERAGE_BIT,
                         glob.swapchain_group.imageviews[0].handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, rig.clear_colors[0]);
+                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, ri.clear_colors[0]);
 
-  rokz::cx::AttachmentInfo (rig.depth_attachment_info,
+  rokz::cx::AttachmentInfo (ri.depth_attachment_info,
                         glob.depth_imageview.handle, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                         VK_RESOLVE_MODE_NONE,
                         nullptr, VK_IMAGE_LAYOUT_UNDEFINED,
-                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, rig.clear_depth);
+                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, ri.clear_depth);
   
-  rig.render_area = { 
+  ri.render_area = { 
     VkOffset2D {0, 0}, glob.swapchain_group.swapchain.ci.imageExtent
   };
 
-  rokz::cx::RenderingInfo (rig.ri, rig.render_area, 1, 0, rig.color_attachment_infos, &rig.depth_attachment_info, nullptr);
+  rokz::cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
   return true;
 }
 
@@ -138,16 +130,15 @@ bool SetupDynamicRenderingInfo (darkroot::Glob& glob) {
 // -----------------------------------------------------------------------------
 void UpdateDynamicRenderingInfo (darkroot::Glob& glob, uint32_t image_index) {
   //printf ("%s\n", __FUNCTION__); 
-  rokz::RenderingInfoGroup& rig = glob.rendering_info_group;
+  rokz::RenderingInfoGroup& ri = glob.rendering_info_group;
 
-  rokz::cx::AttachmentInfo (rig.color_attachment_infos[0],
+  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
                         glob.msaa_color_imageview.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         VK_RESOLVE_MODE_AVERAGE_BIT, glob.swapchain_group.imageviews[image_index].handle,
                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR,
-                        VK_ATTACHMENT_STORE_OP_STORE, rig.clear_colors[0]);
+                        VK_ATTACHMENT_STORE_OP_STORE, ri.clear_colors[0]);
 
 }
-
 
 // -------------------------------------------------------------------------
 //
@@ -240,6 +231,19 @@ glm::vec3& darkroot::unit_angle_yz (glm::vec3& v, float theta) {
   v.z = -sinf (theta) ;
   return v; 
 }
+
+
+float ViewAspectRatio (uint32_t w, uint32_t h) {
+  return   float (w) / float (h) ;
+}  
+
+//
+float AspectRatio (const VkExtent2D& ext) {
+
+  return ViewAspectRatio (ext.width, ext.height); 
+
+}
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -255,9 +259,9 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
   //
     
   //float dtF = static_cast <float> (dt);
-  float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
+  float asp = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
     
-  glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
+  glm::mat4 posmat = glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
   // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
   // printf ("v1 * m0 = <%f, %f, %f, %f>  \n",  v1.x, v1.y, v1.z, v1.w); 
   // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
@@ -276,58 +280,6 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
   // MVPTransform
   memcpy (rokz::cx::MappedPointer (glob.polyd.vma_poly_uniforms[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
   
-}
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
-  //static auto startTime = std::chrono::high_resolution_clock::now();
-  glob.shared.sim_time += dt;
-  //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
-  glob.shared.viewport_ext = glob.swapchain_group.swapchain.ci.imageExtent;
-  
-  //  float dtF = static_cast <float> (dt);
-  float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
-    
-  glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
-  // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
-  // printf ("v1 * m0 = <%f, %f, %f, %f>  \n",  v1.x, v1.y, v1.z, v1.w); 
-  // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
-  rokz::MVPTransform mats; 
-  mats.model = glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-
-  mats.view = glm::rotate (glm::mat4(1), glob.polyd.view_orie.theta, glm::vec3(0.0f, 1.0f, 0.0f)) * 
-    //glm::rotate (glm::mat4(1), glob.view_orie.phi, glm::vec3(1.0f, 0.0f, 0.0f)) *
-    glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
-
-  // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
-  mats.proj[1][1] *= -1;
-
-  // MVPTransform
-  memcpy (rokz::cx::MappedPointer (glob.vma_shared_uniforms[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
-
-
-  // SceneObjParam
-  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (glob.polyd.vma_poly_uniforms[current_frame]))) {
-  
-    glm::vec3 va, vb;
-    unit_angle_xz (va, 5.0 * glob.shared.sim_time ); 
-    unit_angle_xz (vb, 5.0 * glob.shared.sim_time + kPi); 
-
-    glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
-    glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
-
-    //    glob.polyd.obj_theta[0] += mouse_dx * (float) dt * darkroot::k2Pi;
-    
-    //for (size_t i = 0; i < kSceneObjCount; ++i) {
-    obj[0].modelmat = glm::rotate(model0, glob.polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
-    //obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    obj[1].modelmat = glm::rotate(model1, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    
-  }
 }
 
 
@@ -397,7 +349,8 @@ struct DarkLoop {
       run = false;
     }
     else {
-      pipeline_assembly pa {
+
+      rokz::DrawSequence::PipelineAssembly pa {
         glob.polys_pl, glob.polys_plo.handle, glob.polyd.descrgroup.descrsets[curr_frame] }; 
 
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
@@ -439,7 +392,6 @@ struct DarkLoop {
 
     return true;
   }
-    
 };
 
 
@@ -566,8 +518,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glob.drawpoly = CreatePolygonDraw (glob.polyd);
 
   DarkLoop darkloop (glob, Dt ); 
-
-  RunApplicationLoop (darkloop);
+  rokz::FrameLoop  (darkloop);
 
   vkDeviceWaitIdle(glob.device.handle);
 
@@ -581,5 +532,4 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //  globmem.reset ();
   return 0;
 }
-
 

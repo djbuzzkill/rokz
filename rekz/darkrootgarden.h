@@ -10,9 +10,7 @@ namespace darkroot {
   const float kPi = glm::pi<float> ();  
   const float k2Pi = 2 * glm::pi<float> ();  
 
-
   const DarkMesh& DarkOctohedron (); 
-
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
@@ -68,7 +66,7 @@ namespace darkroot {
 
 
   //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
-  std::shared_ptr<darkroot::ResetSwapchainCB> CreateSwapchainResetter (rokz::Swapchain& sc, 
+  std::shared_ptr<rokz::ResetSwapchainCB> CreateSwapchainResetter (rokz::Swapchain& sc, 
                                                                        std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
                                                                        rokz::Image& dp, rokz::ImageView& div,
                                                                        rokz::Image& mscim, rokz::ImageView& mscimv); 

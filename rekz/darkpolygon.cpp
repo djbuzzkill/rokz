@@ -11,23 +11,24 @@ using namespace darkroot;
 // a DrawSequence should not directly own data but only represent
 // draw instruction + how to  setup  input
 // -------------------------------------------------------------------------
-struct PolygonDraw : public DrawSequence {
+struct PolygonDraw : public rokz::DrawSequence {
 
-  PolygonDraw (const PolygonData& d) : polyd (d) { }
-  virtual ~PolygonDraw () { }
-  virtual int Prep (const shared_globals& , const pipeline_assembly& pa, const rokz::Device& device);
-  virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds);
+              PolygonDraw (const PolygonData& d) : polyd (d) { }
+  virtual    ~PolygonDraw () { }
+  virtual int Prep        (const shared_globals& , const pipeline_assembly& pa, const rokz::Device& device);
+  virtual int Exec        (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds);
   
 protected:
 
   const PolygonData& polyd;
+  
 }; // PolygonDraw
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-std::shared_ptr<DrawSequence> darkroot::CreatePolygonDraw (const PolygonData& d) {
-  return std::make_shared<PolygonDraw> (d); 
+rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const PolygonData& d) {
+  return std::make_shared<PolygonDraw> (d);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -195,7 +196,7 @@ void update_dark_uniforms (Glob& glob, uint32_t current_frame, double dt) {
 //
 // ?? a different DrawSequence subtype for each pipeline,
 // yes: ex:  textured drawvs wireframe draw but can share same data  
-struct DrawPolyWireframe : public DrawSequence
+struct DrawPolyWireframe : public rokz::DrawSequence
 {
 
 public:
@@ -222,7 +223,7 @@ protected:
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-std::shared_ptr<DrawSequence> darkroot::CreatePolygonWireframe (const darkroot::PolygonData& d) {
+std::shared_ptr<rokz::DrawSequence> darkroot::CreatePolygonWireframe (const darkroot::PolygonData& d) {
 
   return std::make_shared<DrawPolyWireframe> (d);
   

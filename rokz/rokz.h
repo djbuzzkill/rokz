@@ -32,8 +32,9 @@
 #include "defaults.h"
 #include "rokz/binary_IO.h"
 
-
-
+#include "draw_sequence.h"
+#include "swapchain_reset.h"
+#include "frame_loop.h"
 
 
 namespace rokz { 

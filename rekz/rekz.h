@@ -57,7 +57,6 @@ namespace rekz {
     std::vector<IndTy> indices;
   }; 
 
-
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
@@ -82,23 +81,6 @@ namespace rekz {
   };
   
   // --------------------------------------------------------------------
-  //    3.14159265f;
-  // --------------------------------------------------------------------
-  #ifdef NO_MORE_PIPELINE_GROUP
-  
-
-  struct PipelineGroup { 
-
-    rokz::Pipeline        pipeline;
-
-    // put this in the DrawSequence accessible 
-    // rokz::DescriptorGroup descrgroup;
-  };
-#endif
-  
-
-
-  // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
   struct KeyState {
@@ -111,11 +93,9 @@ namespace rekz {
   // --------------------------------------------------------------------
   struct MouseState {
 
-
     MouseState () : inside (0), left_butt(0), right_butt(0), 
                     middle_butt(0), x_pos (0), y_pos(0) {
     }
-
 
     int inside; 
     int left_butt;   
@@ -268,9 +248,23 @@ namespace rekz {
   };
 
 
+
   typedef int (*DevILOpenFileCB) (const unsigned char* dat, const DevILImageProps& props, void* up); 
 
   int OpenImageFile (const std::string& fqname, DevILOpenFileCB cb, void* up);
+
+
+
+  struct ImageCB {
+
+    virtual int do_shit (const unsigned char* dat, const DevILImageProps&) = 0; 
+
+  protected:
+    ImageCB () { }
+  } ;
+
+  
+  int OpenImageFile (const std::string& fqname, ImageCB*);
 
   // ---------------------------------------------------------------------
   // load texture to device memory

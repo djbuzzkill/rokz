@@ -64,80 +64,37 @@ namespace darkroot {
     
   };
   
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  struct pipeline_assembly  {
-    rokz::Pipeline&       pipeline;
-    VkPipelineLayout      plo;
-    VkDescriptorSet       descrset;
-  }; 
-
-
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  struct shared_globals {
-
-    shared_globals () : viewport_ext (), dt(0.0f), sim_time(0.0f), current_frame (0) {
-    }
-    
-    VkExtent2D     viewport_ext;
-    float          dt;
-    float          sim_time;
-    uint32_t       current_frame;
-
-  }; 
   // ---------------------------------------------------------------------
   // ?? a pipeline is tied to a drawlist.. no.
   // ?? a drawlist is tied to data..       ??
   // ?? a data is tied to a drawlist..     no
   // ?? a drawlist is tied to a pipeline.. ??
 
-  // ---------------------------------------------------------------------
-  // Intent is to encapsulate a list of draw commands
-  // DrawLisst renamed to DrawSequence to avoid confusion
-  // ---------------------------------------------------------------------
-  struct DrawSequence : public rokz::ut::destructor {
-
-    // do crap before recording ("UpdateDescriptors()", etc)
-    virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
-    //
-    // the draw sequence recording, mebe rename to DrawSeq::Rec() 
-    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds) = 0;
-
-  protected:
-
-    DrawSequence () {} // dont allow abstract
-
-  }; 
-
-  std::shared_ptr<DrawSequence> CreatePolygonDraw (const PolygonData& d); 
-  std::shared_ptr<DrawSequence> CreatePolygonWireframe (const darkroot::PolygonData& d); 
+  
+  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d); 
+  rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
   // std::shared_ptr<DrawSequence> CreatePolygonTextured 
   // std::shared_ptr<DrawSequence> CreateGridDraw 
 
   // ---------------------------------------------------------------------
   // 
   // ---------------------------------------------------------------------
-  struct ResetSwapchainCB {
+  // struct ResetSwapchainCB {
 
-  public:
+  // public:
   
-    virtual bool ResetSwapchain  (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
+  //   virtual bool ResetSwapchain  (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
 
-  protected:
+  // protected:
   
-    ResetSwapchainCB () {}
-  };
+  //   ResetSwapchainCB () {}
+  // };
 
- 
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
   struct Glob {
-
-    //#ifdef GLOB_COMMENT_OUT   
+    
     enum { MaxFramesInFlight = 2 }; 
 
     Glob();
@@ -153,22 +110,22 @@ namespace darkroot {
     rokz::SwapchainSupportInfo    swapchain_support_info;
     rokz::FrameSyncGroup          framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
-    rokz::RenderingInfoGroup     rendering_info_group;
-
+    rokz::RenderingInfoGroup      rendering_info_group;
+    rokz::DrawSequence::Globals         shared;                  //DrawSequence::shared_globals
     // struct Display
     rokz::Window                  window;
-    VkSurfaceKHR                  surface; // 
+    VkSurfaceKHR                  surface;                 // 
 
     // device props
     VkFormat                      depth_format;
-    VkSampleCountFlagBits         msaa_samples; //  = VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlagBits         msaa_samples;            // = VK_SAMPLE_COUNT_1_BIT;
 
     // 
     rokz::Pipeline                polys_pl  ;
     rokz::PipelineLayout          polys_plo ;
     rokz::DescriptorSetLayout     polys_dslo;
     PolygonData                   polyd;
-    std::shared_ptr<DrawSequence> drawpoly;
+    std::shared_ptr<rokz::DrawSequence> drawpoly;
     // 
     // rokz::Pipeline                grid_pl  ;
     // rokz::PipelineLayout          grid_plo ;
@@ -176,9 +133,8 @@ namespace darkroot {
     // std::shared_ptr<DrawSequence> drawgrid;
     // GridData                      gridata;
 
-    std::shared_ptr<darkroot::ResetSwapchainCB> swapchain_reset_cb;
+    std::shared_ptr<rokz::ResetSwapchainCB> swapchain_reset_cb;
     std::vector<rokz::Buffer>                   vma_shared_uniforms;
-    shared_globals shared;
 
     // attachement set
     rokz::Image                  depth_image;

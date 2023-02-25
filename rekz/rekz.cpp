@@ -355,6 +355,7 @@ uint32_t rekz::SizeOfComponents (VkFormat format) {
 
 }
 
+
 // -------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------
@@ -388,6 +389,28 @@ int rekz::OpenImageFile (const std::string& fqname, rekz::DevILOpenFileCB cb, vo
   return res; 
 }
 
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+int cpp_image_handler (const unsigned char* dat, const rekz::DevILImageProps& props, void* up) {
+
+  if (up) {
+    rekz::ImageCB* cb =  static_cast <rekz::ImageCB*> (up); 
+    return cb->do_shit (dat, props);
+  }
+
+  printf ("[ERROR] %s..bad user pointer\n", __FUNCTION__); 
+  return __LINE__; 
+}
+
+// ---------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------
+int rekz::OpenImageFile (const std::string& fqname, ImageCB* cb) {
+
+  return OpenImageFile (fqname, cpp_image_handler, (void*) cb); 
+  
+}
 
 
 // ---------------------------------------------------------------------
