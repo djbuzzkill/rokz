@@ -208,8 +208,7 @@ bool setup_obj_resources (PolygonData& polyd, uint32_t max_frames_in_flight,
 //
 // --------------------------------------------------------------------
 PolygonData& darkroot::SetupPolygonData (PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device) {
-  pd.view_orie.theta = 0.0f;
-  pd.view_orie.phi   = kPi;
+
   setup_obj_resources (pd, num_frames, data_root, device) ; 
   return  pd;
 }

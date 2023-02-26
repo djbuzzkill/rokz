@@ -47,7 +47,6 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
   if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (polyd.vma_poly_uniforms[globals.current_frame]))) {
   
     glm::vec3 va, vb;
-
     unit_angle_xz (va, 5.0 * globals.sim_time ); 
     unit_angle_xz (vb, 5.0 * globals.sim_time + kPi); 
 
@@ -56,7 +55,6 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
 
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
-    //obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     obj[1].modelmat = glm::rotate(model1, globals.sim_time * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     
   }
@@ -70,6 +68,7 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
 //
 // ------------------------------------------------------------------------------------------------
 int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const VkDescriptorSet& ds) {
+
 
   const DarkMesh& darkmesh = DarkOctohedron ();
   // ext2D  used to come from -> swapchain.ci.imageExtent
@@ -164,7 +163,6 @@ void update_dark_uniforms (Glob& glob, uint32_t current_frame, double dt) {
   // MVPTransform
   memcpy (rokz::cx::MappedPointer (glob.polyd.vma_uniform_buffs[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
 
-
   // SceneObjParam
   if (SceneObjParam* obj = reinterpret_cast<SceneObjParam*> (rokz::cx::MappedPointer (glob.polyd.vma_objparam_buffs[current_frame]))) {
   
@@ -175,7 +173,6 @@ void update_dark_uniforms (Glob& glob, uint32_t current_frame, double dt) {
     glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
 
-    
     glob.polyd.obj_theta[0] += mouse_dx * dtF * darkroot::k2Pi;
     
     //for (size_t i = 0; i < kSceneObjCount; ++i) {

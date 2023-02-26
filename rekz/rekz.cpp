@@ -389,6 +389,7 @@ int rekz::OpenImageFile (const std::string& fqname, rekz::DevILOpenFileCB cb, vo
   return res; 
 }
 
+#ifdef REKZ_HIDE_CPP_IMAGE_HANDLER
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
@@ -411,6 +412,7 @@ int rekz::OpenImageFile (const std::string& fqname, ImageCB* cb) {
   return OpenImageFile (fqname, cpp_image_handler, (void*) cb); 
   
 }
+#endif
 
 
 // ---------------------------------------------------------------------

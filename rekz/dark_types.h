@@ -46,8 +46,6 @@ namespace darkroot {
 
     float obj_theta[2];     // scene objects 
 
-    rekz::Polarf                view_orie;
-
     // pipeline resources
     std::vector<rokz::Buffer>    vma_poly_uniforms;
 
@@ -111,7 +109,7 @@ namespace darkroot {
     rokz::FrameSyncGroup          framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
     rokz::RenderingInfoGroup      rendering_info_group;
-    rokz::DrawSequence::Globals         shared;                  //DrawSequence::shared_globals
+    rokz::DrawSequence::Globals   shared;                  //DrawSequence::shared_globals
     // struct Display
     rokz::Window                  window;
     VkSurfaceKHR                  surface;                 // 

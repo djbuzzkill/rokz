@@ -247,16 +247,16 @@ namespace rekz {
 
 
 
-  struct ImageCB {
+  // struct ImageCB {
 
-    virtual int do_shit (const unsigned char* dat, const DevILImageProps&) = 0; 
+  //   virtual int do_shit (const unsigned char* dat, const DevILImageProps&) = 0; 
 
-  protected:
-    ImageCB () { }
-  } ;
+  // protected:
+  //   ImageCB () { }
+  // } ;
 
   
-  int OpenImageFile (const std::string& fqname, ImageCB*);
+  // int OpenImageFile (const std::string& fqname, ImageCB*);
 
   // ---------------------------------------------------------------------
   // load texture to device memory

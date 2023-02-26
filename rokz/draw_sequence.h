@@ -4,12 +4,15 @@
 #include "common.h"
 #include "utility.h"
 #include "rokz_types.h"
+#include "rokz_types.h"
 
 
 
 namespace rokz {
 
-    // ---------------------------------------------------------------------
+
+  
+  // ---------------------------------------------------------------------
   // INTENT:  encapsulate a list of draw commands
   // DrawLisst renamed to DrawSequence to avoid confusion
   // ---------------------------------------------------------------------
@@ -31,13 +34,17 @@ namespace rokz {
     // --------------------------------------------------------------------
     struct shared_globals {
 
-      shared_globals () : viewport_ext (), dt(0.0f), sim_time(0.0f), current_frame (0) {
+      shared_globals () : viewport_ext (), dt(0.0f), sim_time(0.0f), current_frame (0), view_ypr(0.0), view_pos(0.0) {
+        // pd.view_orie.theta = 0.0f;
+        // pd.view_orie.phi   = kPi;
       }
     
       VkExtent2D     viewport_ext;
       float          dt;
       float          sim_time;
       uint32_t       current_frame;
+      glm::vec3      view_ypr; // yaw pitch roll
+      glm::vec3      view_pos;
 
     };
 
