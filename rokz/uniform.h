@@ -10,6 +10,7 @@
 
 namespace rokz{
 
+  bool CreateUniformBuffer (rokz::Buffer& buf, size_t sizeOf_el, size_t numberOf_el, const rokz::Device& device); 
   // nada
 }
 

@@ -3,6 +3,7 @@
 #include "rekz/dark_types.h"
 
 #include "dark_obj_pipeline.h"
+#include <vulkan/vulkan_core.h>
 
 
 using namespace darkroot;
@@ -27,7 +28,8 @@ protected:
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const PolygonData& d) {
+rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const PolygonData& d)
+{
   return std::make_shared<PolygonDraw> (d);
 }
 
@@ -35,13 +37,6 @@ rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const PolygonData& d) {
 //
 // ------------------------------------------------------------------------------------------------
 int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) {
-
-  //static auto startTime = std::chrono::high_resolution_clock::now();
-  //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
-
-  //glob.view_orie.theta => polyd.view_orie.theta;
-  
-  //float sim_timef = glob.sim_time;
 
   // SceneObjParam
   if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (polyd.vma_poly_uniforms[globals.current_frame]))) {
@@ -85,10 +80,13 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
   //    scissor.extent = ext2d;
   vkCmdBindPipeline (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.pipeline.handle);
 
-  vkCmdSetViewport(command_buffer, 0, 1, &pa.pipeline.state.viewport.viewports[0]);
+  vkCmdSetViewport(command_buffer, 0, 1, &pa.pipeline.state.viewport.vps[0].viewport);
 
-  vkCmdSetScissor(command_buffer, 0, 1, &pa.pipeline.state.viewport.scissors[0]);
+  vkCmdSetScissor(command_buffer, 0, 1, &pa.pipeline.state.viewport.vps[0].scissor);
 
+  //VK_POLYGON_MODE_FILL = 0,
+  //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
+  
   vkCmdBindDescriptorSets (command_buffer,
                            VK_PIPELINE_BIND_POINT_GRAPHICS,
                            pa.plo, //                           pipelinelayout.handle,
@@ -103,7 +101,8 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
   vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
   vkCmdBindIndexBuffer(command_buffer, polyd.ib_device.handle, 0, VK_INDEX_TYPE_UINT16);
 
-  for (uint32_t i = 0; i < 2; ++i) {
+  const uint32_t num_test_objects =  2; 
+  for (uint32_t i = 0; i < num_test_objects; ++i) {
 
     darkroot::PushConstants pcs {};
     pcs.drawIDs.x = i; 

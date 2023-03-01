@@ -30,10 +30,10 @@ namespace darkroot {
     // z: unused
     // w: unused
   }; 
-  
-  // --------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------------------
   // PolygonData polyd resources the polygon pipeline will use
-  // --------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------
   struct PolygonData { 
 
     rokz::Buffer          vb_device;
@@ -51,9 +51,17 @@ namespace darkroot {
 
   } ;
 
+  // ?? a pipeline is tied to a drawlist.. no.
+  // ?? a drawlist is tied to data..       ??
+  // ?? a data is tied to a drawlist..     no
+  // ?? a drawlist is tied to a pipeline.. ??
+  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d); 
+  rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
 
 
-  // --------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------
+  //                   
+  // ---------------------------------------------------------------------------------------
   struct GridData {
     // some shit like this
     rokz::Buffer          vb_device;
@@ -62,21 +70,16 @@ namespace darkroot {
     
   };
   
-  // ---------------------------------------------------------------------
-  // ?? a pipeline is tied to a drawlist.. no.
-  // ?? a drawlist is tied to data..       ??
-  // ?? a data is tied to a drawlist..     no
-  // ?? a drawlist is tied to a pipeline.. ??
+  bool SetupGridData ();
+  void CleanupGridData ();
 
-  
-  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d); 
-  rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
+  rokz::DrawSequence::Ref CreateDrawGrid (const GridData& dat);
   // std::shared_ptr<DrawSequence> CreatePolygonTextured 
   // std::shared_ptr<DrawSequence> CreateGridDraw 
 
-  // ---------------------------------------------------------------------
-  // 
-  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------
+  //                   
+  // ---------------------------------------------------------------------------------------
   // struct ResetSwapchainCB {
 
   // public:
@@ -88,9 +91,9 @@ namespace darkroot {
   //   ResetSwapchainCB () {}
   // };
 
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------
+  //                   
+  // ---------------------------------------------------------------------------------------
   struct Glob {
     
     enum { MaxFramesInFlight = 2 }; 
@@ -110,9 +113,10 @@ namespace darkroot {
     // DYNAMIC RENDERING, no use renderpass
     rokz::RenderingInfoGroup      rendering_info_group;
     rokz::DrawSequence::Globals   shared;                  //DrawSequence::shared_globals
+
     // struct Display
-    rokz::Window                  window;
-    VkSurfaceKHR                  surface;                 // 
+    
+    rokz::Display                 display;
 
     // device props
     VkFormat                      depth_format;
@@ -123,16 +127,17 @@ namespace darkroot {
     rokz::PipelineLayout          polys_plo ;
     rokz::DescriptorSetLayout     polys_dslo;
     PolygonData                   polyd;
-    std::shared_ptr<rokz::DrawSequence> drawpoly;
+    rokz::DrawSequence::Ref      drawpoly;
     // 
-    // rokz::Pipeline                grid_pl  ;
-    // rokz::PipelineLayout          grid_plo ;
-    // rokz::DescriptorSetLayout     grid_dslo;
-    // std::shared_ptr<DrawSequence> drawgrid;
-    // GridData                      gridata;
 
-    std::shared_ptr<rokz::ResetSwapchainCB> swapchain_reset_cb;
-    std::vector<rokz::Buffer>                   vma_shared_uniforms;
+    rokz::Pipeline                grid_pl  ;
+    rokz::PipelineLayout          grid_plo ;
+    rokz::DescriptorSetLayout     grid_dslo;
+    rokz::DrawSequence::Ref       drawgrid;
+    GridData                      gridata;
+
+    rokz::ResetSwapchainCB::Ref swapchain_reset_cb;
+    std::vector<rokz::Buffer>   vma_shared_uniforms;
 
     // attachement set
     rokz::Image                  depth_image;
@@ -140,6 +145,10 @@ namespace darkroot {
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
   };
+
+
+  
+
   // 
 } // darkroot
 

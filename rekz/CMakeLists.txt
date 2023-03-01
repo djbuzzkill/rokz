@@ -7,12 +7,12 @@ project (rekz)
   
 set (REKZ_HEADER_FILES
     rekz.h
-    grid_pipeline.h
     dark_types.h
     darkrootgarden.h
-    dark_obj_pipeline.h
     mars_types.h
 
+    dark_obj_pipeline.h
+    grid_pipeline.h
 
   )
 	

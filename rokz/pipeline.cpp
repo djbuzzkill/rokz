@@ -11,6 +11,9 @@ std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicSt
   dynamic_states.clear ();
   dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
   dynamic_states.push_back (VK_DYNAMIC_STATE_SCISSOR);
+
+  // ?! wtf
+  //dynamic_states.push_back (VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
   return dynamic_states; 
 }
  
@@ -20,18 +23,17 @@ std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicSt
 // ---------------------------------------------------------------------
 rokz::ViewportState& rokz::ViewportState_default (rokz::ViewportState& vps, const VkRect2D& rect, float fdepth) {
 
-  vps.viewports.resize (1);
-  vps.scissors.resize (1);
-
-  vps.scissors[0] = rect;
-  rokz::Viewport (vps.viewports[0], rect.offset, rect.extent, fdepth);  
+  vps.vps.resize (1);
+  vps.vps[0].scissor = rect;
+  rokz::Viewport (vps.vps[0].viewport, rect.offset, rect.extent, fdepth);  
 
   return vps;
 }
 
-// -------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
 //                                             
-// -------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+
 // void rekz::SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent) {
 
 //   const VkOffset2D offs0 {0, 0};
@@ -44,9 +46,9 @@ rokz::ViewportState& rokz::ViewportState_default (rokz::ViewportState& vps, cons
 
 // }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// dynamics state
+// -----------------------------------------------------------------------------------------
 VkPipelineDynamicStateCreateInfo& rokz::CreateInfo (VkPipelineDynamicStateCreateInfo& ci, const std::vector<VkDynamicState>& dynamics) {
 
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -55,13 +57,11 @@ VkPipelineDynamicStateCreateInfo& rokz::CreateInfo (VkPipelineDynamicStateCreate
   ci.pDynamicStates = &dynamics[0];
 
   return ci;
-
 }
 
-// ---------------------------------------------------------------------
-
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// color blend 
+// -----------------------------------------------------------------------------------------
 bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state) {
   // COLOR BLENDING
   color_blend_attachment_state = {};
@@ -84,9 +84,9 @@ bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_b
   return true;
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// colorblend blend
+// -----------------------------------------------------------------------------------------
 VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
                                                         const VkPipelineColorBlendAttachmentState& colorblend) {   // Create Info
   color_blending_create_info = {};
@@ -96,6 +96,7 @@ VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStat
   color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
   color_blending_create_info.attachmentCount = 1;
   color_blending_create_info.pAttachments = &colorblend;
+
   color_blending_create_info.blendConstants[0] = 0.0f; 
   color_blending_create_info.blendConstants[1] = 0.0f; 
   color_blending_create_info.blendConstants[2] = 0.0f; 
@@ -104,9 +105,9 @@ VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStat
   return color_blending_create_info ;
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// colorblend blend 
+// -----------------------------------------------------------------------------------------
 VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
                                                         const std::vector<VkPipelineColorBlendAttachmentState>& colorblends) {   // Create Info
   color_blending_create_info = {};
@@ -124,11 +125,9 @@ VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStat
   return color_blending_create_info ;
 }
 
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// vertex input 
+// -----------------------------------------------------------------------------------------
 VkPipelineVertexInputStateCreateInfo& rokz::CreateInfo ( 
     VkPipelineVertexInputStateCreateInfo&                 create_info,
     const VkVertexInputBindingDescription&                binding_desc, 
@@ -146,9 +145,9 @@ VkPipelineVertexInputStateCreateInfo& rokz::CreateInfo (
   return create_info; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// pipeline multisample msaa 
+// -----------------------------------------------------------------------------------------
 VkPipelineMultisampleStateCreateInfo& rokz::CreateInfo (VkPipelineMultisampleStateCreateInfo& ci, VkSampleCountFlagBits  msaa_samples) { 
   // MULTI SAMPLING
   ci = {};
@@ -164,9 +163,9 @@ VkPipelineMultisampleStateCreateInfo& rokz::CreateInfo (VkPipelineMultisampleSta
   return ci; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// depth stencil pipeline
+// -----------------------------------------------------------------------------------------
 VkPipelineDepthStencilStateCreateInfo& rokz::CreateInfo (VkPipelineDepthStencilStateCreateInfo& ci) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -179,9 +178,9 @@ VkPipelineDepthStencilStateCreateInfo& rokz::CreateInfo (VkPipelineDepthStencilS
   return ci; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// input assembly pipeline
+// -----------------------------------------------------------------------------------------
 VkPipelineInputAssemblyStateCreateInfo& rokz::CreateInfo (VkPipelineInputAssemblyStateCreateInfo& ci, VkPrimitiveTopology prim) { 
   // INPUT ASSEMBLY STATE
   ci = {};
@@ -194,26 +193,25 @@ VkPipelineInputAssemblyStateCreateInfo& rokz::CreateInfo (VkPipelineInputAssembl
 
 }
 
-//---------------------------------------------------------------------
-//
-//---------------------------------------------------------------------
-
+// -----------------------------------------------------------------------------------------
+//  viewport state viewportstate
+// -----------------------------------------------------------------------------------------
 VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci, const ViewportState& vps) {
   // VkPipelineViewportStateCreateInfo
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
   ci.pNext = nullptr;
-  ci.viewportCount = vps.viewports.size ();
-  ci.pViewports    = &vps.viewports[0]; 
-  ci.scissorCount  = vps.scissors.size();
-  ci.pScissors     = &vps.scissors[0];
+  ci.viewportCount = vps.vps.size ();
+  ci.pViewports    = &vps.vps[0].viewport; 
+  ci.scissorCount  = vps.vps.size();
+  ci.pScissors     = &vps.vps[0].scissor;
 
   return ci; 
 }
 
-//---------------------------------------------------------------------
-//
-//---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// viewport state viewportstate
+// -----------------------------------------------------------------------------------------
 VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCreateInfo& ci,
                                                      const std::vector<VkViewport>& vps,
                                                      const std::vector<VkRect2D>& scissors) {
@@ -227,9 +225,9 @@ VkPipelineViewportStateCreateInfo& rokz::CreateInfo (VkPipelineViewportStateCrea
   ci.pScissors = &scissors[0];
   return ci;
 }
-//---------------------------------------------------------------------
-//
-//---------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+// rasterization
+// -----------------------------------------------------------------------------------------
 VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizationStateCreateInfo& ci) {
   //printf ("%s -> VkPipelineRasterizationStateCreateInfo& \n", __FUNCTION__); 
   // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
@@ -252,8 +250,20 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
 }
 
 // ---------------------------------------------------------------------
-// VkPipelineLayoutCreateInfo
+// VkPipelineTessellationStateCreateInfo
 // ---------------------------------------------------------------------
+VkPipelineTessellationStateCreateInfo& rokz::CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points) { 
+
+  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.flags = 0;
+  ci.patchControlPoints =  num_control_points;
+  return ci;
+}
+
+// -----------------------------------------------------------------------------------------
+// VkPipelineLayoutCreateInfo                                                              
+// -----------------------------------------------------------------------------------------
 VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci,
                                               const std::vector<VkDescriptorSetLayout>& dslos,
                                               const std::vector<VkPushConstantRange> & pc) {
@@ -270,19 +280,6 @@ VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci,
 
   return ci;
 }
-
-// ---------------------------------------------------------------------
-// VkPipelineTessellationStateCreateInfo
-// ---------------------------------------------------------------------
-VkPipelineTessellationStateCreateInfo& rokz::CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points) { 
-
-  ci.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-  ci.pNext = nullptr;
-  ci.flags = 0;
-  ci.patchControlPoints =  num_control_points;
-  return ci;
-}
-
 
 // ---------------------------------------------------------------------
 // CreateGraphicsPipelineLayout renamed 
@@ -553,11 +550,10 @@ rokz::ViewportState& rokz::SetupViewportState (rokz::ViewportState & vps, const 
 
   const VkOffset2D offs0 {0, 0};
 
-  vps.viewports.resize (1);
-  vps.scissors.resize (1);
+  vps.vps.resize (1);
   
-  vps.scissors[0] = { offs0, swapchain_extent };
-  rokz::ViewportState_default (vps, vps.scissors[0], 1.0f); 
+  vps.vps[0].scissor = { offs0, swapchain_extent };
+  rokz::ViewportState_default (vps, vps.vps[0].scissor, 1.0f); 
   return vps;
   
 }

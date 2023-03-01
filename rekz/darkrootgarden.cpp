@@ -8,6 +8,7 @@
 #include <vulkan/vulkan_core.h>
 // 
 #include "dark_obj_pipeline.h"
+#include "grid_pipeline.h"
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -30,9 +31,7 @@ Glob::Glob()
   , depth_image()
   , depth_imageview()
   , msaa_samples ()
-  , window()
   , swapchain_support_info()
-  , surface(nullptr)
   , shared ()
 { 
   // queues.graphics = {};
@@ -54,42 +53,22 @@ bool LoadVertexBuffer_static();
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool SetupDisplayWindow  (Glob& glob) {
-  // glob.window, width, height, 
-  rokz::CreateWindow (glob.window, kTestExtent.width , kTestExtent.height, "wut"); 
-  glfwSetFramebufferSizeCallback (glob.window.glfw_window, rekz::win_event::on_resize ); 
-  glfwSetKeyCallback (glob.window.glfw_window, rekz::win_event::on_keypress);
-  glfwSetCursorPosCallback(glob.window.glfw_window, rekz::win_event::on_mouse_move);
-  glfwSetMouseButtonCallback(glob.window.glfw_window, rekz::win_event::on_mouse_button);
-  glfwSetCursorEnterCallback (glob.window.glfw_window, rekz::win_event::on_mouse_enter); 
+bool SetupDisplay  (Glob& glob) {
+
+  //
+  // create GLFW window
+  rokz::CreateWindow (glob.display.window, kTestExtent.width , kTestExtent.height, "wut"); 
+  glfwSetFramebufferSizeCallback (glob.display.window.glfw_window, rekz::win_event::on_resize ); 
+  glfwSetKeyCallback (glob.display.window.glfw_window, rekz::win_event::on_keypress);
+  glfwSetCursorPosCallback(glob.display.window.glfw_window, rekz::win_event::on_mouse_move);
+  glfwSetMouseButtonCallback(glob.display.window.glfw_window, rekz::win_event::on_mouse_button);
+  glfwSetCursorEnterCallback (glob.display.window.glfw_window, rekz::win_event::on_mouse_enter); 
                               
-  glfwSetWindowUserPointer (glob.window.glfw_window, &glob.input_state);
+  glfwSetWindowUserPointer (glob.display.window.glfw_window, &glob.input_state);
 
-  printf ("&glob.input_state : %p\n", (void*) &glob.input_state); 
+  // create surface
+  return  rokz::cx::CreateSurface  (&glob.display.surface, glob.display.window.glfw_window, glob.instance.handle);
 
-  //glfwSetCursorEnterCallback(window, rokz);
-  // typedef struct GLFWcursor GLFWcursor;
-  // typedef void (* GLFWerrorfun)(int error_code, const char* description);
-  // typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
-  // typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
-  // typedef void (* GLFWwindowclosefun)(GLFWwindow* window);
-  // typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);
-  // typedef void (* GLFWwindowfocusfun)(GLFWwindow* window, int focused);
-  // typedef void (* GLFWwindowiconifyfun)(GLFWwindow* window, int iconified);
-  // typedef void (* GLFWwindowmaximizefun)(GLFWwindow* window, int maximized);
-  // typedef void (* GLFWframebuffersizefun)(GLFWwindow* window, int width, int height);
-  // typedef void (* GLFWwindowcontentscalefun)(GLFWwindow* window, float xscale, float yscale);
-  // typedef void (* GLFWmousebuttonfun)(GLFWwindow* window, int button, int action, int mods);
-  // typedef void (* GLFWcursorposfun)(GLFWwindow* window, double xpos, double ypos);
-  // typedef void (* GLFWcursorenterfun)(GLFWwindow* window, int entered);
-  // typedef void (* GLFWscrollfun)(GLFWwindow* window, double xoffset, double yoffset);
-  // typedef void (* GLFWkeyfun)(GLFWwindow* window, int key, int scancode, int action, int mods);
-  // typedef void (* GLFWcharfun)(GLFWwindow* window, unsigned int codepoint);
-  // typedef void (* GLFWcharmodsfun)(GLFWwindow* window, unsigned int codepoint, int mods);
-  // typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* paths[]);
-  // typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
-  // typedef void (* GLFWjoystickfun)(int jid, int event);
-  return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -197,7 +176,7 @@ void CleanupDarkroot (Glob& glob) {
            glob.swapchain_group.imageviews,
 
            glob.swapchain_group.swapchain,
-           glob.surface,
+           glob.display.surface,
            glob.device.command_pool.handle,
            glob.framesyncgroup.syncs, 
            glob.polys_pl.shader_modules,
@@ -206,7 +185,7 @@ void CleanupDarkroot (Glob& glob) {
 
            glob.depth_image, glob.depth_imageview,
 
-           glob.window.glfw_window,
+           glob.display.window.glfw_window,
            glob.device,
            glob.device.allocator.handle, 
            glob.instance.handle);
@@ -249,47 +228,40 @@ float AspectRatio (const VkExtent2D& ext) {
 // --------------------------------------------------------------------
 void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 
-  glob.shared.dt             = dt;
-  glob.shared.sim_time      += dt;
-  glob.shared.current_frame  = current_frame;
-  glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
-
-  // glob.shared.view_pos;
-  // glob.shared.view_ypr;
-  // glob.shared.view_ypr.x = 69;
-  
-  printf ("[yaw:%f, pitch:%f, roll:%f]\n", glob.shared.view_ypr.x, glob.shared.view_ypr.y, glob.shared.view_ypr.z); 
-  
-  // update MVPTransofrm buffer
-  // 
   //
+  //  SharedGlobals
+  //
+  {
+    glob.shared.dt             = dt;
+    glob.shared.sim_time      += dt;
+    glob.shared.current_frame  = current_frame;
+    glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
+  }
+
+  //
+  // MVPTransform buffer
+  //
+  {
+    float asp = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
+
+    //printf ("%s aspect :[%f]\n", __FUNCTION__, asp);
+    rokz::MVPTransform* mvp =
+      reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (glob.vma_shared_uniforms[current_frame]));
+  
+    if (mvp) {
     
-  //float dtF = static_cast <float> (dt);
-  float asp = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
+      glm::mat4 posmat = glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
 
-  //printf ("%s aspect :[%f]\n", __FUNCTION__, asp);
+      mvp->model = glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    
-  glm::mat4 posmat = glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
-  // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
-  // printf ("v1 * m0 = <%f, %f, %f, %f>  \n",  v1.x, v1.y, v1.z, v1.w); 
-  // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
-  rokz::MVPTransform mats; 
-  mats.model = glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+      mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
+        * glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
+      // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+      mvp->proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
+      mvp->proj[1][1] *= -1;
+    }
+  }
 
-    
-
-  mats.view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
-            * glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
-
-  // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
-  mats.proj[1][1] *= -1;
-
-
-  // MVPTransform 
-  memcpy (rokz::cx::MappedPointer (glob.vma_shared_uniforms[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
   
 }
 
@@ -328,7 +300,7 @@ struct DarkLoop {
   // while (cond()) loop()
   // -------------------------------------------------------------
   bool cond () {
-    return countdown && run && !glfwWindowShouldClose(glob.window.glfw_window); 
+    return countdown && run && !glfwWindowShouldClose(glob.display.window.glfw_window); 
   }
   //
   // -------------------------------------------------------------
@@ -351,7 +323,7 @@ struct DarkLoop {
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
-      glob.swapchain_reset_cb->ResetSwapchain (glob.window, glob.device.allocator, glob.device);
+      glob.swapchain_reset_cb->ResetSwapchain (glob.display.window, glob.device.allocator, glob.device);
       printf ("===> %i <=== ]\n", __LINE__);
       return true;
     }
@@ -433,17 +405,18 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glfwInit();
   glob.input_state.fb_resize = false; 
   
-  //rokz::CreateWindow_glfw (glob.glfwin);
-  SetupDisplayWindow (glob); 
 
   // CREATE INSTANCE AND DEVICE
   //bool rekz::InitializeInstance (rokz::Instance& instance) {
 
   rokz::InitializeInstance (glob.instance); 
-  rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
-  rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.surface, glob.instance.handle);
+
+  //rokz::CreateWindow_glfw (glob.glfwin);
+  SetupDisplay (glob); 
+
+  rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.surface, glob.device.physical.handle);
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
 
   rokz::ConfigureDevice  (glob.device.physical , VK_TRUE);
 
@@ -455,9 +428,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
-  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.surface,
+  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                              kTestExtent, glob.device.physical, glob.device);
-
   //assert (false);
   if (!InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_dslo, dark_path,
                         glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
@@ -465,11 +437,15 @@ int darkroot_basin (const std::vector<std::string>& args) {
     return false;
   }
 
+
+  printf ("%s \n ----$---> %i", __FUNCTION__ , __LINE__); 
+
   SetupRenderingAttachments (glob); // <-- this does all the additional  attachmentes
 
   glob.swapchain_reset_cb = CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                      glob.depth_image, glob.depth_imageview,
                                                      glob.msaa_color_image, glob.msaa_color_imageview); 
+
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob); 
   // **
@@ -480,7 +456,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // FACT: the global uniforms are separate from the polygon uniforms
   SetupObjectUniforms (glob.vma_shared_uniforms, glob.polyd.vma_poly_uniforms, kMaxFramesInFlight, glob.device);
-
 
   // SetupObjDescriptorPool
   if (!rokz::MakeDescriptorPool(glob.polyd.descrgroup.pool, kMaxFramesInFlight, kObjDescriptorBindings, glob.device)) {
@@ -505,9 +480,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   // create draw list
   glob.drawpoly = CreatePolygonDraw (glob.polyd);
-
-  
   //glob.polygons = std::make_shared<DrawSequence> (69);
+
+
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);
   rokz::FrameSyncGroup& fsg = glob.framesyncgroup;
@@ -547,55 +522,3 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
 
 
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void UpdateDarkUniforms (Glob& glob, uint32_t current_frame, double dt) {
-  //static auto startTime = std::chrono::high_resolution_clock::now();
-  glob.shared.sim_time += dt;
-  //  printf ( " - %s(dt:%f, sim_time:%f)\n", __FUNCTION__, dt, glob.sim_time);
-  glob.shared.viewport_ext = glob.swapchain_group.swapchain.ci.imageExtent;
-
-  //  float dtF = static_cast <float> (dt);
-  float asp = (float)glob.swapchain_group.swapchain.ci.imageExtent.width / (float)glob.swapchain_group.swapchain.ci.imageExtent.height;
-
-  glm::mat4  posmat =   glm::translate  (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
-  // printf ("m0 * v0 = <%f, %f, %f, %f>  \n",  v0.x, v0.y, v0.z, v0.w); 
-  // printf ("v1 * m0 = <%f, %f, %f, %f>  \n",  v1.x, v1.y, v1.z, v1.w); 
-  // printf ("m[3][0]=%f | m[3][1]=%f | m[3][2]=%f  \n",  m0[3][0], m0[3][1], m0[3][2] ); 
-  rokz::MVPTransform mats; 
-  mats.model = glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-  
-  mats.view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f)) * 
-    //glm::rotate (glm::mat4(1), glob.view_orie.phi, glm::vec3(1.0f, 0.0f, 0.0f)) *
-    glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
-
-  // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-  mats.proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
-  mats.proj[1][1] *= -1;
-
-  // MVPTransform
-  memcpy (rokz::cx::MappedPointer (glob.vma_shared_uniforms[current_frame]), &mats, rokz::kSizeOf_MVPTransform); 
-
-
-  // SceneObjParam
-  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (glob.polyd.vma_poly_uniforms[current_frame]))) {
-
-    glm::vec3 va, vb;
-    unit_angle_xz (va, 5.0 * glob.shared.sim_time ); 
-    unit_angle_xz (vb, 5.0 * glob.shared.sim_time + kPi); 
-
-    glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
-    glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
-
-    //    glob.polyd.obj_theta[0] += mouse_dx * (float) dt * darkroot::k2Pi;
-
-    //for (size_t i = 0; i < kSceneObjCount; ++i) {
-    obj[0].modelmat = glm::rotate(model0, glob.polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
-    //obj[0].modelmat = glm::rotate(model0, sim_timef * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    obj[1].modelmat = glm::rotate(model1, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-  }
-}

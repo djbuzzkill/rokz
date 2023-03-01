@@ -1,6 +1,7 @@
 
 #include "dark_obj_pipeline.h"
 #include "rokz/descriptor.h"
+#include "rokz/file.h"
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
 
@@ -71,11 +72,12 @@ namespace darkroot {
   }; 
 }
 
-
-bool  setup_object_shader_modules  (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool setup_object_shader_modules  (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
-
   
   std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
   std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
@@ -83,23 +85,28 @@ bool  setup_object_shader_modules  (rokz::Pipeline& pipeline, const std::filesys
   shader_modules.resize  (2);
   shader_stage_create_infos.resize(2);
   // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"data/shader/darkroot_vertex.spv" ;
+ printf   (" LINE [%i] \n", __LINE__); 
+   std::filesystem::path vert_file_path  = fspath/"data/shader/darkroot_vertex.spv" ;
 
-  if (!rokz::CreateShaderModule (shader_modules[0], vert_file_path.string(), device.handle))
+  rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
+  if (!rokz::CreateShaderModule (shader_modules[0], device.handle))
     return false; 
   
-  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].handle); 
-  
+  rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
+
   // FRAG SHADER
+  printf   (" LINE [%i] \n", __LINE__); 
   std::filesystem::path frag_file_path = fspath/"data/shader/darkroot_fragment.spv" ;
 
-  if (!rokz::CreateShaderModule (shader_modules[1], frag_file_path.string(), device.handle))
+  rokz::CreateInfo (shader_modules[1].ci, rokz::From_file (shader_modules[1].bin, frag_file_path.string())); 
+  if (!rokz::CreateShaderModule (shader_modules[1], device.handle))
     return false; 
   
-  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].handle); 
+  rokz::CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT,  shader_modules[1].entry_point,  shader_modules[1].handle); 
   //
   return true; 
 }
+
 
 
 // ----------------------------------------------------------------------------------------------
@@ -113,28 +120,15 @@ bool darkroot::SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, st
 
   // does this belong in pipeline?  
   // 
-  
-  
   uniform_buffs.resize (num_sets);
-  objparams.resize (num_sets);
+  objparams.resize     (num_sets);
 
   for (size_t i = 0; i < num_sets; i++) {
 
     // TODO: do this somewhere else, this isnt truly global, since poly_pipeline creates it
-    rokz::cx::CreateInfo_uniform (uniform_buffs[i].ci, rokz::kSizeOf_MVPTransform, 1); 
-    rokz::cx::AllocCreateInfo_mapped (uniform_buffs[i].alloc_ci); 
-    if (!rokz::cx::CreateBuffer (uniform_buffs[i], device.allocator.handle)) {
-      printf (" --> [FAIL]  create MVPTransform buffer \n"); 
-      return false; 
-    }
- 
-    //
-    rokz::cx::CreateInfo_uniform (objparams[i].ci, sizeof(PolygonParam), kMaxObjectCount);
-    rokz::cx::AllocCreateInfo_mapped (objparams[i].alloc_ci);
-    if (!rokz::cx::CreateBuffer (objparams[i], device.allocator.handle)) {
-      printf (" --> [FAIL]  create Polygon uniform buffer \n"); 
-      return false; 
-    }
+    CreateUniformBuffer (uniform_buffs[i], sizeof(rokz::MVPTransform), 1, device);
+
+    CreateUniformBuffer (objparams[i], sizeof(PolygonParam), kMaxObjectCount, device);
   }
 
   printf (" --> [true] \n"); 
@@ -242,21 +236,22 @@ bool darkroot::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
 }
 
 // ----------------------------------------------------------------------------------------
-// proto more orthogonal version (new SetupObjectPipeline)
+// init proto more orthogonal version (new SetupObjectPipeline)
 // ----------------------------------------------------------------------------------------
-bool darkroot::InitObjPipeline (rokz::Pipeline&   pipeline,
-                      rokz::PipelineLayout&        plo,
-                      rokz::DescriptorSetLayout&   dslo,
-                      //0
-                      const std::filesystem::path& fspath,
-                      const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
-                      VkSampleCountFlagBits        msaa_samples,
-                      VkFormat                     color_format,
-                      VkFormat                     depth_format,
-                      const rokz::Device&          device) {
+bool darkroot::InitObjPipeline (rokz::Pipeline&              pipeline,
+                                rokz::PipelineLayout&        plo,
+                                rokz::DescriptorSetLayout&   dslo,
+                                //0
+                                const std::filesystem::path& fspath,
+                                const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
+                                VkSampleCountFlagBits        msaa_samples,
+                                VkFormat                     color_format,
+                                VkFormat                     depth_format,
+                                const rokz::Device&          device) {
 
   rokz::DefineDescriptorSetLayout (dslo, kObjDescriptorBindings, device); 
-
+  //std::vector<VkDescriptorSetLayout> dslos (1, dslo.handle); 
+  //  rokz::CreateInfo (plo.ci, dslos); //, push_constants); 
   rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(darkroot::PushConstants), dslo.handle, device.handle);
 
   rokz::PipelineState_default (pipeline.state, msaa_samples, kVertexInputBindingAttributeDesc,
@@ -294,6 +289,8 @@ bool darkroot::InitObjPipeline (rokz::Pipeline&   pipeline,
 
   return true;
 }
+
+
 
 
 
