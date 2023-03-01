@@ -1,5 +1,6 @@
 
 #include "buffer.h"
+#include "allocation.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -52,6 +53,8 @@ bool rokz::cx::CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, Vma
   
   return true; 
 }
+
+
 // ---------------------------------------------------------------------
 // transfer buffer
 // ---------------------------------------------------------------------
@@ -194,9 +197,101 @@ bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
 }
 
 
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------
+//                    
+// ----------------------------------------------------------------------------------------
+bool rokz::Create_VB_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device) {
+
+  if (!mem) {
+    return false;
+  }
+
+  if (sz_mem == 0) {
+    return false;
+  }
+  
+  void* pmapped  = nullptr;
+  rokz::Buffer vb_x; 
+
+  rokz::cx::CreateInfo_VB_stage (vb_x.ci, 1, sz_mem);
+  rokz::cx::AllocCreateInfo_stage (vb_x.alloc_ci);
+  rokz::cx::CreateBuffer (vb_x, device.allocator.handle);
+
+
+  if (rokz::cx::MapMemory (&pmapped, vb_x.allocation, device.allocator.handle)) {
+    memcpy (pmapped, mem, sz_mem); 
+    rokz::cx::UnmapMemory (vb_x.allocation, device.allocator.handle); 
+  }
+  else {
+    return false;
+  }
+  
+  rokz::cx::CreateInfo_VB_device (buf.ci, 1, sz_mem);
+  rokz::cx::AllocCreateInfo_device (buf.alloc_ci); 
+  if (rokz::cx::CreateBuffer (buf, device.allocator.handle)) { 
+
+    //rokz::Transfer_2_Device;
+    rokz::cx::MoveToBuffer_XB2DB (buf, vb_x, sz_mem, device.command_pool.handle, device.queues.graphics, device.handle); 
+
+    rokz::cx::Destroy (vb_x, device.allocator.handle);
+
+    return true; 
+  }
+
+  return false;
+}
+
+
+// ----------------------------------------------------------------------------------------
+//                    
+// ----------------------------------------------------------------------------------------
+
+bool rokz::Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t num_inds, const rokz::Device& device) {
+
+  if (!mem) {
+    return false;
+  }
+
+  if (num_inds == 0) {
+    return false;
+  }
+  
+  void* pmapped  = nullptr;
+  rokz::Buffer vb_x; 
+
+  rokz::cx::CreateInfo_IB_16_stage (vb_x.ci, num_inds);
+  rokz::cx::AllocCreateInfo_stage (vb_x.alloc_ci);
+  rokz::cx::CreateBuffer (vb_x, device.allocator.handle);
+
+
+  if (rokz::cx::MapMemory (&pmapped, vb_x.allocation, device.allocator.handle)) {
+    memcpy (pmapped, mem, sizeof(short) * num_inds); 
+    rokz::cx::UnmapMemory (vb_x.allocation, device.allocator.handle); 
+  }
+  else {
+    return false;
+  }
+  
+  rokz::cx::CreateInfo_IB_16_device (buf.ci, num_inds);
+  rokz::cx::AllocCreateInfo_device (buf.alloc_ci); 
+  if (rokz::cx::CreateBuffer (buf, device.allocator.handle)) { 
+
+    //rokz::Transfer_2_Device;
+    rokz::cx::MoveToBuffer_XB2DB (buf, vb_x, sizeof(short) * num_inds, device.command_pool.handle, device.queues.graphics, device.handle); 
+
+    rokz::cx::Destroy (vb_x, device.allocator.handle);
+
+    return true; 
+  }
+
+  return false;
+}
+
+
+// ----------------------------------------------------------------------------------------
+//                    
+// ----------------------------------------------------------------------------------------
 VkBufferCreateInfo& rokz::cx::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t sizeOf_elem, size_t num_e) {
 
   ci = {};

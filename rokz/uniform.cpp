@@ -3,13 +3,6 @@
 #include "allocation.h"
 
 
-
-
-
-
-
-
-
 bool rokz::CreateUniformBuffer (rokz::Buffer& buf, size_t sizeOf_el, size_t numberOf_el, const rokz::Device& device) {
 
     rokz::cx::CreateInfo_uniform (buf.ci, sizeOf_el, numberOf_el); 
@@ -22,6 +15,3 @@ bool rokz::CreateUniformBuffer (rokz::Buffer& buf, size_t sizeOf_el, size_t numb
 
     return true; 
 }
-
-
-
