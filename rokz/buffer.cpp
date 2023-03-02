@@ -176,7 +176,6 @@ bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
   VkBufferCopy copy_desc{};
   copy_desc.srcOffset = 0; 
   copy_desc.dstOffset = 0; 
-  printf (" ____ copy_desc.size = %zu\n", size); 
 
   copy_desc.size = size;
 
@@ -196,98 +195,100 @@ bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
   return true; 
 }
 
+// ----------------------------------------------------------------------------------------
+//                    
+// ----------------------------------------------------------------------------------------
+bool transfer_memory_to_device_buffer (rokz::Buffer& dstb, const void* mem, size_t sz_mem, const rokz::Device& device) {
 
+  void* pmapped  = nullptr;
+  rokz::Buffer vb_tmp; 
+
+  rokz::cx::CreateInfo_buffer_stage (vb_tmp.ci, sz_mem); 
+  rokz::cx::AllocCreateInfo_stage (vb_tmp.alloc_ci);
+  rokz::cx::CreateBuffer (vb_tmp, device.allocator.handle);
+
+  if (rokz::cx::MapMemory (&pmapped, vb_tmp.allocation, device.allocator.handle)) {
+    memcpy (pmapped, mem, sz_mem); 
+    rokz::cx::UnmapMemory (vb_tmp.allocation, device.allocator.handle); 
+  }
+  else {
+    printf ("[FAILED] rokz::cx::MapMemory\n");
+    return false;
+  }
+  
+  rokz::cx::MoveToBuffer_XB2DB (dstb, vb_tmp, sz_mem, device.command_pool.handle, device.queues.graphics, device.handle); 
+
+  rokz::Destroy (vb_tmp, device.allocator.handle);
+
+  return true; 
+}
 
 // ----------------------------------------------------------------------------------------
 //                    
 // ----------------------------------------------------------------------------------------
 bool rokz::Create_VB_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device) {
 
+  printf ("%s", __FUNCTION__);
+
   if (!mem) {
+    printf ("[FAILED] mem  is null");
     return false;
   }
 
   if (sz_mem == 0) {
-    return false;
-  }
-  
-  void* pmapped  = nullptr;
-  rokz::Buffer vb_x; 
-
-  rokz::cx::CreateInfo_VB_stage (vb_x.ci, 1, sz_mem);
-  rokz::cx::AllocCreateInfo_stage (vb_x.alloc_ci);
-  rokz::cx::CreateBuffer (vb_x, device.allocator.handle);
-
-
-  if (rokz::cx::MapMemory (&pmapped, vb_x.allocation, device.allocator.handle)) {
-    memcpy (pmapped, mem, sz_mem); 
-    rokz::cx::UnmapMemory (vb_x.allocation, device.allocator.handle); 
-  }
-  else {
+    printf ("sz_mem:%zu",  sz_mem);
     return false;
   }
   
   rokz::cx::CreateInfo_VB_device (buf.ci, 1, sz_mem);
   rokz::cx::AllocCreateInfo_device (buf.alloc_ci); 
+
   if (rokz::cx::CreateBuffer (buf, device.allocator.handle)) { 
 
-    //rokz::Transfer_2_Device;
-    rokz::cx::MoveToBuffer_XB2DB (buf, vb_x, sz_mem, device.command_pool.handle, device.queues.graphics, device.handle); 
-
-    rokz::cx::Destroy (vb_x, device.allocator.handle);
-
-    return true; 
+    if (transfer_memory_to_device_buffer (buf, mem, sz_mem, device)) { 
+      printf ("--> [true]\n");
+      return true;
+    }
   }
 
+  printf ("%s", __FUNCTION__);
   return false;
 }
-
 
 // ----------------------------------------------------------------------------------------
 //                    
 // ----------------------------------------------------------------------------------------
 
 bool rokz::Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t num_inds, const rokz::Device& device) {
+  printf ("%s", __FUNCTION__);
 
   if (!mem) {
+    printf ("[FAILED] 'mem' is null\n");
     return false;
   }
 
   if (num_inds == 0) {
-    return false;
-  }
-  
-  void* pmapped  = nullptr;
-  rokz::Buffer vb_x; 
-
-  rokz::cx::CreateInfo_IB_16_stage (vb_x.ci, num_inds);
-  rokz::cx::AllocCreateInfo_stage (vb_x.alloc_ci);
-  rokz::cx::CreateBuffer (vb_x, device.allocator.handle);
-
-
-  if (rokz::cx::MapMemory (&pmapped, vb_x.allocation, device.allocator.handle)) {
-    memcpy (pmapped, mem, sizeof(short) * num_inds); 
-    rokz::cx::UnmapMemory (vb_x.allocation, device.allocator.handle); 
-  }
-  else {
+    printf ("[FAILED] num_inds:%zu\n", num_inds);
     return false;
   }
   
   rokz::cx::CreateInfo_IB_16_device (buf.ci, num_inds);
   rokz::cx::AllocCreateInfo_device (buf.alloc_ci); 
+
   if (rokz::cx::CreateBuffer (buf, device.allocator.handle)) { 
 
-    //rokz::Transfer_2_Device;
-    rokz::cx::MoveToBuffer_XB2DB (buf, vb_x, sizeof(short) * num_inds, device.command_pool.handle, device.queues.graphics, device.handle); 
-
-    rokz::cx::Destroy (vb_x, device.allocator.handle);
-
+    if (transfer_memory_to_device_buffer (buf, mem, sizeof(uint16_t) * num_inds, device)) { 
+      printf ("--> [true]\n");
+      return true;
+    }
+    
+    printf ("--> [true]\n");
     return true; 
   }
-
+  
+  printf ("[FAILED] CreateBuffer\n ");
   return false;
 }
-
 
 // ----------------------------------------------------------------------------------------
 //                    
@@ -307,7 +308,7 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-void rokz::cx::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
+void rokz::Destroy (Buffer& buffer, VmaAllocator const& allocator) {
 
   vmaDestroyBuffer (allocator, buffer.handle, buffer.allocation); 
 

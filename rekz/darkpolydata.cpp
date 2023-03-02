@@ -120,7 +120,7 @@ PolygonData& darkroot::CleanupPolygonData (PolygonData& pd, const VmaAllocator& 
     // SetupObjectTextureAndSampler;
     // SetupObjResources;
     for (auto buf : pd.vma_poly_uniforms) {  
-      rokz::cx::Destroy (buf, allocator);
+      rokz::Destroy (buf, allocator);
     }
     
     return  pd;

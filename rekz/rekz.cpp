@@ -466,7 +466,7 @@ bool rekz::LoadTexture_color_sampling (rokz::Image&             image,
                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                queue, commandpool.handle, device.handle);
 
-  rokz::cx::Destroy (stage_buff, allocator); 
+  rokz::Destroy (stage_buff, allocator); 
   return true; 
 }
 

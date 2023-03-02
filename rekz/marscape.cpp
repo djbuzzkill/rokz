@@ -113,7 +113,7 @@ bool SetupGridResources (Glob& glob) {
     rokz::cx::MoveToBuffer_XB2DB (glob.vma_vb_device, vb_stage, sizeof(rekz::GridVert) * num_grid_verts, 
                                   glob.device.command_pool.handle, glob.device.queues.graphics, glob.device.handle); 
 
-    rokz::cx::Destroy (vb_stage, glob.device.allocator.handle); 
+    rokz::Destroy (vb_stage, glob.device.allocator.handle); 
   }
   
   
@@ -155,7 +155,7 @@ bool SetupGridResources (Glob& glob) {
     rokz::cx::MoveToBuffer_XB2DB (glob.vma_ib_device, ib_stage, sizeof (uint16_t) * num_grid_inds, 
                                   glob.device.command_pool.handle, glob.device.queues.graphics, glob.device.handle); 
     
-    rokz::cx::Destroy (ib_stage, glob.device.allocator.handle); 
+    rokz::Destroy (ib_stage, glob.device.allocator.handle); 
   }
 
   if (!SetupGridUniforms (glob)) {
@@ -271,7 +271,7 @@ void CleanupMars (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
   for (auto& ub : glob.uniform_mvp) {
-    rokz::cx::Destroy (ub, glob.allocator); 
+    rokz::Destroy (ub, glob.allocator); 
   }
 
   assert (false); // rokz::cx::Destroy (glob.terrain_pipeline.descrgroup
@@ -282,8 +282,8 @@ void CleanupMars (Glob& glob) {
   assert (false); // rokz::cx::Destroy (glob.grid_pipeline.descrgroup, 
   //rokz::cx::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
 
-  rokz::cx::Destroy (glob.vma_vb_device, glob.allocator);
-  rokz::cx::Destroy (glob.vma_ib_device, glob.allocator);
+  rokz::Destroy (glob.vma_vb_device, glob.allocator);
+  rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
   assert (false); // Cleanup
   // Cleanup (glob.terrain_pipeline.pipeline.handle,

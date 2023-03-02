@@ -24,10 +24,6 @@ namespace darkroot {
 
   };
 
-  // const std::vector<VkDescriptorSetLayoutBinding>& DarkObjDescriptorBindings () {
-  //   return global_dslo_bindings;
-  // }
-
   // --------------------------------------------------------------------
   // vert input binding, diffrnt from input attriubutes
   // --------------------------------------------------------------------
@@ -75,7 +71,7 @@ namespace darkroot {
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
-bool setup_object_shader_modules  (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
   

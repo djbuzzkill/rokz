@@ -53,21 +53,21 @@ bool LoadVertexBuffer_static();
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool SetupDisplay  (Glob& glob) {
-
-  //
+//bool SetupDisplay  (Glob& glob) {
+bool SetupDisplay (rokz::Display& display, rekz::InputState& input_state, const VkExtent2D& dim, const rokz::Instance& instance) { 
+  
   // create GLFW window
-  rokz::CreateWindow (glob.display.window, kTestExtent.width , kTestExtent.height, "wut"); 
-  glfwSetFramebufferSizeCallback (glob.display.window.glfw_window, rekz::win_event::on_resize ); 
-  glfwSetKeyCallback (glob.display.window.glfw_window, rekz::win_event::on_keypress);
-  glfwSetCursorPosCallback(glob.display.window.glfw_window, rekz::win_event::on_mouse_move);
-  glfwSetMouseButtonCallback(glob.display.window.glfw_window, rekz::win_event::on_mouse_button);
-  glfwSetCursorEnterCallback (glob.display.window.glfw_window, rekz::win_event::on_mouse_enter); 
+  rokz::CreateWindow (display.window, dim.width, dim.height, "wut"); 
+  glfwSetFramebufferSizeCallback (display.window.glfw_window, rekz::win_event::on_resize ); 
+  glfwSetKeyCallback (display.window.glfw_window, rekz::win_event::on_keypress);
+  glfwSetCursorPosCallback(display.window.glfw_window, rekz::win_event::on_mouse_move);
+  glfwSetMouseButtonCallback(display.window.glfw_window, rekz::win_event::on_mouse_button);
+  glfwSetCursorEnterCallback (display.window.glfw_window, rekz::win_event::on_mouse_enter); 
                               
-  glfwSetWindowUserPointer (glob.display.window.glfw_window, &glob.input_state);
+  glfwSetWindowUserPointer (display.window.glfw_window, &input_state);
 
   // create surface
-  return  rokz::cx::CreateSurface  (&glob.display.surface, glob.display.window.glfw_window, glob.instance.handle);
+  return  rokz::cx::CreateSurface  (&display.surface, display.window.glfw_window, instance.handle);
 
 }
 
@@ -85,20 +85,26 @@ bool SetupDynamicRenderingInfo (darkroot::Glob& glob) {
   ri.clear_depth.depthStencil = {1.0f, 0};
 
   rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
-                        glob.msaa_color_imageview.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                        VK_RESOLVE_MODE_AVERAGE_BIT,
-                        glob.swapchain_group.imageviews[0].handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, ri.clear_colors[0]);
+                            glob.msaa_color_imageview.handle,
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            VK_RESOLVE_MODE_AVERAGE_BIT,
+                            glob.swapchain_group.imageviews[0].handle,
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            VK_ATTACHMENT_LOAD_OP_CLEAR,
+                            VK_ATTACHMENT_STORE_OP_STORE,
+                            ri.clear_colors[0]);
 
   rokz::cx::AttachmentInfo (ri.depth_attachment_info,
-                        glob.depth_imageview.handle, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                        VK_RESOLVE_MODE_NONE,
-                        nullptr, VK_IMAGE_LAYOUT_UNDEFINED,
-                        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, ri.clear_depth);
+                            glob.depth_imageview.handle,
+                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                            VK_RESOLVE_MODE_NONE,
+                            nullptr,
+                            VK_IMAGE_LAYOUT_UNDEFINED,
+                            VK_ATTACHMENT_LOAD_OP_CLEAR,
+                            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                            ri.clear_depth);
   
-  ri.render_area = { 
-    VkOffset2D {0, 0}, glob.swapchain_group.swapchain.ci.imageExtent
-  };
+  ri.render_area = { VkOffset2D {0, 0}, glob.swapchain_group.swapchain.ci.imageExtent };
 
   rokz::cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
   return true;
@@ -154,7 +160,7 @@ void CleanupDarkroot (Glob& glob) {
 
   // create by pipeline, but freed here
   for (auto& ub : glob.vma_shared_uniforms) {
-    rokz::cx::Destroy (ub, glob.device.allocator.handle); 
+    rokz::Destroy (ub, glob.device.allocator.handle); 
   }
   
   // dont bother freeing if pool is destroyed anyways
@@ -230,7 +236,6 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 
   //
   //  SharedGlobals
-  //
   {
     glob.shared.dt             = dt;
     glob.shared.sim_time      += dt;
@@ -238,13 +243,9 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
     glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
   }
 
-  //
-  // MVPTransform buffer
-  //
-  {
-    float asp = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
 
-    //printf ("%s aspect :[%f]\n", __FUNCTION__, asp);
+  // 
+  { // MVPTransform buffer
     rokz::MVPTransform* mvp =
       reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (glob.vma_shared_uniforms[current_frame]));
   
@@ -254,10 +255,11 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 
       mvp->model = glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+      const float aspf = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
       mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
         * glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
       // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      mvp->proj  = glm::perspective(glm::radians(45.0f), asp , 1.0f, 20.0f);
+      mvp->proj  = glm::perspective(glm::radians(45.0f), aspf , 1.0f, 20.0f);
       mvp->proj[1][1] *= -1;
     }
   }
@@ -412,7 +414,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
   rokz::InitializeInstance (glob.instance); 
 
   //rokz::CreateWindow_glfw (glob.glfwin);
-  SetupDisplay (glob); 
+
+  SetupDisplay (glob.display, glob.input_state, kTestExtent, glob.instance); 
+  //SetupDisplay (glob); 
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
