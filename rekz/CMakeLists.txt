@@ -26,9 +26,11 @@ set (REKZ_SOURCE_FILES
   darkpolydata.cpp
 
   marscape.cpp
-#  mars_window_handler.cpp
+  # mars_window_handler.cpp
   mars_things.cpp
   grid_pipeline.cpp  
+  
+  drawgrid.cpp  
   #  test_rokz_hpp.cpp
   # test_rokz.cpp
   rekz.cpp

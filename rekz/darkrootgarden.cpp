@@ -1,6 +1,7 @@
 
 #include "darkrootgarden.h"
 #include "dark_obj_pipeline.h"
+#include "rekz/rekz.h"
 #include "rokz/buffer.h"
 #include "rokz/context.h"
 #include "rokz/pipeline.h"
@@ -133,17 +134,17 @@ bool SetupRenderingAttachments (Glob& glob) {
   rokz::SwapchainGroup& scg = glob.swapchain_group;
 
   //CreateMSAAColorImage -> (image, imageview)
-  rekz::CreateMSAAColorImage  (glob.msaa_color_image, glob.msaa_color_imageview, glob.msaa_samples,
+  rekz::CreateMSAAColorTarget (glob.msaa_color_image, glob.msaa_color_imageview, glob.msaa_samples,
                                scg.swapchain.ci.imageFormat, glob.device.allocator.handle, glob.device.command_pool, 
                                glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent, glob.device);
 
   // CreateDepthBufferImage -> (image, imageview)
-  rekz::CreateDepthBufferImage (glob.depth_image, glob.depth_imageview, glob.msaa_samples, glob.depth_format, 
-                                glob.device.command_pool, glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent,
-                                glob.device.allocator.handle, glob.device);
-
+  rekz::CreateDepthBufferTarget (glob.depth_image, glob.depth_imageview, glob.msaa_samples, glob.depth_format, 
+                                 glob.device.command_pool, glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent,
+                                 glob.device.allocator.handle, glob.device);
 
   return true;
+
 }
 
 
@@ -268,6 +269,7 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 }
 
 
+
 // ---------------------------------------------------------------------------------------
 //  encapsulate rendering loop
 // ---------------------------------------------------------------------------------------
@@ -284,6 +286,26 @@ struct DarkLoop {
   std::chrono::system_clock::time_point then;
 
   std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
+
+  void UpdateInput () {
+
+    //UpdateInput(glob, glob.dt);
+    if (glob.input_state.keys.count (GLFW_KEY_Q)) {
+      printf ("--> [q] pressed... quitting \n");
+      run = false;
+    }
+
+    if (glob.input_state.keys.count (GLFW_KEY_F)) {
+    }    
+    if (glob.input_state.keys.count (GLFW_KEY_V)) {
+    }    
+    if (glob.input_state.keys.count (GLFW_KEY_D)) {
+    }    
+    if (glob.input_state.keys.count (GLFW_KEY_G)) {
+    }    
+
+
+  } 
   //
   // -------------------------------------------------------------
   DarkLoop (Glob& g, float dt ) :  glob(g), Dt (dt) { 
@@ -312,11 +334,9 @@ struct DarkLoop {
 
     auto now = std::chrono::high_resolution_clock::now();    
     
-    //UpdateInput(glob, glob.dt);
-    if (glob.input_state.keys.count (GLFW_KEY_Q)) {
-      printf ("--> [q] pressed... quitting \n");
-      run = false;
-    }
+
+    UpdateInput () ;
+    
     //
     rokz::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
@@ -407,7 +427,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glfwInit();
   glob.input_state.fb_resize = false; 
   
-
   // CREATE INSTANCE AND DEVICE
   //bool rekz::InitializeInstance (rokz::Instance& instance) {
 
@@ -441,8 +460,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
     return false;
   }
 
-
-  printf ("%s \n ----$---> %i", __FUNCTION__ , __LINE__); 
 
   SetupRenderingAttachments (glob); // <-- this does all the additional  attachmentes
 

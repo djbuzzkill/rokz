@@ -3,6 +3,7 @@
 #include "rekz/mars_types.h"
 // 
 #include "grid_pipeline.h"
+#include "rekz/rekz.h"
 #include "rokz/allocation.h"
 #include "rokz/buffer.h"
 #include <vulkan/vulkan_core.h>
@@ -231,21 +232,21 @@ bool SetupRenderAttachments (Glob& glob) {
 
   rokz::SwapchainGroup& scg = glob.swapchain_group;
   
-  if (!rekz::CreateDepthBufferImage (glob.msaa_depth_image,    
-                                     glob.msaa_depth_imageview,
-                                     glob.msaa_samples,
-                                     glob.depth_format,
-                                     glob.device.command_pool,                                      
-                                     glob.device.queues.graphics, 
-                                     kWinExtent,
-                                     glob.device.allocator.handle, 
-                                     glob.device))
+  if (!rekz::CreateDepthBufferTarget (glob.msaa_depth_image,    
+                                      glob.msaa_depth_imageview,
+                                      glob.msaa_samples,
+                                      glob.depth_format,
+                                      glob.device.command_pool,                                      
+                                      glob.device.queues.graphics, 
+                                      kWinExtent,
+                                      glob.device.allocator.handle, 
+                                      glob.device))
     {
       // depth buffer attachment failed
       return false; 
     }
 
-  if (!rekz::CreateMSAAColorImage  (glob.msaa_color_image, 
+  if (!rekz::CreateMSAAColorTarget (glob.msaa_color_image, 
                                     glob.msaa_color_imageview, 
                                     glob.msaa_samples,
                                     scg.swapchain.ci.imageFormat,

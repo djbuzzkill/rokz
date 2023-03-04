@@ -59,21 +59,6 @@ namespace darkroot {
   rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
 
 
-  // ---------------------------------------------------------------------------------------
-  //                   
-  // ---------------------------------------------------------------------------------------
-  struct GridData {
-    // some shit like this
-    rokz::Buffer          vb_device;
-    rokz::Buffer          ib_device;
-    rokz::DescriptorGroup descrgroup;
-    
-  };
-  
-  bool SetupGridData ();
-  void CleanupGridData ();
-
-  rokz::DrawSequence::Ref CreateDrawGrid (const GridData& dat);
   // std::shared_ptr<DrawSequence> CreatePolygonTextured 
   // std::shared_ptr<DrawSequence> CreateGridDraw 
 
@@ -134,7 +119,7 @@ namespace darkroot {
     rokz::PipelineLayout          grid_plo ;
     rokz::DescriptorSetLayout     grid_dslo;
     rokz::DrawSequence::Ref       drawgrid;
-    GridData                      gridata;
+    rekz::GridData                gridata;
 
     rokz::ResetSwapchainCB::Ref swapchain_reset_cb;
     std::vector<rokz::Buffer>   vma_shared_uniforms;

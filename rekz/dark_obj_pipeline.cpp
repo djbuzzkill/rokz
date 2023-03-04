@@ -4,6 +4,7 @@
 #include "rokz/file.h"
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
+#include <vulkan/vulkan_core.h>
 
 // --------------------------------------------------------------------
 //
@@ -15,13 +16,17 @@ const size_t max_frames_in_flight  = darkroot::Glob::MaxFramesInFlight;
 // --------------------------------------------------------------------
 namespace darkroot { 
 
-
+  //   typedef struct VkDescriptorSetLayoutBinding {
+  //     uint32_t              binding;
+  //     VkDescriptorType      descriptorType;
+  //     uint32_t              descriptorCount;
+  //     VkShaderStageFlags    stageFlags;
+  //     const VkSampler*      pImmutableSamplers;
+  // } VkDescriptorSetLayoutBinding;
   const std::vector<VkDescriptorSetLayoutBinding> kObjDescriptorBindings = {
-
     { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,           1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr },
     { 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         128, VK_SHADER_STAGE_VERTEX_BIT  , nullptr },
     { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,   1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, 
-
   };
 
   // --------------------------------------------------------------------
@@ -80,20 +85,22 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
 
   shader_modules.resize  (2);
   shader_stage_create_infos.resize(2);
+  //
   // VERT SHADER 
- printf   (" LINE [%i] \n", __LINE__); 
-   std::filesystem::path vert_file_path  = fspath/"data/shader/darkroot_vertex.spv" ;
-
+  std::filesystem::path vert_file_path  = fspath/"data/objz/polyobj_vert.spv" ;
+  //printf ( "LINE [%i] --> %s \n", __LINE__, vert_file_path.string().c_str()); 
+  
   rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
   if (!rokz::CreateShaderModule (shader_modules[0], device.handle))
     return false; 
   
   rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
 
+  //
   // FRAG SHADER
-  printf   (" LINE [%i] \n", __LINE__); 
-  std::filesystem::path frag_file_path = fspath/"data/shader/darkroot_fragment.spv" ;
-
+  std::filesystem::path frag_file_path = fspath/"data/objz/polyobj_frag.spv" ;
+  //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str()); 
+  
   rokz::CreateInfo (shader_modules[1].ci, rokz::From_file (shader_modules[1].bin, frag_file_path.string())); 
   if (!rokz::CreateShaderModule (shader_modules[1], device.handle))
     return false; 
@@ -102,7 +109,6 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
   //
   return true; 
 }
-
 
 
 // ----------------------------------------------------------------------------------------------
@@ -189,7 +195,7 @@ bool darkroot::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
     image_info.imageView   = texture_imageview.handle;
     image_info.sampler     = sampler.handle;
     //
-    std::array<VkWriteDescriptorSet, 3>  descriptor_writes {};
+    std::array<VkWriteDescriptorSet, 3> descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;    
     descriptor_writes[0].dstSet           = dss[i];
@@ -198,11 +204,11 @@ bool darkroot::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[0].descriptorCount  = 1;
     descriptor_writes[0].pBufferInfo      = &buffer_info;
-    descriptor_writes[0].pImageInfo       = nullptr; 
-    descriptor_writes[0].pTexelBufferView = nullptr; 
+    descriptor_writes[0].pImageInfo       = nullptr;
+    descriptor_writes[0].pTexelBufferView = nullptr;
 
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].pNext            = nullptr;
     descriptor_writes[1].dstSet           = dss[i];
     descriptor_writes[1].dstBinding       = 1;
     descriptor_writes[1].dstArrayElement  = 0;
@@ -248,6 +254,9 @@ bool darkroot::InitObjPipeline (rokz::Pipeline&              pipeline,
   rokz::DefineDescriptorSetLayout (dslo, kObjDescriptorBindings, device); 
   //std::vector<VkDescriptorSetLayout> dslos (1, dslo.handle); 
   //  rokz::CreateInfo (plo.ci, dslos); //, push_constants); 
+
+  // darkroot::PushConstants; <-- darkroot shouldnt belong in here 
+  
   rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(darkroot::PushConstants), dslo.handle, device.handle);
 
   rokz::PipelineState_default (pipeline.state, msaa_samples, kVertexInputBindingAttributeDesc,

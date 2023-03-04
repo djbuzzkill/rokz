@@ -112,6 +112,24 @@ namespace rekz {
     bool               fb_resize; 
   };
 
+
+  // ---------------------------------------------------------------------------------------
+  //                   
+  // ---------------------------------------------------------------------------------------
+  struct GridData {
+    // some shit like this
+    rokz::Buffer          vb_device;
+    rokz::Buffer          ib_device;
+    rokz::DescriptorGroup descrgroup;
+    
+  };
+  
+  bool SetupGridData ();
+  void CleanupGridData ();
+
+  
+  rokz::DrawSequence::Ref CreateDrawGrid (const GridData& dat);
+
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
@@ -280,7 +298,7 @@ namespace rekz {
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  bool CreateDepthBufferImage (rokz::Image&          depth_image,
+  bool CreateDepthBufferTarget (rokz::Image&          depth_image,
                                rokz::ImageView&      depth_imageview,
                                //rokz::SwapchainGroup& scg,
                                VkSampleCountFlagBits msaa_samples, 
@@ -294,7 +312,7 @@ namespace rekz {
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  bool CreateMSAAColorImage  (rokz::Image&          color_image, 
+  bool CreateMSAAColorTarget (rokz::Image&          color_image, 
                               rokz::ImageView&      color_imageview, 
                               VkSampleCountFlagBits msaa_samples,
                               VkFormat              image_format,
@@ -327,6 +345,12 @@ namespace rekz {
   // bool InitializeInstance (rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device); 
+
+  struct UniformSet
+    {
+  virtual void Update () = 0; // stuff like update buffer contents
+  virtual void Bind   () = 0; // does vkUpdateDescriptorSets
+    }; 
 
   
 }

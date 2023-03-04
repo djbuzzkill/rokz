@@ -34,12 +34,21 @@ const std::vector<VkVertexInputAttributeDescription> rekz::kGridVertInputAttribu
   },
 };
 
+
 // ----------------------------------------------------------------------------------------
 // descriptors 
 // ----------------------------------------------------------------------------------------
 const std::vector<VkDescriptorSetLayoutBinding> rekz::kGridDescriptorBindings = {
 
-  // ?? only MVP ? 
+  // typedef struct VkDescriptorSetLayoutBinding {
+  //   uint32_t              binding;
+  //   VkDescriptorType      descriptorType;
+  //   uint32_t              descriptorCount;
+  //   VkShaderStageFlags    stageFlags;
+  //   const VkSampler*      pImmutableSamplers;
+  // } VkDescriptorSetLayoutBinding;
+
+
   {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
   
 }; 
@@ -51,7 +60,8 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
 
   printf ("%s \n", __FUNCTION__); 
 
-  
+   
+ 
   std::vector<VkPipelineShaderStageCreateInfo>& pss_create_infos = pipeline.state.ci.shader_stages; 
   std::vector<rokz::ShaderModule>&              shader_modules   = pipeline.shader_modules;
 
@@ -80,6 +90,8 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
 
 }
 
+
+
 // ----------------------------------------------------------------------------------------------
 // 
 // ----------------------------------------------------------------------------------------------
@@ -100,8 +112,7 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
 
   //
   // Pipeline Layout
-  const uint32_t no_push_constants = 0;
-  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, no_push_constants, dslo.handle, device.handle);
+  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::GridPushConstant), dslo.handle, device.handle);
 
   //
   // Pipeline States
@@ -155,33 +166,21 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
 // ----------------------------------------------------------------------------------------------
 bool rekz::BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rokz::Buffer>& global_uniforms, const rokz::Device& device) {
   printf (" %s", __FUNCTION__);
-
   // DescriptorSets should be allocated
   // global_buffers should be create + allocated
-  
   if (dss.size () != global_uniforms.size ()) {
     printf (" ERROR @line %i -->  descrriptorsets[%zu] != uniformbuffers[%zu]\n", __LINE__, dss.size (), global_uniforms.size ());
     return false; 
   }
-  
+
+  // is this rly necessary? grid may only need push constants
+  //
+  //
+  //
+  //
+
   size_t num_frames_in_flight = global_uniforms.size (); 
   //rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
- 
-  // use same layout for both allocations
-
-  // NOT DONE IN HERE ANYMORE
-  // std::vector<VkDescriptorSetLayout> descrlos (num_frames_in_flight, dslo.handle);
-  // // could have also said: 
-  // //    VkDescriptorSetLayout[]  desc_layouts = { dg.set_layout.handle, dg.diff_set_layout.handle }; 
-  // // but that wouldnt work
-  // rokz::cx::AllocateInfo (dg.alloc_info , descrlos, dg.pool);
-  
-  // if (!rokz::cx::AllocateDescriptorSets (dg.descrsets, num_frames_in_flight, dg.alloc_info, device.handle)) {
-  //   printf ("[FAILED] alloc desc sets %s\n", __FUNCTION__);
-  //   return false;
-  // }
-
-  // //
   for (uint32_t iframe = 0; iframe < num_frames_in_flight; ++iframe) {
 
     VkDescriptorBufferInfo buffer_info{};

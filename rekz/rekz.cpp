@@ -470,20 +470,19 @@ bool rekz::LoadTexture_color_sampling (rokz::Image&             image,
   return true; 
 }
 
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rekz::CreateDepthBufferImage (rokz::Image&          depth_image,
-                             rokz::ImageView&      depth_imageview,
-                             //rokz::SwapchainGroup& scg,
-                             VkSampleCountFlagBits msaa_samples, 
-                             VkFormat              depth_format,
-                             const rokz::CommandPool& command_pool,
-                             const VkQueue&        queue, 
-                             const VkExtent2D&     ext,
-                             const VmaAllocator&   allocator,
-                             const rokz::Device&   device)
+bool rekz::CreateDepthBufferTarget (rokz::Image&          depth_image,
+                                    rokz::ImageView&      depth_imageview,
+                                    //rokz::SwapchainGroup& scg,
+                                    VkSampleCountFlagBits msaa_samples, 
+                                    VkFormat              depth_format,
+                                    const rokz::CommandPool& command_pool,
+                                    const VkQueue&        queue, 
+                                    const VkExtent2D&     ext,
+                                    const VmaAllocator&   allocator,
+                                    const rokz::Device&   device)
 {
   printf ("%s\n", __FUNCTION__); 
 
@@ -517,15 +516,15 @@ bool rekz::CreateDepthBufferImage (rokz::Image&          depth_image,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rekz::CreateMSAAColorImage  (rokz::Image&          color_image, 
-                            rokz::ImageView&      color_imageview, 
-                            VkSampleCountFlagBits msaa_samples,
-                            VkFormat              image_format,
-                            const VmaAllocator&   allocator, 
-                            const rokz::CommandPool& command_pool, 
-                            const VkQueue&        queue, 
-                            const VkExtent2D&     ext,
-                            const rokz::Device&   device) {
+bool rekz::CreateMSAAColorTarget  (rokz::Image&          color_image, 
+                                  rokz::ImageView&      color_imageview, 
+                                  VkSampleCountFlagBits msaa_samples,
+                                  VkFormat              image_format,
+                                  const VmaAllocator&   allocator, 
+                                  const rokz::CommandPool& command_pool, 
+                                  const VkQueue&        queue, 
+                                  const VkExtent2D&     ext,
+                                  const rokz::Device&   device) {
 
   printf ("%s\n", __FUNCTION__); 
   rokz::cx::CreateInfo_2D_color_target (color_image.ci, image_format, msaa_samples, ext.width, ext.height);
@@ -537,9 +536,9 @@ bool rekz::CreateMSAAColorImage  (rokz::Image&          color_image,
   rokz::cx::CreateInfo (color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, color_image);
   rokz::cx::CreateImageView (color_imageview, color_imageview.ci, device.handle);
   // dynamic_rendering
-  rokz::cx::TransitionImageLayout (color_image.handle, image_format,
-                               VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                               queue, device.command_pool.handle, device.handle);
+  rokz::cx::TransitionImageLayout (color_image.handle, image_format, VK_IMAGE_LAYOUT_UNDEFINED,
+                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, queue,
+                                   device.command_pool.handle, device.handle);
   return true;
 }
 
@@ -572,7 +571,6 @@ bool test_grid_geom_gen ();
 int main (int argv, char** argc) {
 
   const std::vector<std::string> args (argc, argc + argv);
-
 
   darkroot_basin  (args);
   //mars_run  (args);

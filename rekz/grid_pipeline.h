@@ -26,8 +26,14 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
-  struct GridParam {
-    glm::mat4 modelmat;
+  struct GridPushConstant {
+
+    glm::vec4 x_color;  // 10 is reasonable
+    glm::vec4 z_color;  // 10 is reasonable
+    glm::vec4 origin_color; 
+
+    float     xstep;    // size every 'column'
+    float     zstep;    // size every 'row' 
   };
 
 

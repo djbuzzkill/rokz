@@ -352,19 +352,6 @@ namespace rokz {
   // ------------------------------------------------------------------------
   //
   // ------------------------------------------------------------------------
-  struct LayoutGroup {
-
-    LayoutGroup () : pipeline(), descriptor () {
-    }
-    // how  it looks        
-    PipelineLayout      pipeline; 
-    DescriptorSetLayout descriptor;
-  };
-  
-
-  // ------------------------------------------------------------------------
-  //
-  // ------------------------------------------------------------------------
   struct Pipeline {
     Pipeline () : handle (VK_NULL_HANDLE), ci (), state () {
     }

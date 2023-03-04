@@ -10,8 +10,6 @@
 
 namespace rokz {
 
-
-  
   // ---------------------------------------------------------------------
   // INTENT:  encapsulate a list of draw commands
   // DrawLisst renamed to DrawSequence to avoid confusion
