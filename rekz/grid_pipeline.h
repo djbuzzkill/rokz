@@ -34,6 +34,8 @@ namespace rekz {
 
     float     xstep;    // size every 'column'
     float     zstep;    // size every 'row' 
+    float     xoffset;
+    float     zoffset;
   };
 
 

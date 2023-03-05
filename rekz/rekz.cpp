@@ -1,5 +1,7 @@
 
 #include "rekz.h"              // 
+#include "rekz/grid_pipeline.h"
+#include "rokz/buffer.h"
 #include "rokz/rokz_types.h"
 
 
@@ -525,7 +527,6 @@ bool rekz::CreateMSAAColorTarget  (rokz::Image&          color_image,
                                   const VkQueue&        queue, 
                                   const VkExtent2D&     ext,
                                   const rokz::Device&   device) {
-
   printf ("%s\n", __FUNCTION__); 
   rokz::cx::CreateInfo_2D_color_target (color_image.ci, image_format, msaa_samples, ext.width, ext.height);
 
@@ -542,7 +543,57 @@ bool rekz::CreateMSAAColorTarget  (rokz::Image&          color_image,
   return true;
 }
 
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
 
+  void*  mem = nullptr;
+  size_t szmem = 0;
+
+  const uint16_t vertdim    = 11;
+  const uint16_t totalverts = vertdim * vertdim;
+  const float    dimsize    = 100.0f;
+  const float    dimstep    = float (dimsize) / float (vertdim - 1);
+    
+  const glm::vec3 voffs (-dimsize * 0.5f, 0.0f, -dimsize * 0.5f);
+
+  std::vector<rekz::GridVert> verts (vertdim * vertdim);
+  std::vector<uint16_t> inds (2 * totalverts);
+
+  // -- vertices --
+  for (uint16_t iz = 0; iz < vertdim; ++iz) {
+    for (uint16_t ix = 0; ix < vertdim; ++ix) {
+      verts[iz * vertdim + ix].pos = glm::vec3 (ix * dimstep, 0.0f, iz * dimstep) + voffs;
+      verts[iz * vertdim + ix].col = glm::vec3 (1.0f);
+    }
+  } // move 2 vb
+  rokz::Create_VB_device ( gd.vb_device, &verts[0], verts.size () * sizeof(rekz::GridVert), device); 
+
+  // -- indices --
+  for (uint16_t iz = 0; iz < vertdim; ++iz) { // draw x lines
+    for (uint16_t ix = 0; ix < vertdim; ++ix) { 
+      inds[iz * vertdim + ix] = iz * vertdim + ix;   
+    }}
+  for (uint32_t ix = 0; ix < vertdim; ++ix) {  // draw z lines
+    for (uint32_t iz = 0; iz < vertdim; ++iz) { 
+      inds[totalverts + iz * vertdim + ix] = iz * vertdim + ix; 
+    }
+  } // move
+  rokz::Create_IB_16_device (gd.ib_device, &inds[0], inds.size (), device); 
+  
+  return true; 
+}
+
+
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+void rekz::CleanupGridData (GridData& gd, const rokz::Device& device) {
+
+  rokz::Destroy (gd.vb_device, device.allocator.handle); 
+  
+}
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------

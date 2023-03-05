@@ -51,7 +51,7 @@ namespace rokz {
     // do crap before recording ("UpdateDescriptors()", etc)
     virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
-    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds) = 0;
+    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets) = 0;
 
   protected:
 

@@ -124,9 +124,8 @@ namespace rekz {
     
   };
   
-  bool SetupGridData ();
-  void CleanupGridData ();
-
+  bool SetupGridData   (GridData& gd, const rokz::Device& device);
+  void CleanupGridData (GridData& gd, const rokz::Device& device);
   
   rokz::DrawSequence::Ref CreateDrawGrid (const GridData& dat);
 

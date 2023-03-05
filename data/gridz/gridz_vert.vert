@@ -2,7 +2,6 @@
 
 
 
-
 // input 
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_col;
@@ -10,7 +9,7 @@ layout(location = 1) in vec3 in_col;
 
 
 // descriptors: uniform, sampler, texel buff
-layout(binding = 0) uniform MVPTransform {
+layout(binding = 0, set = 0) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;

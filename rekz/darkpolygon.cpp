@@ -17,7 +17,7 @@ struct PolygonDraw : public rokz::DrawSequence {
               PolygonDraw (const PolygonData& d) : polyd (d) { }
   virtual    ~PolygonDraw () { }
   virtual int Prep        (const shared_globals& , const pipeline_assembly& pa, const rokz::Device& device);
-  virtual int Exec        (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds);
+  virtual int Exec        (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds);
   
 protected:
 
@@ -62,7 +62,7 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const VkDescriptorSet& ds) {
+int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets) {
 
 
   const DarkMesh& darkmesh = DarkOctohedron ();
@@ -87,13 +87,8 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
   //VK_POLYGON_MODE_FILL = 0,
   //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
   
-  vkCmdBindDescriptorSets (command_buffer,
-                           VK_PIPELINE_BIND_POINT_GRAPHICS,
-                           pa.plo, //                           pipelinelayout.handle,
-                           0,
-                           1,
-                           &ds, //&descriptorSets[currentFrame],
-                           0, nullptr);
+  vkCmdBindDescriptorSets (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo,
+                           0, descrsets.size(), &descrsets[0], 0, nullptr);
 
   VkBuffer vertex_buffers[] = {polyd.vb_device.handle};
   VkDeviceSize offsets[] = {0};
@@ -123,7 +118,7 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
     vkCmdDrawIndexed (command_buffer, darkmesh.indices.size(), 1, 0, 0, 0);
   }
 
-  return false;
+  return 0;
 }
 
 
@@ -205,7 +200,7 @@ public:
   virtual int Prep (const shared_globals& shared, const pipeline_assembly& pa, const rokz::Device& device) {
     return 0;
   }
-  virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const VkDescriptorSet& ds) {
+  virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds) {
     return 0;
   }
 

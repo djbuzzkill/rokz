@@ -45,7 +45,7 @@ VkShaderModuleCreateInfo& rokz::CreateInfo (VkShaderModuleCreateInfo& ci, const 
 //-------------------------------------------------------------------------------------
 bool rokz::CreateShaderModule (VkShaderModule& shmod, const VkShaderModuleCreateInfo& ci, const VkDevice& device) {
 
-  printf ( "%s", __FUNCTION__); 
+  //printf ( "%s", __FUNCTION__); 
 
   if (vkCreateShaderModule(device, &ci, nullptr, &shmod) != VK_SUCCESS) {
     printf ("[%s] FAILED create shader module\n", __FUNCTION__);
@@ -60,7 +60,7 @@ bool rokz::CreateShaderModule (VkShaderModule& shmod, const VkShaderModuleCreate
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModule (ShaderModule& sm, const VkDevice& device) {
 
-  printf ( "%s", __FUNCTION__); 
+  //printf ( "%s", __FUNCTION__); 
 
   if (vkCreateShaderModule(device, &sm.ci, nullptr, &sm.handle) != VK_SUCCESS) {
     printf ("[%s]FAILED create shader module\n", __FUNCTION__);

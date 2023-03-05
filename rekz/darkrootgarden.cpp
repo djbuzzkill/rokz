@@ -242,8 +242,10 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
     glob.shared.sim_time      += dt;
     glob.shared.current_frame  = current_frame;
     glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
-  }
 
+  }    
+  
+  
 
   // 
   { // MVPTransform buffer
@@ -257,8 +259,11 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
       mvp->model = glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
       const float aspf = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
+
       mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
-        * glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0)); 
+        * glm::translate (glm::mat4(1.0), glob.shared.view_pos); 
+
+      //glm::vec3 (0.0, .5, -5.0));
       // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
       mvp->proj  = glm::perspective(glm::radians(45.0f), aspf , 1.0f, 20.0f);
       mvp->proj[1][1] *= -1;
@@ -289,19 +294,27 @@ struct DarkLoop {
 
   void UpdateInput () {
 
+    const float move_rate = 0.05f;
+
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q)) {
       printf ("--> [q] pressed... quitting \n");
       run = false;
     }
 
+    // ?? glob.shared.view_pos.y += 0.05f; ??
+
     if (glob.input_state.keys.count (GLFW_KEY_F)) {
+      glob.shared.view_pos.z -= move_rate;
     }    
     if (glob.input_state.keys.count (GLFW_KEY_V)) {
+      glob.shared.view_pos.z += move_rate;
     }    
     if (glob.input_state.keys.count (GLFW_KEY_D)) {
+      glob.shared.view_pos.x -= move_rate;
     }    
     if (glob.input_state.keys.count (GLFW_KEY_G)) {
+      glob.shared.view_pos.x += move_rate;
     }    
 
 
@@ -354,7 +367,6 @@ struct DarkLoop {
       run = false;
     }
     else {
-
       rokz::DrawSequence::PipelineAssembly pa {
         glob.polys_pl, glob.polys_plo.handle, glob.polyd.descrgroup.descrsets[curr_frame] }; 
 
@@ -371,11 +383,13 @@ struct DarkLoop {
       // BeginCommandBuffer is called here
       rokz::cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
                                 image_index, glob.rendering_info_group.ri, glob.device);
-
       // EXECUTE DRAW LIST RECORDING 
 
       // for drawseq's
-      glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, glob.polyd.descrgroup.descrsets[curr_frame]);
+      std::vector<VkDescriptorSet> descrsets (1, glob.polyd.descrgroup.descrsets[curr_frame]);
+      
+      glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, descrsets);
+//glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], pa, glob.polyd.descrgroup.descrsets[curr_frame]);
       //glob.drawgrid->Exec
       // thats all we are doing for now
       
@@ -457,9 +471,21 @@ int darkroot_basin (const std::vector<std::string>& args) {
   if (!InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_dslo, dark_path,
                         glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
                         scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) {
+    printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
 
+
+  if (!rekz::InitGridPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_dslo, dark_path,
+                               glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
+                               scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) { 
+
+    printf ("[FAILED] --> InitGridPipeline \n"); 
+    return false; 
+  }
+                               
+                               
+  
 
   SetupRenderingAttachments (glob); // <-- this does all the additional  attachmentes
 
@@ -474,6 +500,11 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // SetupObjectTextureAndSampler
   //SetupObjResources (glob); <--- replaced by SetupPolygonData
   SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_root, glob.device); 
+
+  // if (! rekz::SetupGridData (glob.gridata, glob.device)) {
+  //   printf ("[FAILED] --> SetupGridData \n");
+  //   return false; 
+  // }
 
   // FACT: the global uniforms are separate from the polygon uniforms
   SetupObjectUniforms (glob.vma_shared_uniforms, glob.polyd.vma_poly_uniforms, kMaxFramesInFlight, glob.device);
