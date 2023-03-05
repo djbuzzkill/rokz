@@ -4,10 +4,11 @@
 
 #include "darkrootgarden.h"
 
-namespace darkroot {
+namespace rekz {
 
 
   constexpr size_t kMaxObjectCount = 128;
+  typedef rekz::Vertex_pos_nrm_txc_col PolyObjVert;
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------

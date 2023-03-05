@@ -6,7 +6,7 @@
 #include <vulkan/vulkan_core.h>
 
 
-using namespace darkroot;
+using namespace rekz;
 // should rename darkpolygon.cpp --> darwpolugon.cpp
 // -------------------------------------------------------------------------
 // a DrawSequence should not directly own data but only represent
@@ -14,21 +14,21 @@ using namespace darkroot;
 // -------------------------------------------------------------------------
 struct PolygonDraw : public rokz::DrawSequence {
 
-              PolygonDraw (const PolygonData& d) : polyd (d) { }
+  PolygonDraw (const darkroot::PolygonData& d) : polyd (d) { }
   virtual    ~PolygonDraw () { }
   virtual int Prep        (const shared_globals& , const pipeline_assembly& pa, const rokz::Device& device);
   virtual int Exec        (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds);
   
 protected:
 
-  const PolygonData& polyd;
+  const darkroot::PolygonData& polyd;
   
 }; // PolygonDraw
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const PolygonData& d)
+rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const darkroot::PolygonData& d)
 {
   return std::make_shared<PolygonDraw> (d);
 }
@@ -38,20 +38,18 @@ rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const PolygonData& d)
 // ------------------------------------------------------------------------------------------------
 int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) {
 
+  // update uniform buffer 
   // SceneObjParam
   if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (polyd.vma_poly_uniforms[globals.current_frame]))) {
-  
     glm::vec3 va, vb;
-    unit_angle_xz (va, 5.0 * globals.sim_time ); 
-    unit_angle_xz (vb, 5.0 * globals.sim_time + kPi); 
+    darkroot::unit_angle_xz (va, 5.0 * globals.sim_time ); 
+    darkroot::unit_angle_xz (vb, 5.0 * globals.sim_time + darkroot::kPi); 
 
     glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));
-
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
     obj[1].modelmat = glm::rotate(model1, globals.sim_time * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    
   }
   
   return 0;
@@ -65,7 +63,7 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
 int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets) {
 
 
-  const DarkMesh& darkmesh = DarkOctohedron ();
+  const darkroot::DarkMesh& darkmesh = darkroot::DarkOctohedron ();
   // ext2D  used to come from -> swapchain.ci.imageExtent
   //    VkViewport viewport{};
   //    viewport.x = 0.0f;
@@ -191,7 +189,7 @@ struct DrawPolyWireframe : public rokz::DrawSequence
 
 public:
   
-  DrawPolyWireframe  (const PolygonData& d) : polyd (d) {
+  DrawPolyWireframe  (const darkroot::PolygonData& d) : polyd (d) {
   }
 
   virtual ~DrawPolyWireframe () {
@@ -206,7 +204,7 @@ public:
 
 protected:
 
-  const PolygonData&          polyd;
+  const darkroot::PolygonData& polyd;
   
 }; 
 

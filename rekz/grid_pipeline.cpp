@@ -39,18 +39,14 @@ const std::vector<VkVertexInputAttributeDescription> rekz::kGridVertInputAttribu
 // descriptors 
 // ----------------------------------------------------------------------------------------
 const std::vector<VkDescriptorSetLayoutBinding> rekz::kGridDescriptorBindings = {
-
-  // typedef struct VkDescriptorSetLayoutBinding {
-  //   uint32_t              binding;
-  //   VkDescriptorType      descriptorType;
-  //   uint32_t              descriptorCount;
-  //   VkShaderStageFlags    stageFlags;
-  //   const VkSampler*      pImmutableSamplers;
-  // } VkDescriptorSetLayoutBinding;
-
-
+  // struct VkDescriptorSetLayoutBinding {
+  //   binding:uint32_t,
+  //   descriptorType:VkDescriptorType,      
+  //   descriptorCount:uint32_t,
+  //   stageFlags:VkShaderStageFlags, 
+  //   pImmutableSamplers:const VkSampler*, 
+  // }; 
   {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
-  
 }; 
 
 // ----------------------------------------------------------------------------------------
@@ -60,8 +56,6 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
 
   printf ("%s \n", __FUNCTION__); 
 
-   
- 
   std::vector<VkPipelineShaderStageCreateInfo>& pss_create_infos = pipeline.state.ci.shader_stages; 
   std::vector<rokz::ShaderModule>&              shader_modules   = pipeline.shader_modules;
 
@@ -122,7 +116,7 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
   // pipeline.state.ci.rasterizer.polygonMode = VK_POLYGON_MODE_LINE
 
   //
-  pipeline.state.ci.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+  pipeline.state.ci.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
   // pipeline.state.ci.input_assembly.primitiveRestartEnable = ????; 
   
   //
@@ -165,49 +159,50 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
 // 
 // ----------------------------------------------------------------------------------------------
 bool rekz::BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rokz::Buffer>& global_uniforms, const rokz::Device& device) {
-  printf (" %s", __FUNCTION__);
+
+  printf (" FYI:%s does nothtng. ", __FUNCTION__);
   // DescriptorSets should be allocated
   // global_buffers should be create + allocated
-  if (dss.size () != global_uniforms.size ()) {
-    printf (" ERROR @line %i -->  descrriptorsets[%zu] != uniformbuffers[%zu]\n", __LINE__, dss.size (), global_uniforms.size ());
-    return false; 
-  }
 
-  // is this rly necessary? grid may only need push constants
-  //
-  //
-  //
-  //
+  // if (dss.size () != global_uniforms.size ()) {
+  //   printf (" ERROR @line %i -->  descrriptorsets[%zu] != uniformbuffers[%zu]\n", __LINE__, dss.size (), global_uniforms.size ());
+  //   return false; 
+  // }
 
-  size_t num_frames_in_flight = global_uniforms.size (); 
-  //rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
-  for (uint32_t iframe = 0; iframe < num_frames_in_flight; ++iframe) {
+  // // is this rly necessary? grid may only need push constants
+  // //
+  // //
+  // //
+  // //
 
-    VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer     = global_uniforms[iframe].handle;
-    buffer_info.offset     = 0;
-    buffer_info.range      = global_uniforms[iframe].ci.size ;
+  // size_t num_frames_in_flight = global_uniforms.size (); 
+  // //rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
+  // for (uint32_t iframe = 0; iframe < num_frames_in_flight; ++iframe) {
+
+  //   VkDescriptorBufferInfo buffer_info{};
+  //   buffer_info.buffer     = global_uniforms[iframe].handle;
+  //   buffer_info.offset     = 0;
+  //   buffer_info.range      = global_uniforms[iframe].ci.size ;
     
-    // only MVP 
-    std::array<VkWriteDescriptorSet, 1>  descriptor_writes {};
-    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].pNext            = nullptr;    
-    descriptor_writes[0].dstSet           = dss[iframe];
-    descriptor_writes[0].dstBinding       = 0;
-    descriptor_writes[0].dstArrayElement  = 0;
-    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = 1;
-    descriptor_writes[0].pBufferInfo      = &buffer_info;
-    descriptor_writes[0].pImageInfo       = nullptr; 
-    descriptor_writes[0].pTexelBufferView = nullptr; 
+  //   // only MVP 
+  //   std::array<VkWriteDescriptorSet, 1>  descriptor_writes {};
+  //   descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  //   descriptor_writes[0].pNext            = nullptr;    
+  //   descriptor_writes[0].dstSet           = dss[iframe];
+  //   descriptor_writes[0].dstBinding       = 0;
+  //   descriptor_writes[0].dstArrayElement  = 0;
+  //   descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  //   descriptor_writes[0].descriptorCount  = 1;
+  //   descriptor_writes[0].pBufferInfo      = &buffer_info;
+  //   descriptor_writes[0].pImageInfo       = nullptr; 
+  //   descriptor_writes[0].pTexelBufferView = nullptr; 
 
-    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-  }
+  //   vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+  // }
 
 
   printf (" bai\n");
-  return false; 
-  
+  return true; 
 }
 
   

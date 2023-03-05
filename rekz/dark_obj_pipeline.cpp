@@ -14,7 +14,7 @@ const size_t max_frames_in_flight  = darkroot::Glob::MaxFramesInFlight;
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-namespace darkroot { 
+namespace rekz { 
 
   //   typedef struct VkDescriptorSetLayoutBinding {
   //     uint32_t              binding;
@@ -24,9 +24,9 @@ namespace darkroot {
   //     const VkSampler*      pImmutableSamplers;
   // } VkDescriptorSetLayoutBinding;
   const std::vector<VkDescriptorSetLayoutBinding> kObjDescriptorBindings = {
-    { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,           1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr },
-    { 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         128, VK_SHADER_STAGE_VERTEX_BIT  , nullptr },
-    { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,   1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, 
+    { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,           1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- this is the global MVP, get this out
+    { 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         128, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+    { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,   1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
   };
 
   // --------------------------------------------------------------------
@@ -34,7 +34,7 @@ namespace darkroot {
   // --------------------------------------------------------------------
   const VkVertexInputBindingDescription kVertexInputBindingDesc =  {
     0,                            // binding    
-    sizeof (DarkVert),       // stride      
+    sizeof (PolyObjVert),       // stride      
     VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
   }; 
 
@@ -47,27 +47,27 @@ namespace darkroot {
       0,                             // .location 
       0,                             // .binding  
       VK_FORMAT_R32G32B32_SFLOAT,    // .format   
-      offsetof(DarkVert, pos),  // .offset   
+      offsetof(PolyObjVert, pos),  // .offset   
     },
 
     VkVertexInputAttributeDescription { // color
       1,                              
       0, 
       VK_FORMAT_R32G32B32_SFLOAT,
-      offsetof(DarkVert, nrm), 
+      offsetof(PolyObjVert, nrm), 
     },
 
     VkVertexInputAttributeDescription { // color
       2,                              
       0, 
       VK_FORMAT_R32G32B32_SFLOAT,
-      offsetof(DarkVert, col), 
+      offsetof(PolyObjVert, col), 
     },
     VkVertexInputAttributeDescription { // tex coord
       3,                             
       0, 
       VK_FORMAT_R32G32_SFLOAT,
-      offsetof(DarkVert, txc0), 
+      offsetof(PolyObjVert, txc0), 
     }
 
   }; 
@@ -114,7 +114,7 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
-bool darkroot::SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vector<rokz::Buffer>& objparams,
+bool rekz::SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vector<rokz::Buffer>& objparams,
                             uint32_t num_sets, const rokz::Device& device) {
  printf ("%s", __FUNCTION__);
 
@@ -140,7 +140,7 @@ bool darkroot::SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, st
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
-bool darkroot::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
+bool rekz::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
                                const std::vector<rokz::Buffer>& vma_uniform_buffs,
                                const std::vector<rokz::Buffer>& vma_objparam_buffs,
 
@@ -240,7 +240,7 @@ bool darkroot::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
 // ----------------------------------------------------------------------------------------
 // init proto more orthogonal version (new SetupObjectPipeline)
 // ----------------------------------------------------------------------------------------
-bool darkroot::InitObjPipeline (rokz::Pipeline&              pipeline,
+bool rekz::InitObjPipeline (rokz::Pipeline&              pipeline,
                                 rokz::PipelineLayout&        plo,
                                 rokz::DescriptorSetLayout&   dslo,
                                 //0

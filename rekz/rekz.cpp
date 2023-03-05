@@ -553,7 +553,7 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
 
   const uint16_t vertdim    = 11;
   const uint16_t totalverts = vertdim * vertdim;
-  const float    dimsize    = 100.0f;
+  const float    dimsize    = 20.0f;
   const float    dimstep    = float (dimsize) / float (vertdim - 1);
     
   const glm::vec3 voffs (-dimsize * 0.5f, 0.0f, -dimsize * 0.5f);

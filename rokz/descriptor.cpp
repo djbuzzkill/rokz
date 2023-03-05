@@ -220,7 +220,7 @@ bool rokz::MakeDescriptorPool (rokz::DescriptorPool& dp, uint32_t mul,
 bool rokz::MakeDescriptorSets (std::vector<VkDescriptorSet>& dss, VkDescriptorSetAllocateInfo& alloc_info,
                          uint32_t num_sets, VkDescriptorSetLayout dslo, const rokz::DescriptorPool& pool, rokz::Device& device) {
   //
-  printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+  printf ("[%i] %s\n", __LINE__, __FUNCTION__);
   //  SetupObjectDescriptorSets does too many things. it:
   //  - initializes DescriptorGroup::vector<vkDescriptorSets>
   //  - allocates from descriptor pool, but relies on externally initialized DescriptorPool

@@ -37,16 +37,21 @@ int DrawGrid::Prep (const shared_globals& globals, const pipeline_assembly& pa, 
 int DrawGrid::Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets)  {
 
   rekz::GridPushConstant push_consts = {};
-  //const DarkMesh& darkmesh = DarkOctohedron ();
+
+  push_consts.z_color      = glm::vec4 (1.0);
+  push_consts.x_color      = glm::vec4 (0.5, 0.0, 0.8, 1.0);
+  push_consts.origin_color = glm::vec4 (1.0);
+  push_consts.xstep        = 1.0f;
+  push_consts.zstep        = 1.0f;
+  push_consts.xoffset      = 0.0f;  
+  push_consts.zoffset      = 0.0f;  
+  
   vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.pipeline.handle);
 
   vkCmdSetViewport  (comb, 0, 1, &pa.pipeline.state.viewport.vps[0].viewport);
 
   vkCmdSetScissor   (comb, 0, 1, &pa.pipeline.state.viewport.vps[0].scissor);
 
-  //VK_POLYGON_MODE_FILL = 0,
-  //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
-  
   vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo, //                           pipelinelayout.handle,
                            0, descrsets.size(), &descrsets[0], 0, nullptr);
 
