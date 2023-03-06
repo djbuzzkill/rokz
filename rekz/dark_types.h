@@ -19,40 +19,6 @@ namespace darkroot {
   // --------------------------------------------------------------------
   typedef rekz::TriMesh<DarkVert>  DarkMesh;
 
-
-  // ---------------------------------------------------------------------------------------
-  // PolygonData polyd resources the polygon pipeline will use
-  // ---------------------------------------------------------------------------------------
-  // struct PolygonData { 
-
-  //   rokz::Buffer          vb_device;
-  //   rokz::Buffer          ib_device;
-  //   // rokz::DescriptorGroup descrgroup;
-  //   // image/texture
-  //   rokz::Image           texture;   // color texture
-  //   rokz::ImageView       imageview; // 
-  //   rokz::Sampler         sampler;   // 
-
-  //   float                 obj_theta[2];     // scene objects 
-  //   rekz::Polarf          objatt;
-  //   glm::vec3             objpos;
-
-  //   // pipeline resources
-  //   //std::vector<rokz::Buffer>    poly_uniforms;
-
-  // } ;
-
-  // // ?? a pipeline is tied to a drawlist.. no.
-  // // ?? a drawlist is tied to data..       ??
-  // // ?? a data is tied to a drawlist..     no
-  // // ?? a drawlist is tied to a pipeline.. ??
-  // rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres); 
-  // rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
-
-
-  // std::shared_ptr<DrawSequence> CreatePolygonTextured 
-  // std::shared_ptr<DrawSequence> CreateGridDraw 
-
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------

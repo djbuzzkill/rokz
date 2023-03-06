@@ -22,6 +22,7 @@ set (REKZ_SOURCE_FILES
   darkrootgarden.cpp
   dark_obj_pipeline.cpp
   darkthings.cpp
+  platonic.cpp
   drawpolygon.cpp
   darkpolydata.cpp
 

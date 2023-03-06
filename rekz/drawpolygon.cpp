@@ -72,7 +72,7 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
 int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets) {
 
 
-  const darkroot::DarkMesh& darkmesh = darkroot::DarkOctohedron ();
+  const rekz::PolyMesh& darkmesh = rekz::platonic::Octohedron ();
   // ext2D  used to come from -> swapchain.ci.imageExtent
   //    VkViewport viewport{};
   //    viewport.x = 0.0f;

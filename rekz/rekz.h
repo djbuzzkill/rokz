@@ -133,12 +133,15 @@ namespace rekz {
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  typedef rekz::Vertex_pos_nrm_txc_col DarkVert;
+  typedef rekz::Vertex_pos_nrm_txc_col PolyVert;
 
   // --------------------------------------------------------------------
-  typedef rekz::TriMesh<DarkVert>  DarkMesh;
+  typedef rekz::TriMesh<PolyVert>  PolyMesh;
 
-
+  // --------------------------------------------------------------------
+  namespace platonic {
+    const PolyMesh& Octohedron ();
+  }
   // ---------------------------------------------------------------------------------------
   // PolygonData polyd resources the polygon pipeline will use
   // ---------------------------------------------------------------------------------------

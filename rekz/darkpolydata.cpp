@@ -85,7 +85,7 @@ bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root
   // used in here:
   // SetupObjectUniforms;
   // SetupObjectTextureAndSampler;
-  const DarkMesh& darkmesh = darkroot::DarkOctohedron (); 
+  const rekz::PolyMesh& darkmesh = rekz::platonic::Octohedron (); 
 
   // vertex buffer
   rokz::Create_VB_device (polyd.vb_device,  &darkmesh.verts[0], DarkMesh::VertexSize * darkmesh.verts.size(), device) ;

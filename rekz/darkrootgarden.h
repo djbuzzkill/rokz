@@ -10,7 +10,6 @@ namespace darkroot {
   const float kPi = glm::pi<float> ();  
   const float k2Pi = 2 * glm::pi<float> ();  
 
-  const DarkMesh& DarkOctohedron (); 
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
