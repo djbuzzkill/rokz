@@ -38,16 +38,16 @@ const std::vector<VkVertexInputAttributeDescription> rekz::kGridVertInputAttribu
 // ----------------------------------------------------------------------------------------
 // descriptors 
 // ----------------------------------------------------------------------------------------
-const std::vector<VkDescriptorSetLayoutBinding> rekz::kGridDescriptorBindings = {
-  // struct VkDescriptorSetLayoutBinding {
-  //   binding:uint32_t,
-  //   descriptorType:VkDescriptorType,      
-  //   descriptorCount:uint32_t,
-  //   stageFlags:VkShaderStageFlags, 
-  //   pImmutableSamplers:const VkSampler*, 
-  // }; 
-  {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
-}; 
+// const std::vector<VkDescriptorSetLayoutBinding> rekz::kGridDescriptorBindings = {
+//   // struct VkDescriptorSetLayoutBinding {
+//   //   binding:uint32_t,
+//   //   descriptorType:VkDescriptorType,      
+//   //   descriptorCount:uint32_t,
+//   //   stageFlags:VkShaderStageFlags, 
+//   //   pImmutableSamplers:const VkSampler*, 
+//   // }; 
+//   {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+// }; 
 
 // ----------------------------------------------------------------------------------------
 //
@@ -92,8 +92,8 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
 
 bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
                              rokz::PipelineLayout&        plo,
-                             rokz::DescriptorSetLayout&   dslo,
                              //0
+                             const std::vector<VkDescriptorSetLayout>&   dslos,
                              const std::filesystem::path& fspath,
                              const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
                              VkSampleCountFlagBits        msaa_samples,
@@ -102,11 +102,11 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
                              const rokz::Device&          device) {
   //
   // Descriptor Set
-  rokz::DefineDescriptorSetLayout (dslo,  kGridDescriptorBindings, device);
+  //rokz::DefineDescriptorSetLayout (dslo,  kGridDescriptorBindings, device);
 
   //
   // Pipeline Layout
-  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::GridPushConstant), dslo.handle, device.handle);
+  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::GridPushConstant), dslos, device.handle);
 
   //
   // Pipeline States

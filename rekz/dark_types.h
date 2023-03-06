@@ -19,44 +19,35 @@ namespace darkroot {
   // --------------------------------------------------------------------
   typedef rekz::TriMesh<DarkVert>  DarkMesh;
 
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  struct PushConstants {
-
-    glm::ivec4 drawIDs; 
-    // x: object index
-    // y: unused
-    // z: unused
-    // w: unused
-  }; 
 
   // ---------------------------------------------------------------------------------------
   // PolygonData polyd resources the polygon pipeline will use
   // ---------------------------------------------------------------------------------------
-  struct PolygonData { 
+  // struct PolygonData { 
 
-    rokz::Buffer          vb_device;
-    rokz::Buffer          ib_device;
-    rokz::DescriptorGroup descrgroup;
-    // image/texture
-    rokz::Image           texture;   // color texture
-    rokz::ImageView       imageview; // 
-    rokz::Sampler         sampler;   // 
+  //   rokz::Buffer          vb_device;
+  //   rokz::Buffer          ib_device;
+  //   // rokz::DescriptorGroup descrgroup;
+  //   // image/texture
+  //   rokz::Image           texture;   // color texture
+  //   rokz::ImageView       imageview; // 
+  //   rokz::Sampler         sampler;   // 
 
-    float obj_theta[2];     // scene objects 
+  //   float                 obj_theta[2];     // scene objects 
+  //   rekz::Polarf          objatt;
+  //   glm::vec3             objpos;
 
-    // pipeline resources
-    std::vector<rokz::Buffer>    vma_poly_uniforms;
+  //   // pipeline resources
+  //   //std::vector<rokz::Buffer>    poly_uniforms;
 
-  } ;
+  // } ;
 
-  // ?? a pipeline is tied to a drawlist.. no.
-  // ?? a drawlist is tied to data..       ??
-  // ?? a data is tied to a drawlist..     no
-  // ?? a drawlist is tied to a pipeline.. ??
-  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d); 
-  rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
+  // // ?? a pipeline is tied to a drawlist.. no.
+  // // ?? a drawlist is tied to data..       ??
+  // // ?? a data is tied to a drawlist..     no
+  // // ?? a drawlist is tied to a pipeline.. ??
+  // rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres); 
+  // rokz::DrawSequence::Ref CreatePolygonWireframe (const darkroot::PolygonData& d); 
 
 
   // std::shared_ptr<DrawSequence> CreatePolygonTextured 
@@ -98,31 +89,40 @@ namespace darkroot {
     // DYNAMIC RENDERING, no use renderpass
     rokz::RenderingInfoGroup      rendering_info_group;
     rokz::DrawSequence::Globals   shared;                  //DrawSequence::shared_globals
-
     // struct Display
-    
     rokz::Display                 display;
-
     // device props
     VkFormat                      depth_format;
     VkSampleCountFlagBits         msaa_samples;            // = VK_SAMPLE_COUNT_1_BIT;
 
     // 
-    rokz::Pipeline                polys_pl  ;
-    rokz::PipelineLayout          polys_plo ;
-    rokz::DescriptorSetLayout     polys_dslo;
-    PolygonData                   polyd;
+    rokz::Pipeline               polys_pl  ;
+    rokz::PipelineLayout         polys_plo ;
+    //rokz::DescriptorSetLayout    polys_dslo; <-- dslo's r separate  from pipelines 
+    rekz::PolygonData                  polyd;
     rokz::DrawSequence::Ref      drawpoly;
     // 
+    rokz::Pipeline               grid_pl  ;
+    rokz::PipelineLayout         grid_plo ;
+    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate  from pipelines 
+    rokz::DrawSequence::Ref      drawgrid;
+    rekz::GridData               gridata;
 
-    rokz::Pipeline                grid_pl  ;
-    rokz::PipelineLayout          grid_plo ;
-    rokz::DescriptorSetLayout     grid_dslo;
-    rokz::DrawSequence::Ref       drawgrid;
-    rekz::GridData                gridata;
+    rokz::DescriptorSetLayout    global_dslo; 
+    rokz::DescriptorSetLayout    objres_dslo;
 
-    rokz::ResetSwapchainCB::Ref swapchain_reset_cb;
-    std::vector<rokz::Buffer>   vma_shared_uniforms;
+    rokz::ResetSwapchainCB::Ref  swapchain_reset_cb;
+
+
+    std::vector<rokz::Buffer>    global_uniform_bu; // vma_shared_uniforms;
+    rokz::DescriptorGroup        global_uniform_de;
+
+    // pipeline resources
+    std::vector<rokz::Buffer>    objres_uniform_bu;
+    rokz::DescriptorGroup        objres_uniform_de;
+    
+
+
 
     // attachement set
     rokz::Image                  depth_image;

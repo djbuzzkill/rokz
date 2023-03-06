@@ -24,7 +24,7 @@ namespace rokz {
     struct pipeline_assembly  {
       rokz::Pipeline&       pipeline;
       VkPipelineLayout      plo;
-      VkDescriptorSet       descrset;
+      //const std::vector<VkDescriptorSet>& descrset;
     }; 
     typedef pipeline_assembly PipelineAssembly; 
     // --------------------------------------------------------------------

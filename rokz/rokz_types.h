@@ -363,6 +363,9 @@ namespace rokz {
     PipelineState                    state;
     std::vector<rokz::ShaderModule>  shader_modules; 
 
+    // 
+    std::vector<VkDescriptorSetLayout> dslos;
+    
     // EXTENSIONS
     struct { 
       struct {

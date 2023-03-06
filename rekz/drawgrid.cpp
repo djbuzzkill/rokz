@@ -38,9 +38,9 @@ int DrawGrid::Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std
 
   rekz::GridPushConstant push_consts = {};
 
-  push_consts.z_color      = glm::vec4 (1.0);
-  push_consts.x_color      = glm::vec4 (0.5, 0.0, 0.8, 1.0);
-  push_consts.origin_color = glm::vec4 (1.0);
+  push_consts.z_color      = glm::vec4 (0.4, 0.7, 0.2, 1.0); 
+  push_consts.x_color      = glm::vec4 (0.2, 0.3, 0.9, 1.0);
+  push_consts.origin_color = glm::vec4 (0.2, 0.2, 0.2, 1.0);
   push_consts.xstep        = 1.0f;
   push_consts.zstep        = 1.0f;
   push_consts.xoffset      = 0.0f;  
@@ -52,8 +52,8 @@ int DrawGrid::Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std
 
   vkCmdSetScissor   (comb, 0, 1, &pa.pipeline.state.viewport.vps[0].scissor);
 
-  vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo, //                           pipelinelayout.handle,
-                           0, descrsets.size(), &descrsets[0], 0, nullptr);
+  const uint32_t descr_set_count = 1; // b/c grid only needs Globals
+  vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo, 0, descr_set_count, &descrsets[0], 0, nullptr);
 
   VkBuffer     vertex_buffers[] = {data.vb_device.handle};
   VkDeviceSize offsets[]        = {0};

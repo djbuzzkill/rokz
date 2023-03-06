@@ -10,7 +10,7 @@
 //
 // --------------------------------------------------------------------
 
-const size_t max_frames_in_flight  = darkroot::Glob::MaxFramesInFlight; 
+//const size_t max_frames_in_flight  = rekz::Glob::MaxFramesInFlight; 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -115,39 +115,52 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
 //                                    
 // ----------------------------------------------------------------------------------------------
 bool rekz::SetupObjectUniforms (std::vector<rokz::Buffer>& uniform_buffs, std::vector<rokz::Buffer>& objparams,
-                            uint32_t num_sets, const rokz::Device& device) {
+                                uint32_t num_sets, const rokz::Device& device) {
  printf ("%s", __FUNCTION__);
 
-  //  VkPhysicalDevice const&  physdev = glob.physical_device.handle;
+ // does this belong in pipeline?  
+ uniform_buffs.resize (num_sets);
 
-  // does this belong in pipeline?  
-  // 
-  uniform_buffs.resize (num_sets);
-  objparams.resize     (num_sets);
+ 
+ //
+ objparams.resize (num_sets);
+ for (size_t i = 0; i < num_sets; i++) {
+   // TODO: do this somewhere else, this isnt truly global, since poly_pipeline creates it
+   CreateUniformBuffer (uniform_buffs[i], sizeof(rokz::MVPTransform), 1, device);
 
-  for (size_t i = 0; i < num_sets; i++) {
+   CreateUniformBuffer (objparams[i], sizeof(PolygonParam), kMaxObjectCount, device);
+ }
 
-    // TODO: do this somewhere else, this isnt truly global, since poly_pipeline creates it
-    CreateUniformBuffer (uniform_buffs[i], sizeof(rokz::MVPTransform), 1, device);
-
-    CreateUniformBuffer (objparams[i], sizeof(PolygonParam), kMaxObjectCount, device);
-  }
-
-  printf (" --> [true] \n"); 
-  return true; 
+ printf (" --> [true] \n"); 
+ return true; 
 }
 
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
-bool rekz::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
-                               const std::vector<rokz::Buffer>& vma_uniform_buffs,
-                               const std::vector<rokz::Buffer>& vma_objparam_buffs,
+bool rekz::SetupObjectUniforms (std::vector<rokz::Buffer>& objparams, uint32_t num_sets, const rokz::Device& device) {
+ printf ("%s", __FUNCTION__);
+ //
+ objparams.resize (num_sets);
+ for (size_t i = 0; i < num_sets; i++) {
 
-                               const rokz::ImageView&           texture_imageview, 
-                               const rokz::Sampler&             sampler, 
-                               const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-                               const rokz::Device&              device) {
+   CreateUniformBuffer (objparams[i], sizeof(PolygonParam), kMaxObjectCount, device);
+ }
+
+ printf (" --> [true] \n"); 
+ return true; 
+}
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
+                                     const std::vector<rokz::Buffer>& vma_uniform_buffs,
+                                     const std::vector<rokz::Buffer>& vma_objparam_buffs,
+
+                                     const rokz::ImageView&           texture_imageview, 
+                                     const rokz::Sampler&             sampler, 
+                                     const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                                     const rokz::Device&              device) {
 
   //  SetupObjectDescriptorSets does too many things. it:
   //  - initializes DescriptorGroup::vector<vkDescriptorSets>
@@ -185,8 +198,8 @@ bool rekz::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
 
     for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
       objparams[iobj].buffer   = vma_objparam_buffs[i].handle; //
-      objparams[iobj].offset   = iobj * sizeof(PolygonParam);         // min_uniform_buffer_offset_alignment ??
-      objparams[iobj].range    = sizeof(PolygonParam) ;            //glob.vma_objparam_buffs[i].ci.size;
+      objparams[iobj].offset   = iobj * sizeof(PolygonParam);  // min_uniform_buffer_offset_alignment ??
+      objparams[iobj].range    = sizeof(PolygonParam) ;        //glob.vma_objparam_buffs[i].ci.size;
     }
     
     //buffer_info.range      = glob.uniform_buffers[i].create_info.size ;
@@ -237,27 +250,95 @@ bool rekz::BindObjectDescriptorSets (std::vector<VkDescriptorSet>&    dss ,
 
 }
 
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz::BindObjectDescriptorResources (std::vector<VkDescriptorSet>&    dss ,
+                                     const std::vector<rokz::Buffer>& objparam_buffs,
+                                     const rokz::ImageView&           texture_imageview, 
+                                     const rokz::Sampler&             sampler, 
+                                     const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                                     const rokz::Device&              device) {
+
+  //  SetupObjectDescriptorSets does too many things. it:
+  //  - initializes DescriptorGroup::vector<vkDescriptorSets>
+  //  - allocates from descriptor pool, but relies on externally initialized DescriptorPool
+  //  - binds resources to the descriptors vkUpdaateDescriptorSets
+   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+
+   assert (dss.size () == objparam_buffs.size ());
+
+
+  //
+  for (uint32_t i = 0; i < dss.size (); i++) {
+
+    std::vector<VkDescriptorBufferInfo> objparams (kMaxObjectCount, VkDescriptorBufferInfo {});
+
+    for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
+      objparams[iobj].buffer   = objparam_buffs[i].handle;    //
+      objparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
+      objparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
+    }
+    
+    // vector<VkDescriptorImageInfo> imageinfos; 
+    VkDescriptorImageInfo image_info {};
+    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+    image_info.imageView   = texture_imageview.handle;
+    image_info.sampler     = sampler.handle;
+
+    //
+    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+
+    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].pNext            = nullptr;
+    descriptor_writes[0].dstSet           = dss[i];
+    descriptor_writes[0].dstBinding       = 0;       // does it match in shader? 
+    descriptor_writes[0].dstArrayElement  = 0;
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = objparams.size(); // <
+    descriptor_writes[0].pBufferInfo      = &objparams[0]; 
+    descriptor_writes[0].pImageInfo       = nullptr; 
+    descriptor_writes[0].pTexelBufferView = nullptr; 
+                      
+    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].dstSet           = dss[i];
+    descriptor_writes[1].dstBinding       = 1;      // <-- change shader too
+    descriptor_writes[1].dstArrayElement  = 0;
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[1].descriptorCount  = 1; // kMaxObjectCount <--- soon
+    descriptor_writes[1].pBufferInfo      = nullptr;
+    descriptor_writes[1].pImageInfo       = &image_info; 
+    descriptor_writes[1].pTexelBufferView = nullptr; 
+
+    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  }
+
+  return true;
+
+}
+
 // ----------------------------------------------------------------------------------------
 // init proto more orthogonal version (new SetupObjectPipeline)
 // ----------------------------------------------------------------------------------------
-bool rekz::InitObjPipeline (rokz::Pipeline&              pipeline,
-                                rokz::PipelineLayout&        plo,
-                                rokz::DescriptorSetLayout&   dslo,
-                                //0
-                                const std::filesystem::path& fspath,
-                                const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
-                                VkSampleCountFlagBits        msaa_samples,
-                                VkFormat                     color_format,
-                                VkFormat                     depth_format,
-                                const rokz::Device&          device) {
+bool rekz::InitObjPipeline (rokz::Pipeline&                           pipeline,
+                            rokz::PipelineLayout&                     plo,
+                            const std::vector<VkDescriptorSetLayout>& dslos,
+                            //0
+                            const std::filesystem::path&              fspath,
+                            const VkExtent2D&                         viewport_extent, //const rokz::Swapchain& swapchain,
+                            VkSampleCountFlagBits                     msaa_samples,
+                            VkFormat                                  color_format,
+                            VkFormat                                  depth_format,
+                            const rokz::Device&                       device) {
 
-  rokz::DefineDescriptorSetLayout (dslo, kObjDescriptorBindings, device); 
   //std::vector<VkDescriptorSetLayout> dslos (1, dslo.handle); 
   //  rokz::CreateInfo (plo.ci, dslos); //, push_constants); 
 
   // darkroot::PushConstants; <-- darkroot shouldnt belong in here 
   
-  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(darkroot::PushConstants), dslo.handle, device.handle);
+  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::PushConstants), dslos, device.handle);
 
   rokz::PipelineState_default (pipeline.state, msaa_samples, kVertexInputBindingAttributeDesc,
                                kVertexInputBindingDesc, viewport_extent); 

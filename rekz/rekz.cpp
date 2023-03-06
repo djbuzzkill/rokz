@@ -13,6 +13,40 @@
 #include <IL/ilu.h>
 
 
+
+//   typedef struct VkDescriptorSetLayoutBinding {
+//     uint32_t              binding;
+//     VkDescriptorType      descriptorType;
+//     uint32_t              descriptorCount;
+//     VkShaderStageFlags    stageFlags;
+//     const VkSampler*      pImmutableSamplers;
+// } VkDescriptorSetLayoutBinding;
+
+const std::vector<VkDescriptorSetLayoutBinding>  rekz::kGlobalDescriptorBindings = {
+   
+  {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
+  { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- GridState
+
+};
+
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz::SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device) {
+ printf ("%s", __FUNCTION__);
+
+ uniform_buffs.resize (num_sets);
+ for (size_t i = 0; i < num_sets; i++) {
+  if (!CreateUniformBuffer (uniform_buffs[i], sizeof(rokz::MVPTransform), 1, device)) {
+     // pritnf (); 
+     return false; 
+   }
+ }
+
+ printf (" --> [true] \n"); 
+ return true; 
+}
+
 // ---------------------------------------------------------------------------
 // handle most of the common ones
 // ---------------------------------------------------------------------------

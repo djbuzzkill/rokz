@@ -64,6 +64,17 @@ namespace rekz {
   using TriMesh = rekz::GeometryData<VTy, uint16_t>; 
 
   // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+  struct PushConstants {
+
+    uint32_t resourceID;
+    uint32_t _unused_01;
+    uint32_t _unused_02;
+    uint32_t _unused_03;
+
+  }; 
+  // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
   struct Vertex_pos_nrm_txc_col {
@@ -80,25 +91,30 @@ namespace rekz {
 
   };
 
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------
+  //                                    
+  // ----------------------------------------------------------------------------------------------
+  typedef rekz::Vertex_pos_col    GridVert; 
+  // ----------------------------------------------------------------------------------------------
+  //                                    
+  // ----------------------------------------------------------------------------------------------
+  extern const std::vector<VkDescriptorSetLayoutBinding>      kGlobalDescriptorBindings;
+  // ----------------------------------------------------------------------------------------------
+  //                                    
+  // ----------------------------------------------------------------------------------------------
   struct MouseState {
 
-    MouseState () : inside (0), left_butt(0), right_butt(0), 
-                    middle_butt(0), x_pos (0), y_pos(0) {
+    MouseState () : inside (0), left_butt(0), right_butt(0), middle_butt(0), x_pos (0), y_pos(0) {
     }
 
-    int inside; 
-    int left_butt;   
-    int right_butt;  
-    int middle_butt; 
-    
-    int x_pos;
-    int y_pos;
+    int  inside; 
+    int  left_butt;   
+    int  right_butt;  
+    int  middle_butt; 
+    int  x_pos;
+    int  y_pos;
   }; 
 
-  
   // --------------------------------------------------------------------
   // UserPointer data
   // --------------------------------------------------------------------
@@ -113,6 +129,48 @@ namespace rekz {
   };
 
 
+
+  // --------------------------------------------------------------------
+  //
+  // --------------------------------------------------------------------
+  typedef rekz::Vertex_pos_nrm_txc_col DarkVert;
+
+  // --------------------------------------------------------------------
+  typedef rekz::TriMesh<DarkVert>  DarkMesh;
+
+
+  // ---------------------------------------------------------------------------------------
+  // PolygonData polyd resources the polygon pipeline will use
+  // ---------------------------------------------------------------------------------------
+  struct PolygonData { 
+
+    rokz::Buffer          vb_device;
+    rokz::Buffer          ib_device;
+    // rokz::DescriptorGroup descrgroup;
+    // image/texture
+    rokz::Image           texture;   // color texture
+    rokz::ImageView       imageview; // 
+    rokz::Sampler         sampler;   // 
+
+    float                 obj_theta[2];     // scene objects 
+    rekz::Polarf          objatt;
+    glm::vec3             objpos;
+
+    // pipeline resources
+    //std::vector<rokz::Buffer>    poly_uniforms;
+
+  } ;
+
+  // ?? a pipeline is tied to a drawlist.. no.
+  // ?? a drawlist is tied to data..       ??
+  // ?? a data is tied to a drawlist..     no
+  // ?? a drawlist is tied to a pipeline.. ??
+  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres); 
+  rokz::DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
+
+  rekz::PolygonData& SetupPolygonData (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
+  rekz::PolygonData& CleanupPolygonData (rekz::PolygonData& pd, const VmaAllocator& allocator);
+  
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
@@ -120,7 +178,7 @@ namespace rekz {
     // some shit like this
     rokz::Buffer          vb_device;
     rokz::Buffer          ib_device;
-    rokz::DescriptorGroup descrgroup;
+    //rokz::DescriptorGroup descrgroup;
     
   };
   
@@ -352,6 +410,9 @@ namespace rekz {
     }; 
 
   
+  bool SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
+
+
 }
 
 

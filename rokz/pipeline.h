@@ -57,7 +57,7 @@ namespace rokz {
   bool DefineGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
                                      VkPipelineLayoutCreateInfo&  create_info,
                                      uint32_t                     push_constant_size,
-                                     const VkDescriptorSetLayout& desc_set_layout, 
+                                     const std::vector<VkDescriptorSetLayout>& desc_set_layouts, 
                                      const VkDevice&              device); 
 
   bool CreateGraphicsPipelineLayout (VkPipelineLayout&                 pipeline_layout,

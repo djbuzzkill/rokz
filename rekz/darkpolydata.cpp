@@ -12,11 +12,11 @@ using namespace darkroot;
 // -------------------------------------------------------------------------
 struct obj_params {
   
-  obj_params (const rokz::Device& dev, struct PolygonData& d) : device (dev), poly (d) {
+  obj_params (const rokz::Device& dev, struct rekz::PolygonData& d) : device (dev), poly (d) {
   }
   
   const rokz::Device& device;
-  PolygonData& poly;
+  rekz::PolygonData& poly;
 };
 // ------------------------------------------------------------------------------------------------
 //
@@ -24,7 +24,7 @@ struct obj_params {
 int obj_image_handler (const unsigned char* dat, const rekz::DevILImageProps& props, void* up) {
 
   obj_params*   params = reinterpret_cast<obj_params*> (up); 
-  PolygonData& polyd  = params->poly;
+  rekz::PolygonData& polyd  = params->poly;
 
   
   if (rekz::LoadTexture_color_sampling (polyd.texture, VK_FORMAT_R8G8B8A8_SRGB ,
@@ -42,7 +42,7 @@ int obj_image_handler (const unsigned char* dat, const rekz::DevILImageProps& pr
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-bool setup_object_texture_and_sampler (PolygonData& polyd, const std::string& data_root, const rokz::Device& device) {
+bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::string& data_root, const rokz::Device& device) {
 
   obj_params params (device, polyd); 
 
@@ -81,8 +81,7 @@ bool setup_object_texture_and_sampler (PolygonData& polyd, const std::string& da
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-bool setup_obj_resources (PolygonData& polyd, uint32_t max_frames_in_flight,
-                          const std::string& data_root, const rokz::Device& device) { 
+bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root, const rokz::Device& device) { 
   // used in here:
   // SetupObjectUniforms;
   // SetupObjectTextureAndSampler;
@@ -105,23 +104,20 @@ bool setup_obj_resources (PolygonData& polyd, uint32_t max_frames_in_flight,
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-PolygonData& darkroot::SetupPolygonData (PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device) {
+rekz::PolygonData& rekz::SetupPolygonData (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device) {
 
-  setup_obj_resources (pd, num_frames, data_root, device) ; 
+  setup_obj_resources (pd, data_root, device) ; 
   return  pd;
 }
 
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-PolygonData& darkroot::CleanupPolygonData (PolygonData& pd, const VmaAllocator& allocator) {
+rekz::PolygonData& rekz::CleanupPolygonData (PolygonData& pd, const VmaAllocator& allocator) {
 
     // SetupObjectUniforms ; 
     // SetupObjectTextureAndSampler;
     // SetupObjResources;
-    for (auto buf : pd.vma_poly_uniforms) {  
-      rokz::Destroy (buf, allocator);
-    }
     
     return  pd;
 }

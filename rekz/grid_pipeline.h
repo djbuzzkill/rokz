@@ -10,9 +10,9 @@ namespace rekz {
   //
   typedef rekz::Vertex_pos_col    GridVert; 
   // ----------------------------------------------------------------------------------------------
-  //                                    
+  // grid doesnt need its own descriptor binding
   // ----------------------------------------------------------------------------------------------
-  extern const std::vector<VkDescriptorSetLayoutBinding>      kGridDescriptorBindings;
+  //extern const std::vector<VkDescriptorSetLayoutBinding>      kGridDescriptorBindings;
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
@@ -82,8 +82,8 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   bool InitGridPipeline  (rokz::Pipeline&              pipeline,
                           rokz::PipelineLayout&        plo,
-                          rokz::DescriptorSetLayout&   dslo,
                           //0
+                          const std::vector<VkDescriptorSetLayout>&   dslos,
                           const std::filesystem::path& fspath,
                           const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
                           VkSampleCountFlagBits        msaa_samples,

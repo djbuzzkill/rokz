@@ -14,23 +14,26 @@ using namespace rekz;
 // -------------------------------------------------------------------------
 struct PolygonDraw : public rokz::DrawSequence {
 
-  PolygonDraw (const darkroot::PolygonData& d) : polyd (d) { }
+  PolygonDraw (const rekz::PolygonData& d, const std::vector<rokz::Buffer>& objres) : polyd (d), objres_buffs(objres) {
+  }
+
   virtual    ~PolygonDraw () { }
   virtual int Prep        (const shared_globals& , const pipeline_assembly& pa, const rokz::Device& device);
   virtual int Exec        (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds);
   
 protected:
 
-  const darkroot::PolygonData& polyd;
+  const rekz::PolygonData&  polyd;
+  const std::vector<rokz::Buffer>& objres_buffs;
   
 }; // PolygonDraw
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const darkroot::PolygonData& d)
+rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const rekz::PolygonData& d, const std::vector<rokz::Buffer>& objres)
 {
-  return std::make_shared<PolygonDraw> (d);
+  return std::make_shared<PolygonDraw> (d, objres);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -38,9 +41,15 @@ rokz::DrawSequence::Ref darkroot::CreatePolygonDraw (const darkroot::PolygonData
 // ------------------------------------------------------------------------------------------------
 int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) {
 
+
+  
+  //polyd.vma_poly_uniforms[globals.current_frame]
+  
   // update uniform buffer 
   // SceneObjParam
-  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (polyd.vma_poly_uniforms[globals.current_frame]))) {
+
+  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( objres_buffs[globals.current_frame] ))) {
+      //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
     glm::vec3 va, vb;
     darkroot::unit_angle_xz (va, 5.0 * globals.sim_time ); 
     darkroot::unit_angle_xz (vb, 5.0 * globals.sim_time + darkroot::kPi); 
@@ -97,11 +106,11 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
   const uint32_t num_test_objects =  2; 
   for (uint32_t i = 0; i < num_test_objects; ++i) {
 
-    darkroot::PushConstants pcs {};
-    pcs.drawIDs.x = i; 
-    pcs.drawIDs.y = i; 
-    pcs.drawIDs.z = i; 
-    pcs.drawIDs.w = i; 
+    rekz::PushConstants pcs {};
+    pcs.resourceID = i; 
+    pcs._unused_01 = i; 
+    pcs._unused_02 = i; 
+    pcs._unused_03 = i; 
 
     const VkShaderStageFlags shader_stages =
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -110,7 +119,7 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
                         pa.plo, 
                         shader_stages,
                         0,
-                        sizeof(darkroot::PushConstants),
+                        sizeof(rekz::PushConstants),
                         &pcs);
 
     vkCmdDrawIndexed (command_buffer, darkmesh.indices.size(), 1, 0, 0, 0);
@@ -189,7 +198,7 @@ struct DrawPolyWireframe : public rokz::DrawSequence
 
 public:
   
-  DrawPolyWireframe  (const darkroot::PolygonData& d) : polyd (d) {
+  DrawPolyWireframe  (const rekz::PolygonData& d) : polyd (d) {
   }
 
   virtual ~DrawPolyWireframe () {
@@ -204,14 +213,14 @@ public:
 
 protected:
 
-  const darkroot::PolygonData& polyd;
+  const rekz::PolygonData& polyd;
   
 }; 
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-std::shared_ptr<rokz::DrawSequence> darkroot::CreatePolygonWireframe (const darkroot::PolygonData& d) {
+std::shared_ptr<rokz::DrawSequence> rekz::CreatePolygonWireframe (const rekz::PolygonData& d) {
 
   return std::make_shared<DrawPolyWireframe> (d);
   

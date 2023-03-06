@@ -1,4 +1,4 @@
-1#version 460
+#version 460
 //        .vert - a vertex shader
 //        .tesc - a tessellation control shader
 //        .tese - a tessellation evaluation shader
@@ -39,20 +39,18 @@ layout (push_constant) uniform PushConstants {
 //
 // DESCRIPTOR
 //
-layout(binding = 0) uniform MVPTransform {
+layout(binding = 0, set = 0) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;
 } mat;
 
 
-layout(binding = 1) uniform ObjectParams {
+layout(binding = 0, set = 1) uniform ObjectParams {
 
-  // 
   mat4 model;
-  //
   
-} params[100];
+} params[64];
 
 
 void main() {

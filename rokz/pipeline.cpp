@@ -288,7 +288,7 @@ bool rokz::DefineGraphicsPipelineLayout (
     VkPipelineLayout&            pipeline_layout,
     VkPipelineLayoutCreateInfo&  create_info,
     uint32_t                     push_constant_size,
-    const VkDescriptorSetLayout& desc_set_layout, 
+    const std::vector<VkDescriptorSetLayout>& desc_set_layouts, 
     const VkDevice&              device)
 {
   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
@@ -296,8 +296,8 @@ bool rokz::DefineGraphicsPipelineLayout (
   create_info.pNext          = nullptr;
   create_info.flags          = 0; // ?? VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT; 
 
-  create_info.setLayoutCount = 1;            
-  create_info.pSetLayouts    = &desc_set_layout;         
+  create_info.setLayoutCount = desc_set_layouts.size();            
+  create_info.pSetLayouts    = &desc_set_layouts[0];         
   
   create_info.pushConstantRangeCount = 0;    
   create_info.pPushConstantRanges = nullptr; 

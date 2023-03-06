@@ -15,6 +15,13 @@ layout(binding = 0, set = 0) uniform MVPTransform {
     mat4 proj;
 } mat;
 
+
+layout(binding = 1, set = 0) uniform GridColors {
+    vec4 xcolor;
+    vec4 ycolor;
+    vec4 zcolor;
+} grid;
+
 //
 //  
 //
@@ -24,8 +31,8 @@ layout (push_constant) uniform GridPushConstants {
     vec4 z_color;  // 10 is reasonable
     vec4 origin_color; 
 
-    float xstep; // size every 'column'
-    float zstep; // size every 'row'
+    float xstep;   // size every 'column'
+    float zstep;   // size every 'row'
     float xoffset;
     float zoffset;
 
