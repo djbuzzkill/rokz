@@ -190,6 +190,18 @@ namespace rekz {
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
+
+  glm::vec3& unit_angle_xz (glm::vec3& v, float theta);
+  glm::vec3& unit_angle_yz (glm::vec3& v, float theta);
+
+  float ViewAspectRatio (uint32_t w, uint32_t h);
+  float AspectRatio (const VkExtent2D& ext);
+
+  // --------------------------------------------------------------------
+  // 
+  // --------------------------------------------------------------------
+
+
   namespace HalfEdge {
 
     constexpr int32_t NullIndex = -1; 

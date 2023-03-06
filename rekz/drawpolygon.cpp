@@ -51,8 +51,8 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
   if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( objres_buffs[globals.current_frame] ))) {
       //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
     glm::vec3 va, vb;
-    darkroot::unit_angle_xz (va, 5.0 * globals.sim_time ); 
-    darkroot::unit_angle_xz (vb, 5.0 * globals.sim_time + darkroot::kPi); 
+    rekz::unit_angle_xz (va, 5.0 * globals.sim_time ); 
+    rekz::unit_angle_xz (vb, 5.0 * globals.sim_time + darkroot::kPi); 
 
     glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, 0.5, -6.0));
     glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  vb + glm::vec3 (0.0, -0.5,-6.0));

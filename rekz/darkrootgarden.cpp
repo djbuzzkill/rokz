@@ -212,34 +212,6 @@ void CleanupDarkroot (Glob& glob) {
 }
 
   
-// --------------------------------------------------------------------
-// 
-// --------------------------------------------------------------------
-glm::vec3& darkroot::unit_angle_xz (glm::vec3& v, float theta) {
-  v.x = cos (theta) ;
-  v.y = 0.0f;
-  v.z = -sinf (theta) ;
-  return v; 
-}
-
-glm::vec3& darkroot::unit_angle_yz (glm::vec3& v, float theta) {
-  v.x = 0.0;
-  v.y = cos (theta) ;
-  v.z = -sinf (theta) ;
-  return v; 
-}
-
-
-float ViewAspectRatio (uint32_t w, uint32_t h) {
-  return   float (w) / float (h) ;
-}  
-
-//
-float AspectRatio (const VkExtent2D& ext) {
-
-  return ViewAspectRatio (ext.width, ext.height); 
-
-}
 
 // --------------------------------------------------------------------
 //
@@ -266,7 +238,7 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
       glm::mat4 posmat = glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
       mvp->model = glm::mat4(1.0); //  posmat; //  glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-      const float aspf = ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
+      const float aspf = rekz::ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
 
       mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
         * glm::translate (glm::mat4(1.0), glob.shared.view_pos); 

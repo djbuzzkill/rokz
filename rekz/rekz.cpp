@@ -628,10 +628,43 @@ void rekz::CleanupGridData (GridData& gd, const rokz::Device& device) {
   rokz::Destroy (gd.vb_device, device.allocator.handle); 
   
 }
+
+
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
+glm::vec3& rekz::unit_angle_xz (glm::vec3& v, float theta) {
+  v.x = cos (theta) ;
+  v.y = 0.0f;
+  v.z = -sinf (theta) ;
+  return v; 
+}
 
+glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
+  v.x = 0.0;
+  v.y = cos (theta) ;
+  v.z = -sinf (theta) ;
+  return v; 
+}
+
+
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+float rekz::ViewAspectRatio (uint32_t w, uint32_t h) {
+  return   float (w) / float (h) ;
+}  
+
+//
+float rekz::AspectRatio (const VkExtent2D& ext) {
+
+  return ViewAspectRatio (ext.width, ext.height); 
+
+}
+
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
 // rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
   //                              glob.surface,
   //                              glob.physical_device.handle);

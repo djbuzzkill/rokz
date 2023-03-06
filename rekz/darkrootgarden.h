@@ -71,8 +71,5 @@ namespace darkroot {
                                                                        rokz::Image& mscim, rokz::ImageView& mscimv); 
 
 
-  glm::vec3& unit_angle_xz (glm::vec3& v, float theta);
-  glm::vec3& unit_angle_yz (glm::vec3& v, float theta);
-
 }
 #endif
