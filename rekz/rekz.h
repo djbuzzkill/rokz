@@ -94,11 +94,15 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
-  typedef rekz::Vertex_pos_col    GridVert; 
+  extern const std::vector<VkDescriptorSetLayoutBinding>      kGlobalDescriptorBindings;
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
-  extern const std::vector<VkDescriptorSetLayoutBinding>      kGlobalDescriptorBindings;
+  struct GridState {
+    glm::vec4 xcolor;
+    glm::vec4 ycolor;
+    glm::vec4 zcolor;
+  };
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
@@ -134,10 +138,7 @@ namespace rekz {
   //
   // --------------------------------------------------------------------
   typedef rekz::Vertex_pos_nrm_txc_col PolyVert;
-
-  // --------------------------------------------------------------------
-  typedef rekz::TriMesh<PolyVert>  PolyMesh;
-
+  typedef rekz::TriMesh<PolyVert>      PolyMesh;
   // --------------------------------------------------------------------
   namespace platonic {
     const PolyMesh& Octohedron ();
@@ -168,7 +169,7 @@ namespace rekz {
   // ?? a drawlist is tied to data..       ??
   // ?? a data is tied to a drawlist..     no
   // ?? a drawlist is tied to a pipeline.. ??
-  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres); 
+  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg); 
   rokz::DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
 
   rekz::PolygonData& SetupPolygonData (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
@@ -418,14 +419,12 @@ namespace rekz {
   // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device); 
 
-  struct UniformSet
-    {
-  virtual void Update () = 0; // stuff like update buffer contents
-  virtual void Bind   () = 0; // does vkUpdateDescriptorSets
-    }; 
 
   
   bool SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
+
+
+  bool BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, const std::vector<rokz::Buffer>& buffs, const rokz::Device& device);
 
 
 }

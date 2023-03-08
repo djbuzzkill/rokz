@@ -198,8 +198,10 @@ bool rokz::MakeDescriptorPool (rokz::DescriptorPool& dp, uint32_t mul,
                             const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                             const rokz::Device& device) {
 
+  printf ("bindings.size:%zu\n", bindings.size() );
   dp.sizes.resize (bindings.size()); 
   for (size_t i = 0; i < bindings.size(); ++i) {
+    printf ("mul:%u | bindings[%zu].descriptorCount:%u\n", mul, i,  bindings[i].descriptorCount );
     dp.sizes[i] = { bindings[i].descriptorType, mul * bindings[i].descriptorCount };
   }
   

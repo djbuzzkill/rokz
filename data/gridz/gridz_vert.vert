@@ -16,7 +16,7 @@ layout(binding = 0, set = 0) uniform MVPTransform {
 } mat;
 
 
-layout(binding = 1, set = 0) uniform GridColors {
+layout(binding = 1, set = 0) uniform GridState {
     vec4 xcolor;
     vec4 ycolor;
     vec4 zcolor;

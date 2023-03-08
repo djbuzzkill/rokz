@@ -501,12 +501,13 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
 //
 // ---------------------------------------------------------------------
 bool rokz::CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice device) {
+  printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
 
   if (vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipeline.ci, nullptr, &pipeline.handle) != VK_SUCCESS) {
     printf("failed to create graphics pipeline!");
     return false;
   }
-
+  printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
   return true; 
 
 }

@@ -23,11 +23,11 @@ namespace rekz {
   //     VkShaderStageFlags    stageFlags;
   //     const VkSampler*      pImmutableSamplers;
   // } VkDescriptorSetLayoutBinding;
-  const std::vector<VkDescriptorSetLayoutBinding> kObjDescriptorBindings = {
-    { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,           1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- this is the global MVP, get this out
-    { 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         128, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-    { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,   1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
-  };
+  const std::vector<VkDescriptorSetLayoutBinding> kObjDescriptorBindings =
+    {
+      { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , kMaxObjectCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+      { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1              , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+    };
 
   // --------------------------------------------------------------------
   // vert input binding, diffrnt from input attriubutes
@@ -312,6 +312,7 @@ bool rekz::BindObjectDescriptorResources (std::vector<VkDescriptorSet>&    dss ,
     descriptor_writes[1].pTexelBufferView = nullptr; 
 
     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
 
   }
 
@@ -319,6 +320,62 @@ bool rekz::BindObjectDescriptorResources (std::vector<VkDescriptorSet>&    dss ,
 
 }
 
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz::BindObjectDescriptorResources (VkDescriptorSet                  ds,
+                                          rokz::Buffer&                    objparam_buff,
+                                          const rokz::ImageView&           texture_imageview, 
+                                          const rokz::Sampler&             sampler, 
+                                          const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                                          const rokz::Device&              device) {
+
+  printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+
+  std::vector<VkDescriptorBufferInfo> objparams (kMaxObjectCount, VkDescriptorBufferInfo {});
+
+  for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
+    objparams[iobj].buffer   = objparam_buff.handle;    //
+    objparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
+    objparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
+  }
+    
+  // vector<VkDescriptorImageInfo> imageinfos; 
+  VkDescriptorImageInfo image_info {};
+  image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+  image_info.imageView   = texture_imageview.handle;
+  image_info.sampler     = sampler.handle;
+
+  //
+  std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+
+  descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  descriptor_writes[0].pNext            = nullptr;
+  descriptor_writes[0].dstSet           = ds;
+  descriptor_writes[0].dstBinding       = 0;       // does it match in shader? 
+  descriptor_writes[0].dstArrayElement  = 0;
+  descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  descriptor_writes[0].descriptorCount  = objparams.size(); // <
+  descriptor_writes[0].pBufferInfo      = &objparams[0]; 
+  descriptor_writes[0].pImageInfo       = nullptr; 
+  descriptor_writes[0].pTexelBufferView = nullptr; 
+                      
+  descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  descriptor_writes[1].pNext            = nullptr;    
+  descriptor_writes[1].dstSet           = ds;
+  descriptor_writes[1].dstBinding       = 1;      // <-- change shader too
+  descriptor_writes[1].dstArrayElement  = 0;
+  descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+  descriptor_writes[1].descriptorCount  = 1; // kMaxObjectCount <--- soon
+  descriptor_writes[1].pBufferInfo      = nullptr;
+  descriptor_writes[1].pImageInfo       = &image_info; 
+  descriptor_writes[1].pTexelBufferView = nullptr; 
+
+  vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  return true;
+
+}
 // ----------------------------------------------------------------------------------------
 // init proto more orthogonal version (new SetupObjectPipeline)
 // ----------------------------------------------------------------------------------------
@@ -333,6 +390,7 @@ bool rekz::InitObjPipeline (rokz::Pipeline&                           pipeline,
                             VkFormat                                  depth_format,
                             const rokz::Device&                       device) {
 
+  printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
   //std::vector<VkDescriptorSetLayout> dslos (1, dslo.handle); 
   //  rokz::CreateInfo (plo.ci, dslos); //, push_constants); 
 

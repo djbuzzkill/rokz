@@ -17,7 +17,7 @@ struct DrawGrid : public rokz::DrawSequence {
     // do crap before recording ("UpdateDescriptors()", etc)
   virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device);
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
-  virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds);
+  virtual int Exec (VkCommandBuffer comb, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap); 
   
   const rekz::GridData& data;
 
@@ -34,7 +34,7 @@ int DrawGrid::Prep (const shared_globals& globals, const pipeline_assembly& pa, 
 // -------------------------------------------------------------------------------------------
 // draw sequence recording, mebe rename to DrawSeq::Rec() 
 // -------------------------------------------------------------------------------------------
-int DrawGrid::Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets)  {
+int DrawGrid::Exec (VkCommandBuffer comb, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
 
   rekz::GridPushConstant push_consts = {};
 
@@ -53,7 +53,7 @@ int DrawGrid::Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std
   vkCmdSetScissor   (comb, 0, 1, &pa.pipeline.state.viewport.vps[0].scissor);
 
   const uint32_t descr_set_count = 1; // b/c grid only needs Globals
-  vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo, 0, descr_set_count, &descrsets[0], 0, nullptr);
+  vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo, 0, descr_set_count, &descrmap.at("Global"), 0, nullptr);
 
   VkBuffer     vertex_buffers[] = {data.vb_device.handle};
   VkDeviceSize offsets[]        = {0};

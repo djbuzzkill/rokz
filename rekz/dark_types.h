@@ -61,40 +61,53 @@ namespace darkroot {
     VkFormat                      depth_format;
     VkSampleCountFlagBits         msaa_samples;            // = VK_SAMPLE_COUNT_1_BIT;
 
-    // 
-    rokz::Pipeline               polys_pl  ;
-    rokz::PipelineLayout         polys_plo ;
-    //rokz::DescriptorSetLayout    polys_dslo; <-- dslo's r separate  from pipelines 
-    rekz::PolygonData                  polyd;
-    rokz::DrawSequence::Ref      drawpoly;
-    // 
-    rokz::Pipeline               grid_pl  ;
-    rokz::PipelineLayout         grid_plo ;
-    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate  from pipelines 
-    rokz::DrawSequence::Ref      drawgrid;
-    rekz::GridData               gridata;
-
-    rokz::DescriptorSetLayout    global_dslo; 
-    rokz::DescriptorSetLayout    objres_dslo;
-
-    rokz::ResetSwapchainCB::Ref  swapchain_reset_cb;
-
-
-    std::vector<rokz::Buffer>    global_uniform_bu; // vma_shared_uniforms;
-    rokz::DescriptorGroup        global_uniform_de;
-
-    // pipeline resources
-    std::vector<rokz::Buffer>    objres_uniform_bu;
-    rokz::DescriptorGroup        objres_uniform_de;
-    
-
-
-
     // attachement set
     rokz::Image                  depth_image;
     rokz::ImageView              depth_imageview; 
     rokz::Image                  msaa_color_image;
     rokz::ImageView              msaa_color_imageview; 
+    
+    
+
+    // global uniform r 'shared global' 
+    rokz::DescriptorSetLayout    global_dslo; 
+    // object descriptors are supposed to be 'generic', diffrnt from shared
+    rokz::DescriptorSetLayout    object_dslo;
+
+    
+    std::vector<rokz::Buffer>    global_uniform_bu; // vma_shared_uniforms;
+    rokz::DescriptorGroup        global_uniform_de;
+
+
+
+    // POLYGONS
+    rokz::Pipeline               polys_pl;
+    rokz::PipelineLayout         polys_plo;
+    // this belongs with the polygons
+    rekz::PolygonData            polyd;
+    rokz::DrawSequence::Ref      drawpoly;
+    // std::vector<rokz::Buffer>    polys_obj_uniform_bu; // <-- polys uses object descriptors
+    // rokz::DescriptorGroup        polys_obj_uniform_de; // 
+    std::vector<rokz::Buffer>    poly_objects_bu; // polygons will make use of object descriptors
+    rokz::DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
+    // 
+
+
+    // GRID
+    rokz::Pipeline               grid_pl;
+    rokz::PipelineLayout         grid_plo;
+    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate  from pipelines 
+    rokz::DrawSequence::Ref      drawgrid;
+    rekz::GridData               gridata;
+
+
+
+    std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
+    rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
+
+    rokz::ResetSwapchainCB::Ref  swapchain_reset_cb;
+
+
   };
 
 

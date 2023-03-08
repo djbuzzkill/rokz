@@ -70,11 +70,19 @@ namespace rekz {
   // these r the new ones
   // ----------------------------------------------------------------------------------------------
   bool BindObjectDescriptorResources (std::vector<VkDescriptorSet>& dss ,
-                                 const std::vector<rokz::Buffer>&   objparam_bu,
-                                 const rokz::ImageView&             texture_imageview, 
-                                 const rokz::Sampler&               sampler, 
-                                 const rokz::DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
-                                 const rokz::Device&                device);
+                                      const std::vector<rokz::Buffer>&   objparam_bu,
+                                      const rokz::ImageView&             texture_imageview, 
+                                      const rokz::Sampler&               sampler, 
+                                      const rokz::DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
+                                      const rokz::Device&                device);
+
+
+  bool BindObjectDescriptorResources (VkDescriptorSet                  ds,
+                                      rokz::Buffer&                    objparam_buff,
+                                      const rokz::ImageView&           texture_imageview, 
+                                      const rokz::Sampler&             sampler, 
+                                      const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                                      const rokz::Device&              device) ; 
 
   //
   // 

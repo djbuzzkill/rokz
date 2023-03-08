@@ -5,11 +5,24 @@
 #include "utility.h"
 #include "rokz_types.h"
 #include "rokz_types.h"
+#include <vulkan/vulkan_core.h>
 
 
 
 namespace rokz {
 
+
+  // ---------------------------------------------------------------------
+  // 
+  // 
+  // ---------------------------------------------------------------------
+  enum DescriptorSetTypes {
+
+    DS_GLOBAL,
+    DS_OBJECT,
+    
+  }; 
+  
   // ---------------------------------------------------------------------
   // INTENT:  encapsulate a list of draw commands
   // DrawLisst renamed to DrawSequence to avoid confusion
@@ -18,13 +31,16 @@ namespace rokz {
   struct DrawSequence : public rokz::ut::destructor {
 
     typedef std::shared_ptr<DrawSequence>  Ref;
+
+    typedef std::map<std::string, VkDescriptorSet>       DescriptorMap;
+    typedef std::map<std::string, VkDescriptorSetLayout> DescriptorLayoutMap;
     // --------------------------------------------------------------------
     // part of DrawSequence
     // --------------------------------------------------------------------
     struct pipeline_assembly  {
-      rokz::Pipeline&       pipeline;
-      VkPipelineLayout      plo;
-      //const std::vector<VkDescriptorSet>& descrset;
+      rokz::Pipeline&            pipeline;
+      VkPipelineLayout           plo;
+      const DescriptorMap&       descrmap;
     }; 
     typedef pipeline_assembly PipelineAssembly; 
     // --------------------------------------------------------------------
@@ -50,8 +66,9 @@ namespace rokz {
     
     // do crap before recording ("UpdateDescriptors()", etc)
     virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
+
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
-    virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets) = 0;
+    virtual int Exec (VkCommandBuffer comb, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) = 0;
 
   protected:
 

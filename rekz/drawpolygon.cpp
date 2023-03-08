@@ -14,42 +14,40 @@ using namespace rekz;
 // -------------------------------------------------------------------------
 struct PolygonDraw : public rokz::DrawSequence {
 
-  PolygonDraw (const rekz::PolygonData& d, const std::vector<rokz::Buffer>& objres) : polyd (d), objres_buffs(objres) {
+  PolygonDraw (const rekz::PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg)
+    : polyd (d), object_buffs(objres), object_descr (descg) {
   }
 
   virtual    ~PolygonDraw () { }
   virtual int Prep        (const shared_globals& , const pipeline_assembly& pa, const rokz::Device& device);
-  virtual int Exec        (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds);
+  virtual int Exec        (VkCommandBuffer comb, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descmap);
   
 protected:
 
-  const rekz::PolygonData&  polyd;
-  const std::vector<rokz::Buffer>& objres_buffs;
+  const rekz::PolygonData&         polyd;
+  const rokz::DescriptorGroup&     object_descr;
+
+  const std::vector<rokz::Buffer>& object_buffs;
   
 }; // PolygonDraw
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const rekz::PolygonData& d, const std::vector<rokz::Buffer>& objres)
-{
-  return std::make_shared<PolygonDraw> (d, objres);
+rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg) {
+  return std::make_shared<PolygonDraw> (d, objres, descg);
 }
 
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
 int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) {
-
-
-  
   //polyd.vma_poly_uniforms[globals.current_frame]
-  
+
   // update uniform buffer 
   // SceneObjParam
-
-  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( objres_buffs[globals.current_frame] ))) {
-      //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
+  if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (object_buffs[globals.current_frame]))) {
+    //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
     glm::vec3 va, vb;
     rekz::unit_angle_xz (va, 5.0 * globals.sim_time ); 
     rekz::unit_angle_xz (vb, 5.0 * globals.sim_time + darkroot::kPi); 
@@ -59,8 +57,18 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
     //for (size_t i = 0; i < kSceneObjCount; ++i) {
     obj[0].modelmat = glm::rotate(model0, polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
     obj[1].modelmat = glm::rotate(model1, globals.sim_time * glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+
+    //
+    // ?? update DescriptorSets 
+    //
+    //rekz::BindObjectDescriptorResources (descset , objparam_buff, polyd.imageview, polyd.sampler, dslo, device);
+
   }
   
+  
+  
+
   return 0;
 }
 
@@ -69,7 +77,7 @@ int PolygonDraw::Prep (const shared_globals& globals, const pipeline_assembly& p
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& descrsets) {
+int PolygonDraw::Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
 
 
   const rekz::PolyMesh& darkmesh = rekz::platonic::Octohedron ();
@@ -93,7 +101,13 @@ int PolygonDraw::Exec (VkCommandBuffer command_buffer, const pipeline_assembly& 
 
   //VK_POLYGON_MODE_FILL = 0,
   //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
+
+  std::vector<VkDescriptorSet> descrsets;
+  descrsets.push_back (descrmap.at ("Global"));
+  descrsets.push_back (object_descr.descrsets[globals.current_frame]); 
   
+  //descrsets.push_back (  poly_obj_descr );
+
   vkCmdBindDescriptorSets (command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pa.plo,
                            0, descrsets.size(), &descrsets[0], 0, nullptr);
 
@@ -207,7 +221,7 @@ public:
   virtual int Prep (const shared_globals& shared, const pipeline_assembly& pa, const rokz::Device& device) {
     return 0;
   }
-  virtual int Exec (VkCommandBuffer comb, const pipeline_assembly& pa, const std::vector<VkDescriptorSet>& ds) {
+  virtual int Exec (VkCommandBuffer comb, const shared_globals& shared, const pipeline_assembly& pa, const DescriptorMap& descmap) {
     return 0;
   }
 

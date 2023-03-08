@@ -35,9 +35,12 @@ const std::vector<VkDescriptorSetLayoutBinding>  rekz::kGlobalDescriptorBindings
 bool rekz::SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device) {
  printf ("%s", __FUNCTION__);
 
+
+ const size_t sizeOf_GlobalState = sizeof(rokz::MVPTransform) + sizeof (rekz::GridState);
+   
  uniform_buffs.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
-  if (!CreateUniformBuffer (uniform_buffs[i], sizeof(rokz::MVPTransform), 1, device)) {
+  if (!CreateUniformBuffer (uniform_buffs[i], sizeOf_GlobalState, 1, device)) {
      // pritnf (); 
      return false; 
    }
@@ -47,9 +50,61 @@ bool rekz::SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32
  return true; 
 }
 
-// ---------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz::BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, const std::vector<rokz::Buffer>& buffs, const rokz::Device& device) {
+
+   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+
+   assert (descs.size () == buffs.size ());
+
+  for (uint32_t i = 0; i < descs.size (); i++) {
+    // wtf does this do
+    VkDescriptorBufferInfo binfo_mvp {};
+    binfo_mvp.buffer     = buffs[i].handle;
+    binfo_mvp.offset     = 0;
+    binfo_mvp.range      = sizeof(rokz::MVPTransform);
+
+    VkDescriptorBufferInfo binfo_grid {};
+    binfo_grid.buffer     = buffs[i].handle;
+    binfo_grid.offset     = sizeof(rokz::MVPTransform);
+    binfo_grid.range      = sizeof(rekz::GridState);
+    //
+    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].pNext            = nullptr;    
+    descriptor_writes[0].dstSet           = descs[i];
+    descriptor_writes[0].dstBinding       = 0;
+    descriptor_writes[0].dstArrayElement  = 0;
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = 1;
+    descriptor_writes[0].pBufferInfo      = &binfo_mvp;
+    descriptor_writes[0].pImageInfo       = nullptr;
+    descriptor_writes[0].pTexelBufferView = nullptr;
+
+    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].dstSet           = descs[i];
+    descriptor_writes[1].dstBinding       = 10;
+    descriptor_writes[1].dstArrayElement  = 0;
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[1].descriptorCount  = 1;
+    descriptor_writes[1].pBufferInfo      = &binfo_grid;
+    descriptor_writes[1].pImageInfo       = nullptr;
+    descriptor_writes[1].pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  }
+
+  
+   return false;
+}
+
+// ----------------------------------------------------------------------------------------------
 // handle most of the common ones
-// ---------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------
 uint32_t rekz::NumberOfComponents (VkFormat format) {
 
   switch (format) { 
