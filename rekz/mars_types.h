@@ -31,7 +31,7 @@ namespace mars {
     glm::vec4  color4f;
   };
   
- 
+
   // --------------------------------------------------------------------
   // UBO
   // --------------------------------------------------------------------
@@ -41,7 +41,7 @@ namespace mars {
     alignas(16) glm::vec3 view_dir;
     alignas(16) glm::vec3 view_up;
 
-    rekz::Polarf             orie;
+    rekz::YPRf            view_orie;
 
     float field_of_view; 
     float aspect;

@@ -287,19 +287,36 @@ struct RootLoop {
       run = false;
     }
 
-    glob.shared.view_pos.y = -2.05f;
 
     if (glob.input_state.keys.count (GLFW_KEY_F)) {
-      glob.shared.view_pos.z -= move_rate;
+      // fwd
+      glob.shared.view_pos.z += move_rate;
+      //printf ("--> [f] z:%f \n", glob.shared.view_pos.z);
     }    
     if (glob.input_state.keys.count (GLFW_KEY_V)) {
-      glob.shared.view_pos.z += move_rate;
+      // ?? recedes
+      glob.shared.view_pos.z -= move_rate;
+      //printf ("--> [v] z:%f \n", glob.shared.view_pos.z);
     }    
+
     if (glob.input_state.keys.count (GLFW_KEY_D)) {
       glob.shared.view_pos.x -= move_rate;
+      //printf ("--> [d] x:%f \n", glob.shared.view_pos.x);
     }    
     if (glob.input_state.keys.count (GLFW_KEY_G)) {
       glob.shared.view_pos.x += move_rate;
+      //printf ("--> [g] x:%f \n", glob.shared.view_pos.x);
+    }    
+
+    if (glob.input_state.keys.count (GLFW_KEY_J)) {
+      // ??? climbs
+      glob.shared.view_pos.y -= move_rate;
+      //printf ("--> [j] y:%f \n", glob.shared.view_pos.y);
+    }    
+    if (glob.input_state.keys.count (GLFW_KEY_K)) {
+      // appears to descend
+      glob.shared.view_pos.y += move_rate;
+      //printf ("--> [k] y:%f \n", glob.shared.view_pos.y);
     }    
 
 
@@ -353,26 +370,21 @@ struct RootLoop {
     }
     else {
 
-      printf  ("---> [%i]\n", __LINE__); 
-      rokz::DrawSequence::PipelineAssembly papoly {
-        glob.polys_pl, glob.polys_plo.handle, glob.descriptormaps[curr_frame] }; 
+      rokz::DrawSequence::PipelineAssembly
+        papoly { glob.polys_pl, glob.polys_plo.handle }; 
 
-      printf  ("---> [%i]\n", __LINE__); 
-      rokz::DrawSequence::PipelineAssembly pagrid {
-        glob.grid_pl, glob.grid_plo.handle, glob.descriptormaps[curr_frame] }; 
+      rokz::DrawSequence::PipelineAssembly
+        pagrid { glob.grid_pl, glob.grid_plo.handle }; 
 
-      printf  ("---> [%i]\n", __LINE__); 
   
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       
       UpdateGlobals (glob, curr_frame, Dt);  
 
-      printf  ("---> [%i]\n", __LINE__); 
       // update data needed to record drawlist
 
       // make sure the correct swapchain image is used
       UpdateDynamicRenderingInfo (glob, image_index);
-      printf  ("---> [%i]\n", __LINE__); 
 
       // Transitioning Layout and stuff in here
       // BeginCommandBuffer is called here
@@ -385,7 +397,6 @@ struct RootLoop {
       //   glob.global_uniform_de.descrsets[curr_frame], glob.objres_uniform_de.descrsets[curr_frame]
       // };
       
-      
       glob.drawpoly->Prep (glob.shared, papoly, glob.device); 
       glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame],
                            glob.shared, papoly, glob.descriptormaps[curr_frame]);
@@ -395,7 +406,6 @@ struct RootLoop {
       glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame],
                            glob.shared, pagrid, glob.descriptormaps[curr_frame]);
 
-      printf  ("---> [%i]\n]", __LINE__); 
 
       // we are done, submit
       rokz::cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
@@ -473,13 +483,13 @@ int darkroot_basin (const std::vector<std::string>& args) {
                              kTestExtent, glob.device.physical, glob.device);
   //assert (false);
 
+  // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
   rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
 
   // polygon pipeline uses both descriptor sets
   glob.polys_pl.dslos.push_back (glob.global_dslo.handle);
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
-
   if (!rekz::InitObjPipeline ( glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
                               glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
                               scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) {
@@ -492,14 +502,17 @@ int darkroot_basin (const std::vector<std::string>& args) {
   if (!rekz::InitGridPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
                                glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
                                scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) { 
-
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
                                
+  //vkCmdDrawMultiEXT
+  HERE("above SetupRenderingAttachments"); 
 
+  //
   SetupRenderingAttachments (glob); // <-- this does all the additional  attachmentes
 
+  //
   glob.swapchain_reset_cb = CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                      glob.depth_image, glob.depth_imageview,
                                                      glob.msaa_color_image, glob.msaa_color_imageview); 
@@ -508,11 +521,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
   SetupDynamicRenderingInfo (glob); 
   //
 
-
   //
   // setup object data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_root, glob.device); 
-
   // should 
   //
   
@@ -524,12 +535,11 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // GLOBAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   rekz::SetupGlobalUniforms (glob.global_uniform_bu, kMaxFramesInFlight, glob.device); 
   
-  printf (" [HERE] --> %i \n", __LINE__); 
   if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rekz::kGlobalDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
   }
-  printf (" [HERE] --> %i \n", __LINE__); 
+
   // 
   if (!rokz::MakeDescriptorSets (glob.global_uniform_de.descrsets, glob.global_uniform_de.alloc_info,
                                  kMaxFramesInFlight,
@@ -537,7 +547,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> MakeDescriptorSets \n"); 
     return false;
   }
-
 
   rekz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_uniform_bu, glob.device);
   // Bind*DescriptorSets is part of a pipeline definition
@@ -554,12 +563,10 @@ int darkroot_basin (const std::vector<std::string>& args) {
   // SetupObjDescriptorPool
   //if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rekz::kObjDescriptorBindings, glob.device)) {
 
-  printf (" [HERE] --> %i \n", __LINE__); 
   if (!rokz::MakeDescriptorPool(glob.poly_objects_de.pool, kMaxFramesInFlight, rekz::kObjDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
   }
-  printf (" [HERE] --> %i \n", __LINE__); 
   // ?? who owns descriptor sets
   // POLYGONS
   if (!rokz::MakeDescriptorSets (glob.poly_objects_de.descrsets, glob.poly_objects_de.alloc_info, kMaxFramesInFlight,
@@ -568,7 +575,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
     return false;
   }
 
-  printf (" [HERE] --> %i \n", __LINE__); 
   // Bind*DescriptorSets is part of a pipeline definition
 
   
@@ -579,7 +585,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> BindObjectDescriptorSets \n"); 
     return false;
   } 
-  printf (" [HERE] --> %i \n", __LINE__); 
 
 
   //

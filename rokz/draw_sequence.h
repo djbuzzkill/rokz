@@ -40,7 +40,6 @@ namespace rokz {
     struct pipeline_assembly  {
       rokz::Pipeline&            pipeline;
       VkPipelineLayout           plo;
-      const DescriptorMap&       descrmap;
     }; 
     typedef pipeline_assembly PipelineAssembly; 
     // --------------------------------------------------------------------

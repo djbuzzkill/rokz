@@ -7,6 +7,10 @@
 #include "rokz_types.h"
 //#include "binary_IO.h"
 
+
+
+#define HERE(x) printf("%s --> [%s]:%i\n",(x), __FUNCTION__,__LINE__);
+
 namespace rokz {
 
   namespace ut { 

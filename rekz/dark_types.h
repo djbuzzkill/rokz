@@ -11,27 +11,15 @@
 
 namespace darkroot {
 
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------
+  //                   
+  // ---------------------------------------------------------------------------------------
   typedef rekz::Vertex_pos_nrm_txc_col DarkVert;
-
-  // --------------------------------------------------------------------
-  typedef rekz::TriMesh<DarkVert>  DarkMesh;
 
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
-  // struct ResetSwapchainCB {
-
-  // public:
-  
-  //   virtual bool ResetSwapchain  (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
-
-  // protected:
-  
-  //   ResetSwapchainCB () {}
-  // };
+  typedef rekz::TriMesh<DarkVert>  DarkMesh;
 
   // ---------------------------------------------------------------------------------------
   //                   
@@ -74,34 +62,30 @@ namespace darkroot {
     // object descriptors are supposed to be 'generic', diffrnt from shared
     rokz::DescriptorSetLayout    object_dslo;
 
-    
+    // UniformBundle
     std::vector<rokz::Buffer>    global_uniform_bu; // vma_shared_uniforms;
     rokz::DescriptorGroup        global_uniform_de;
-
-
 
     // POLYGONS
     rokz::Pipeline               polys_pl;
     rokz::PipelineLayout         polys_plo;
-    // this belongs with the polygons
+
+    // ? this belongs with the polygons
     rekz::PolygonData            polyd;
     rokz::DrawSequence::Ref      drawpoly;
-    // std::vector<rokz::Buffer>    polys_obj_uniform_bu; // <-- polys uses object descriptors
-    // rokz::DescriptorGroup        polys_obj_uniform_de; // 
+
     std::vector<rokz::Buffer>    poly_objects_bu; // polygons will make use of object descriptors
     rokz::DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
+
     // 
-
-
     // GRID
     rokz::Pipeline               grid_pl;
     rokz::PipelineLayout         grid_plo;
-    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate  from pipelines 
+    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate from pipelines 
     rokz::DrawSequence::Ref      drawgrid;
     rekz::GridData               gridata;
 
-
-
+    
     std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 

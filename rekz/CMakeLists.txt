@@ -23,6 +23,7 @@ set (REKZ_SOURCE_FILES
   dark_obj_pipeline.cpp
   darkthings.cpp
   platonic.cpp
+  drawwireframe.cpp
   drawpolygon.cpp
   darkpolydata.cpp
 

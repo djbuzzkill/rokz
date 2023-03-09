@@ -70,12 +70,16 @@ bool rekz::BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, c
     binfo_grid.buffer     = buffs[i].handle;
     binfo_grid.offset     = sizeof(rokz::MVPTransform);
     binfo_grid.range      = sizeof(rekz::GridState);
+
+
+    const uint32_t binding_ind_mvp = 0;
+    const uint32_t binding_ind_grid = 1;
     //
     std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;    
     descriptor_writes[0].dstSet           = descs[i];
-    descriptor_writes[0].dstBinding       = 0;
+    descriptor_writes[0].dstBinding       = kGlobalDescriptorBindings[binding_ind_mvp].binding;
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[0].descriptorCount  = 1;
@@ -86,7 +90,7 @@ bool rekz::BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, c
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[1].pNext            = nullptr;    
     descriptor_writes[1].dstSet           = descs[i];
-    descriptor_writes[1].dstBinding       = 10;
+    descriptor_writes[1].dstBinding       = kGlobalDescriptorBindings[binding_ind_grid].binding; 
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[1].descriptorCount  = 1;
@@ -95,11 +99,11 @@ bool rekz::BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, c
     descriptor_writes[1].pTexelBufferView = nullptr;
 
     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+    
 
   }
-
   
-   return false;
+   return true;
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -664,9 +668,10 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
     for (uint16_t ix = 0; ix < vertdim; ++ix) { 
       inds[iz * vertdim + ix] = iz * vertdim + ix;   
     }}
+
   for (uint32_t ix = 0; ix < vertdim; ++ix) {  // draw z lines
     for (uint32_t iz = 0; iz < vertdim; ++iz) { 
-      inds[totalverts + iz * vertdim + ix] = iz * vertdim + ix; 
+      inds[totalverts + ix * vertdim + iz] = iz * vertdim + ix; 
     }
   } // move
   rokz::Create_IB_16_device (gd.ib_device, &inds[0], inds.size (), device); 

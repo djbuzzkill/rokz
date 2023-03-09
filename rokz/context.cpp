@@ -101,7 +101,7 @@ VkApplicationInfo& rokz::cx::AppInfo_default (VkApplicationInfo& app_info) {
   app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
   app_info.pEngineName      = kEngineName;
   app_info.engineVersion    = VK_MAKE_VERSION(1, 3, 0);
-  app_info.apiVersion       = VK_API_VERSION_1_3;
+  app_info.apiVersion       = VK_API_VERSION_1_3; 
   return app_info;
 }
 
@@ -116,7 +116,7 @@ VkInstanceCreateInfo& rokz::cx::CreateInfo (VkInstanceCreateInfo& ci,
                                         std::vector<std::string>& vstrs,
                                         const VkApplicationInfo&  app_info) {
 
-  printf ("%s VkInstanceCreateInfo \n", __FUNCTION__); 
+  printf ("%s -> VkInstanceCreateInfo \n", __FUNCTION__); 
   
   required_extensions.clear (); 
   for (auto& xs : ut::GetRequiredExtensionNames (extstrs))

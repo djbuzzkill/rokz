@@ -16,34 +16,63 @@
 
 namespace rekz {
 
-  template<typename ElTy> 
+  // ----------------------------------------------------------------------------------------------
+  //                                    
+  // ----------------------------------------------------------------------------------------------
+  extern const std::vector<VkDescriptorSetLayoutBinding>      kGlobalDescriptorBindings;
+  // ----------------------------------------------------------------------------------------------
+  //                           
+  // ----------------------------------------------------------------------------------------------
+  template<typename Ty> 
   struct RGBx {
-    ElTy r;
-    ElTy g;
-    ElTy b;
+    Ty r;
+    Ty g;
+    Ty b;
   };
 
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  template<typename Ty> struct PolarCoord {
+  template<typename Ty>
+  struct YawPitchRoll {
+    Ty yaw;
+    Ty pitch;
+    Ty roll; 
+  };
 
-    PolarCoord () : theta (0.0f), phi (0.0f) {
+  typedef YawPitchRoll<float>  YPRf;
+  typedef YawPitchRoll<double> YPRd;
+  
+  // ----------------------------------------------------------------------------------------------
+  //                           
+  // ----------------------------------------------------------------------------------------------
+  template<typename Ty> struct Spherical {
+
+    Spherical () : theta (0.0f), phi (0.0f) {
     }
     
-    PolarCoord (Ty th, Ty ph) : theta (th), phi (ph) {
+    Spherical (Ty th, Ty ph) : theta (th), phi (ph) {
     }
 
-    Ty theta; // "longitude" 0-360
-    Ty phi;   // "latitude"  -90 - +90
+    Ty theta; // "longitude" 0 -> 360
+    Ty phi;   // "latitude"  -90 -> +90
   }; 
 
-  typedef PolarCoord<float>  Polarf;
+  typedef Spherical<float>  Sphericalf;
+  typedef Spherical<double> Sphericald;
 
-  typedef PolarCoord<double> Polard;
-  // --------------------------------------------------------------------
-  // Geometry
-  // --------------------------------------------------------------------
+
+  // ----------------------------------------------------------------------------------------------
+  //                           
+  // ----------------------------------------------------------------------------------------------
+  struct UniformBundle {
+    rokz::Buffer&          buf;
+    rokz::DescriptorGroup& desc;
+  }; 
+
+  typedef std::vector<UniformBundle> UniformBundles;
+
+  void wat (const UniformBundles& bundles);
+  // ----------------------------------------------------------------------------------------------
+  //                           
+  // ----------------------------------------------------------------------------------------------
   template<typename VTy, typename IndTy>
   struct GeometryData {
 
@@ -91,10 +120,6 @@ namespace rekz {
 
   };
 
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  extern const std::vector<VkDescriptorSetLayoutBinding>      kGlobalDescriptorBindings;
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
@@ -157,7 +182,7 @@ namespace rekz {
     rokz::Sampler         sampler;   // 
 
     float                 obj_theta[2];     // scene objects 
-    rekz::Polarf          objatt;
+    //rekz::Sphericalf      objatt;
     glm::vec3             objpos;
 
     // pipeline resources
@@ -171,8 +196,9 @@ namespace rekz {
   // ?? a drawlist is tied to a pipeline.. ??
   rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg); 
   rokz::DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
+  rokz::DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
 
-  rekz::PolygonData& SetupPolygonData (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
+  rekz::PolygonData& SetupPolygonData   (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
   rekz::PolygonData& CleanupPolygonData (rekz::PolygonData& pd, const VmaAllocator& allocator);
   
   // ---------------------------------------------------------------------------------------
