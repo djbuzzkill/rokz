@@ -30,34 +30,6 @@ namespace rekz {
     Ty b;
   };
 
-  template<typename Ty>
-  struct YawPitchRoll {
-    Ty yaw;
-    Ty pitch;
-    Ty roll; 
-  };
-
-  typedef YawPitchRoll<float>  YPRf;
-  typedef YawPitchRoll<double> YPRd;
-  
-  // ----------------------------------------------------------------------------------------------
-  //                           
-  // ----------------------------------------------------------------------------------------------
-  template<typename Ty> struct Spherical {
-
-    Spherical () : theta (0.0f), phi (0.0f) {
-    }
-    
-    Spherical (Ty th, Ty ph) : theta (th), phi (ph) {
-    }
-
-    Ty theta; // "longitude" 0 -> 360
-    Ty phi;   // "latitude"  -90 -> +90
-  }; 
-
-  typedef Spherical<float>  Sphericalf;
-  typedef Spherical<double> Sphericald;
-
 
   // ----------------------------------------------------------------------------------------------
   //                           
@@ -201,6 +173,7 @@ namespace rekz {
   rekz::PolygonData& SetupPolygonData   (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
   rekz::PolygonData& CleanupPolygonData (rekz::PolygonData& pd, const VmaAllocator& allocator);
   
+
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
@@ -452,6 +425,22 @@ namespace rekz {
 
   bool BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, const std::vector<rokz::Buffer>& buffs, const rokz::Device& device);
 
+
+
+
+
+  inline void printmat (glm::mat4& mat) { 
+      for (int iy = 0; iy < 4; ++iy) {
+        for (int ix = 0; ix < 4; ++ix) {
+
+          if  (ix == 0) 
+            printf ( "[ %f", mat[iy][ix]);
+          else
+            printf ( " %f", mat[iy][ix]);
+        }
+        printf ( " ]\n");
+      }
+  }
 
 }
 

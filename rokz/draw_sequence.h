@@ -2,6 +2,7 @@
 #define ROKZ_DRAW_SEQUENCE
 
 #include "common.h"
+//#include "rekz/rekz.h"
 #include "utility.h"
 #include "rokz_types.h"
 #include "rokz_types.h"
@@ -10,7 +11,6 @@
 
 
 namespace rokz {
-
 
   // ---------------------------------------------------------------------
   // 
@@ -22,12 +22,11 @@ namespace rokz {
     DS_OBJECT,
     
   }; 
-  
-  // ---------------------------------------------------------------------
-  // INTENT:  encapsulate a list of draw commands
-  // DrawLisst renamed to DrawSequence to avoid confusion
-  // ---------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------
+  //  encapsulate a list of draw commands
+  // DrawList renamed to DrawSequence to avoid confusion
+  // ---------------------------------------------------------------------
   struct DrawSequence : public rokz::ut::destructor {
 
     typedef std::shared_ptr<DrawSequence>  Ref;
@@ -47,7 +46,7 @@ namespace rokz {
     // --------------------------------------------------------------------
     struct shared_globals {
 
-      shared_globals () : viewport_ext (), dt(0.0f), sim_time(0.0f), current_frame (0), view_ypr(0.0), view_pos(0.0) {
+      shared_globals () : viewport_ext (), dt(0.0f), sim_time(0.0f), view_rot(), view_pos(0.0) {
         // pd.view_orie.theta = 0.0f;
         // pd.view_orie.phi   = kPi;
       }
@@ -55,19 +54,30 @@ namespace rokz {
       VkExtent2D     viewport_ext;
       float          dt;
       float          sim_time;
-      uint32_t       current_frame;
-      glm::vec3      view_ypr; // yaw pitch roll
+      glm::vec3      view_rot; // yaw pitch roll
       glm::vec3      view_pos;
 
     };
-
     typedef shared_globals Globals;
+
+    struct render_environment {
+      PipelineAssembly&  pa;
+      Globals&           globals;
+      DescriptorMap&     descriptormap;
+    }; 
+    typedef render_environment RenderEnv; 
+
+
+    virtual int Prep (uint32_t current_frame, const RenderEnv& env, const rokz::Device& device) = 0; 
+    virtual int Exec (VkCommandBuffer comb, uint32_t current_frame, const RenderEnv& env) = 0;
+
+
     
     // do crap before recording ("UpdateDescriptors()", etc)
-    virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
+    //virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) = 0; 
 
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
-    virtual int Exec (VkCommandBuffer comb, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) = 0;
+    //virtual int Exec (VkCommandBuffer comb, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) = 0;
 
   protected:
 

@@ -32,10 +32,10 @@ namespace rekz {
   // --------------------------------------------------------------------
   // vert input binding, diffrnt from input attriubutes
   // --------------------------------------------------------------------
-  const VkVertexInputBindingDescription kVertexInputBindingDesc =  {
-    0,                            // binding    
+  const VkVertexInputBindingDescription kVertexInputBindingDesc = {
+    0,                          // binding    
     sizeof (PolyObjVert),       // stride      
-    VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
+    VK_VERTEX_INPUT_RATE_VERTEX // inputRate   
   }; 
 
   // --------------------------------------------------------------------
@@ -156,11 +156,11 @@ bool rekz::SetupObjectUniforms (std::vector<rokz::Buffer>& objparams, uint32_t n
 //                                    
 // ----------------------------------------------------------------------------------------------
 bool rekz::BindObjectDescriptorResources (std::vector<VkDescriptorSet>&    dss ,
-                                     const std::vector<rokz::Buffer>& objparam_buffs,
-                                     const rokz::ImageView&           texture_imageview, 
-                                     const rokz::Sampler&             sampler, 
-                                     const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-                                     const rokz::Device&              device) {
+                                          const std::vector<rokz::Buffer>& objparam_buffs,
+                                          const rokz::ImageView&           texture_imageview, 
+                                          const rokz::Sampler&             sampler, 
+                                          const rokz::DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                                          const rokz::Device&              device) {
 
   //printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
    assert (dss.size () == objparam_buffs.size ());

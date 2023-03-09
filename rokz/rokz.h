@@ -9,6 +9,8 @@
 
 
 #include "common.h"
+
+#include "shared_types.h"
 #include "rokz_types.h"
 
 #include "context.h"

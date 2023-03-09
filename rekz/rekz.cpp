@@ -11,6 +11,7 @@
 //#include "texture_tool.cpp"
 #include <IL/il.h>
 #include <IL/ilu.h>
+#include <glm/ext/quaternion_common.hpp>
 
 
 
@@ -648,7 +649,13 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
   const uint16_t totalverts = vertdim * vertdim;
   const float    dimsize    = 20.0f;
   const float    dimstep    = float (dimsize) / float (vertdim - 1);
-    
+
+  glm::vec3 zaxis_co  (1.0, 0.4, 0.8);
+  glm::vec3 xaxis_co  (0.3, 0.5, 1.0);
+  glm::vec3 origin_co (0.0, 0.4, 0.6);
+
+  float dx = 1.0f / float (vertdim);
+  
   const glm::vec3 voffs (-dimsize * 0.5f, 0.0f, -dimsize * 0.5f);
 
   std::vector<rekz::GridVert> verts (vertdim * vertdim);
@@ -658,7 +665,8 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
   for (uint16_t iz = 0; iz < vertdim; ++iz) {
     for (uint16_t ix = 0; ix < vertdim; ++ix) {
       verts[iz * vertdim + ix].pos = glm::vec3 (ix * dimstep, 0.0f, iz * dimstep) + voffs;
-      verts[iz * vertdim + ix].col = glm::vec3 (1.0f);
+      verts[iz * vertdim + ix].col = glm::mix (origin_co, zaxis_co, ix * dx); 
+
     }
   } // move 2 vb
   rokz::Create_VB_device ( gd.vb_device, &verts[0], verts.size () * sizeof(rekz::GridVert), device); 

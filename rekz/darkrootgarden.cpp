@@ -7,6 +7,7 @@
 #include "rokz/draw_sequence.h"
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
+#include <glm/matrix.hpp>
 #include <vulkan/vulkan_core.h>
 // 
 #include "dark_obj_pipeline.h"
@@ -230,7 +231,6 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
   {
     glob.shared.dt             = dt;
     glob.shared.sim_time      += dt;
-    glob.shared.current_frame  = current_frame;
     glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
   }    
   
@@ -246,13 +246,28 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 
       const float aspf = rekz::ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
 
-      mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
-        * glm::translate (glm::mat4(1.0), glob.shared.view_pos); 
+      glm::mat4 xrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
+      glm::mat4 yrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+      glm::mat4 zrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+      glm::mat4 viewmatrix = yrot * xrot * zrot + glm::translate (glm::mat4(1.0), glob.shared.view_pos);
+
+
+      //rekz::printmat (viewmatrix); 
+      mvp->view = glm::inverse (viewmatrix); 
+      // mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
+      //   * glm::translate (glm::mat4(1.0), glob.shared.view_pos); 
 
       //glm::vec3 (0.0, .5, -5.0));
       // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      mvp->proj  = glm::perspective(glm::radians(45.0f), aspf , 1.0f, 100.0f);
-      mvp->proj[1][1] *= -1;
+      
+      mvp->proj  = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 100.0f);
+      // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
+      // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
+      // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
+      //mvp->proj[1][1] *= -1;
+      
     }
   }
   
@@ -270,7 +285,7 @@ struct RootLoop {
   bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int        countdown  = 600;
+  int        countdown  = 6000;
 
   const float Dt; 
   std::chrono::system_clock::time_point then;
@@ -291,32 +306,32 @@ struct RootLoop {
     if (glob.input_state.keys.count (GLFW_KEY_F)) {
       // fwd
       glob.shared.view_pos.z += move_rate;
-      //printf ("--> [f] z:%f \n", glob.shared.view_pos.z);
+      printf ("--> [f] z:%f \n", glob.shared.view_pos.z);
     }    
     if (glob.input_state.keys.count (GLFW_KEY_V)) {
       // ?? recedes
       glob.shared.view_pos.z -= move_rate;
-      //printf ("--> [v] z:%f \n", glob.shared.view_pos.z);
+      printf ("--> [v] z:%f \n", glob.shared.view_pos.z);
     }    
 
     if (glob.input_state.keys.count (GLFW_KEY_D)) {
       glob.shared.view_pos.x -= move_rate;
-      //printf ("--> [d] x:%f \n", glob.shared.view_pos.x);
+      printf ("--> [d] x:%f \n", glob.shared.view_pos.x);
     }    
     if (glob.input_state.keys.count (GLFW_KEY_G)) {
       glob.shared.view_pos.x += move_rate;
-      //printf ("--> [g] x:%f \n", glob.shared.view_pos.x);
+      printf ("--> [g] x:%f \n", glob.shared.view_pos.x);
     }    
 
     if (glob.input_state.keys.count (GLFW_KEY_J)) {
       // ??? climbs
-      glob.shared.view_pos.y -= move_rate;
-      //printf ("--> [j] y:%f \n", glob.shared.view_pos.y);
+      glob.shared.view_pos.y += move_rate;
+      printf ("--> [j] y:%f \n", glob.shared.view_pos.y);
     }    
     if (glob.input_state.keys.count (GLFW_KEY_K)) {
       // appears to descend
-      glob.shared.view_pos.y += move_rate;
-      //printf ("--> [k] y:%f \n", glob.shared.view_pos.y);
+      glob.shared.view_pos.y -= move_rate;
+      printf ("--> [k] y:%f \n", glob.shared.view_pos.y);
     }    
 
 
@@ -325,10 +340,10 @@ struct RootLoop {
   // -------------------------------------------------------------
   RootLoop (Glob& g, float dt ) :  glob(g), Dt (dt) { 
 
-    run        = true;
-    curr_frame = 0; 
-    result     = false;
-    countdown  = 600;
+    // run        = true;
+    // curr_frame = 0; 
+    // result     = false;
+    // countdown  = 600;
     then = std::chrono::high_resolution_clock::now(); 
 
     time_per_frame = std::chrono::microseconds (static_cast<size_t>(Dt * 1000000.0));
@@ -396,16 +411,20 @@ struct RootLoop {
       // const std::vector<VkDescriptorSet> descrsets = {
       //   glob.global_uniform_de.descrsets[curr_frame], glob.objres_uniform_de.descrsets[curr_frame]
       // };
-      
-      glob.drawpoly->Prep (glob.shared, papoly, glob.device); 
-      glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame],
-                           glob.shared, papoly, glob.descriptormaps[curr_frame]);
+      rokz::DrawSequence::RenderEnv poly_re {
+        papoly, glob.shared, glob.descriptormaps[curr_frame]
+      };
+
+      rokz::DrawSequence::RenderEnv grid_re {
+        pagrid, glob.shared, glob.descriptormaps[curr_frame]
+      };
+        
+      glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
+      glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
 
 
-      glob.drawgrid->Prep (glob.shared, pagrid, glob.device); 
-      glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame],
-                           glob.shared, pagrid, glob.descriptormaps[curr_frame]);
-
+      glob.drawgrid->Prep (curr_frame, grid_re, glob.device); 
+      glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
 
       // we are done, submit
       rokz::cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
@@ -567,6 +586,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
   }
+
   // ?? who owns descriptor sets
   // POLYGONS
   if (!rokz::MakeDescriptorSets (glob.poly_objects_de.descrsets, glob.poly_objects_de.alloc_info, kMaxFramesInFlight,

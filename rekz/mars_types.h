@@ -41,7 +41,7 @@ namespace mars {
     alignas(16) glm::vec3 view_dir;
     alignas(16) glm::vec3 view_up;
 
-    rekz::YPRf            view_orie;
+    rokz::YPRf     view_orie;
 
     float field_of_view; 
     float aspect;

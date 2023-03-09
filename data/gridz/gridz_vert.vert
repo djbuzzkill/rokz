@@ -43,8 +43,12 @@ layout (push_constant) uniform GridPushConstants {
 layout(location = 0) out vec4 o_frag; 
 
 
+
+
 void main() {
 
   gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);
-  o_frag      = vec4 (pc.x_color.rgb * in_col, 1.0);
+  //o_frag      = vec4 (in_col, 1.0);
+  //mix (grid.xcolor, grid.zcolor, 
+  o_frag      = vec4 (in_col, 1.0);
 }
