@@ -85,6 +85,13 @@ namespace rekz {
     glm::vec2 txc0; 
   };
 
+  struct Vertex_pos_nrm_txc {
+    glm::vec3 pos; 
+    glm::vec3 nrm; 
+    glm::vec3 col; 
+    glm::vec2 txc0; 
+  };
+
   struct Vertex_pos_col {
 
     glm::vec3 pos; 

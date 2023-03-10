@@ -8,9 +8,8 @@ project (rekz)
 set (REKZ_HEADER_FILES
     rekz.h
     dark_types.h
+    marz.h
     darkrootgarden.h
-    mars_types.h
-
     dark_obj_pipeline.h
     grid_pipeline.h
 
@@ -26,14 +25,9 @@ set (REKZ_SOURCE_FILES
   drawwireframe.cpp
   drawpolygon.cpp
   darkpolydata.cpp
-
-  marscape.cpp
-  # mars_window_handler.cpp
-  mars_things.cpp
+  marz.cpp
   grid_pipeline.cpp  
-  
   drawgrid.cpp  
-  #  test_rokz_hpp.cpp
   # test_rokz.cpp
   rekz.cpp
 )
