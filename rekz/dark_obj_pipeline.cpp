@@ -87,7 +87,7 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
   shader_stage_create_infos.resize(2);
   //
   // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"data/objz/polyobj_vert.spv" ;
+  std::filesystem::path vert_file_path  = fspath/"objz/polyobj_vert.spv" ;
   //printf ( "LINE [%i] --> %s \n", __LINE__, vert_file_path.string().c_str()); 
   
   rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
@@ -98,7 +98,7 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
 
   //
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"data/objz/polyobj_frag.spv" ;
+  std::filesystem::path frag_file_path = fspath/"objz/polyobj_frag.spv" ;
   //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str()); 
   
   rokz::CreateInfo (shader_modules[1].ci, rokz::From_file (shader_modules[1].bin, frag_file_path.string())); 

@@ -39,7 +39,7 @@ bool UpdateGridUniforms (Glob& glob, uint32_t current_frame, double dt) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool SetupDynamicRenderingInfo (mars::Glob& glob) {
+bool SetupDynamicRenderingInfo (Glob& glob) {
   return false;
 }
 
@@ -58,22 +58,22 @@ bool SetupRenderAttachments (Glob& glob) {
 void CleanupMars (Glob& glob) {
 
   
-  printf ("%s \n", __FUNCTION__); 
+  // printf ("%s \n", __FUNCTION__); 
 
-  for (auto& ub : glob.uniform_mvp) {
-    rokz::Destroy (ub, glob.allocator); 
-  }
+  // for (auto& ub : glob.uniform_mvp) {
+  //   rokz::Destroy (ub, glob.allocator); 
+  // }
 
-  assert (false); // rokz::cx::Destroy (glob.terrain_pipeline.descrgroup
-  //rokz::cx::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
+  // assert (false); // rokz::cx::Destroy (glob.terrain_pipeline.descrgroup
+  // //rokz::cx::Destroy (glob.terrain_pipeline.descrgroup, glob.device.handle); 
 
-  rokz::cx::Destroy (glob.descriptor_pool, glob.device.handle); 
+  // rokz::cx::Destroy (glob.descriptor_pool, glob.device.handle); 
 
-  assert (false); // rokz::cx::Destroy (glob.grid_pipeline.descrgroup, 
-  //rokz::cx::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
+  // assert (false); // rokz::cx::Destroy (glob.grid_pipeline.descrgroup, 
+  // //rokz::cx::Destroy (glob.grid_pipeline.descrgroup, glob.device.handle); 
 
-  rokz::Destroy (glob.vma_vb_device, glob.allocator);
-  rokz::Destroy (glob.vma_ib_device, glob.allocator);
+  // rokz::Destroy (glob.vma_vb_device, glob.allocator);
+  // rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
   assert (false); // Cleanup
   // Cleanup (glob.terrain_pipeline.pipeline.handle,
@@ -120,73 +120,73 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool SetupGlobalDescriptorPool (Glob& glob) {
+// bool SetupGlobalDescriptorPool (Glob& glob) {
 
-  assert (false);
-  return false;
-}
-
-
-bool SetupTerrainDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
-
-  assert (false);
-  return false;
-}
+//   assert (false);
+//   return false;
+// }
 
 
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-bool SetupMarsUniforms (mars::Glob& glob) {
-  return false;
-}
+// bool SetupTerrainDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
+
+//   assert (false);
+//   return false;
+// }
 
 
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-void UpdateMarsUniforms (mars::Glob& glob, uint32_t current_frame, double dt) {
+// bool SetupMarsUniforms (Glob& glob) {
+//   return false;
+// }
+
+
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+// void UpdateMarsUniforms (Glob& glob, uint32_t current_frame, double dt) {
  
-}
+// }
 
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool RecordDynamicRender (Glob& glob, 
-                          VkCommandBuffer        &command_buffer,
-                          const rokz::Pipeline&        pipeline,
-                          const VkDescriptorSet& desc_set, 
-                          const VkBuffer&        vertex_buffer, 
-                          const VkBuffer&        index_buffer, 
-                          const VkExtent2D&      ext2d,
-                          const VkFramebuffer&   framebuffer,
-                          const rokz::RenderPass&      render_pass,
-                          const VkDevice&        device) {
+// bool RecordDynamicRender (Glob& glob, 
+//                           VkCommandBuffer        &command_buffer,
+//                           const rokz::Pipeline&        pipeline,
+//                           const VkDescriptorSet& desc_set, 
+//                           const VkBuffer&        vertex_buffer, 
+//                           const VkBuffer&        index_buffer, 
+//                           const VkExtent2D&      ext2d,
+//                           const VkFramebuffer&   framebuffer,
+//                           const rokz::RenderPass&      render_pass,
+//                           const VkDevice&        device) {
 
-  return false;
-}
+//   return false;
+// }
+// // --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+// bool RenderFrame (mars::Glob&           glob,
+//                       uint32_t&               image_index,
+//                       bool&                   resize,
+//                       rokz::RenderPass&       renderpass, 
+//                       const rokz::Pipeline&   pipeline,
+//                       const VkDescriptorSet&  descr_set, 
+//                       uint32_t                curr_frame,
+//                       double dt) {
+
+
+//   return false;
+// }
+
+
+
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool RenderFrame (mars::Glob&           glob,
-                      uint32_t&               image_index,
-                      bool&                   resize,
-                      rokz::RenderPass&       renderpass, 
-                      const rokz::Pipeline&   pipeline,
-                      const VkDescriptorSet&  descr_set, 
-                      uint32_t                curr_frame,
-                      double dt) {
-
-
-  return false;
-}
-
-
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-int mars_run (const std::vector<std::string>& args) {
+int marz_run (const std::vector<std::string>& args) {
   printf ("%s\n", __FUNCTION__);
 
   Glob glob; //
@@ -194,201 +194,202 @@ int mars_run (const std::vector<std::string>& args) {
   rokz::SwapchainGroup&  scg   = glob.swapchain_group;
   rokz::FrameSyncGroup&  fsg   = glob.framesyncgroup; 
   
-  auto pipeline_path  = std::filesystem::path ("/home/djbuzzkill/owenslake/rokz/pipeline";
+  // auto pipeline_path  = std::filesystem::path ("/home/djbuzzkill/owenslake/rokz/pipeline";
   
 
-  SetupMarsWindow (glob.window, &glob.input_state); 
+  // SetupMarsWindow (glob.window, &glob.input_state); 
 
 
-  rokz::InitializeInstance (glob.instance); 
-  rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
-  rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
+  // rokz::InitializeInstance (glob.instance); 
+  // rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
+  // rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
 
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.surface, glob.physical_device.handle);
+  // rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.surface, glob.physical_device.handle);
 
-  rokz::ConfigureDevice ( glob.physical_device , VK_TRUE); 
-  rokz::InitializeDevice (glob.device,glob.physical_device, glob.instance);
+  // rokz::ConfigureDevice ( glob.physical_device , VK_TRUE); 
+  // rokz::InitializeDevice (glob.device,glob.physical_device, glob.instance);
 
-  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
-  rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
+  // glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
+  // rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
   
-  //
-  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.surface,
-                             kWinExtent, glob.physical_device, glob.device);
+  // //
+  // rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.surface,
+  //                            kWinExtent, glob.physical_device, glob.device);
 
 
-#ifdef MARSCAPE_CALL_SETUP_GRID_PIPELINE_
+// #ifdef MARSCAPE_CALL_SETUP_GRID_PIPELINE_
   
-  rekz::SetupGridPipeline (glob.grid_pipeline,
-                           mars_path,
-                           kWinExtent, //const rokz::Swapchain& swapchain,
-                           glob.msaa_samples, 
-                           glob.swapchain_group.swapchain.ci.imageFormat,
-                           glob.depth_format,
-                           sizeof(PushConstants), 
-                           glob.device);
-#endif
+//   rekz::SetupGridPipeline (glob.grid_pipeline,
+//                            mars_path,
+//                            kWinExtent, //const rokz::Swapchain& swapchain,
+//                            glob.msaa_samples, 
+//                            glob.swapchain_group.swapchain.ci.imageFormat,
+//                            glob.depth_format,
+//                            sizeof(PushConstants), 
+//                            glob.device);
+// #endif
 
-  // SetupRenderAttachments
-  if (!SetupRenderAttachments (glob)) {
-    printf ("[FAILED|%i] -> SetupRenderAttachments \n", __LINE__);
-    return false; 
-  }
+//   // SetupRenderAttachments
+//   if (!SetupRenderAttachments (glob)) {
+//     printf ("[FAILED|%i] -> SetupRenderAttachments \n", __LINE__);
+//     return false; 
+//   }
       
-  if (! SetupGridResources (glob) ) {
-    return false; 
-  }
+//   if (! SetupGridResources (glob) ) {
+//     return false; 
+//   }
   
-#ifdef MARS_ENABLE_TERRAIN_PIPELINE  
+// #ifdef MARS_ENABLE_TERRAIN_PIPELINE  
 
 
-  SetupTerrainPipeline (glob.terrain_pipeline,
-                        glob.terrain_pipeline.pipeline.state.viewport,
-                        glob.render_pass,
-                        mars::data_root,
-                        glob.swapchain_group.swapchain,
-                        glob.msaa_samples,
-                        glob.device); 
-  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
+//   SetupTerrainPipeline (glob.terrain_pipeline,
+//                         glob.terrain_pipeline.pipeline.state.viewport,
+//                         glob.render_pass,
+//                         mars::data_root,
+//                         glob.swapchain_group.swapchain,
+//                         glob.msaa_samples,
+//                         glob.device); 
+//   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
-  SetupTerrainResources (glob); 
-  "Setup Index+Vertex Buffers";
+//   SetupTerrainResources (glob); 
+//   "Setup Index+Vertex Buffers";
 
-  SetupTerrainSamplers (glob);
-
-  
-#endif //  MARS_ENABLE_TERRAIN_PIPELINE
+//   SetupTerrainSamplers (glob);
 
   
-
-  // for BeginRendering ()
-  SetupDynamicRenderingInfo (glob) ; 
-  
+// #endif //  MARS_ENABLE_TERRAIN_PIPELINE
 
   
 
-  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-  if (!SetupMarsUniforms (glob)) {
-    printf ("[FAILED] --> SetupDarkUniforms \n"); 
-    return false;
-  }
+//   // for BeginRendering ()
+//   SetupDynamicRenderingInfo (glob) ; 
+  
+
+  
+
+//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+//   if (!SetupMarsUniforms (glob)) {
+//     printf ("[FAILED] --> SetupDarkUniforms \n"); 
+//     return false;
+//   }
 
 
-  if (!SetupMarsTexturesAndImageViews (glob)) {
-    printf ("[FAILED] --> SetupMarsTexturesAndImageViews \n"); 
-    return false;
-  }
+//   if (!SetupMarsTexturesAndImageViews (glob)) {
+//     printf ("[FAILED] --> SetupMarsTexturesAndImageViews \n"); 
+//     return false;
+//   }
   
   
-  if (!SetupGlobalDescriptorPool (glob)) {
-    printf ("[FAILED] --> SetupGlobalDescriptorPool \n"); 
-    return false;
-  }
+//   if (!SetupGlobalDescriptorPool (glob)) {
+//     printf ("[FAILED] --> SetupGlobalDescriptorPool \n"); 
+//     return false;
+//   }
 
 
-#ifdef MARS_TERRAIN_ENABLE 
-  if (!SetupTerrainDescriptorSets (glob.obj_pipeline,
-                                   glob.uniform_mvp,
-                                   glob.vma_objparam_buffs,
-                                   glob.texture_imageview,
-                                   glob.sampler,
-                                   glob.descr_pool, 
-                                   glob.device)) {
-    printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
-    return false;
-  }
-#endif
+// #ifdef MARS_TERRAIN_ENABLE 
+//   if (!SetupTerrainDescriptorSets (glob.obj_pipeline,
+//                                    glob.uniform_mvp,
+//                                    glob.vma_objparam_buffs,
+//                                    glob.texture_imageview,
+//                                    glob.sampler,
+//                                    glob.descr_pool, 
+//                                    glob.device)) {
+//     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
+//     return false;
+//   }
+// #endif
   
-#ifdef MARSCAPE_CALL_SETUP_GRID_DESCRIPTORSETS  
-  if (!rekz::SetupGridDescriptorSets (glob.descrgroup_grid, glob.uniform_mvp,
-                                      glob.pipeline_def_grid.layout.descriptor, glob.device)) {
-    printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
-    return false;
-  }
-#endif
+// #ifdef MARSCAPE_CALL_SETUP_GRID_DESCRIPTORSETS  
+//   if (!rekz::SetupGridDescriptorSets (glob.descrgroup_grid, glob.uniform_mvp,
+//                                       glob.pipeline_def_grid.layout.descriptor, glob.device)) {
+//     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
+//     return false;
+//   }
+// #endif
   
-  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 
-  //swapchain_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
+//   //swapchain_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
 
-  fsg.syncs.resize (kMaxFramesInFlight);
-  fsg.command_buffers.resize (kMaxFramesInFlight);
+//   fsg.syncs.resize (kMaxFramesInFlight);
+//   fsg.command_buffers.resize (kMaxFramesInFlight);
   
-  rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.command_pool.handle); 
+//   rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.command_pool.handle); 
 
-  // 
-  for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
-    // sep
-    rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], 
-                              fsg.command_buffer_alloc_info,
-                              glob.device.handle);
+//   // 
+//   for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
+//     // sep
+//     rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], 
+//                               fsg.command_buffer_alloc_info,
+//                               glob.device.handle);
 
-    rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
-  }
+//     rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
+//   }
 
-  // SetupDarkroot ();
+//   // SetupDarkroot ();
 
-  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-  const double time_per_frame_sec = 1.0 / 60.0;
-  glob.dt = time_per_frame_sec; // just do this for now
+//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+//   const double time_per_frame_sec = 1.0 / 60.0;
+//   glob.dt = time_per_frame_sec; // just do this for now
   
-  std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
+//   std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
   
-  std::chrono::duration<size_t, std::chrono::microseconds::period>
-    time_per_frame(time_per_frame_us);
+//   std::chrono::duration<size_t, std::chrono::microseconds::period>
+//     time_per_frame(time_per_frame_us);
 
-  bool       run        = true;
-  uint32_t   curr_frame = 0; 
-  bool       result     = false;
-  int        countdown  = 60;
+//   bool       run        = true;
+//   uint32_t   curr_frame = 0; 
+//   bool       result     = false;
+//   int        countdown  = 60;
   
-  //printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
-  //
-  auto t0 = std::chrono::high_resolution_clock::now(); 
-  auto then = t0; 
+//   //printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
+//   //
+//   auto t0 = std::chrono::high_resolution_clock::now(); 
+//   auto then = t0; 
 
-  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-  while (countdown && run && !glfwWindowShouldClose(glob.window.glfw_window)) {
+//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+//   while (countdown && run && !glfwWindowShouldClose(glob.window.glfw_window)) {
 
-    glfwPollEvents(); 
-    //start = std::chrono::high_resolution_clock::now();
-    auto now = std::chrono::high_resolution_clock::now();    
-    //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
-    glob.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
+//     glfwPollEvents(); 
+//     //start = std::chrono::high_resolution_clock::now();
+//     auto now = std::chrono::high_resolution_clock::now();    
+//     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
+//     glob.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
     
-    //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
-    uint32_t image_index; 
+//     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
+//     uint32_t image_index; 
 
-assert (false); // RenderFrame
-    // if (RenderFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.grid_pipeline.pipeline,
-    //                  glob.grid_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
+// assert (false); // RenderFrame
+//     // if (RenderFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.grid_pipeline.pipeline,
+//     //                  glob.grid_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
 
-    // }
-    // else {
-    //   run = false;
-    // }
+//     // }
+//     // else {
+//     //   run = false;
+//     // }
     
-    // how long did we take
-    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
-    if (time_to_make_frame < time_per_frame) {
-      auto sleep_time = time_per_frame - time_to_make_frame;
-      std::this_thread::sleep_for(sleep_time);
-    }
+//     // how long did we take
+//     auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+//     if (time_to_make_frame < time_per_frame) {
+//       auto sleep_time = time_per_frame - time_to_make_frame;
+//       std::this_thread::sleep_for(sleep_time);
+//     }
 
-    curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
-    then = now; // std::chrono::high_resolution_clock::now(); 
-    countdown--; 
-  }
+//     curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
+//     then = now; // std::chrono::high_resolution_clock::now(); 
+//     countdown--; 
+//   }
 
   
-  vkDeviceWaitIdle(glob.device.handle);
-  printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+//   vkDeviceWaitIdle(glob.device.handle);
+//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 
 
-  // CLEAN UP
-  CleanupMars (glob); 
+//   // CLEAN UP
+//   CleanupMars (glob); 
 
-  printf ("%[LEAVING] --> %s\n", __FUNCTION__);
+//   printf ("%[LEAVING] --> %s\n", __FUNCTION__);
+
   return 0; 
 }
 

@@ -62,7 +62,7 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
   shader_modules.resize  (2);
   pss_create_infos.resize(2);
   // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"data/gridz/gridz_vert.spv" ;
+  std::filesystem::path vert_file_path  = fspath/"gridz/gridz_vert.spv" ;
   rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
   if (!rokz::CreateShaderModule (shader_modules[0], device.handle))
     return false; 
@@ -72,7 +72,7 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
   
 
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"data/gridz/gridz_frag.spv" ;
+  std::filesystem::path frag_file_path = fspath/"gridz/gridz_frag.spv" ;
   rokz::CreateInfo (shader_modules[1].ci, rokz::From_file (shader_modules[1].bin, frag_file_path.string())); 
   if (!rokz::CreateShaderModule (shader_modules[1], device.handle))
     return false; 

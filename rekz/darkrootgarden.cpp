@@ -18,7 +18,6 @@
 // --------------------------------------------------------------------
 const size_t kMaxFramesInFlight = darkroot::Glob::MaxFramesInFlight; 
 
-const std::string   data_root =  "/home/djbuzzkill/owenslake/rokz/data"; // 
 const VkExtent2D    kTestExtent  = { 800, 600 };
 //
 //
@@ -495,7 +494,9 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
 
-  auto dark_path = std::filesystem::path ( "/home/djbuzzkill/owenslake/rokz/");
+  std::filesystem::path dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
+  std::filesystem::path data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
+
   //Default (glob); 
   
   glfwInit();
@@ -569,7 +570,7 @@ int darkroot_basin (const std::vector<std::string>& args) {
 
   //
   // setup object data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_root, glob.device); 
+  SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_path, glob.device); 
   // should 
   //
   
