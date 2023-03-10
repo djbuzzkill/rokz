@@ -31,8 +31,7 @@ namespace darkroot {
     Glob();
     // input 
     rekz::InputState              input_state;
-    int                           prev_x;
-    int                           prev_y; 
+    glm::ivec2                    mouse_prev; 
     int                           prev_inside;
     // system
     rokz::Instance                instance;

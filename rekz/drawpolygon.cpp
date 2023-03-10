@@ -46,7 +46,7 @@ struct PolygonDraw : public rokz::DrawSequence {
       glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (2.0, 4.0, 0.0));
       //for (size_t i = 0; i < kSceneObjCount; ++i) {
       obj[0].modelmat = glm::rotate(model0, polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
-      obj[1].modelmat = glm::rotate(model1, env.globals.sim_time * glm::radians(120.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+      obj[1].modelmat = glm::rotate(model1, env.globals.sim_time * glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     }
   

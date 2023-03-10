@@ -7,6 +7,7 @@
 #include "rokz/draw_sequence.h"
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
+#include <glm/fwd.hpp>
 #include <glm/matrix.hpp>
 #include <vulkan/vulkan_core.h>
 // 
@@ -241,32 +242,24 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
   
     if (mvp) {
     
-      glm::mat4 posmat = glm::translate (glm::mat4(1.0), glm::vec3 (0.0, .5, -5.0));
-      mvp->model = glm::mat4(1.0); //  posmat; //  glm::rotate(posmat, glob.shared.sim_time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+      mvp->model = glm::mat4(1.0); // model is elsewhere 
       const float aspf = rekz::ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
 
       glm::mat4 xrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
       glm::mat4 yrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
       glm::mat4 zrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-
-      glm::mat4 viewmatrix = yrot * xrot * zrot + glm::translate (glm::mat4(1.0), glob.shared.view_pos);
-
-
-      //rekz::printmat (viewmatrix); 
+      glm::mat4 rotation =  zrot  * yrot  * xrot;
+      glm::mat4 viewmatrix = glm::translate (glm::mat4(1.0f), glob.shared.view_pos) * rotation;
       mvp->view = glm::inverse (viewmatrix); 
-      // mvp->view = glm::rotate (glm::mat4(1), glob.shared.view_ypr.x, glm::vec3(0.0f, 1.0f, 0.0f))
-      //   * glm::translate (glm::mat4(1.0), glob.shared.view_pos); 
-
       //glm::vec3 (0.0, .5, -5.0));
       // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
       
-      mvp->proj  = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 100.0f);
+      mvp->proj = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 800.0f);
       // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
       // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
       // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
-      //mvp->proj[1][1] *= -1;
+      mvp->proj[1][1] *= -1;
       
     }
   }
@@ -274,6 +267,74 @@ void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 }
 
 
+// 
+void UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const rekz::InputState& input_state) {
+
+  const float turnrate = 0.02f;
+  
+  if (input_state.mouse.inside) {
+    if (!previnside) {
+      mouse_prev.x = input_state.mouse.x_pos; 
+      mouse_prev.y = input_state.mouse.y_pos; 
+    }
+
+    int dx = input_state.mouse.x_pos - mouse_prev.x; 
+    int dy = input_state.mouse.y_pos - mouse_prev.y; 
+        
+    mouse_prev.x = input_state.mouse.x_pos; 
+    mouse_prev.y = input_state.mouse.y_pos; 
+    // glob.shared.view_rot.x += turnrate;
+    // glob.shared.view_rot.y += turnrate;
+    previnside = input_state.mouse.inside; 
+
+    // printf (" [%i]--> S(%i, %i) | dS(%i, %i)\n", __LINE__,
+    //         glob.input_state.mouse.x_pos,
+    //         glob.input_state.mouse.y_pos,
+    //         dx, dy); 
+
+    viewrot.x += -dy * turnrate;
+    viewrot.y += -dx * turnrate;
+    viewrot.z = 0.0f;
+  }
+  
+}
+
+void UpdateViewPosition (glm::vec3& viewpos, const rekz::InputState& input_state) {
+
+    const float move_rate = 0.05f;
+
+    if (input_state.keys.count (GLFW_KEY_F)) {
+      // fwd
+      viewpos.z -= move_rate;
+      //printf ("--> [f] z:%f \n", viewpos.z);
+    }    
+    if (input_state.keys.count (GLFW_KEY_V)) {
+      // ?? recedes
+      viewpos.z += move_rate;
+      //printf ("--> [v] z:%f \n", glob.shared.view_pos.z);
+    }    
+
+    if (input_state.keys.count (GLFW_KEY_D)) {
+      viewpos.x -= move_rate;
+      //printf ("--> [d] x:%f \n", glob.shared.view_pos.x);
+    }    
+    if (input_state.keys.count (GLFW_KEY_G)) {
+      viewpos.x += move_rate;
+      //printf ("--> [g] x:%f \n", glob.shared.view_pos.x);
+    }    
+
+    if (input_state.keys.count (GLFW_KEY_J)) {
+      // ??? climbs
+      viewpos.y += move_rate;
+      //printf ("--> [j] y:%f \n", glob.shared.view_pos.y);
+    }    
+    if (input_state.keys.count (GLFW_KEY_K)) {
+      // appears to descend
+      viewpos.y -= move_rate;
+      //printf ("--> [k] y:%f \n", glob.shared.view_pos.y);
+    }    
+
+  } 
 
 // ---------------------------------------------------------------------------------------
 //  encapsulate rendering loop
@@ -292,9 +353,9 @@ struct RootLoop {
 
   std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
 
-  void UpdateInput () {
+  void UpdateRunState  () {
 
-    const float move_rate = 0.05f;
+    // const float move_rate = 0.05f;
 
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q)) {
@@ -302,48 +363,12 @@ struct RootLoop {
       run = false;
     }
 
-
-    if (glob.input_state.keys.count (GLFW_KEY_F)) {
-      // fwd
-      glob.shared.view_pos.z += move_rate;
-      printf ("--> [f] z:%f \n", glob.shared.view_pos.z);
-    }    
-    if (glob.input_state.keys.count (GLFW_KEY_V)) {
-      // ?? recedes
-      glob.shared.view_pos.z -= move_rate;
-      printf ("--> [v] z:%f \n", glob.shared.view_pos.z);
-    }    
-
-    if (glob.input_state.keys.count (GLFW_KEY_D)) {
-      glob.shared.view_pos.x -= move_rate;
-      printf ("--> [d] x:%f \n", glob.shared.view_pos.x);
-    }    
-    if (glob.input_state.keys.count (GLFW_KEY_G)) {
-      glob.shared.view_pos.x += move_rate;
-      printf ("--> [g] x:%f \n", glob.shared.view_pos.x);
-    }    
-
-    if (glob.input_state.keys.count (GLFW_KEY_J)) {
-      // ??? climbs
-      glob.shared.view_pos.y += move_rate;
-      printf ("--> [j] y:%f \n", glob.shared.view_pos.y);
-    }    
-    if (glob.input_state.keys.count (GLFW_KEY_K)) {
-      // appears to descend
-      glob.shared.view_pos.y -= move_rate;
-      printf ("--> [k] y:%f \n", glob.shared.view_pos.y);
-    }    
-
-
   } 
+  
   //
   // -------------------------------------------------------------
-  RootLoop (Glob& g, float dt ) :  glob(g), Dt (dt) { 
+  RootLoop (Glob& g, float dt) : glob(g), Dt(dt) { 
 
-    // run        = true;
-    // curr_frame = 0; 
-    // result     = false;
-    // countdown  = 600;
     then = std::chrono::high_resolution_clock::now(); 
 
     time_per_frame = std::chrono::microseconds (static_cast<size_t>(Dt * 1000000.0));
@@ -364,8 +389,10 @@ struct RootLoop {
 
     auto now = std::chrono::high_resolution_clock::now();    
     
-
-    UpdateInput () ;
+    UpdateRunState () ;
+    
+    UpdateViewPosition (glob.shared.view_pos, glob.input_state);
+    UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state);
     
     //
     rokz::SwapchainGroup& scg = glob.swapchain_group; 
@@ -463,8 +490,8 @@ int darkroot_basin (const std::vector<std::string>& args) {
   glob.polyd.obj_theta[0] =   0.0;
   glob.polyd.obj_theta[1] =   0.0;
 
-  glob.prev_x = 0;
-  glob.prev_y = 0;
+  glob.mouse_prev.x = 0;
+  glob.mouse_prev.y = 0;
 
   //std::shared_ptr<Glob> globmem = std::make_shared<Glob> ();
 

@@ -244,8 +244,6 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
   ci.depthBiasConstantFactor = 0.0f; 
   ci.depthBiasClamp          = 0.0f;          
   ci.depthBiasSlopeFactor    = 0.0f;    
-
-  //ci.cullMode = VK_CULL_MODE_BACK_BIT;
   return ci;
 }
 
