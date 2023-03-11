@@ -2,7 +2,6 @@
 #define REKZ_WINDOW_HANDLER_INCLUDE
 
 #include "common.h"
-#include "input_control.h"
 
 namespace rokz {
 

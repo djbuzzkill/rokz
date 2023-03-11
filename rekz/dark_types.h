@@ -2,13 +2,11 @@
 #ifndef DARKROOT_GLOB_INCLUDE
 #define DARKROOT_GLOB_INCLUDE
 
-#include "rokz/utility.h"
-#include "rokz/image.h"
-#include "rokz/rokz.h"
+
 #include "rekz.h"
-#include "rokz/rokz_types.h"
+
 #include "rokz/display.h"
-#include "rokz/input_control.h"
+#include "rokz/input_state.h"
 
 namespace darkroot {
 

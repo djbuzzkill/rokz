@@ -18,6 +18,6 @@ bool rokz::SetupDisplay (Display& display, InputState& input_state, const VkExte
   glfwSetWindowUserPointer (display.window.glfw_window, &input_state);
 
   // create surface
-  return  rokz::cx::CreateSurface  (&display.surface, display.window.glfw_window, instance.handle);
+  return cx::CreateSurface (&display.surface, display.window.glfw_window, instance.handle);
 
 }

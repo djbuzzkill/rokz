@@ -4,15 +4,11 @@
 
 #include "rekz.h"
 
-#include "rokz/rokz_types.h"
-#include "rokz/utility.h"
-#include "rokz/image.h"
-#include "rokz/rokz.h"
+#include "rokz/display.h"
+#include "rokz/input_state.h"
 
 #include "grid_pipeline.h"
 
-#include "rokz/display.h"
-#include "rokz/input_control.h"
 
 namespace marz {
 

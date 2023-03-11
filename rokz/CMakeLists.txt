@@ -32,7 +32,7 @@ set (ROKZ_HEADER_FILES
   defaults.h
 
   window_handler.h
-  input_control.h
+  input_state.h
   display.h
   
   # rokz_types.h
@@ -63,7 +63,7 @@ set (ROKZ_SOURCE_FILES
   window.cpp
 
   window_handler.cpp
-  input_control.cpp
+  input_state.cpp
   display.cpp
 
   utility.cpp
