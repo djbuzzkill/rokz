@@ -3,14 +3,8 @@
 #define ROCKZ_INCLUDE
 
 
-#include <vector>
-#include <iostream>
-
-#include <string>
-#include <chrono>
-#include <cmath>
-
 #include "rokz/rokz.h"
+
 //#include "rokz/rokz_funcs.h"
 
 namespace rekz {
@@ -162,27 +156,6 @@ namespace rekz {
 
   float ViewAspectRatio (uint32_t w, uint32_t h);
   float AspectRatio (const VkExtent2D& ext);
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  bool CreateDepthBufferTarget (rokz::Image&          depth_image,
-                                rokz::ImageView&      depth_imageview,
-                                //rokz::SwapchainGroup& scg,
-                                VkSampleCountFlagBits msaa_samples, 
-                                VkFormat              depth_format,
-                                const VkExtent2D&     ext,
-                                const rokz::Device&   device);
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-
-  bool CreateMSAAColorTarget  (rokz::Image&          color_image, 
-                               rokz::ImageView&      color_imageview, 
-                               VkSampleCountFlagBits msaa_samples,
-                               VkFormat              image_format,
-                               const VkExtent2D&     ext,
-                               const rokz::Device&   device);
-
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------

@@ -15,6 +15,7 @@ set (ROKZ_HEADER_FILES
   context.h
   descriptor.h
   allocation.h
+  attachment.h
   buffer.h
   image.h
   command.h
@@ -46,6 +47,7 @@ set (ROKZ_HEADER_FILES
 #
 set (ROKZ_SOURCE_FILES
 
+  attachment.cpp
   context.cpp
   command.cpp
   pipeline.cpp
