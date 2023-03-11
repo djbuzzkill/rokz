@@ -1,6 +1,7 @@
 //
 //
-#include "rekz.h"
+//#include "rekz.h"
+#include "window_handler.h"
 
   // typedef void (* GLFWerrorfun)(int error_code, const char* description);
   // typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
@@ -26,11 +27,11 @@
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rekz::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
+void rokz::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
 
-  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
+  if (InputState* is = reinterpret_cast<InputState*> (glfwGetWindowUserPointer (window))) {
 
-    rekz::InputState& input_state = *is;
+    InputState& input_state = *is;
     
     if (entered) {
 
@@ -52,9 +53,9 @@ void rekz::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-void rekz::win_event::on_resize (GLFWwindow* window, int width, int height) {
+void rokz::win_event::on_resize (GLFWwindow* window, int width, int height) {
   // printf ("%s \n", __FUNCTION__); 
-  if (rekz::InputState* g = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
+  if (InputState* g = reinterpret_cast<InputState*> (glfwGetWindowUserPointer (window))) {
 
     //reinterpret_cast<rekz::Glob*> (glfwGetWindowUserPointer(window))->fb_resize = true;
     g->fb_resize = true;
@@ -66,11 +67,11 @@ void rekz::win_event::on_resize (GLFWwindow* window, int width, int height) {
 // --------------------------------------------------------------------
 // KEY PRESS
 // --------------------------------------------------------------------
-void rekz::win_event::on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
+void rokz::win_event::on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods) {
   //printf ("[ %s() | ln_%i ]\n", __FUNCTION__,  __LINE__);
-  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
+  if (InputState* is = reinterpret_cast<InputState*> (glfwGetWindowUserPointer (window))) {
 
-    rekz::InputState& input_state = *is;
+    InputState& input_state = *is;
 
     switch (action) {
       // GLFW_PRESS
@@ -99,11 +100,11 @@ void rekz::win_event::on_keypress (GLFWwindow* window, int key, int scancode, in
 // --------------------------------------------------------------------
 // MOUSE MOVEMENT
 // --------------------------------------------------------------------
-void rekz::win_event::on_mouse_move (GLFWwindow* window, double xpos, double ypos) {
+void rokz::win_event::on_mouse_move (GLFWwindow* window, double xpos, double ypos) {
   //printf ("%s [xpos:%f | ypos:%f]\n" ,__FUNCTION__,  xpos, ypos); 
-  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
+  if (InputState* is = reinterpret_cast<InputState*> (glfwGetWindowUserPointer (window))) {
 
-    rekz::InputState& input_state = *is;
+    InputState& input_state = *is;
 
     if (input_state.mouse.inside) {
 
@@ -125,11 +126,11 @@ void rekz::win_event::on_mouse_move (GLFWwindow* window, double xpos, double ypo
 // --------------------------------------------------------------------
 // MOUSE BUTTON
 // --------------------------------------------------------------------
-void rekz::win_event::on_mouse_button (GLFWwindow* window, int button, int action, int mods)
+void rokz::win_event::on_mouse_button (GLFWwindow* window, int button, int action, int mods)
 {
-  if (rekz::InputState* is = reinterpret_cast<rekz::InputState*> (glfwGetWindowUserPointer (window))) {
+  if (InputState* is = reinterpret_cast<InputState*> (glfwGetWindowUserPointer (window))) {
 
-    rekz::InputState& input_state = *is;
+    InputState& input_state = *is;
     switch (action) {
 
       // GLFW_PRESS

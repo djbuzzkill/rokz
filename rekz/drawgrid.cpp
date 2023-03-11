@@ -33,7 +33,8 @@ struct DrawGrid : public rokz::DrawSequence {
     push_consts.zstep        = 1.0f;
     push_consts.xoffset      = 0.0f;  
     push_consts.zoffset      = 0.0f;  
-  
+
+    
     vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.pipeline.handle);
 
     vkCmdSetViewport  (comb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].viewport);

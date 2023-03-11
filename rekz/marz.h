@@ -9,10 +9,15 @@
 #include "rokz/image.h"
 #include "rokz/rokz.h"
 
+#include "grid_pipeline.h"
+
+#include "rokz/display.h"
+#include "rokz/input_control.h"
 
 namespace marz {
 
-
+  using namespace rokz;
+  
   enum { kMaxFramesInFlight = 2 }; 
 
   // ---------------------------------------------------------------------------------------
@@ -23,11 +28,19 @@ namespace marz {
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
-  extern const std::vector<VkDescriptorSetLayoutBinding>      kDescriptorSetBindings;
-  extern const VkVertexInputBindingDescription                kVertexInputBindingDesc;
-  extern const std::vector<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
+  extern const Vec<VkDescriptorSetLayoutBinding>      kDescriptorSetBindings;
+  extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
+  extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
 
 
+  struct PatchPushConstant {
+    glm::ivec4 cell;  // only x, y are used
+    glm::ivec4 objIDs;// only x is used
+  };
+
+  // ----------------------------------------------------------------------------------------------
+  // 
+  // ----------------------------------------------------------------------------------------------
   struct MarzDat {
 
     uint32_t      X_tile_dim;
@@ -39,28 +52,21 @@ namespace marz {
     rokz::Buffer  vb_device;
     rokz::Buffer  ib_device;
     
-    std::vector<rokz::Image>     colormaps;
-    std::vector<rokz::ImageView> colorviews;
+    Vec<Image>     colormaps;
+    Vec<ImageView> colorviews;
 
-    std::vector<rokz::Image>     heightmaps;
-    std::vector<rokz::ImageView> heightviews;
+    Vec<Image>     heightmaps;
+    Vec<ImageView> heightviews;
 
-
-    std::vector<rokz::Image>     normalmaps;
-    std::vector<rokz::ImageView> normalviews;
+    Vec<Image>     normalmaps;
+    Vec<ImageView> normalviews;
     
-    rokz::Sampler nsampler;
-    rokz::Sampler csampler;
-    rokz::Sampler hsampler;
+    Sampler        depthsampler;
+    Sampler        colorsampler;
+    Sampler        normalsampler;
     
   };
   
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
-  struct PatchData {
-    glm::ivec4 dim; 
-  }; 
   
 
   void SetPatchUniforms ();
@@ -83,7 +89,7 @@ namespace marz {
   // ----------------------------------------------------------------------------------------------
   struct Glob {
     // input 
-    rekz::InputState             input_state;
+    rokz::InputState             input_state;
     glm::ivec2                   mouse_prev; 
     int                          prev_inside;
     // system
@@ -113,31 +119,35 @@ namespace marz {
     rokz::DrawSequence::Globals  shared;               // DrawSequence::shared_globals
     rokz::DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
     // UniformBundle
-    std::vector<rokz::Buffer>    global_uniform_bu;    // vma_shared_uniforms;
+    Vec<rokz::Buffer>            global_uniform_bu;    // vma_shared_uniforms;
     rokz::DescriptorGroup        global_uniform_de;
-    std::array<rokz::DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
-    rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
+    std::array<DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
+    DrawSequence::DescriptorLayoutMap                          dslomap;
 
     // 
     // GRID
     struct { 
-      rokz::PipelineLayout    plo;
-      rokz::Pipeline          pipe;
-      rokz::DrawSequence::Ref draw;
-      rekz::GridData          data;
+      PipelineLayout    plo;
+      Pipeline          pipe;
+      DrawSequence::Ref draw;
+      rekz::GridData    data;
     } grid; 
 
     
     // 
     // LANDSCAPE
     struct landscape { 
-      rokz::PipelineLayout    plo;
-      rokz::Pipeline          pipe;
-      rokz::DrawSequence::Ref draw;
-      MarzDat                 data;
+      PipelineLayout    plo;
+      Pipeline          pipe;
+      DrawSequence::Ref draw;
+      MarzDat           data;
     } scape; 
 
+    Vec<Buffer>            poly_objects_bu; // polygons will make use of object descriptors
+    DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
+
+    
   }; 
 
 

@@ -12,12 +12,12 @@ set (REKZ_HEADER_FILES
     darkrootgarden.h
     dark_obj_pipeline.h
     grid_pipeline.h
-
+    global_descriptor.h
+    image_loader.h
   )
 	
 set (REKZ_SOURCE_FILES
   texture_tool.cpp
-  rekz_win_handler.cpp
   darkrootgarden.cpp
   dark_obj_pipeline.cpp
   darkthings.cpp
@@ -28,6 +28,8 @@ set (REKZ_SOURCE_FILES
   marz.cpp
   grid_pipeline.cpp  
   drawgrid.cpp  
+  global_descriptor.cpp
+  image_loader.cpp
   # test_rokz.cpp
   rekz.cpp
 )

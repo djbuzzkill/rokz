@@ -4,6 +4,7 @@
 
 
 #include "common.h"
+#include "shared_types.h"
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
@@ -11,30 +12,6 @@
 //#include "shared_types.h"
 
 namespace rokz {
-  // ---------------------------------------------------
-  //
-  // ---------------------------------------------------
-  typedef std::uint8_t  uint8;
-  typedef std::uint16_t uint16; 
-  typedef std::uint32_t uint32; 
-  typedef std::uint64_t uint64; 
-  
-  typedef std::int8_t   int8;
-  typedef std::int16_t  int16; 
-  typedef std::int32_t  int32; 
-  typedef std::int64_t  int64;
-  typedef std::uint8_t  byte;
-
-  typedef std::vector<byte> bytearray; 
-
-
-  //-------------------------------------------------------------------------------------
-  //                
-  //-------------------------------------------------------------------------------------
-  typedef std::optional<uint32_t> MaybeIndex;
-
-
-
 
   //-------------------------------------------------------------------------------------
   // not sure what to do with these yet
@@ -59,16 +36,6 @@ namespace rokz {
     VmaAllocator& allocator; 
   }; 
 
-  //-------------------------------------------------------------------------------------
-  //                
-  //-------------------------------------------------------------------------------------
-  struct MVPTransform {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
-  };
-
-  constexpr size_t kSizeOf_MVPTransform = sizeof (rokz::MVPTransform);
   
   //-------------------------------------------------------------------------------------
   //                
@@ -96,32 +63,19 @@ namespace rokz {
   //-------------------------------------------------------------------------------------
   //                
   //-------------------------------------------------------------------------------------
-  struct Display {
-
-    Display () : window(), surface(nullptr) {
-    }
-
-    Window       window;
-    VkSurfaceKHR surface;                 
-  };
-  //-------------------------------------------------------------------------------------
-  //                
-  //-------------------------------------------------------------------------------------
   struct Instance {
 
     Instance () : handle (VK_NULL_HANDLE), ci(), required_extensions (), app_info () {
     }
     
-    VkInstance handle;
+    VkInstance           handle;
     VkInstanceCreateInfo ci;
+    Vec<const char*>     required_extensions;
+    Vec<std::string>     extension_strings; 
 
-    std::vector<const char*> required_extensions;
-    std::vector<std::string> extension_strings; 
-
-    std::vector<std::string> validation_strings; 
-    std::vector<const char*> vals;
-
-    VkApplicationInfo        app_info;
+    Vec<std::string>     validation_strings; 
+    Vec<const char*>     vals;
+    VkApplicationInfo    app_info;
   };
 
   // ---------------------------------------------------------------------
@@ -159,12 +113,12 @@ namespace rokz {
     Device () : handle (VK_NULL_HANDLE) , ci (), queue_ci (), physical() {
     }
       
-    VkDevice                             handle;
-    VkDeviceCreateInfo                   ci;
-    std::vector<VkDeviceQueueCreateInfo> queue_ci;
+    VkDevice                     handle;
+    VkDeviceCreateInfo           ci;
+    Vec<VkDeviceQueueCreateInfo> queue_ci;
 
-    CommandPool                          command_pool;
-    Allocator                            allocator;
+    CommandPool                  command_pool;
+    Allocator                    allocator;
 
     struct { VkQueue graphics; VkQueue present; } queues;
     struct { float graphics; float present; } priority;
@@ -172,11 +126,11 @@ namespace rokz {
     PhysicalDevice physical;
     
     // device extensions strings
-    std::vector<const char*> dxs; 
-    std::vector<std::string> dxstrs; 
+    Vec<const char*> dxs; 
+    Vec<std::string> dxstrs; 
     // validation layers
-    std::vector<const char*> vals; 
-    std::vector<std::string> valstrs; 
+    Vec<const char*> vals; 
+    Vec<std::string> valstrs; 
 
   }; 
   
@@ -321,7 +275,7 @@ namespace rokz {
     struct VS {
       VkViewport viewport; VkRect2D scissor; };    
   
-    std::vector<VS> vps;
+    Vec<VS> vps;
     // std::vector<VkViewport> viewports;
     // std::vector<VkRect2D>   scissors;
   };
@@ -332,9 +286,9 @@ namespace rokz {
   struct PipelineState {
 
     PipelineStateCreateInfo ci;
-    std::vector<VkPipelineColorBlendAttachmentState> colorblend_attachments;     
-    ViewportState                                    viewport;
-    std::vector<VkDynamicState>                      dynamics; 
+    Vec<VkPipelineColorBlendAttachmentState> colorblend_attachments;     
+    ViewportState                            viewport;
+    Vec<VkDynamicState>                      dynamics; 
 
   }; 
 
@@ -361,16 +315,16 @@ namespace rokz {
     //PipelineLayout                   layout; // move to pipeline-def
 
     PipelineState                    state;
-    std::vector<rokz::ShaderModule>  shader_modules; 
+    Vec<rokz::ShaderModule>  shader_modules; 
 
     // 
-    std::vector<VkDescriptorSetLayout> dslos;
+    Vec<VkDescriptorSetLayout> dslos;
     
     // EXTENSIONS
     struct { 
       struct {
         VkPipelineRenderingCreateInfoKHR ci; 
-        std::vector<VkFormat> color_formats;
+        Vec<VkFormat> color_formats;
         VkFormat              depth_format;
       } pipeline_rendering;
     } ext;
@@ -384,9 +338,9 @@ namespace rokz {
     SwapchainSupportInfo () : capabilities (), formats (), present_modes () {
     }
       
-    VkSurfaceCapabilitiesKHR        capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR>   present_modes;    
+    VkSurfaceCapabilitiesKHR capabilities;
+    Vec<VkSurfaceFormatKHR>  formats;
+    Vec<VkPresentModeKHR>    present_modes;    
   };
 
   // ------------------------------------------------------------------------
@@ -398,7 +352,7 @@ namespace rokz {
     
     VkSwapchainKHR           handle;
     VkSwapchainCreateInfoKHR ci;
-    std::vector<uint32_t>    family_indices; 
+    Vec<uint32_t>            family_indices; 
     //SwapchainSupportInfo     swapchain_support_info;
   }; 
 
@@ -426,8 +380,9 @@ namespace rokz {
 
     std::array<VkAttachmentDescription, ATTACHMENT_INDEX_MAX> attach_desc;
     std::array<VkAttachmentReference, ATTACHMENT_INDEX_MAX>   attach_ref;
-    std::vector<VkSubpassDescription>                         subpass_descs;
-    std::vector<VkSubpassDependency>                          dependencies;
+
+    Vec<VkSubpassDescription>                         subpass_descs;
+    Vec<VkSubpassDependency>                          dependencies;
   };
 
   // --------------------------------------------------------------------
@@ -435,14 +390,13 @@ namespace rokz {
   // --------------------------------------------------------------------
   struct RenderingInfoGroup {
 
-    VkRenderingInfo                        ri;
-    std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
-    VkRenderingAttachmentInfo              depth_attachment_info;
+    VkRenderingInfo                ri;
+    Vec<VkRenderingAttachmentInfo> color_attachment_infos;
+    VkRenderingAttachmentInfo      depth_attachment_info;
 
-    std::vector<VkClearValue>              clear_colors;  // = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    VkClearValue                           clear_depth; //  = {{
-
-    VkRect2D                               render_area; 
+    Vec<VkClearValue>              clear_colors;  // = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    VkClearValue                   clear_depth; //  = {{
+    VkRect2D                       render_area; 
   };
 
   // // --------------------------------------------------------
@@ -460,11 +414,10 @@ namespace rokz {
 
   // --------------------------------------------------------
   struct SwapchainGroup {
-    rokz::Swapchain                swapchain    ;// = glob.swapchain; 
-    std::vector<rokz::Image>       images       ;// = glob.swapchain_images; 
-    std::vector<rokz::ImageView>   imageviews   ;//= glob.swapchain_imageviews; 
-    std::vector<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
-
+    rokz::Swapchain        swapchain    ;// = glob.swapchain; 
+    Vec<rokz::Image>       images       ;// = glob.swapchain_images; 
+    Vec<rokz::ImageView>   imageviews   ;//= glob.swapchain_imageviews; 
+    Vec<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
     // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
   }; 
 
@@ -495,8 +448,8 @@ namespace rokz {
     //
     VkCommandBufferAllocateInfo  command_buffer_alloc_info;
     // kMaxFramesInFlight
-    std::vector<VkCommandBuffer> command_buffers;
-    std::vector<FrameSync> syncs;
+    Vec<VkCommandBuffer> command_buffers;
+    Vec<FrameSync> syncs;
   }; 
 
 

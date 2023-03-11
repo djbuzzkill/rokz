@@ -7,10 +7,13 @@
 #include "rokz/rokz.h"
 #include "rekz.h"
 #include "rokz/rokz_types.h"
-#include <vulkan/vulkan_core.h>
+#include "rokz/display.h"
+#include "rokz/input_control.h"
 
 namespace darkroot {
 
+  using namespace rokz;
+  using namespace rekz;
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
@@ -19,77 +22,74 @@ namespace darkroot {
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
-  typedef rekz::TriMesh<DarkVert>  DarkMesh;
+  typedef rekz::TriMesh<DarkVert> DarkMesh;
 
-  // ---------------------------------------------------------------------------------------
+
+  //using rokz::Vec;
+// ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
   struct Glob {
-    
+
     enum { MaxFramesInFlight = 2 }; 
 
     Glob();
+
     // input 
-    rekz::InputState              input_state;
-    glm::ivec2                    mouse_prev; 
-    int                           prev_inside;
+    rokz::InputState             input_state;
+    glm::ivec2                   mouse_prev; 
+    int                          prev_inside;
     // system
-    rokz::Instance                instance;
-    rokz::Device                  device;
-    rokz::SwapchainGroup          swapchain_group;
-    rokz::SwapchainSupportInfo    swapchain_support_info;
-    rokz::FrameSyncGroup          framesyncgroup;
+    Instance               instance;
+    Device                 device;
+    SwapchainGroup         swapchain_group;
+    SwapchainSupportInfo   swapchain_support_info;
+    FrameSyncGroup         framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
-    rokz::RenderingInfoGroup      rendering_info_group;
-    rokz::DrawSequence::Globals   shared;                  //DrawSequence::shared_globals
+    rokz::RenderingInfoGroup     rendering_info_group;
     // struct Display
-    rokz::Display                 display;
+    rokz::Display                display;             //
     // device props
-    VkFormat                      depth_format;
-    VkSampleCountFlagBits          msaa_samples;            // = VK_SAMPLE_COUNT_1_BIT;
-
+    VkFormat                     depth_format;        //
+    VkSampleCountFlagBits        msaa_samples;        // = VK_SAMPLE_COUNT_1_BIT;
     // attachement set
-    rokz::Image                  depth_image;
-    rokz::ImageView              depth_imageview; 
-    rokz::Image                  msaa_color_image;
-    rokz::ImageView              msaa_color_imageview; 
-    
-    
+    Image                  depth_image;          //
+    ImageView              depth_imageview;      //
+    Image                  msaa_color_image;     //  
+    ImageView              msaa_color_imageview; //
 
-    // global uniform r 'shared global' 
-    rokz::DescriptorSetLayout    global_dslo; 
-    // object descriptors are supposed to be 'generic', diffrnt from shared
-    rokz::DescriptorSetLayout    object_dslo;
+    DrawSequence::Globals  shared;               // DrawSequence::shared_globals
+    DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
+    DescriptorSetLayout    object_dslo;          // object r 'generic', but belong to instance
 
     // UniformBundle
-    std::vector<rokz::Buffer>    global_uniform_bu; // vma_shared_uniforms;
-    rokz::DescriptorGroup        global_uniform_de;
+    Vec<Buffer>            global_uniform_bu;    // vma_shared_uniforms;
+    DescriptorGroup        global_uniform_de;
 
     // POLYGONS
-    rokz::Pipeline               polys_pl;
-    rokz::PipelineLayout         polys_plo;
+    Pipeline               polys_pl;
+    PipelineLayout         polys_plo;
 
     // ? this belongs with the polygons
-    rekz::PolygonData            polyd;
-    rokz::DrawSequence::Ref      drawpoly;
+    PolygonData            polyd;
+    DrawSequence::Ref      drawpoly;
 
-    std::vector<rokz::Buffer>    poly_objects_bu; // polygons will make use of object descriptors
-    rokz::DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
+    Vec<Buffer>            poly_objects_bu; // polygons will make use of object descriptors
+    DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
 
     // 
     // GRID
-    rokz::Pipeline               grid_pl;
-    rokz::PipelineLayout         grid_plo;
-    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate from pipelines 
-    rokz::DrawSequence::Ref      drawgrid;
-    rekz::GridData               gridata;
+    Pipeline               grid_pl;
+    PipelineLayout         grid_plo;
 
-    
+    // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate from pipelines 
+    DrawSequence::Ref      drawgrid;
+    GridData               gridata;
+
     std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
-    rokz::ResetSwapchainCB::Ref  swapchain_reset_cb;
-
+    ResetSwapchainCB::Ref  swapchain_reset_cb;
 
   };
 

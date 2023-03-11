@@ -10,7 +10,6 @@
 
 #include "common.h"
 
-#include "shared_types.h"
 #include "rokz_types.h"
 
 #include "context.h"
@@ -32,7 +31,7 @@
 #include "utility.h"
 #include "binary_IO.h"
 #include "defaults.h"
-#include "rokz/binary_IO.h"
+#include "binary_IO.h"
 
 #include "draw_sequence.h"
 #include "swapchain_reset.h"

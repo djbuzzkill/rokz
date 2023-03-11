@@ -9,603 +9,10 @@
 //
 //#include "rokz_test.cpp"
 //#include "texture_tool.cpp"
-#include <IL/il.h>
-#include <IL/ilu.h>
 #include <glm/ext/quaternion_common.hpp>
 
+using namespace rokz;
 
-
-//   typedef struct VkDescriptorSetLayoutBinding {
-//     uint32_t              binding;
-//     VkDescriptorType      descriptorType;
-//     uint32_t              descriptorCount;
-//     VkShaderStageFlags    stageFlags;
-//     const VkSampler*      pImmutableSamplers;
-// } VkDescriptorSetLayoutBinding;
-
-const std::vector<VkDescriptorSetLayoutBinding>  rekz::kGlobalDescriptorBindings = {
-   
-  {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
-  { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- GridState
-
-};
-
-// ----------------------------------------------------------------------------------------------
-//                                    
-// ----------------------------------------------------------------------------------------------
-bool rekz::SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device) {
- printf ("%s", __FUNCTION__);
-
-
- const size_t sizeOf_GlobalState = sizeof(rokz::MVPTransform) + sizeof (rekz::GridState);
-   
- uniform_buffs.resize (num_sets);
- for (size_t i = 0; i < num_sets; i++) {
-  if (!CreateUniformBuffer (uniform_buffs[i], sizeOf_GlobalState, 1, device)) {
-     // pritnf (); 
-     return false; 
-   }
- }
-
- printf (" --> [true] \n"); 
- return true; 
-}
-
-// ----------------------------------------------------------------------------------------------
-//                                    
-// ----------------------------------------------------------------------------------------------
-bool rekz::BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, const std::vector<rokz::Buffer>& buffs, const rokz::Device& device) {
-
-   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
-
-   assert (descs.size () == buffs.size ());
-
-  for (uint32_t i = 0; i < descs.size (); i++) {
-    // wtf does this do
-    VkDescriptorBufferInfo binfo_mvp {};
-    binfo_mvp.buffer     = buffs[i].handle;
-    binfo_mvp.offset     = 0;
-    binfo_mvp.range      = sizeof(rokz::MVPTransform);
-
-    VkDescriptorBufferInfo binfo_grid {};
-    binfo_grid.buffer     = buffs[i].handle;
-    binfo_grid.offset     = sizeof(rokz::MVPTransform);
-    binfo_grid.range      = sizeof(rekz::GridState);
-
-    const uint32_t binding_ind_mvp = 0;
-    const uint32_t binding_ind_grid = 1;
-    //
-    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
-    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].pNext            = nullptr;    
-    descriptor_writes[0].dstSet           = descs[i];
-    descriptor_writes[0].dstBinding       = kGlobalDescriptorBindings[binding_ind_mvp].binding;
-    descriptor_writes[0].dstArrayElement  = 0;
-    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = 1;
-    descriptor_writes[0].pBufferInfo      = &binfo_mvp;
-    descriptor_writes[0].pImageInfo       = nullptr;
-    descriptor_writes[0].pTexelBufferView = nullptr;
-
-    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;    
-    descriptor_writes[1].dstSet           = descs[i];
-    descriptor_writes[1].dstBinding       = kGlobalDescriptorBindings[binding_ind_grid].binding; 
-    descriptor_writes[1].dstArrayElement  = 0;
-    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[1].descriptorCount  = 1;
-    descriptor_writes[1].pBufferInfo      = &binfo_grid;
-    descriptor_writes[1].pImageInfo       = nullptr;
-    descriptor_writes[1].pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-    
-
-  }
-  
-   return true;
-}
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-//void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
-void rekz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
-
-  //
-  //  SharedGlobals
-  {
-    shared.dt             = dt;
-    shared.sim_time      += dt;
-    shared.viewport_ext   = viewext;
-  }    
-  
-  // 
-  { // MVPTransform buffer
-    rokz::MVPTransform* mvp = reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (buf));
-    if (mvp) {
-    
-      mvp->model = glm::mat4(1.0); // model is elsewhere 
-      const float aspf = rekz::ViewAspectRatio (viewext.width, viewext.height);
-
-      glm::mat4 xrot = glm::rotate (glm::mat4(1), shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
-      glm::mat4 yrot = glm::rotate (glm::mat4(1), shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
-      glm::mat4 zrot = glm::rotate (glm::mat4(1), shared.view_rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-      glm::mat4 rotation =  zrot  * yrot  * xrot;
-      glm::mat4 viewmatrix = glm::translate (glm::mat4(1.0f), shared.view_pos) * rotation;
-      mvp->view = glm::inverse (viewmatrix); 
-      //glm::vec3 (0.0, .5, -5.0));
-      // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      
-      mvp->proj = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 800.0f);
-      // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
-      // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
-      // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
-      mvp->proj[1][1] *= -1;
-      
-    }
-  }
-  
-}
-// ----------------------------------------------------------------------------------------------
-// handle most of the common ones
-// ----------------------------------------------------------------------------------------------
-uint32_t rekz::NumberOfComponents (VkFormat format) {
-
-  switch (format) { 
-    // 1 comp
-  case VK_FORMAT_R8_UNORM:
-  case VK_FORMAT_R8_SNORM :
-  case VK_FORMAT_R8_USCALED:
-  case VK_FORMAT_R8_SSCALED:
-  case VK_FORMAT_R8_UINT:    
-  case VK_FORMAT_R8_SINT:    
-  case VK_FORMAT_R8_SRGB:    
-  case VK_FORMAT_R16_UNORM:
-  case VK_FORMAT_R16_SNORM:
-  case VK_FORMAT_R16_USCALED:
-  case VK_FORMAT_R16_SSCALED:
-  case VK_FORMAT_R16_UINT:
-  case VK_FORMAT_R16_SINT: 
-  case VK_FORMAT_R16_SFLOAT:
-  case VK_FORMAT_R32_UINT  :
-  case VK_FORMAT_R32_SINT  :
-  case VK_FORMAT_R32_SFLOAT:
-  case VK_FORMAT_R64_UINT  :    
-  case VK_FORMAT_R64_SINT  :    
-  case VK_FORMAT_R64_SFLOAT:    
-    // sorta
-  case VK_FORMAT_D16_UNORM: 
-  case VK_FORMAT_D32_SFLOAT: 
-  case VK_FORMAT_S8_UINT: 
-
-    return 1;
-    break;
-
-    // + 2 components +
-  case VK_FORMAT_R4G4_UNORM_PACK8 : // <-- hmmm
-  case VK_FORMAT_R8G8_UNORM:
-  case VK_FORMAT_R8G8_SNORM:     
-  case VK_FORMAT_R8G8_USCALED:
-  case VK_FORMAT_R8G8_SSCALED: 
-  case VK_FORMAT_R8G8_UINT:      
-  case VK_FORMAT_R8G8_SINT:      
-  case VK_FORMAT_R8G8_SRGB:      
-  case VK_FORMAT_R16G16_UNORM  : 
-  case VK_FORMAT_R16G16_SNORM  : 
-  case VK_FORMAT_R16G16_USCALED: 
-  case VK_FORMAT_R16G16_SSCALED: 
-  case VK_FORMAT_R16G16_UINT   :    
-  case VK_FORMAT_R16G16_SINT   :    
-  case VK_FORMAT_R16G16_SFLOAT :    
-  case VK_FORMAT_R32G32_UINT  :
-  case VK_FORMAT_R32G32_SINT  :
-  case VK_FORMAT_R32G32_SFLOAT:
-  case VK_FORMAT_R64G64_UINT  :    
-  case VK_FORMAT_R64G64_SINT  :    
-  case VK_FORMAT_R64G64_SFLOAT:    
-    // sorta
-  case VK_FORMAT_D16_UNORM_S8_UINT: 
-  case VK_FORMAT_D24_UNORM_S8_UINT:
-  case VK_FORMAT_D32_SFLOAT_S8_UINT:  
-    // ??? VK_FORMAT_X8_D24_UNORM_PACK32: ???
-    return 2;
-    break;
-
-   // + 3 components +
-  case VK_FORMAT_R5G6B5_UNORM_PACK16:
-  case VK_FORMAT_B5G6R5_UNORM_PACK16:   
-  case VK_FORMAT_R8G8B8_UNORM  : 
-  case VK_FORMAT_R8G8B8_SNORM  : 
-  case VK_FORMAT_R8G8B8_USCALED: 
-  case VK_FORMAT_R8G8B8_SSCALED:
-  case VK_FORMAT_R8G8B8_UINT   :
-  case VK_FORMAT_R8G8B8_SINT   :
-  case VK_FORMAT_R8G8B8_SRGB   :
-  case VK_FORMAT_B8G8R8_UNORM  :
-  case VK_FORMAT_B8G8R8_SNORM  :
-  case VK_FORMAT_B8G8R8_USCALED: 
-  case VK_FORMAT_B8G8R8_SSCALED: 
-  case VK_FORMAT_B8G8R8_UINT   :   
-  case VK_FORMAT_B8G8R8_SINT   :   
-  case VK_FORMAT_B8G8R8_SRGB   :
-  case VK_FORMAT_R16G16B16_UNORM  : 
-  case VK_FORMAT_R16G16B16_SNORM  :
-  case VK_FORMAT_R16G16B16_USCALED:
-  case VK_FORMAT_R16G16B16_SSCALED:
-  case VK_FORMAT_R16G16B16_UINT   :
-  case VK_FORMAT_R16G16B16_SINT   :
-  case VK_FORMAT_R16G16B16_SFLOAT :
-  case VK_FORMAT_R32G32B32_UINT  :
-  case VK_FORMAT_R32G32B32_SINT  :
-  case VK_FORMAT_R32G32B32_SFLOAT:
-  case VK_FORMAT_R64G64B64_UINT  :    
-  case VK_FORMAT_R64G64B64_SINT  :    
-  case VK_FORMAT_R64G64B64_SFLOAT:    
-  case VK_FORMAT_B10G11R11_UFLOAT_PACK32: 
-    return 3;
-    break;
-
-   // + 4 components +
-  case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
-  case VK_FORMAT_B4G4R4A4_UNORM_PACK16: 
-  case VK_FORMAT_R5G5B5A1_UNORM_PACK16: 
-  case VK_FORMAT_B5G5R5A1_UNORM_PACK16: 
-  case VK_FORMAT_A1R5G5B5_UNORM_PACK16: 
-  case VK_FORMAT_R8G8B8A8_UNORM:   
-  case VK_FORMAT_R8G8B8A8_SNORM:   
-  case VK_FORMAT_R8G8B8A8_USCALED: 
-  case VK_FORMAT_R8G8B8A8_SSCALED: 
-  case VK_FORMAT_R8G8B8A8_UINT   : 
-  case VK_FORMAT_R8G8B8A8_SINT   : 
-  case VK_FORMAT_R8G8B8A8_SRGB   : 
-  case VK_FORMAT_B8G8R8A8_UNORM  : 
-  case VK_FORMAT_B8G8R8A8_SNORM  : 
-  case VK_FORMAT_B8G8R8A8_USCALED: 
-  case VK_FORMAT_B8G8R8A8_SSCALED: 
-  case VK_FORMAT_B8G8R8A8_UINT:
-  case VK_FORMAT_B8G8R8A8_SINT:
-  case VK_FORMAT_B8G8R8A8_SRGB:
-  case VK_FORMAT_A8B8G8R8_UNORM_PACK32:  
-  case VK_FORMAT_A8B8G8R8_SNORM_PACK32:  
-  case VK_FORMAT_A8B8G8R8_USCALED_PACK32:  
-  case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:  
-  case VK_FORMAT_A8B8G8R8_UINT_PACK32   :  
-  case VK_FORMAT_A8B8G8R8_SINT_PACK32   :  
-  case VK_FORMAT_A8B8G8R8_SRGB_PACK32: 
-  case VK_FORMAT_A2R10G10B10_UNORM_PACK32  :
-  case VK_FORMAT_A2R10G10B10_SNORM_PACK32  :
-  case VK_FORMAT_A2R10G10B10_USCALED_PACK32: 
-  case VK_FORMAT_A2R10G10B10_SSCALED_PACK32: 
-  case VK_FORMAT_A2R10G10B10_UINT_PACK32   : 
-  case VK_FORMAT_A2R10G10B10_SINT_PACK32   : 
-  case VK_FORMAT_A2B10G10R10_UNORM_PACK32  : 
-  case VK_FORMAT_A2B10G10R10_SNORM_PACK32  : 
-  case VK_FORMAT_A2B10G10R10_USCALED_PACK32: 
-  case VK_FORMAT_A2B10G10R10_SSCALED_PACK32: 
-  case VK_FORMAT_A2B10G10R10_UINT_PACK32   : 
-  case VK_FORMAT_A2B10G10R10_SINT_PACK32   : 
-  case VK_FORMAT_R16G16B16A16_UNORM :  
-  case VK_FORMAT_R16G16B16A16_SNORM :  
-  case VK_FORMAT_R16G16B16A16_USCALED: 
-  case VK_FORMAT_R16G16B16A16_SSCALED: 
-  case VK_FORMAT_R16G16B16A16_UINT   : 
-  case VK_FORMAT_R16G16B16A16_SINT   : 
-  case VK_FORMAT_R16G16B16A16_SFLOAT : 
-  case VK_FORMAT_R32G32B32A32_UINT   :
-  case VK_FORMAT_R32G32B32A32_SINT   :
-  case VK_FORMAT_R32G32B32A32_SFLOAT :
-  case VK_FORMAT_R64G64B64A64_UINT   :    
-  case VK_FORMAT_R64G64B64A64_SINT  :  
-  case VK_FORMAT_R64G64B64A64_SFLOAT: 
-    return 4;
-    break;
-
-  default:
-    // ?? case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 : 
-    printf ( "%s [WARNING] --> unhandled format %u\n", __FUNCTION__, format);
-    return 0;
-    break;
-  }
-
-  return 0;
-}
-
-
-// ---------------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------------
-uint32_t rekz::SizeOfComponents (VkFormat format) {
-  
-  switch (format) { 
-    // 1 byte component
-  case VK_FORMAT_R8_UNORM:
-  case VK_FORMAT_R8_SNORM :
-  case VK_FORMAT_R8_USCALED:
-  case VK_FORMAT_R8_SSCALED:
-  case VK_FORMAT_R8_UINT:    
-  case VK_FORMAT_R8_SINT:    
-  case VK_FORMAT_R8_SRGB:    
-  case VK_FORMAT_S8_UINT: 
-
-  case VK_FORMAT_R8G8_UNORM:
-  case VK_FORMAT_R8G8_SNORM:     
-  case VK_FORMAT_R8G8_USCALED:
-  case VK_FORMAT_R8G8_SSCALED: 
-  case VK_FORMAT_R8G8_UINT:      
-  case VK_FORMAT_R8G8_SINT:      
-  case VK_FORMAT_R8G8_SRGB:      
-    
-  case VK_FORMAT_R8G8B8_UNORM  : 
-  case VK_FORMAT_R8G8B8_SNORM  : 
-  case VK_FORMAT_R8G8B8_USCALED: 
-  case VK_FORMAT_R8G8B8_SSCALED:
-  case VK_FORMAT_R8G8B8_UINT   :
-  case VK_FORMAT_R8G8B8_SINT   :
-  case VK_FORMAT_R8G8B8_SRGB   :
-  case VK_FORMAT_B8G8R8_UNORM  :
-  case VK_FORMAT_B8G8R8_SNORM  :
-  case VK_FORMAT_B8G8R8_USCALED: 
-  case VK_FORMAT_B8G8R8_SSCALED: 
-  case VK_FORMAT_B8G8R8_UINT   :   
-  case VK_FORMAT_B8G8R8_SINT   :   
-  case VK_FORMAT_B8G8R8_SRGB   :
-
-  case VK_FORMAT_R8G8B8A8_UNORM:   
-  case VK_FORMAT_R8G8B8A8_SNORM:   
-  case VK_FORMAT_R8G8B8A8_USCALED: 
-  case VK_FORMAT_R8G8B8A8_SSCALED: 
-  case VK_FORMAT_R8G8B8A8_UINT   : 
-  case VK_FORMAT_R8G8B8A8_SINT   : 
-  case VK_FORMAT_R8G8B8A8_SRGB   : 
-  case VK_FORMAT_B8G8R8A8_UNORM  : 
-  case VK_FORMAT_B8G8R8A8_SNORM  : 
-  case VK_FORMAT_B8G8R8A8_USCALED: 
-  case VK_FORMAT_B8G8R8A8_SSCALED: 
-  case VK_FORMAT_B8G8R8A8_UINT:
-  case VK_FORMAT_B8G8R8A8_SINT:
-  case VK_FORMAT_B8G8R8A8_SRGB:
-  case VK_FORMAT_A8B8G8R8_UNORM_PACK32:  
-  case VK_FORMAT_A8B8G8R8_SNORM_PACK32:  
-  case VK_FORMAT_A8B8G8R8_USCALED_PACK32:  
-  case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:  
-  case VK_FORMAT_A8B8G8R8_UINT_PACK32   :  
-  case VK_FORMAT_A8B8G8R8_SINT_PACK32   :  
-  case VK_FORMAT_A8B8G8R8_SRGB_PACK32: 
-
-    return 1;
-    break;
-
-    // + 2 bytes +
-  case VK_FORMAT_R16_UNORM:
-  case VK_FORMAT_R16_SNORM:
-  case VK_FORMAT_R16_USCALED:
-  case VK_FORMAT_R16_SSCALED:
-  case VK_FORMAT_R16_UINT:
-  case VK_FORMAT_R16_SINT: 
-  case VK_FORMAT_R16_SFLOAT:
-  case VK_FORMAT_D16_UNORM: 
-  case VK_FORMAT_R16G16_UNORM  : 
-  case VK_FORMAT_R16G16_SNORM  : 
-  case VK_FORMAT_R16G16_USCALED: 
-  case VK_FORMAT_R16G16_SSCALED: 
-  case VK_FORMAT_R16G16_UINT   :    
-  case VK_FORMAT_R16G16_SINT   :    
-  case VK_FORMAT_R16G16_SFLOAT :    
-
-  case VK_FORMAT_R16G16B16_UNORM  : 
-  case VK_FORMAT_R16G16B16_SNORM  :
-  case VK_FORMAT_R16G16B16_USCALED:
-  case VK_FORMAT_R16G16B16_SSCALED:
-  case VK_FORMAT_R16G16B16_UINT   :
-  case VK_FORMAT_R16G16B16_SINT   :
-  case VK_FORMAT_R16G16B16_SFLOAT :
-
-  case VK_FORMAT_R16G16B16A16_UNORM :  
-  case VK_FORMAT_R16G16B16A16_SNORM :  
-  case VK_FORMAT_R16G16B16A16_USCALED: 
-  case VK_FORMAT_R16G16B16A16_SSCALED: 
-  case VK_FORMAT_R16G16B16A16_UINT   : 
-  case VK_FORMAT_R16G16B16A16_SINT   : 
-  case VK_FORMAT_R16G16B16A16_SFLOAT : 
-      
-    return 2;
-    break;
-
-
-    //  4 bytes
-  case VK_FORMAT_R32_UINT  :
-  case VK_FORMAT_R32_SINT  :
-  case VK_FORMAT_R32_SFLOAT:
-  case VK_FORMAT_D32_SFLOAT: 
-
-  case VK_FORMAT_R32G32_UINT  :
-  case VK_FORMAT_R32G32_SINT  :
-  case VK_FORMAT_R32G32_SFLOAT:
-
-  case VK_FORMAT_R32G32B32_UINT  :
-  case VK_FORMAT_R32G32B32_SINT  :
-  case VK_FORMAT_R32G32B32_SFLOAT:
-
-  case VK_FORMAT_R32G32B32A32_UINT   :
-  case VK_FORMAT_R32G32B32A32_SINT   :
-  case VK_FORMAT_R32G32B32A32_SFLOAT :
-
-    return 4;
-    break;
-
-
-    //case VK_FORMAT_R4G4_UNORM_PACK8 : // <-- hmmm
-  case VK_FORMAT_R64_UINT  :    
-  case VK_FORMAT_R64_SINT  :    
-  case VK_FORMAT_R64_SFLOAT:    
-  case VK_FORMAT_R64G64_UINT  :    
-  case VK_FORMAT_R64G64_SINT  :    
-  case VK_FORMAT_R64G64_SFLOAT:
-  case VK_FORMAT_R64G64B64_UINT  :    
-  case VK_FORMAT_R64G64B64_SINT  :    
-  case VK_FORMAT_R64G64B64_SFLOAT:    
-  case VK_FORMAT_R64G64B64A64_UINT:    
-  case VK_FORMAT_R64G64B64A64_SINT:  
-  case VK_FORMAT_R64G64B64A64_SFLOAT: 
-
-    return 8;
-    break;
-
-    // + WAT TODO WITH THESE +
-    
-  // case VK_FORMAT_D16_UNORM_S8_UINT: 
-  // case VK_FORMAT_D24_UNORM_S8_UINT:
-  // case VK_FORMAT_D32_SFLOAT_S8_UINT:  
-  // ??? VK_FORMAT_X8_D24_UNORM_PACK32: ???
-  // case VK_FORMAT_R5G6B5_UNORM_PACK16:
-  // case VK_FORMAT_B5G6R5_UNORM_PACK16:   
-  // case VK_FORMAT_B10G11R11_UFLOAT_PACK32: 
-  // case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
-  // case VK_FORMAT_B4G4R4A4_UNORM_PACK16: 
-  // case VK_FORMAT_R5G5B5A1_UNORM_PACK16: 
-  // case VK_FORMAT_B5G5R5A1_UNORM_PACK16: 
-  // case VK_FORMAT_A1R5G5B5_UNORM_PACK16: 
-  // case VK_FORMAT_A2R10G10B10_UNORM_PACK32  :
-  // case VK_FORMAT_A2R10G10B10_SNORM_PACK32  :
-  // case VK_FORMAT_A2R10G10B10_USCALED_PACK32: 
-  // case VK_FORMAT_A2R10G10B10_SSCALED_PACK32: 
-  // case VK_FORMAT_A2R10G10B10_UINT_PACK32   : 
-  // case VK_FORMAT_A2R10G10B10_SINT_PACK32   : 
-  // case VK_FORMAT_A2B10G10R10_UNORM_PACK32  : 
-  // case VK_FORMAT_A2B10G10R10_SNORM_PACK32  : 
-  // case VK_FORMAT_A2B10G10R10_USCALED_PACK32: 
-  // case VK_FORMAT_A2B10G10R10_SSCALED_PACK32: 
-  // case VK_FORMAT_A2B10G10R10_UINT_PACK32   : 
-  // case VK_FORMAT_A2B10G10R10_SINT_PACK32   : 
-  // case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 : 
-
-
-  default:
-    printf ( "%s [WARNING] --> unhandled format %u\n", __FUNCTION__, format);
-    return 0;
-    break;
-  }
-
-  return 0;
-
-}
-
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-int rekz::OpenImageFile (const std::string& fqname, rekz::DevILOpenFileCB cb, void* up) {
-
-  DevILImageProps props; 
-
-  ilInit ();
-  ilBindImage (ilGenImage ());
-
-  int res = 0;
-  if (ilLoadImage(fqname.c_str())) {
-    
-    printf ("Opened [%s]\n", fqname.c_str() ); 
-    props.width    = ilGetInteger (IL_IMAGE_WIDTH); 
-    props.height   = ilGetInteger (IL_IMAGE_HEIGHT);
-    props.depth    = ilGetInteger (IL_IMAGE_DEPTH);
-    props.bytes_per_pixel= ilGetInteger (IL_IMAGE_BYTES_PER_PIXEL); 
-    props.bpp      = ilGetInteger (IL_IMAGE_BPP);
-    props.type     = ilGetInteger (IL_IMAGE_TYPE);
-    props.format   = ilGetInteger (IL_IMAGE_FORMAT);
-
-
-    res = cb (ilGetData (), props, up); 
-
-    ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
-
-  }
-
-  ilShutDown ();
-  return res; 
-}
-
-#ifdef REKZ_HIDE_CPP_IMAGE_HANDLER
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-int cpp_image_handler (const unsigned char* dat, const rekz::DevILImageProps& props, void* up) {
-
-  if (up) {
-    rekz::ImageCB* cb =  static_cast <rekz::ImageCB*> (up); 
-    return cb->do_shit (dat, props);
-  }
-
-  printf ("[ERROR] %s..bad user pointer\n", __FUNCTION__); 
-  return __LINE__; 
-}
-
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
-int rekz::OpenImageFile (const std::string& fqname, ImageCB* cb) {
-
-  return OpenImageFile (fqname, cpp_image_handler, (void*) cb); 
-  
-}
-#endif
-
-
-// ---------------------------------------------------------------------
-// load texture to device memory
-// ---------------------------------------------------------------------
-bool rekz::LoadTexture_color_sampling (rokz::Image&             image,
-                                           VkFormat                 format,
-                                           const VkExtent2D&        ext2d,
-                                           const void*              srcimage,
-                                           const VmaAllocator&      allocator, 
-                                           const VkQueue&           queue, 
-                                           const rokz::CommandPool& commandpool, 
-                                           const rokz::Device&      device) {
-
-  //size_t image_size = image_width * image_height *  bytes_per_pixel; 
-  auto image_size = SizeOfComponents (format)
-                  * NumberOfComponents (format)
-                  * ext2d.width * ext2d.height;
-  assert (image_size); 
-
-  rokz::Buffer stage_buff; 
-  
-  rokz::cx::CreateInfo_buffer_stage (stage_buff.ci, image_size);
-  rokz::cx::AllocCreateInfo_stage (stage_buff.alloc_ci);
-  rokz::cx::CreateBuffer (stage_buff, allocator); 
-
-  void* mapped = nullptr; 
-  if (rokz::cx::MapMemory (&mapped, stage_buff.allocation, allocator)) { 
-  
-    const uint8_t* image_data = reinterpret_cast<const unsigned char*> (srcimage); 
-    std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
-  }
-  rokz::cx::UnmapMemory (stage_buff.allocation, allocator);
-
-  rokz::cx::CreateInfo_2D_color_sampling  (image.ci, VK_SAMPLE_COUNT_1_BIT, ext2d.width, ext2d.height);
-  rokz::cx::AllocCreateInfo_device (image.alloc_ci);
-  if (!rokz::cx::CreateImage (image, allocator)) {
-    printf ("[FAILED] %s setup test texture", __FUNCTION__);
-    return false;
-  }
-
-  //VK_FORMAT_R8G8B8A8_SRGB
-  rokz::cx::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_UNDEFINED,
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                               queue, commandpool.handle, device.handle);
-
-  rokz::cx::CopyBufferToImage (image.handle, stage_buff.handle, ext2d.width, ext2d.height,
-                           queue, commandpool.handle, device.handle);
-
-  rokz::cx::TransitionImageLayout (image.handle, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                               queue, commandpool.handle, device.handle);
-
-  rokz::Destroy (stage_buff, allocator); 
-  return true; 
-}
 
 // --------------------------------------------------------------------
 //
@@ -675,7 +82,7 @@ bool rekz::CreateMSAAColorTarget  (rokz::Image&          color_image,
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
+bool rekz::SetupGridData (GridData& gd, const Device& device) {
 
   void*  mem = nullptr;
   size_t szmem = 0;
@@ -693,8 +100,8 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
   
   const glm::vec3 voffs (-dimsize * 0.5f, 0.0f, -dimsize * 0.5f);
 
-  std::vector<rekz::GridVert> verts (vertdim * vertdim);
-  std::vector<uint16_t> inds (2 * totalverts);
+  Vec<GridVert> verts (vertdim * vertdim);
+  Vec<uint16_t> inds (2 * totalverts);
 
   // -- vertices --
   for (uint16_t iz = 0; iz < vertdim; ++iz) {
@@ -704,7 +111,7 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
 
     }
   } // move 2 vb
-  rokz::Create_VB_device ( gd.vb_device, &verts[0], verts.size () * sizeof(rekz::GridVert), device); 
+  Create_VB_device (gd.vb_device, &verts[0], verts.size () * sizeof(rekz::GridVert), device); 
 
   // -- indices --
   for (uint16_t iz = 0; iz < vertdim; ++iz) { // draw x lines
@@ -717,7 +124,7 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
       inds[totalverts + ix * vertdim + iz] = iz * vertdim + ix; 
     }
   } // move
-  rokz::Create_IB_16_device (gd.ib_device, &inds[0], inds.size (), device); 
+  Create_IB_16_device (gd.ib_device, &inds[0], inds.size (), device); 
   
   return true; 
 }
@@ -726,7 +133,7 @@ bool rekz::SetupGridData (GridData& gd, const rokz::Device& device) {
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-void rekz::CleanupGridData (GridData& gd, const rokz::Device& device) {
+void rekz::CleanupGridData (GridData& gd, const Device& device) {
 
   rokz::Destroy (gd.vb_device, device.allocator.handle); 
   
@@ -765,22 +172,6 @@ float rekz::AspectRatio (const VkExtent2D& ext) {
 
 }
 
-bool rekz::SetupDisplay (rokz::Display& display, rekz::InputState& input_state, const VkExtent2D& dim, const rokz::Instance& instance) { 
-  
-  // create GLFW window
-  rokz::CreateWindow (display.window, dim.width, dim.height, "wut"); 
-  glfwSetFramebufferSizeCallback (display.window.glfw_window, rekz::win_event::on_resize ); 
-  glfwSetKeyCallback (display.window.glfw_window, rekz::win_event::on_keypress);
-  glfwSetCursorPosCallback(display.window.glfw_window, rekz::win_event::on_mouse_move);
-  glfwSetMouseButtonCallback(display.window.glfw_window, rekz::win_event::on_mouse_button);
-  glfwSetCursorEnterCallback (display.window.glfw_window, rekz::win_event::on_mouse_enter); 
-                              
-  glfwSetWindowUserPointer (display.window.glfw_window, &input_state);
-
-  // create surface
-  return  rokz::cx::CreateSurface  (&display.surface, display.window.glfw_window, instance.handle);
-
-}
 
 
 
@@ -788,17 +179,17 @@ bool rekz::SetupDisplay (rokz::Display& display, rekz::InputState& input_state, 
 //
 // -------------------------------------------------------------------------
 //bool SetupRenderingAttachments (Glob& glob, rokz::SwapchainGroup& scg, const rokz::Device& device) { 
-bool rekz::SetupRenderingAttachments (rokz::Image&          msaa_color_image       ,
-                                      rokz::ImageView&      msaa_color_imageview   ,
+bool rekz::SetupRenderingAttachments (Image&          msaa_color_image       ,
+                                      ImageView&      msaa_color_imageview   ,
 
-                                      rokz::Image&          msaa_depth_image       ,
-                                      rokz::ImageView&      msaa_depth_imageview   ,
+                                      Image&          msaa_depth_image       ,
+                                      ImageView&      msaa_depth_imageview   ,
 
                                       VkSampleCountFlagBits msaa_samples           ,
                                       VkFormat              swapchain_image_format ,
                                       VkFormat              msaa_depth_format      ,
                                       const VkExtent2D&     image_ext, 
-                                      const rokz::Device& device) { 
+                                      const Device& device) { 
 
   //CreateMSAAColorImage -> (image, imageview)
   CreateMSAAColorTarget (msaa_color_image, msaa_color_imageview, msaa_samples,
@@ -817,16 +208,16 @@ bool rekz::SetupRenderingAttachments (rokz::Image&          msaa_color_image    
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-void rekz::CleanupSwapchain (std::vector<rokz::ImageView>& sc_image_views,
-                                 rokz::Image&                  msaa_color_image,
-                                 rokz::ImageView&              msaa_color_imageview,
+void rekz::CleanupSwapchain (Vec<ImageView>&         sc_image_views,
+                                 Image&              msaa_color_image,
+                                 ImageView&          msaa_color_imageview,
 
-                                 rokz::Image&                  depth_image,
-                                 rokz::ImageView&              depth_imageview,
+                                 Image&              depth_image,
+                                 ImageView&          depth_imageview,
 
-                                 rokz::Swapchain&              swapchain,
-                                 const rokz::Device&           device,
-                                 const VmaAllocator&           allocator) {
+                                 Swapchain&          swapchain,
+                                 const Device&       device,
+                                 const VmaAllocator& allocator) {
 
   // for (auto fb : framebuffers) {
   //   vkDestroyFramebuffer (device.handle, fb.handle, nullptr); 
@@ -836,24 +227,23 @@ void rekz::CleanupSwapchain (std::vector<rokz::ImageView>& sc_image_views,
     vkDestroyImageView(device.handle, sc_imageview.handle, nullptr);
   }
 
-  rokz::cx::Destroy (msaa_color_image, allocator);
-  rokz::cx::Destroy (msaa_color_imageview, device.handle);
+  cx::Destroy (msaa_color_image, allocator);
+  cx::Destroy (msaa_color_imageview, device.handle);
 
-  rokz::cx::Destroy (depth_image, allocator);
-  rokz::cx::Destroy (depth_imageview, device.handle);
+  cx::Destroy (depth_image, allocator);
+  cx::Destroy (depth_imageview, device.handle);
 
   vkDestroySwapchainKHR(device.handle, swapchain.handle, nullptr);
 }
 
-
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool rekz::RecreateSwapchain(rokz::Swapchain&  swapchain, const rokz::Window& win, 
-                             std::vector<rokz::Image>& swapchain_images, std::vector<rokz::ImageView>& imageviews,
-                             rokz::Image& depth_image, rokz::ImageView& depth_imageview,
-                             rokz::Image& multisamp_color_image, rokz::ImageView& multisamp_color_imageview,
-                             const VmaAllocator& allocator, const rokz::Device& device) {
+bool rekz::RecreateSwapchain(Swapchain&  swapchain, const rokz::Window& win, 
+                             Vec<Image>& swapchain_images, Vec<ImageView>& imageviews,
+                             Image& depth_image, ImageView& depth_imageview,
+                             Image& multisamp_color_image, ImageView& multisamp_color_imageview,
+                             const VmaAllocator& allocator, const Device& device) {
 
   printf ("%s\n", __FUNCTION__);
 
@@ -874,8 +264,8 @@ bool rekz::RecreateSwapchain(rokz::Swapchain&  swapchain, const rokz::Window& wi
                     swapchain, device, allocator);
 
   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
-  bool swapchain_res    = rokz::cx::CreateSwapchain (swapchain, device);
-  bool imageviews_res   = rokz::cx::CreateImageViews (imageviews, swapchain_images, device);
+  bool swapchain_res    = cx::CreateSwapchain (swapchain, device);
+  bool imageviews_res   = cx::CreateImageViews (imageviews, swapchain_images, device);
 
   assert (false);
   // rokz::Image& multisamp_color_image, rokz::ImageView& multisamp_color_imageview,
@@ -889,18 +279,18 @@ bool rekz::RecreateSwapchain(rokz::Swapchain&  swapchain, const rokz::Window& wi
 // -------------------------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------------------------
-rokz::ResetSwapchainCB::Ref rekz::CreateSwapchainResetter (rokz::Swapchain& sc, 
-                                                           std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
-                                                           rokz::Image& dp, rokz::ImageView& div,
-                                                           rokz::Image& mscim, rokz::ImageView& mscimv) {
+rokz::ResetSwapchainCB::Ref rekz::CreateSwapchainResetter (Swapchain& sc, 
+                                                           Vec<Image>& scis, Vec<ImageView>& scivs,
+                                                           Image& dp, ImageView& div,
+                                                           Image& mscim, ImageView& mscimv) {
 
-  struct DefaultResetSwapchain : public rokz::ResetSwapchainCB {
+  struct DefaultResetSwapchain : public ResetSwapchainCB {
   public:
   
-    DefaultResetSwapchain (rokz::Swapchain& sc, 
-                           std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
-                           rokz::Image& dp, rokz::ImageView& dpiv,  
-                           rokz::Image& mscim, rokz::ImageView&  mscimv)
+    DefaultResetSwapchain (Swapchain& sc, 
+                           Vec<Image>& scis, Vec<ImageView>& scivs,
+                           Image& dp, ImageView& dpiv,  
+                           Image& mscim, ImageView&  mscimv)
       : ResetSwapchainCB ()
       , swapchain (sc)
       , swapchain_images (scis)
@@ -922,14 +312,14 @@ rokz::ResetSwapchainCB::Ref rekz::CreateSwapchainResetter (rokz::Swapchain& sc,
     
   protected:
     
-    rokz::Swapchain&              swapchain;
-    std::vector<rokz::Image>&     swapchain_images;
-    std::vector<rokz::ImageView>& swapchain_imageviews;
+    Swapchain&              swapchain;
+    Vec<Image>&     swapchain_images;
+    Vec<ImageView>& swapchain_imageviews;
     
-    rokz::Image&                  depth_image;
-    rokz::ImageView&              depth_imageview;  //
-    rokz::Image&                  msaa_color_image;
-    rokz::ImageView&              msaa_color_imageview; 
+    Image&                  depth_image;
+    ImageView&              depth_imageview;  //
+    Image&                  msaa_color_image;
+    ImageView&              msaa_color_imageview; 
   };
 
 
@@ -957,7 +347,7 @@ bool rekz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
   //rig.clear_colors[1].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   ri.clear_depth.depthStencil = {1.0f, 0};
 
-  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
+  cx::AttachmentInfo (ri.color_attachment_infos[0],
                             msaa_color_imageview.handle,
                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                             VK_RESOLVE_MODE_AVERAGE_BIT,
@@ -967,7 +357,7 @@ bool rekz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
                             VK_ATTACHMENT_STORE_OP_STORE,
                             ri.clear_colors[0]);
 
-  rokz::cx::AttachmentInfo (ri.depth_attachment_info,
+  cx::AttachmentInfo (ri.depth_attachment_info,
                             msaa_depth_imageview.handle,
                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                             VK_RESOLVE_MODE_NONE,
@@ -980,7 +370,7 @@ bool rekz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
   
   ri.render_area = { VkOffset2D {0, 0}, image_extent };
 
-  rokz::cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
+  cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
   return true;
 }
 
@@ -991,7 +381,7 @@ void rekz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
                                        const rokz::ImageView&    msaa_color_imageview ,
                                        const rokz::ImageView&    target_imageview) {
   //printf ("%s\n", __FUNCTION__); 
-  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
+  cx::AttachmentInfo (ri.color_attachment_infos[0],
                         msaa_color_imageview.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         VK_RESOLVE_MODE_AVERAGE_BIT, target_imageview.handle,
                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -1001,6 +391,24 @@ void rekz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
 
 
 
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+int mix_x (const Vec<std::string>& args) {
+
+  ("mesh.h", "global_descriptor.h", "input_objects.h", "render_attachment.h");
+
+  
+  glm::vec3 cola (1.0f, 0.0f, 0.0f); 
+  glm::vec3 colb (0.0f, 1.0f, 0.0f);
+
+  glm::vec3 colz = glm::mix(cola, colb, 0.2f); // -> < 0.8, 0.2, 0.0>
+  
+  printf ("< r:%f, g:%f, b:%f >\n", colz.x, colz.y, colz.z);
+  // 
+  return 0; 
+}
+
 // rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info,
   //                              glob.surface,
   //                              glob.physical_device.handle);
@@ -1009,22 +417,23 @@ void rekz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-int test_rokz (const std::vector<std::string>& args); 
-int test_rokz_hpp (const std::vector<std::string>& args); 
-int texture_tool (const std::vector<std::string>& args); 
-int test_ouput (const std::vector<std::string>& args); 
+int test_rokz (const Vec<std::string>& args); 
+int test_rokz_hpp (const Vec<std::string>& args); 
+int texture_tool (const Vec<std::string>& args); 
+int test_ouput (const Vec<std::string>& args); 
 int test_time (); 
-int darkrootbasin (const std::vector<std::string>& args);
-int run_marz (const std::vector<std::string>& args);
-int mars_prelim (const std::vector<std::string>& args);
+int darkrootbasin (const Vec<std::string>& args);
+int run_marz (const Vec<std::string>& args);
+int mars_prelim (const Vec<std::string>& args);
 bool test_grid_geom_gen ();
 
 
 // -------------------------------------------------------------------------------------------
 int main (int argv, char** argc) {
 
-  const std::vector<std::string> args (argc, argc + argv);
+  const Vec<std::string> args (argc, argc + argv);
 
+  //mix_x (args);
   darkrootbasin  (args);
   //marz_run  (args);
 

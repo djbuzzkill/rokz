@@ -83,10 +83,7 @@ void CleanupDarkroot (Glob& glob) {
   //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
   rokz::cx::Destroy (glob.global_uniform_de.pool, glob.device.handle); 
 
-
   rokz::cx::Destroy (glob.global_dslo, glob.device.handle); 
-
-  
   // moved to DrawPolygon
   // rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
   // rokz::cx::Destroy (glob.sampler, glob.device.handle); 
@@ -116,119 +113,6 @@ void CleanupDarkroot (Glob& glob) {
   //
   glfwTerminate();
 }
-
-  
-
-
-// void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
-
-//   //
-//   //  SharedGlobals
-//   {
-//     glob.shared.dt             = dt;
-//     glob.shared.sim_time      += dt;
-//     glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
-//   }    
-  
-//   // 
-//   { // MVPTransform buffer
-//     rokz::MVPTransform* mvp =
-//       reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (glob.global_uniform_bu[current_frame]));
-  
-//     if (mvp) {
-    
-//       mvp->model = glm::mat4(1.0); // model is elsewhere 
-//       const float aspf = rekz::ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
-
-//       glm::mat4 xrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
-//       glm::mat4 yrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
-//       glm::mat4 zrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-//       glm::mat4 rotation =  zrot  * yrot  * xrot;
-//       glm::mat4 viewmatrix = glm::translate (glm::mat4(1.0f), glob.shared.view_pos) * rotation;
-//       mvp->view = glm::inverse (viewmatrix); 
-//       //glm::vec3 (0.0, .5, -5.0));
-//       // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      
-//       mvp->proj = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 800.0f);
-//       // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
-//       // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
-//       // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
-//       mvp->proj[1][1] *= -1;
-      
-//     }
-//   }
-  
-// }
-
-// 
-void UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const rekz::InputState& input_state) {
-
-  const float turnrate = 0.02f;
-  
-  if (input_state.mouse.inside) {
-    if (!previnside) {
-      mouse_prev.x = input_state.mouse.x_pos; 
-      mouse_prev.y = input_state.mouse.y_pos; 
-    }
-
-    int dx = input_state.mouse.x_pos - mouse_prev.x; 
-    int dy = input_state.mouse.y_pos - mouse_prev.y; 
-        
-    mouse_prev.x = input_state.mouse.x_pos; 
-    mouse_prev.y = input_state.mouse.y_pos; 
-    // glob.shared.view_rot.x += turnrate;
-    // glob.shared.view_rot.y += turnrate;
-    previnside = input_state.mouse.inside; 
-
-    // printf (" [%i]--> S(%i, %i) | dS(%i, %i)\n", __LINE__,
-    //         glob.input_state.mouse.x_pos,
-    //         glob.input_state.mouse.y_pos,
-    //         dx, dy); 
-
-    viewrot.x += -dy * turnrate;
-    viewrot.y += -dx * turnrate;
-    viewrot.z = 0.0f;
-  }
-  
-}
-
-void UpdateViewPosition (glm::vec3& viewpos, const rekz::InputState& input_state) {
-
-    const float move_rate = 0.05f;
-
-    if (input_state.keys.count (GLFW_KEY_F)) {
-      // fwd
-      viewpos.z -= move_rate;
-      //printf ("--> [f] z:%f \n", viewpos.z);
-    }    
-    if (input_state.keys.count (GLFW_KEY_V)) {
-      // ?? recedes
-      viewpos.z += move_rate;
-      //printf ("--> [v] z:%f \n", glob.shared.view_pos.z);
-    }    
-
-    if (input_state.keys.count (GLFW_KEY_D)) {
-      viewpos.x -= move_rate;
-      //printf ("--> [d] x:%f \n", glob.shared.view_pos.x);
-    }    
-    if (input_state.keys.count (GLFW_KEY_G)) {
-      viewpos.x += move_rate;
-      //printf ("--> [g] x:%f \n", glob.shared.view_pos.x);
-    }    
-
-    if (input_state.keys.count (GLFW_KEY_J)) {
-      // ??? climbs
-      viewpos.y += move_rate;
-      //printf ("--> [j] y:%f \n", glob.shared.view_pos.y);
-    }    
-    if (input_state.keys.count (GLFW_KEY_K)) {
-      // appears to descend
-      viewpos.y -= move_rate;
-      //printf ("--> [k] y:%f \n", glob.shared.view_pos.y);
-    }    
-
-  } 
 
 // ---------------------------------------------------------------------------------------
 //  encapsulate rendering loop
@@ -285,8 +169,8 @@ struct RootLoop {
     
     UpdateRunState () ;
     
-    UpdateViewPosition (glob.shared.view_pos, glob.input_state);
-    UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state);
+    rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state);
+    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state);
     
     //
     rokz::SwapchainGroup& scg = glob.swapchain_group; 

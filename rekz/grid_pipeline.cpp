@@ -4,6 +4,9 @@
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
 #include <vulkan/vulkan_core.h>
+
+
+using namespace rokz;
 // ----------------------------------------------------------------------------------------
 // vertex input
 // ----------------------------------------------------------------------------------------
@@ -17,7 +20,7 @@ const VkVertexInputBindingDescription rekz::kGridVertexBindingDesc =  {
 // ----------------------------------------------------------------------------------------
 // vertex attributes...pos, norm, color
 // ----------------------------------------------------------------------------------------
-const std::vector<VkVertexInputAttributeDescription> rekz::kGridVertInputAttributeDesc = {
+const Vec<VkVertexInputAttributeDescription> rekz::kGridVertInputAttributeDesc = {
 
   VkVertexInputAttributeDescription { // pos
     0,                                // .location 

@@ -31,6 +31,10 @@ set (ROKZ_HEADER_FILES
   binary_IO.h
   defaults.h
 
+  window_handler.h
+  input_control.h
+  display.h
+  
   # rokz_types.h
   # rokz_funcs.h
   file.h
@@ -58,6 +62,9 @@ set (ROKZ_SOURCE_FILES
   sampler.cpp
   window.cpp
 
+  window_handler.cpp
+  input_control.cpp
+  display.cpp
 
   utility.cpp
   binary_IO.cpp

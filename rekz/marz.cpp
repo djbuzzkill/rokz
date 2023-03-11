@@ -59,6 +59,8 @@ bool SetupDynamicRenderingInfo (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 bool SetupRenderAttachments (Glob& glob) {
 
+  Vec<int> ints;
+  
   return false; 
 
 }

@@ -1,9 +1,10 @@
 #ifndef REKZ_WINDOW_HANDLER_INCLUDE
 #define REKZ_WINDOW_HANDLER_INCLUDE
 
-#include "rekz.h"
+#include "common.h"
+#include "input_control.h"
 
-namespace rekz {
+namespace rokz {
 
   // ----------------------------------------------------------------------------------------
   //                     

@@ -2,6 +2,7 @@
 #include "darkrootgarden.h"
 #include "rekz/dark_types.h"
 
+#include "image_loader.h"
 
 
 using namespace darkroot;
