@@ -42,7 +42,7 @@ namespace rekz {
   // vert atribute desc
   // --------------------------------------------------------------------
   const std::vector<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc = {
-
+  
     VkVertexInputAttributeDescription { // pos
       0,                             // .location 
       0,                             // .binding  
@@ -77,9 +77,9 @@ namespace rekz {
 //                                    
 // ----------------------------------------------------------------------------------------------
 bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
-
   printf ("%s \n", __FUNCTION__); 
   
+  "mack_rowes.h"; 
   std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
   std::vector<rokz::ShaderModule>&              shader_modules            = pipeline.shader_modules;
 
@@ -95,12 +95,12 @@ bool setup_object_shader_modules (rokz::Pipeline& pipeline, const std::filesyste
     return false; 
   
   rokz::CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
-
   //
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"objz/polyobj_frag.spv" ;
-  //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str()); 
-  
+  std::filesystem::path frag_file_path = fspath/"objz/polyobj_frag.spv"; 
+
+
+    //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str());
   rokz::CreateInfo (shader_modules[1].ci, rokz::From_file (shader_modules[1].bin, frag_file_path.string())); 
   if (!rokz::CreateShaderModule (shader_modules[1], device.handle))
     return false; 

@@ -76,7 +76,7 @@ namespace rekz {
                                       const rokz::DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
                                       const rokz::Device&                device);
 
-
+  
   bool BindObjectDescriptorResources (VkDescriptorSet                  ds,
                                       rokz::Buffer&                    objparam_buff,
                                       const rokz::ImageView&           texture_imageview, 
@@ -87,9 +87,8 @@ namespace rekz {
   //
   // 
   bool SetupObjectUniforms (std::vector<rokz::Buffer>& objparams, uint32_t num_sets, const rokz::Device& device);
-
-  
   // 
+
 }
 
 

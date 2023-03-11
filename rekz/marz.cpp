@@ -3,9 +3,19 @@
 #include "grid_pipeline.h"
 #include "rokz/allocation.h"
 #include "rokz/buffer.h"
+//
+
+
 
 
 using namespace marz; 
+
+namespace { 
+
+const VkExtent2D kDisplayDimensions {800, 600}; 
+
+}
+
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
@@ -33,6 +43,7 @@ bool SetupGridResources (Glob& glob) {
 //                        
 // --------------------------------------------------------------------------------------------
 bool UpdateGridUniforms (Glob& glob, uint32_t current_frame, double dt) {
+
   return false;
 }
 
@@ -49,6 +60,7 @@ bool SetupDynamicRenderingInfo (Glob& glob) {
 bool SetupRenderAttachments (Glob& glob) {
 
   return false; 
+
 }
 
 
@@ -75,7 +87,6 @@ void CleanupMars (Glob& glob) {
   // rokz::Destroy (glob.vma_vb_device, glob.allocator);
   // rokz::Destroy (glob.vma_ib_device, glob.allocator);
   
-  assert (false); // Cleanup
   // Cleanup (glob.terrain_pipeline.pipeline.handle,
   //          glob.swapchain_group.framebuffers, glob.swapchain_group.imageviews,
 
@@ -96,6 +107,7 @@ void CleanupMars (Glob& glob) {
   //          glob.allocator, 
   //          glob.instance.handle);
 
+  assert (false); // Cleanup
   glfwTerminate();
 
 }
@@ -186,20 +198,79 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-int marz_run (const std::vector<std::string>& args) {
+int run_marz (const std::vector<std::string>& args) {
   printf ("%s\n", __FUNCTION__);
 
   Glob glob; //
-
   rokz::SwapchainGroup&  scg   = glob.swapchain_group;
   rokz::FrameSyncGroup&  fsg   = glob.framesyncgroup; 
   
-  // auto pipeline_path  = std::filesystem::path ("/home/djbuzzkill/owenslake/rokz/pipeline";
+  std::filesystem::path pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
+  std::filesystem::path data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
+
+  //Default (glob); 
   
+  glfwInit();
+  
+
+  rokz::InitializeInstance (glob.instance); 
+
+  rekz::SetupDisplay (glob.display, glob.input_state, kDisplayDimensions, glob.instance); 
+  
+  rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
+  //
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
+
+  rokz::ConfigureDevice  (glob.device.physical , VK_TRUE);
+
+  // this does a lot of shit
+  rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
+  
+  // put these somwehere
+  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+  rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
+
+  // InitializeSwapchain ()
+  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+                             kDisplayDimensions, glob.device.physical, glob.device);
+  //assert (false);
+
+  //
+  rekz::SetupRenderingAttachments (glob.msaa_color_image,
+                                   glob.msaa_color_imageview, 
+                                                         
+                                   glob.depth_image,       
+                                   glob.depth_imageview,
+                            
+                                   glob.msaa_samples,
+                                   scg.swapchain.ci.imageFormat,
+                                   glob.depth_format,          
+                                   scg.swapchain.ci.imageExtent,
+                                   glob.device); // <-- this does all the additional  attachmentes
+
+  //
+  glob.swapchain_reset_cb = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+                                                           glob.depth_image, glob.depth_imageview,
+                                                           glob.msaa_color_image, glob.msaa_color_imageview); 
+  //
+  // for BeginRendering ()
+  SetupDynamicRenderingInfo (glob); 
+  // define first 
+  rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
+  //rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
 
   // SetupMarsWindow (glob.window, &glob.input_state); 
 
 
+  // grid only uses globals
+
+  glob.grid.pipe.dslos.push_back (glob.global_dslo.handle);
+  if (!rekz::InitGridPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
+                               glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
+                               scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) { 
+    printf ("[FAILED] --> InitGridPipeline \n"); 
+    return false; 
+  }
   // rokz::InitializeInstance (glob.instance); 
   // rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
   // rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);

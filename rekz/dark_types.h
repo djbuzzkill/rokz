@@ -46,7 +46,7 @@ namespace darkroot {
     rokz::Display                 display;
     // device props
     VkFormat                      depth_format;
-    VkSampleCountFlagBits         msaa_samples;            // = VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlagBits          msaa_samples;            // = VK_SAMPLE_COUNT_1_BIT;
 
     // attachement set
     rokz::Image                  depth_image;

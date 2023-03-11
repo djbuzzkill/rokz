@@ -54,20 +54,7 @@ namespace darkroot {
                 VmaAllocator&                     allocator, 
                 VkInstance&                       inst);
   
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  bool RecreateSwapchain (rokz::Swapchain&  swapchain, const rokz::Window& win, 
-                          std::vector<rokz::Image>& swapchain_images, std::vector<rokz::ImageView>& imageviews,
-                          rokz::Image& msaa_depth_image, rokz::ImageView& msaa_depth_imageview,
-                          rokz::Image& msaa_color_image, rokz::ImageView& msaa_color_imageview,
-                          const VmaAllocator& allocator, const rokz::Device& device); 
 
-  //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
-  rokz::ResetSwapchainCB::Ref
-  CreateSwapchainResetter (rokz::Swapchain& sc, std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
-                           rokz::Image& dp, rokz::ImageView& div, rokz::Image& mscim, rokz::ImageView& mscimv); 
-
-
+  
 }
 #endif

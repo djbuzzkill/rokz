@@ -330,7 +330,7 @@ namespace rekz {
     int width          ;//= ilGetInteger (IL_IMAGE_WIDTH); 
     int height         ;//= ilGetInteger (IL_IMAGE_HEIGHT);
     int depth          ;//= ilGetInteger (IL_IMAGE_DEPTH);
-    int bytes_per_pixel; //= ilGetInteger (IL_IMAGE_BYTES_PER_PIXEL); 
+    int bytes_per_pixel;//= ilGetInteger (IL_IMAGE_BYTES_PER_PIXEL); 
     int bpp            ;//= ilGetInteger (IL_IMAGE_BPP);
     int type           ;//= ilGetInteger (IL_IMAGE_TYPE);
     int format         ;//= ilGetInteger (IL_IMAGE_FORMAT); 
@@ -377,32 +377,28 @@ namespace rekz {
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  bool CreateDepthBufferTarget (rokz::Image&          depth_image,
-                               rokz::ImageView&      depth_imageview,
-                               //rokz::SwapchainGroup& scg,
-                               VkSampleCountFlagBits msaa_samples, 
-                               VkFormat              depth_format,
-                               const rokz::CommandPool& command_pool,
-                               const VkQueue&        queue, 
-                               const VkExtent2D&     ext,
-                               const VmaAllocator&   allocator,
-                               const rokz::Device&   device); 
 
+  bool CreateDepthBufferTarget (rokz::Image&          depth_image,
+                                rokz::ImageView&      depth_imageview,
+                                //rokz::SwapchainGroup& scg,
+                                VkSampleCountFlagBits msaa_samples, 
+                                VkFormat              depth_format,
+                                const VkExtent2D&     ext,
+                                const rokz::Device&   device);
   // --------------------------------------------------------------------
   //
   // --------------------------------------------------------------------
-  bool CreateMSAAColorTarget (rokz::Image&          color_image, 
-                              rokz::ImageView&      color_imageview, 
-                              VkSampleCountFlagBits msaa_samples,
-                              VkFormat              image_format,
-                              const VmaAllocator&   allocator, 
-                              const rokz::CommandPool& command_pool, 
-                              const VkQueue&        queue, 
-                              const VkExtent2D&     ext,
-                              const rokz::Device&   device); 
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
+
+  bool CreateMSAAColorTarget  (rokz::Image&          color_image, 
+                               rokz::ImageView&      color_imageview, 
+                               VkSampleCountFlagBits msaa_samples,
+                               VkFormat              image_format,
+                               const VkExtent2D&     ext,
+                               const rokz::Device&   device);
+
+  // ----------------------------------------------------------------------------------------
+  //                     
+  // ----------------------------------------------------------------------------------------
   namespace win_event { 
     void on_resize (GLFWwindow* window, int width, int height); 
     void on_keypress (GLFWwindow* window, int key, int scancode, int action, int mods); 
@@ -417,25 +413,73 @@ namespace rekz {
                             const VkExtent2D&   extent, 
                             const rokz::PhysicalDevice& physdev,
                             const rokz::Device& device) ; 
-
-  
   //
   // actually Initize,Instance,SurfaceAndDevice ()
   // bool InitializeInstance (rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device); 
+  bool SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
+  bool BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, const std::vector<rokz::Buffer>& buffs, const rokz::Device& device);
+  void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt);
 
+  bool SetupDisplay (rokz::Display& display, rekz::InputState& input_state, const VkExtent2D& dim, const rokz::Instance& instance);
+
+
+  bool SetupRenderingAttachments (rokz::Image&          msaa_color_image       ,
+                                  rokz::ImageView&      msaa_color_imageview   ,
+
+                                  rokz::Image&          msaa_depth_image       ,
+                                  rokz::ImageView&      msaa_depth_imageview   ,
+
+                                  VkSampleCountFlagBits msaa_samples           ,
+                                  VkFormat              swapchain_image_format ,
+                                  VkFormat              msaa_depth_format      ,
+                                  const VkExtent2D&     image_ext, 
+                                  const rokz::Device&   device);
 
   
-  bool SetupGlobalUniforms (std::vector<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
+  // ----------------------------------------------------------------------------------------
+  //                     
+  // ----------------------------------------------------------------------------------------
+  void CleanupSwapchain (std::vector<rokz::ImageView>& sc_image_views,
+                         rokz::Image&                  msaa_color_image,
+                         rokz::ImageView&              msaa_color_imageview,
+
+                         rokz::Image&                  depth_image,
+                         rokz::ImageView&              depth_imageview,
+
+                         rokz::Swapchain&              swapchain,
+                         const rokz::Device&           device,
+                         const VmaAllocator&           allocator);
 
 
-  bool BindGlobalDescriptorResources (std::vector<VkDescriptorSet>& descs, const std::vector<rokz::Buffer>& buffs, const rokz::Device& device);
+  bool RecreateSwapchain (rokz::Swapchain&  swapchain, const rokz::Window& win, 
+                          std::vector<rokz::Image>& swapchain_images, std::vector<rokz::ImageView>& imageviews,
+                          rokz::Image& msaa_depth_image, rokz::ImageView& msaa_depth_imageview,
+                          rokz::Image& msaa_color_image, rokz::ImageView& msaa_color_imageview,
+                          const VmaAllocator& allocator, const rokz::Device& device); 
+
+  //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
+  rokz::ResetSwapchainCB::Ref
+  CreateSwapchainResetter (rokz::Swapchain& sc, std::vector<rokz::Image>& scis, std::vector<rokz::ImageView>& scivs,
+                           rokz::Image& dp, rokz::ImageView& div, rokz::Image& mscim, rokz::ImageView& mscimv); 
 
 
+  rokz::ResetSwapchainCB::Ref CreateSwapchainResetter (rokz::Swapchain& sc, std::vector<rokz::Image>& scis,
+                                                       std::vector<rokz::ImageView>& scivs,
+                                                       rokz::Image& dp, rokz::ImageView& div,
+                                                       rokz::Image& mscim, rokz::ImageView& mscimv);
 
-
-
+  bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                  const rokz::ImageView&    msaa_color_imageview ,
+                                  const rokz::ImageView&    msaa_depth_imageview ,
+                                  const VkExtent2D&         image_extent); 
+  void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                   const rokz::ImageView&    msaa_color_imageview ,
+                                   const rokz::ImageView&    target_imageview); 
+  // ----------------------------------------------------------------------------------------
+  //                     
+  // ----------------------------------------------------------------------------------------
   inline void printmat (glm::mat4& mat) { 
       for (int iy = 0; iy < 4; ++iy) {
         for (int ix = 0; ix < 4; ++ix) {

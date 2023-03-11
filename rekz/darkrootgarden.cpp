@@ -53,108 +53,6 @@ bool LoadIndexBuffer_static ();
 bool LoadVertexBuffer_static();
 
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-//bool SetupDisplay  (Glob& glob) {
-bool SetupDisplay (rokz::Display& display, rekz::InputState& input_state, const VkExtent2D& dim, const rokz::Instance& instance) { 
-  
-  // create GLFW window
-  rokz::CreateWindow (display.window, dim.width, dim.height, "wut"); 
-  glfwSetFramebufferSizeCallback (display.window.glfw_window, rekz::win_event::on_resize ); 
-  glfwSetKeyCallback (display.window.glfw_window, rekz::win_event::on_keypress);
-  glfwSetCursorPosCallback(display.window.glfw_window, rekz::win_event::on_mouse_move);
-  glfwSetMouseButtonCallback(display.window.glfw_window, rekz::win_event::on_mouse_button);
-  glfwSetCursorEnterCallback (display.window.glfw_window, rekz::win_event::on_mouse_enter); 
-                              
-  glfwSetWindowUserPointer (display.window.glfw_window, &input_state);
-
-  // create surface
-  return  rokz::cx::CreateSurface  (&display.surface, display.window.glfw_window, instance.handle);
-
-}
-
-
-
-
-
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool SetupDynamicRenderingInfo (darkroot::Glob& glob) {
-
-  rokz::RenderingInfoGroup& ri = glob.rendering_info_group;
-  ri.clear_colors.resize (1);
-  ri.color_attachment_infos.resize (1);
-
-  ri.clear_colors[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  //rig.clear_colors[1].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  ri.clear_depth.depthStencil = {1.0f, 0};
-
-  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
-                            glob.msaa_color_imageview.handle,
-                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                            VK_RESOLVE_MODE_AVERAGE_BIT,
-                            glob.swapchain_group.imageviews[0].handle,
-                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                            VK_ATTACHMENT_LOAD_OP_CLEAR,
-                            VK_ATTACHMENT_STORE_OP_STORE,
-                            ri.clear_colors[0]);
-
-  rokz::cx::AttachmentInfo (ri.depth_attachment_info,
-                            glob.depth_imageview.handle,
-                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                            VK_RESOLVE_MODE_NONE,
-                            nullptr,
-                            VK_IMAGE_LAYOUT_UNDEFINED,
-                            VK_ATTACHMENT_LOAD_OP_CLEAR,
-                            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                            ri.clear_depth);
-  
-  ri.render_area = { VkOffset2D {0, 0}, glob.swapchain_group.swapchain.ci.imageExtent };
-
-  rokz::cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
-  return true;
-}
-
-// -----------------------------------------------------------------------------
-// basically populates the AttachmentInfo
-// -----------------------------------------------------------------------------
-void UpdateDynamicRenderingInfo (darkroot::Glob& glob, uint32_t image_index) {
-  //printf ("%s\n", __FUNCTION__); 
-  rokz::RenderingInfoGroup& ri = glob.rendering_info_group;
-
-  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0],
-                        glob.msaa_color_imageview.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                        VK_RESOLVE_MODE_AVERAGE_BIT, glob.swapchain_group.imageviews[image_index].handle,
-                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR,
-                        VK_ATTACHMENT_STORE_OP_STORE, ri.clear_colors[0]);
-
-}
-
-// -------------------------------------------------------------------------
-//
-// -------------------------------------------------------------------------
-bool SetupRenderingAttachments (Glob& glob) { 
-
-  rokz::SwapchainGroup& scg = glob.swapchain_group;
-
-  //CreateMSAAColorImage -> (image, imageview)
-  rekz::CreateMSAAColorTarget (glob.msaa_color_image, glob.msaa_color_imageview, glob.msaa_samples,
-                               scg.swapchain.ci.imageFormat, glob.device.allocator.handle, glob.device.command_pool, 
-                               glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent, glob.device);
-
-  // CreateDepthBufferImage -> (image, imageview)
-  rekz::CreateDepthBufferTarget (glob.depth_image, glob.depth_imageview, glob.msaa_samples, glob.depth_format, 
-                                 glob.device.command_pool, glob.device.queues.graphics, glob.swapchain_group.swapchain.ci.imageExtent,
-                                 glob.device.allocator.handle, glob.device);
-
-  return true;
-
-}
-
-
 
 // --------------------------------------------------------------------
 //
@@ -221,50 +119,47 @@ void CleanupDarkroot (Glob& glob) {
 
   
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
 
-  //
-  //  SharedGlobals
-  {
-    glob.shared.dt             = dt;
-    glob.shared.sim_time      += dt;
-    glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
-  }    
+// void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
+
+//   //
+//   //  SharedGlobals
+//   {
+//     glob.shared.dt             = dt;
+//     glob.shared.sim_time      += dt;
+//     glob.shared.viewport_ext   = glob.swapchain_group.swapchain.ci.imageExtent;
+//   }    
   
-  // 
-  { // MVPTransform buffer
-    rokz::MVPTransform* mvp =
-      reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (glob.global_uniform_bu[current_frame]));
+//   // 
+//   { // MVPTransform buffer
+//     rokz::MVPTransform* mvp =
+//       reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (glob.global_uniform_bu[current_frame]));
   
-    if (mvp) {
+//     if (mvp) {
     
-      mvp->model = glm::mat4(1.0); // model is elsewhere 
-      const float aspf = rekz::ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
+//       mvp->model = glm::mat4(1.0); // model is elsewhere 
+//       const float aspf = rekz::ViewAspectRatio (glob.swapchain_group.swapchain.ci.imageExtent.width, glob.swapchain_group.swapchain.ci.imageExtent.height);
 
-      glm::mat4 xrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
-      glm::mat4 yrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
-      glm::mat4 zrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+//       glm::mat4 xrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
+//       glm::mat4 yrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+//       glm::mat4 zrot = glm::rotate (glm::mat4(1), glob.shared.view_rot.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-      glm::mat4 rotation =  zrot  * yrot  * xrot;
-      glm::mat4 viewmatrix = glm::translate (glm::mat4(1.0f), glob.shared.view_pos) * rotation;
-      mvp->view = glm::inverse (viewmatrix); 
-      //glm::vec3 (0.0, .5, -5.0));
-      // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//       glm::mat4 rotation =  zrot  * yrot  * xrot;
+//       glm::mat4 viewmatrix = glm::translate (glm::mat4(1.0f), glob.shared.view_pos) * rotation;
+//       mvp->view = glm::inverse (viewmatrix); 
+//       //glm::vec3 (0.0, .5, -5.0));
+//       // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
       
-      mvp->proj = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 800.0f);
-      // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
-      // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
-      // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
-      mvp->proj[1][1] *= -1;
+//       mvp->proj = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 800.0f);
+//       // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
+//       // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
+//       // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
+//       mvp->proj[1][1] *= -1;
       
-    }
-  }
+//     }
+//   }
   
-}
-
+// }
 
 // 
 void UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const rekz::InputState& input_state) {
@@ -420,12 +315,15 @@ struct RootLoop {
   
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       
-      UpdateGlobals (glob, curr_frame, Dt);  
+      rekz::UpdateGlobals (glob.shared, glob.global_uniform_bu[curr_frame],
+                           glob.swapchain_group.swapchain.ci.imageExtent, Dt);  
+      //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
 
       // update data needed to record drawlist
 
       // make sure the correct swapchain image is used
-      UpdateDynamicRenderingInfo (glob, image_index);
+      rekz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
+                                        glob.swapchain_group.imageviews[image_index]);
 
       // Transitioning Layout and stuff in here
       // BeginCommandBuffer is called here
@@ -476,10 +374,9 @@ struct RootLoop {
 // ------------------------------------------------------------------------------------------
 // main()
 // ------------------------------------------------------------------------------------------
-int darkroot_basin (const std::vector<std::string>& args) {
+int darkrootbasin (const std::vector<std::string>& args) {
     
   printf ( " Mv = v is the correct order \n"); 
-
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
 
@@ -500,7 +397,6 @@ int darkroot_basin (const std::vector<std::string>& args) {
   //Default (glob); 
   
   glfwInit();
-  glob.input_state.fb_resize = false; 
   
   // CREATE INSTANCE AND DEVICE
   //bool rekz::InitializeInstance (rokz::Instance& instance) {
@@ -557,15 +453,27 @@ int darkroot_basin (const std::vector<std::string>& args) {
   HERE("above SetupRenderingAttachments"); 
 
   //
-  SetupRenderingAttachments (glob); // <-- this does all the additional  attachmentes
+  
+  rekz::SetupRenderingAttachments (glob.msaa_color_image,
+                                   glob.msaa_color_imageview, 
+                                                         
+                                   glob.depth_image,       
+                                   glob.depth_imageview,
+                            
+                                   glob.msaa_samples,
+                                   scg.swapchain.ci.imageFormat,
+                                   glob.depth_format,          
+                                   scg.swapchain.ci.imageExtent,
+                                   glob.device); // <-- this does all the additional  attachmentes
 
   //
-  glob.swapchain_reset_cb = CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
-                                                     glob.depth_image, glob.depth_imageview,
-                                                     glob.msaa_color_image, glob.msaa_color_imageview); 
+  glob.swapchain_reset_cb = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+                                                           glob.depth_image, glob.depth_imageview,
+                                                           glob.msaa_color_image, glob.msaa_color_imageview); 
   //
   // for BeginRendering ()
-  SetupDynamicRenderingInfo (glob); 
+  rekz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
+                                   glob.depth_imageview, glob.swapchain_group.swapchain.ci.imageExtent); 
   //
 
   //
