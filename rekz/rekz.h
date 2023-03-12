@@ -14,6 +14,11 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
+  const size_t kMaxObjectCount = 128;
+
+  extern const Vec<VkDescriptorSetLayoutBinding>      kObjDescriptorBindings;
+  // extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
+  // extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
   //extern const Vec<VkDescriptorSetLayoutBinding> kGlobalDescriptorBindings;
   // ----------------------------------------------------------------------------------------------
   //                           
@@ -60,36 +65,12 @@ namespace rekz {
     uint32_t _unused_03;
 
   }; 
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  struct Vertex_pos_nrm_txc_col {
-    glm::vec3 pos; 
-    glm::vec3 nrm; 
-    glm::vec3 col; 
-    glm::vec2 txc0; 
-  };
-
-  struct Vertex_pos_nrm_txc {
-    glm::vec3 pos; 
-    glm::vec3 nrm; 
-    glm::vec3 col; 
-    glm::vec2 txc0; 
-  };
-
-  struct Vertex_pos_col {
-
-    glm::vec3 pos; 
-    glm::vec3 col; 
-
-  };
-
 
   
   // ---------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------
-  typedef rekz::Vertex_pos_nrm_txc_col PolyVert;
+  typedef rokz::Vertex_pos_nrm_col_txc PolyVert;
   typedef rekz::TriMesh<PolyVert>      PolyMesh;
 
   // ---------------------------------------------------------------------------------------

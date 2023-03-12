@@ -7,6 +7,20 @@
 
 namespace rekz {
 
+
+  const size_t kMaxPatchCount = 256; 
+  // ----------------------------------------------------------------------------------------------
+  // 
+  // ----------------------------------------------------------------------------------------------
+  namespace landscape { 
+    typedef rekz::Vertex_pos_nrm_txc                     PatchVert;
+    // ----------------------------------------------------------------------------------------------
+    extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
+    // ----------------------------------------------------------------------------------------------
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
+    // ----------------------------------------------------------------------------------------------
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
+  }
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
@@ -16,7 +30,7 @@ namespace rekz {
                               VkSampleCountFlagBits        msaa_samples,
                               VkFormat                     color_format,
                               VkFormat                     depth_format,
-                              const std::string&           pipe_path,
+                              const std::filesystem::path& pipe_path,
                               const VkExtent2D&            displayextent,
                               const Device&                device);
   

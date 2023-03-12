@@ -6,16 +6,16 @@ project (rekz)
 #set ("CMAKE_C_FLAGS=-g -O0")
   
 set (REKZ_HEADER_FILES
-    rekz.h
-    dark_types.h
-    marz.h
-    darkrootgarden.h
-    dark_obj_pipeline.h
-    grid_pipeline.h
-    landscape_pipeline.h
-    draw_mars.h
-    image_loader.h
-  )
+  rekz.h
+  dark_types.h
+  marz.h
+  darkrootgarden.h
+  dark_obj_pipeline.h
+  grid_pipeline.h
+  landscape_pipeline.h
+  draw_mars.h
+  image_loader.h
+)
 	
 set (REKZ_SOURCE_FILES
   texture_tool.cpp

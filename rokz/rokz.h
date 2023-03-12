@@ -32,7 +32,7 @@
 #include "binary_IO.h"
 #include "defaults.h"
 #include "binary_IO.h"
-
+#include "vert_defs.h"
 #include "draw_sequence.h"
 #include "swapchain_reset.h"
 #include "frame_loop.h"

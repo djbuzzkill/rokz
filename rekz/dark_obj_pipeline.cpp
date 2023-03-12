@@ -1,5 +1,6 @@
 
 #include "dark_obj_pipeline.h"
+#include "rekz/rekz.h"
 #include "rokz/descriptor.h"
 #include "rokz/file.h"
 #include "rokz/pipeline.h"
@@ -12,67 +13,67 @@
 
 using namespace rokz;
 //const size_t max_frames_in_flight  = rekz::Glob::MaxFramesInFlight; 
+const VkVertexInputBindingDescription&        rekz::polyobj::kVertexInputBindingDesc   = rokz::kPNCT_InputBindingDesc;
+const Vec<VkVertexInputAttributeDescription>& rekz::polyobj::kVertexInputAttributeDesc = rokz::kPNCT_InputAttributeDesc; 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-namespace rekz { 
 
-  //   typedef struct VkDescriptorSetLayoutBinding {
+//   typedef struct VkDescriptorSetLayoutBinding {
   //     uint32_t              binding;
   //     VkDescriptorType      descriptorType;
   //     uint32_t              descriptorCount;
   //     VkShaderStageFlags    stageFlags;
   //     const VkSampler*      pImmutableSamplers;
   // } VkDescriptorSetLayoutBinding;
-  const Vec<VkDescriptorSetLayoutBinding> kObjDescriptorBindings =
-    {
-      { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , kMaxObjectCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-      { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1              , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
-    };
 
-  // --------------------------------------------------------------------
-  // vert input binding, diffrnt from input attriubutes
-  // --------------------------------------------------------------------
-  const VkVertexInputBindingDescription kVertexInputBindingDesc = {
-    0,                          // binding    
-    sizeof (PolyObjVert),       // stride      
-    VK_VERTEX_INPUT_RATE_VERTEX // inputRate   
-  }; 
+// #ifdef REKZ_HIDE_OBJ_BINDING_DEFS
 
-  // --------------------------------------------------------------------
-  // vert atribute desc
-  // --------------------------------------------------------------------
-  const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc = {
+//   // --------------------------------------------------------------------
+//   // vert input binding, diffrnt from input attriubutes
+//   // --------------------------------------------------------------------
+//   const VkVertexInputBindingDescription kVertexInputBindingDesc = {
+//     0,                          // binding    
+//     sizeof (polyobj::kVert),       // stride      
+//     VK_VERTEX_INPUT_RATE_VERTEX // inputRate   
+//   }; 
+
+//   // --------------------------------------------------------------------
+//   // vert atribute desc
+//   // --------------------------------------------------------------------
+//   const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc = {
   
-    VkVertexInputAttributeDescription { // pos
-      0,                             // .location 
-      0,                             // .binding  
-      VK_FORMAT_R32G32B32_SFLOAT,    // .format   
-      offsetof(PolyObjVert, pos),  // .offset   
-    },
+//     VkVertexInputAttributeDescription { // pos
+//       0,                             // .location 
+//       0,                             // .binding  
+//       VK_FORMAT_R32G32B32_SFLOAT,    // .format   
+//       offsetof(polyobj::kVert, pos),  // .offset   
+//     },
 
-    VkVertexInputAttributeDescription { // color
-      1,                              
-      0, 
-      VK_FORMAT_R32G32B32_SFLOAT,
-      offsetof(PolyObjVert, nrm), 
-    },
+//     VkVertexInputAttributeDescription { // normal
+//       1,                              
+//       0, 
+//       VK_FORMAT_R32G32B32_SFLOAT,
+//       offsetof(polyobj::kVert, nrm), 
+//     },
 
-    VkVertexInputAttributeDescription { // color
-      2,                              
-      0, 
-      VK_FORMAT_R32G32B32_SFLOAT,
-      offsetof(PolyObjVert, col), 
-    },
-    VkVertexInputAttributeDescription { // tex coord
-      3,                             
-      0, 
-      VK_FORMAT_R32G32_SFLOAT,
-      offsetof(PolyObjVert, txc0), 
-    }
+//     VkVertexInputAttributeDescription { // color
+//       2,                              
+//       0, 
+//       VK_FORMAT_R32G32B32_SFLOAT,
+//       offsetof(polyobj::kVert, col), 
+//     },
+    
+//     VkVertexInputAttributeDescription { // tex coord
+//       3,                             
+//       0, 
+//       VK_FORMAT_R32G32_SFLOAT,
+//       offsetof(polyobj::kVert, txc0), 
+//     }
 
-  }; 
-}
+//   }; 
+// }
+// #endif
 
 // ----------------------------------------------------------------------------------------------
 //                                    
@@ -112,7 +113,6 @@ bool setup_object_shader_modules (Pipeline& pipeline, const std::filesystem::pat
 }
 
 
-
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
@@ -145,13 +145,13 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&      dss ,
 
   //
   for (uint32_t i = 0; i < dss.size (); i++) {
+    
+    Vec<VkDescriptorBufferInfo> obparams (polyobj::kMaxCount, VkDescriptorBufferInfo {});
 
-    Vec<VkDescriptorBufferInfo> objparams (kMaxObjectCount, VkDescriptorBufferInfo {});
-
-    for (size_t iobj = 0; iobj < objparams.size (); ++iobj) { 
-      objparams[iobj].buffer   = objparam_buffs[i].handle;    //
-      objparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
-      objparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
+    for (size_t iobj = 0; iobj < obparams.size (); ++iobj) { 
+      obparams[iobj].buffer   = objparam_buffs[i].handle;    //
+      obparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
+      obparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
     }
     
     // vector<VkDescriptorImageInfo> imageinfos; 
@@ -169,8 +169,8 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&      dss ,
     descriptor_writes[0].dstBinding       = 0;       // does it match in shader? 
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = objparams.size(); // <
-    descriptor_writes[0].pBufferInfo      = &objparams[0]; 
+    descriptor_writes[0].descriptorCount  = obparams.size(); // <
+    descriptor_writes[0].pBufferInfo      = &obparams[0]; 
     descriptor_writes[0].pImageInfo       = nullptr; 
     descriptor_writes[0].pTexelBufferView = nullptr; 
                       
@@ -211,8 +211,11 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
 
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(PushConstants), dslos, device.handle);
 
-  PipelineState_default (pipeline.state, msaa_samples, kVertexInputBindingAttributeDesc,
-                               kVertexInputBindingDesc, viewport_extent); 
+
+
+  
+  PipelineState_default (pipeline.state, msaa_samples, polyobj::kVertexInputAttributeDesc,
+                         polyobj::kVertexInputBindingDesc, viewport_extent); 
   // ^ !! shader modules is part of pipelinestate 
   setup_object_shader_modules (pipeline, fspath, device);
 

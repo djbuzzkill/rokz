@@ -3,25 +3,22 @@
 #define DARK_OBJ_PIPELINE
 
 #include "rekz.h"
+#include "rokz/vert_defs.h"
 #include <vulkan/vulkan_core.h>
 
 namespace rekz {
 
-  constexpr size_t kMaxObjectCount = 64;
+  // ----------------------------------------------------------------------------------------------
+  //                                    
+  // ----------------------------------------------------------------------------------------------
+  namespace polyobj {   
 
-  typedef rekz::Vertex_pos_nrm_txc_col PolyObjVert;
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
-  extern const Vec<VkDescriptorSetLayoutBinding>      kObjDescriptorBindings;
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
+    typedef rokz::Vert_PNCT                              kVert;
+    const size_t                                         kMaxCount = rekz::kMaxObjectCount;
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;  // = rokz::kPNCT_InputBindingDesc;
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;// = rokz::kPNCT_InputBindingAttributeDesc; 
+  }
+
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------

@@ -36,7 +36,7 @@ set (ROKZ_HEADER_FILES
   window_handler.h
   input_state.h
   display.h
-  
+  vert_defs.h
   # rokz_types.h
   # rokz_funcs.h
   file.h
@@ -69,6 +69,7 @@ set (ROKZ_SOURCE_FILES
   window_handler.cpp
   input_state.cpp
   display.cpp
+  vert_defs.cpp
 
   utility.cpp
   binary_IO.cpp
