@@ -12,7 +12,6 @@ set (REKZ_HEADER_FILES
     darkrootgarden.h
     dark_obj_pipeline.h
     grid_pipeline.h
-    global_descriptor.h
     image_loader.h
   )
 	
@@ -28,7 +27,6 @@ set (REKZ_SOURCE_FILES
   marz.cpp
   grid_pipeline.cpp  
   drawgrid.cpp  
-  global_descriptor.cpp
   image_loader.cpp
   # test_rokz.cpp
   rekz.cpp

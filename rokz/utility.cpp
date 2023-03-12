@@ -142,8 +142,24 @@ VkSampleCountFlagBits rokz::ut::MaxUsableSampleCount  (VkPhysicalDevice physdev)
     return VK_SAMPLE_COUNT_1_BIT;
 }
 
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+float rokz::ut::ViewAspectRatio (uint32_t w, uint32_t h) {
+  return   float (w) / float (h) ;
+}  
+
+//
+float rokz::ut::AspectRatio (const VkExtent2D& ext) {
+
+  return ViewAspectRatio (ext.width, ext.height); 
+
+}
 
 
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
 const std::map<VkResult, const char*>  kVulkanResult_ERROR_STRINGS = {
 
 { VK_SUCCESS,                                            "VK_SUCCESS" },                                          //  Command successfully completed

@@ -1,6 +1,8 @@
 
 #include "global_descriptor.h"
-#include "grid_pipeline.h"
+#include "utility.h"
+
+//#include "grid_pipeline.h"
 
 
 using namespace rokz;
@@ -12,7 +14,7 @@ using namespace rokz;
 //     const VkSampler*      pImmutableSamplers;
 // } VkDescriptorSetLayoutBinding;
 
-const Vec<VkDescriptorSetLayoutBinding> rekz::kGlobalDescriptorBindings = {
+const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
    
   {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
   { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- GridState
@@ -22,10 +24,10 @@ const Vec<VkDescriptorSetLayoutBinding> rekz::kGlobalDescriptorBindings = {
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
-bool rekz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, const Device& device) {
+bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, const Device& device) {
  printf ("%s", __FUNCTION__);
 
- const size_t sizeOf_GlobalState = sizeof(rekz::MVPTransform) + sizeof (rekz::GridState);
+ const size_t sizeOf_GlobalState = sizeof(rokz::MVPTransform) + sizeof (rokz::GridState);
    
  uniform_buffs.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
@@ -42,7 +44,7 @@ bool rekz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, c
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
-bool rekz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device) {
+bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device) {
 
    printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
 
@@ -53,12 +55,12 @@ bool rekz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
     VkDescriptorBufferInfo binfo_mvp {};
     binfo_mvp.buffer     = buffs[i].handle;
     binfo_mvp.offset     = 0;
-    binfo_mvp.range      = sizeof(rekz::MVPTransform);
+    binfo_mvp.range      = sizeof(rokz::MVPTransform);
 
     VkDescriptorBufferInfo binfo_grid {};
     binfo_grid.buffer     = buffs[i].handle;
-    binfo_grid.offset     = sizeof(rekz::MVPTransform);
-    binfo_grid.range      = sizeof(rekz::GridState);
+    binfo_grid.offset     = sizeof(rokz::MVPTransform);
+    binfo_grid.range      = sizeof(rokz::GridState);
 
     const uint32_t binding_ind_mvp = 0;
     const uint32_t binding_ind_grid = 1;
@@ -98,7 +100,7 @@ bool rekz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
 //
 // --------------------------------------------------------------------
 //void UpdateGlobals (Glob& glob, uint32_t current_frame, double dt) {
-void rekz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
+void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
 
   //
   //  SharedGlobals
@@ -110,11 +112,11 @@ void rekz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffe
   
   // 
   { // MVPTransform buffer
-    rekz::MVPTransform* mvp = reinterpret_cast<rekz::MVPTransform*>(rokz::cx::MappedPointer (buf));
+    rokz::MVPTransform* mvp = reinterpret_cast<rokz::MVPTransform*>(rokz::cx::MappedPointer (buf));
     if (mvp) {
     
       mvp->model = glm::mat4(1.0); // model is elsewhere 
-      const float aspf = rekz::ViewAspectRatio (viewext.width, viewext.height);
+      const float aspf = ut::ViewAspectRatio (viewext.width, viewext.height);
 
       glm::mat4 xrot = glm::rotate (glm::mat4(1), shared.view_rot.x, glm::vec3(1.0f, 0.0f, 0.0f));
       glm::mat4 yrot = glm::rotate (glm::mat4(1), shared.view_rot.y, glm::vec3(0.0f, 1.0f, 0.0f));

@@ -94,21 +94,6 @@ glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
 }
 
 
-// -------------------------------------------------------------------------------------------
-//                                             
-// -------------------------------------------------------------------------------------------
-float rekz::ViewAspectRatio (uint32_t w, uint32_t h) {
-  return   float (w) / float (h) ;
-}  
-
-//
-float rekz::AspectRatio (const VkExtent2D& ext) {
-
-  return ViewAspectRatio (ext.width, ext.height); 
-
-}
-
-
 
 
 // -------------------------------------------------------------------------

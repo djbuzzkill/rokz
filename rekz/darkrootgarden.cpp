@@ -1,12 +1,16 @@
 
 #include "darkrootgarden.h"
 #include "dark_obj_pipeline.h"
+
+
 #include "rekz/rekz.h"
-#include "rokz/buffer.h"
-#include "rokz/context.h"
-#include "rokz/draw_sequence.h"
-#include "rokz/pipeline.h"
-#include "rokz/rokz_types.h"
+// #include "rokz/buffer.h"
+// #include "rokz/context.h"
+// #include "rokz/draw_sequence.h"
+// #include "rokz/pipeline.h"
+#include "rokz/global_descriptor.h"
+
+
 #include <glm/fwd.hpp>
 #include <glm/matrix.hpp>
 #include <vulkan/vulkan_core.h>
@@ -199,7 +203,7 @@ struct RootLoop {
   
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       
-      rekz::UpdateGlobals (glob.shared, glob.global_uniform_bu[curr_frame],
+      rokz::UpdateGlobals (glob.shared, glob.global_uniform_bu[curr_frame],
                            glob.swapchain_group.swapchain.ci.imageExtent, Dt);  
       //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
 
@@ -372,9 +376,9 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   //
   // GLOBAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  rekz::SetupGlobalUniforms (glob.global_uniform_bu, kMaxFramesInFlight, glob.device); 
+  rokz::SetupGlobalUniforms (glob.global_uniform_bu, kMaxFramesInFlight, glob.device); 
   
-  if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rekz::kGlobalDescriptorBindings, glob.device)) {
+  if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rokz::kGlobalDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
   }
@@ -387,7 +391,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   }
 
-  rekz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_uniform_bu, glob.device);
+  rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_uniform_bu, glob.device);
   // Bind*DescriptorSets is part of a pipeline definition
   // if (!rekz::BindGridDescriptorResources (glob.global_uniform_de.descrsets, glob.global_uniform_bu, glob.device)) {
   //   printf ("[FAILED] --> BindGridDescriptorResources \n"); 

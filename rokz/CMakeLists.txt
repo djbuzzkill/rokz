@@ -32,6 +32,7 @@ set (ROKZ_HEADER_FILES
   binary_IO.h
   defaults.h
 
+  global_descriptor.h
   window_handler.h
   input_state.h
   display.h
@@ -64,6 +65,7 @@ set (ROKZ_SOURCE_FILES
   sampler.cpp
   window.cpp
 
+  global_descriptor.cpp
   window_handler.cpp
   input_state.cpp
   display.cpp

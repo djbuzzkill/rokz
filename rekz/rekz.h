@@ -13,7 +13,7 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
-  extern const Vec<VkDescriptorSetLayoutBinding> kGlobalDescriptorBindings;
+  //extern const Vec<VkDescriptorSetLayoutBinding> kGlobalDescriptorBindings;
   // ----------------------------------------------------------------------------------------------
   //                           
   // ----------------------------------------------------------------------------------------------
@@ -83,14 +83,6 @@ namespace rekz {
 
   };
 
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  struct GridState {
-    glm::vec4 xcolor;
-    glm::vec4 ycolor;
-    glm::vec4 zcolor;
-  };
 
   // --------------------------------------------------------------------
   //
@@ -154,8 +146,6 @@ namespace rekz {
   glm::vec3& unit_angle_xz (glm::vec3& v, float theta);
   glm::vec3& unit_angle_yz (glm::vec3& v, float theta);
 
-  float ViewAspectRatio (uint32_t w, uint32_t h);
-  float AspectRatio (const VkExtent2D& ext);
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
@@ -170,11 +160,10 @@ namespace rekz {
   // bool InitializeInstance (rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device); 
-  bool SetupGlobalUniforms (Vec<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
-  bool BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device);
-  void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt);
 
-
+  // bool SetupGlobalUniforms (Vec<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
+  // bool BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device);
+  // void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt);
 
   bool SetupRenderingAttachments (rokz::Image&          msaa_color_image       ,
                                   rokz::ImageView&      msaa_color_imageview   ,

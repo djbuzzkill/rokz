@@ -1,8 +1,6 @@
 
 #include "marz.h"
 #include "grid_pipeline.h"
-#include "rokz/allocation.h"
-#include "rokz/buffer.h"
 //
 
 
@@ -258,7 +256,7 @@ int run_marz (const std::vector<std::string>& args) {
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob); 
   // define first 
-  rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.global_dslo, rokz::kGlobalDescriptorBindings, glob.device); 
   //rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
 
   // SetupMarsWindow (glob.window, &glob.input_state); 

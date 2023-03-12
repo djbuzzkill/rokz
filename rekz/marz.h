@@ -6,8 +6,7 @@
 
 #include "rokz/display.h"
 #include "rokz/input_state.h"
-
-#include "grid_pipeline.h"
+#include "rokz/global_descriptor.h"
 
 
 namespace marz {
@@ -17,9 +16,9 @@ namespace marz {
   enum { kMaxFramesInFlight = 2 }; 
 
   // ---------------------------------------------------------------------------------------
-  //                   
+  //
   // ---------------------------------------------------------------------------------------
-  typedef rekz::Vertex_pos_nrm_txc  kVert;
+  typedef rekz::Vertex_pos_nrm_txc  kPatchVert;
 
   // ----------------------------------------------------------------------------------------------
   // 
