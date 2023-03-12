@@ -12,6 +12,8 @@ set (REKZ_HEADER_FILES
     darkrootgarden.h
     dark_obj_pipeline.h
     grid_pipeline.h
+    landscape_pipeline.h
+    draw_mars.h
     image_loader.h
   )
 	
@@ -21,10 +23,12 @@ set (REKZ_SOURCE_FILES
   dark_obj_pipeline.cpp
   darkthings.cpp
   platonic.cpp
+  draw_mars.cpp
   drawwireframe.cpp
   drawpolygon.cpp
   darkpolydata.cpp
   marz.cpp
+  landscape_pipeline.cpp
   grid_pipeline.cpp  
   drawgrid.cpp  
   image_loader.cpp

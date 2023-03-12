@@ -31,7 +31,6 @@ namespace rekz {
   // image handling - should we keep
   // ---------------------------------------------------------------------
   struct DevILImageProps {
-
     int width          ;//= ilGetInteger (IL_IMAGE_WIDTH); 
     int height         ;//= ilGetInteger (IL_IMAGE_HEIGHT);
     int depth          ;//= ilGetInteger (IL_IMAGE_DEPTH);
@@ -41,23 +40,16 @@ namespace rekz {
     int format         ;//= ilGetInteger (IL_IMAGE_FORMAT); 
   };
 
-
-
-  typedef int (*DevILOpenFileCB) (const unsigned char* dat, const DevILImageProps& props, void* up); 
+  using DevILOpenFileCB =  int(*)(const unsigned char* dat, const DevILImageProps& props, void* up); 
 
   int OpenImageFile (const std::string& fqname, DevILOpenFileCB cb, void* up);
 
-
-
   // struct ImageCB {
-
   //   virtual int do_shit (const unsigned char* dat, const DevILImageProps&) = 0; 
-
   // protected:
   //   ImageCB () { }
   // } ;
 
-  
   // int OpenImageFile (const std::string& fqname, ImageCB*);
 
 }

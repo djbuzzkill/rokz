@@ -1,6 +1,7 @@
 
 #include "marz.h"
 #include "grid_pipeline.h"
+#include "rekz/landscape_pipeline.h"
 //
 
 
@@ -17,31 +18,7 @@ const VkExtent2D kDisplayDimensions {800, 600};
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool SetupMarsWindow (rokz::Window& window, void* user_pointer) {
-
-  return false;
-}
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-bool SetupGridUniforms (Glob& glob) {
-  printf ("%s", __FUNCTION__);
-  return true; 
-}
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
 bool SetupGridResources (Glob& glob) {
-  return false;
-}
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-bool UpdateGridUniforms (Glob& glob, uint32_t current_frame, double dt) {
-
   return false;
 }
 
@@ -117,13 +94,10 @@ void CleanupMars (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 bool SetupMarsTexturesAndImageViews (Glob& glob) {
 
-  // SetupDarkTexture (glob); 
+  // 
   // SetupDarkTextureImageView (glob); 
-
   "height textures";
-
   "normal textures";
-
   "color textures"; 
     
   return false;
@@ -193,8 +167,56 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
 //   return false;
 // }
 
+struct MarzLoop {
 
+  Glob& glob;
 
+  bool       run        = true;
+  uint32_t   curr_frame = 0; 
+  bool       result     = false;
+  int        countdown  = 6000;
+
+  const float Dt; 
+  std::chrono::system_clock::time_point then;
+
+  std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
+
+  void update_run_state  () {
+
+    // const float move_rate = 0.05f;
+
+    //UpdateInput(glob, glob.dt);
+    if (glob.input_state.keys.count (GLFW_KEY_Q)) {
+      printf ("--> [q] pressed... quitting \n");
+      run = false;
+    }
+
+  } 
+  
+  //
+  // -------------------------------------------------------------
+  MarzLoop (Glob& g, float dt) : glob(g), Dt(dt) { 
+
+    // then = std::chrono::high_resolution_clock::now(); 
+
+    // time_per_frame = std::chrono::microseconds (static_cast<size_t>(Dt * 1000000.0));
+    
+    // printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
+
+  }
+  // while (cond()) loop()
+  // -------------------------------------------------------------
+  bool cond () {
+    //    return countdown && run && !glfwWindowShouldClose(glob.display.window.glfw_window); 
+    return false;
+  }
+  //
+  // -------------------------------------------------------------
+  bool loop () {
+
+    return false;
+  }
+};
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
@@ -208,11 +230,12 @@ int run_marz (const std::vector<std::string>& args) {
   std::filesystem::path pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
   std::filesystem::path data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
 
+
+  
   //Default (glob); 
   
   glfwInit();
   
-
   rokz::InitializeInstance (glob.instance); 
 
   rekz::SetupDisplay (glob.display, glob.input_state, kDisplayDimensions, glob.instance); 
@@ -233,7 +256,6 @@ int run_marz (const std::vector<std::string>& args) {
   // InitializeSwapchain ()
   rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                              kDisplayDimensions, glob.device.physical, glob.device);
-  //assert (false);
 
   //
   rekz::SetupRenderingAttachments (glob.msaa_color_image,
@@ -263,7 +285,6 @@ int run_marz (const std::vector<std::string>& args) {
 
 
   // grid only uses globals
-
   glob.grid.pipe.dslos.push_back (glob.global_dslo.handle);
   if (!rekz::InitGridPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
                                glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
@@ -271,133 +292,44 @@ int run_marz (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
-  // rokz::InitializeInstance (glob.instance); 
-  // rokz::cx::CreateSurface  (&glob.surface, glob.window.glfw_window, glob.instance.handle);
-  // rokz::cx::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance.handle);
-
-  // rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.surface, glob.physical_device.handle);
-
-  // rokz::ConfigureDevice ( glob.physical_device , VK_TRUE); 
-  // rokz::InitializeDevice (glob.device,glob.physical_device, glob.instance);
-
-  // glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.physical_device); 
-  // rokz::ut::FindDepthFormat (glob.depth_format, glob.physical_device.handle);
-  
-  // //
-  // rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.surface,
-  //                            kWinExtent, glob.physical_device, glob.device);
 
 
-// #ifdef MARSCAPE_CALL_SETUP_GRID_PIPELINE_
-  
-//   rekz::SetupGridPipeline (glob.grid_pipeline,
-//                            mars_path,
-//                            kWinExtent, //const rokz::Swapchain& swapchain,
-//                            glob.msaa_samples, 
-//                            glob.swapchain_group.swapchain.ci.imageFormat,
-//                            glob.depth_format,
-//                            sizeof(PushConstants), 
-//                            glob.device);
-// #endif
-
-//   // SetupRenderAttachments
-//   if (!SetupRenderAttachments (glob)) {
-//     printf ("[FAILED|%i] -> SetupRenderAttachments \n", __LINE__);
-//     return false; 
-//   }
-      
-//   if (! SetupGridResources (glob) ) {
-//     return false; 
-//   }
-  
-// #ifdef MARS_ENABLE_TERRAIN_PIPELINE  
+  // InitTerrainPipeline ()
+  // SetupMarzData  ()
+  // SetupMarzDescriptor  ()
 
 
-//   SetupTerrainPipeline (glob.terrain_pipeline,
-//                         glob.terrain_pipeline.pipeline.state.viewport,
-//                         glob.render_pass,
-//                         mars::data_root,
-//                         glob.swapchain_group.swapchain,
-//                         glob.msaa_samples,
-//                         glob.device); 
-//   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
+  // if ( !InitTerrainPipeline () ) {
+  // }
 
-//   SetupTerrainResources (glob); 
-//   "Setup Index+Vertex Buffers";
+  // if ( !SetupMarzData  ()) { 
+  // }
 
-//   SetupTerrainSamplers (glob);
-
-  
-// #endif //  MARS_ENABLE_TERRAIN_PIPELINE
-
-  
-
-//   // for BeginRendering ()
-//   SetupDynamicRenderingInfo (glob) ; 
-  
-
-  
-
-//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-//   if (!SetupMarsUniforms (glob)) {
-//     printf ("[FAILED] --> SetupDarkUniforms \n"); 
-//     return false;
-//   }
+  // if ( !SetupMarzDescriptor ()) { 
+  // }
 
 
-//   if (!SetupMarsTexturesAndImageViews (glob)) {
-//     printf ("[FAILED] --> SetupMarsTexturesAndImageViews \n"); 
-//     return false;
-//   }
-  
-  
-//   if (!SetupGlobalDescriptorPool (glob)) {
-//     printf ("[FAILED] --> SetupGlobalDescriptorPool \n"); 
-//     return false;
-//   }
+  glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
+  glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
+  if (!rekz::InitLandscapePipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
+
+                                    glob.msaa_samples,
+                                    scg.swapchain.ci.imageFormat,
+                                    glob.depth_format,
+
+                                    pipe_path, 
+                                    glob.swapchain_group.swapchain.ci.imageExtent,
+                                    glob.device)) {
+    printf ("[FAILED] --> InitLandscapeTiler \n"); 
+    return false; 
+  }      
+
+    rekz::SetupLandscapeResources;
+    rekz::BindLanscapeDescriptors;
 
 
-// #ifdef MARS_TERRAIN_ENABLE 
-//   if (!SetupTerrainDescriptorSets (glob.obj_pipeline,
-//                                    glob.uniform_mvp,
-//                                    glob.vma_objparam_buffs,
-//                                    glob.texture_imageview,
-//                                    glob.sampler,
-//                                    glob.descr_pool, 
-//                                    glob.device)) {
-//     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
-//     return false;
-//   }
-// #endif
-  
-// #ifdef MARSCAPE_CALL_SETUP_GRID_DESCRIPTORSETS  
-//   if (!rekz::SetupGridDescriptorSets (glob.descrgroup_grid, glob.uniform_mvp,
-//                                       glob.pipeline_def_grid.layout.descriptor, glob.device)) {
-//     printf ("[FAILED] --> SetupTerrainDescriptorSets \n"); 
-//     return false;
-//   }
-// #endif
-  
-//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+    //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
-//   //swapchain_group.command_buffer_group.buffers.resize (kMaxFramesInFlight);
-
-//   fsg.syncs.resize (kMaxFramesInFlight);
-//   fsg.command_buffers.resize (kMaxFramesInFlight);
-  
-//   rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.command_pool.handle); 
-
-//   // 
-//   for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
-//     // sep
-//     rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], 
-//                               fsg.command_buffer_alloc_info,
-//                               glob.device.handle);
-
-//     rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
-//   }
-
-//   // SetupDarkroot ();
 
 //   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 //   const double time_per_frame_sec = 1.0 / 60.0;
@@ -419,47 +351,18 @@ int run_marz (const std::vector<std::string>& args) {
 //   auto then = t0; 
 
 //   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-//   while (countdown && run && !glfwWindowShouldClose(glob.window.glfw_window)) {
-
-//     glfwPollEvents(); 
-//     //start = std::chrono::high_resolution_clock::now();
-//     auto now = std::chrono::high_resolution_clock::now();    
-//     //dt = -0.000001 * std::chrono::duration_cast<std::chrono::microseconds>(then - now).count (); 
-//     glob.dt = std::chrono::duration<double, std::chrono::seconds::period>(now - then).count();
-    
-//     //    result = RenderFrame (glob, curr_frame, fb_resize, glob.dt);
-//     uint32_t image_index; 
-
-// assert (false); // RenderFrame
-//     // if (RenderFrame (glob, image_index, glob.fb_resize, glob.render_pass, glob.grid_pipeline.pipeline,
-//     //                  glob.grid_pipeline.descrgroup.descrsets[curr_frame], curr_frame, glob.dt)) {
-
-//     // }
-//     // else {
-//     //   run = false;
-//     // }
-    
-//     // how long did we take
-//     auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
-//     if (time_to_make_frame < time_per_frame) {
-//       auto sleep_time = time_per_frame - time_to_make_frame;
-//       std::this_thread::sleep_for(sleep_time);
-//     }
-
-//     curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
-//     then = now; // std::chrono::high_resolution_clock::now(); 
-//     countdown--; 
-//   }
+  const double time_per_frame_sec = 1.0 / 60.0;
+  double Dt = time_per_frame_sec; // just do this for now
 
   
-//   vkDeviceWaitIdle(glob.device.handle);
-//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+  MarzLoop marzloop (glob, Dt ); 
+  rokz::FrameLoop  (marzloop);
 
+  vkDeviceWaitIdle(glob.device.handle);
 
 //   // CLEAN UP
-//   CleanupMars (glob); 
+   CleanupMars (glob); 
 
-//   printf ("%[LEAVING] --> %s\n", __FUNCTION__);
 
   return 0; 
 }

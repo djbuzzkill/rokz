@@ -110,16 +110,21 @@ namespace marz {
 
     rokz::ResetSwapchainCB::Ref  swapchain_reset_cb;
 
-    //
-    rokz::DrawSequence::Globals  shared;               // DrawSequence::shared_globals
+
+    
     rokz::DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
+    rokz::DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's
+    //
     // UniformBundle
-    Vec<rokz::Buffer>            global_uniform_bu;    // vma_shared_uniforms;
-    rokz::DescriptorGroup        global_uniform_de;
+    Vec<Buffer>                  global_uniform_bu;    // vma_shared_uniforms;
+    DescriptorGroup              global_uniform_de;
 
+    // DrawSequence stuff
+    DrawSequence::Globals                                       shared;               
     std::array<DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
-    DrawSequence::DescriptorLayoutMap                          dslomap;
+    DrawSequence::DescriptorLayoutMap                           dslomap;
 
+    
     // 
     // GRID
     struct { 
@@ -139,8 +144,8 @@ namespace marz {
       MarzDat           data;
     } scape; 
 
-    Vec<Buffer>            poly_objects_bu; // polygons will make use of object descriptors
-    DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
+    //Vec<Buffer>            landscape_bu; //
+    DescriptorGroup        landscape_de; //
 
     
   }; 

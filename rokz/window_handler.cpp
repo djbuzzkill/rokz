@@ -23,7 +23,7 @@
   // typedef void (* GLFWcharmodsfun)(GLFWwindow* window, unsigned int codepoint, int mods);
   // typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* paths[]);
   // typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
-  // typedef void (* GLFWjoystickfun)(int jid, int event);
+  // typedef void (* GLFWjoystickfun)(int id, int event);
 
 // --------------------------------------------------------------------
 //
