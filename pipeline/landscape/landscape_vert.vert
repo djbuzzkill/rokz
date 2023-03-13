@@ -10,9 +10,9 @@
 
 
 // input vertex 
-layout(location=0) in vec3 in_position;                                                        
-layout(location=1) in vec3 in_normal;                                                        
-layout(location=2) in vec2 in_texcoord;                                                        
+layout(location=0) in vec3 in_pos;                                                        
+layout(location=1) in vec3 in_norm;                                                        
+layout(location=2) in vec2 in_txcd;                                                        
 
 // output vertex 
 //layout (location = 0) out vec4 gl_Position; 
@@ -45,8 +45,8 @@ void main () {
   //gl_Position = mat_Proj * pos; //gl_Position = vec4 (attrib_position, 1);
   //txco		= attrib_texcoord;                                                   
 
-  gl_Position = vec4 (in_position, 1);
-  out_txco    = in_texcoord;
+  gl_Position = vec4 (in_pos, 1);
+  out_txco    = in_txcd;
   
 }
 

@@ -6,43 +6,59 @@
 //        .geom - a geometry shader
 //        .frag - a fragment shader
 //        .comp - a compute shader
-// LANDSCAPE TESSELLATION EVALUATION PROGRAM
+
+
+
+
+// -- LANDSCAPE TESSELLATION EVALUATION PROGRAM -- 
+
+//#extension GL_EXT_nonuniform_qualifier : enable
+
+
 
 layout(quads, equal_spacing, cw) in;
-
-
-#extension GL_EXT_nonuniform_qualifier : enable
-
-
-
-
+// -----------------------------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------------------------
 layout (location = 0) in vec4 in_position[];
 layout (location = 1) in vec2 in_txcrd[]; 
 
 
-//layout (location = 0) out vec4 gl_Position; 
-layout (location = 0) out vec2 out_txcrd; 
+// -----------------------------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------------------------
+layout (location = 0) out vec2 out_txcd; 
 
 
-////
-// uniform constants 
-layout (binding = 0) uniform MVPTransform {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
+// -----------------------------------------------------------------------------------------------
+// uniforms
+// -----------------------------------------------------------------------------------------------
+layout (set = 0, binding = 0) uniform MVPTransform {
+    mat4 model;   // !! model = rotm * scalem + translm 
+    mat4 view;    // 
+    mat4 proj;    // 
 } mat;                                             
 
 
-layout (binding = 1) uniform PatchParams {
-    mat4 model;
-    vec4 height_scale;                                               
+// -----------------------------------------------------------------------------------------------
+// samplers  
+// -----------------------------------------------------------------------------------------------
+layout (set = 1, binding = 1) uniform sampler2D heightmap[128];                                                  
+layout (set = 1, binding = 2) uniform sampler2D normalmap[128];                                                  
 
-vec4 unused1;
+// 
+// -----------------------------------------------------------------------------------------------
+// push constants
+// -----------------------------------------------------------------------------------------------
+layout (push_constant) uniform PatchPushConstants {
 
-} params[];                                             
+  uint heightID;  // indices
+  uint normalID;  // indices
+  uint _unused02; // indices
+  uint _unused03; // indices
 
+} pc;
 
-layout (binding = 2) uniform sampler2D height_map[];                                                  
 
 
 //
@@ -67,13 +83,12 @@ vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3) {
 // 
 // -------------------------------------------------------------------------
 void main() {
-
-    vec2 tex_coord = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
+  
+    out_txcd = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
     vec4 pos = interpolate4 (in_position[0], in_position[1], in_position[2], in_position[3]);
 
-    pos.z = params[gl_PrimitiveID].height_scale.x * texture (height_map[gl_PrimitiveID], tex_coord).r;
-    pos = params[gl_PrimitiveID].model * pos;                                                   
-    pos = mat.view * pos;                                                    
-    gl_Position = mat.proj * pos;
+    pos.y = texture (heightmap[pc.heightID], out_txcd).r;
+
+    gl_Position = mat.proj * mat.view * mat.model * pos;                                                    
 }				
 

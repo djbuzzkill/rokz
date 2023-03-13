@@ -22,4 +22,6 @@ void main ()
 {
 	out_color.rgb	= texture (color_map, in_txcd).r * mars_color;
 	out_color.a	= 1.0; 
+
+        gl_Position = 
 }                                                  

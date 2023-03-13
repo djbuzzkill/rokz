@@ -1,3 +1,4 @@
+
 //
 #ifndef REKZ_LANSCAPE_PIPELINE_INCLUDE
 #define REKZ_LANSCAPE_PIPELINE_INCLUDE
@@ -23,10 +24,13 @@ namespace rekz {
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
 
     // ----------------------------------------------------------------------------------------------
-    struct PushConstant {
-      glm::uvec4 IDs;
-      glm::vec4  coord;
-    }; 
+
+    struct PatchPushConstants {
+      uint32 heightID;  // indices
+      uint32 normalID;  // indices
+      uint32 _unused02; // indices
+      uint32 _unused03; // indices
+    };
   }
   // ----------------------------------------------------------------------------------------
   //                     

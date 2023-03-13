@@ -98,7 +98,7 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
   // landscape::kVertexInputAttributeDesc;
   
   printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
-  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(PushConstants), dslos, device.handle);
+  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstants), dslos, device.handle);
 
   PipelineState_default (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
                          landscape::kVertexInputBindingDesc, displayextent); 
