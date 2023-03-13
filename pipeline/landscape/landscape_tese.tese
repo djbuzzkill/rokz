@@ -43,8 +43,8 @@ layout (set = 0, binding = 0) uniform MVPTransform {
 // -----------------------------------------------------------------------------------------------
 // samplers  
 // -----------------------------------------------------------------------------------------------
-layout (set = 1, binding = 1) uniform sampler2D heightmap[128];                                                  
-layout (set = 1, binding = 2) uniform sampler2D normalmap[128];                                                  
+layout (set = 1, binding = 0) uniform sampler2D heightmap[128];                                                  
+layout (set = 1, binding = 1) uniform sampler2D normalmap[128];                                                  
 
 // 
 // -----------------------------------------------------------------------------------------------
@@ -54,14 +54,12 @@ layout (push_constant) uniform PatchPushConstants {
 
   uint heightID;  // indices
   uint normalID;  // indices
-  uint _unused02; // indices
+  uint colorID; // indices
   uint _unused03; // indices
 
 } pc;
 
 
-
-//
 //
 vec2 interpolate2 (in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3) {
 	vec2 a = mix(v0, v1, gl_TessCoord.x);
@@ -76,10 +74,7 @@ vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3) {
 	return mix(a, b, gl_TessCoord.y);
 }
 
-
-
 // -------------------------------------------------------------------------
-// ?? gl_PrimitiveID == gl_InstanceIndex ??
 // 
 // -------------------------------------------------------------------------
 void main() {

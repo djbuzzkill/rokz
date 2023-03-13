@@ -8,20 +8,43 @@
 
 // LANDSCAPE FRAGMENT PROGRAM
                                                    
+// -------------------------------------------------------------------------
+// 
+// -------------------------------------------------------------------------
 const vec3 mars_color = vec3 (1.0, 0.8, 0.6);
 
 
-layout (binding = 1) uniform sampler2D color_map;
-
-layout(location = 0) out vec4          out_color;                    
-
+// -------------------------------------------------------------------------
+// 
+// -------------------------------------------------------------------------
 layout(location = 1) in vec2  in_txcd;                       
 layout(location = 0) in vec3  in_color;
 
-void main ()                                       
-{
-	out_color.rgb	= texture (color_map, in_txcd).r * mars_color;
-	out_color.a	= 1.0; 
+// -------------------------------------------------------------------------
+// 
+// -------------------------------------------------------------------------
+layout (set = 1, binding = 2) uniform sampler2D colorsamp[128];
+// -------------------------------------------------------------------------
+// 
+// -------------------------------------------------------------------------
+layout(location = 0) out vec4 out_color;                    
 
-        gl_Position = 
+// -----------------------------------------------------------------------------------------------
+// push constants
+// -----------------------------------------------------------------------------------------------
+layout (push_constant) uniform PatchPushConstants {
+
+  uint heightID;  // indices
+  uint normalID;  // indices
+  uint colorID; // indices
+  uint _unused03; // indices
+
+} pc;
+
+
+
+void main () {
+
+  out_color	= texture (colorsamp[pc.colorID], in_txcd);
+
 }                                                  

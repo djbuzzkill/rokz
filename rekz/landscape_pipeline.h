@@ -28,7 +28,7 @@ namespace rekz {
     struct PatchPushConstants {
       uint32 heightID;  // indices
       uint32 normalID;  // indices
-      uint32 _unused02; // indices
+      uint32 colorID; // indices
       uint32 _unused03; // indices
     };
   }
