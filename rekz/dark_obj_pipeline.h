@@ -1,10 +1,10 @@
 //
-#ifndef DARK_OBJ_PIPELINE
-#define DARK_OBJ_PIPELINE
+#ifndef REKZ_OBJ_PIPELINE
+#define REKZ_OBJ_PIPELINE
 
 #include "rekz.h"
 #include "rokz/vert_defs.h"
-#include <vulkan/vulkan_core.h>
+//#include <vulkan/vulkan_core.h>
 
 namespace rekz {
 
@@ -13,10 +13,13 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   namespace polyobj {   
 
-    typedef rokz::Vert_PNCT                              kVert;
+    typedef rokz::PNCTx_Vert                              kVert;
+    // ----------------------------------------------------------------------------------------------
     const size_t                                         kMaxCount = rekz::kMaxObjectCount;
-    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;  // = rokz::kPNCT_InputBindingDesc;
-    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;// = rokz::kPNCT_InputBindingAttributeDesc; 
+    // ----------------------------------------------------------------------------------------------
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;   // rokz::kPNCT_InputBindingDesc;
+    // ----------------------------------------------------------------------------------------------
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; // rokz::kPNCT_InputBindingAttributeDesc; 
   }
 
   // ----------------------------------------------------------------------------------------------

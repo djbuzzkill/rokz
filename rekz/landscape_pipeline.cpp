@@ -5,35 +5,27 @@
 #include <vulkan/vulkan_core.h>
 
 using namespace rokz;
-
-
-
-
-  // namespace landscape { 
-  //   typedef rekz::Vertex_pos_nrm_txc                     PatchVert;
-  //   // ----------------------------------------------------------------------------------------------
-  //   extern const Vec<VkDescriptorSetLayoutBinding>&      kDescriptorBindings;
-  //   // ----------------------------------------------------------------------------------------------
-  //   extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
-  //   // ----------------------------------------------------------------------------------------------
-  //   extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
-  // }
-
-
+// ----------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------
 const Vec<VkDescriptorSetLayoutBinding> rekz::landscape::kDescriptorBindings = {
 
-  { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kMaxPatchCount, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, nullptr }, // height
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kMaxPatchCount, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, nullptr }, // normnal
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kMaxPatchCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // color
+  // height
+  { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, nullptr }, // height
+  // normal 
+  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, nullptr }, // normnal
+  // color
+  { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr                }, // color
 
 };
 
+//
 const VkVertexInputBindingDescription&
-rekz::landscape::kVertexInputBindingDesc   = rokz::kPNT_InputBindingDesc;
+rekz::landscape::kVertexInputBindingDesc = rokz::kPNTx_InputBindingDesc;
 
+//
 const Vec<VkVertexInputAttributeDescription>&
-rekz::landscape::kVertexInputAttributeDesc = rokz::kPNT_InputAttributeDesc;
-
+rekz::landscape::kVertexInputAttributeDesc = rokz::kPNTx_InputAttributeDesc;
 
 // ----------------------------------------------------------------------------------------
 // 
@@ -41,7 +33,7 @@ rekz::landscape::kVertexInputAttributeDesc = rokz::kPNT_InputAttributeDesc;
 bool setup_landscape_shader_modules (Pipeline& pipeline,
                                   const std::filesystem::path& fspath,
                                   const Device& device) {
-  "mack_rowes.h"; 
+  //
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
   Vec<ShaderModule>&                    shader_modules            = pipeline.shader_modules;
 
@@ -64,7 +56,6 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
     return false; 
   CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
               shader_modules[1].entry_point, shader_modules[1].handle); //   
-
 
   // TESS CTRL SHADER 
   std::filesystem::path tese_file_path  = fspath/"landscape/landscape_tese.spv" ;
@@ -102,42 +93,39 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
                                   const Device&                device)
 {
 
-
-  // (kVertexInputBindingAttributeDesc, kVertexInputBindingDesc, viewport_extent); 
-
-
+  // landscape::kDescriptorBindings;
+  // landscape::kVertexInputBindingDesc;
+  // landscape::kVertexInputAttributeDesc;
   
   printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
-
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(PushConstants), dslos, device.handle);
 
   PipelineState_default (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
                          landscape::kVertexInputBindingDesc, displayextent); 
   // ^ !! shader modules is part of pipelinestate 
-  setup_landscape_shader_modules (pipeline, pipe_path.string(), device);
+  setup_landscape_shader_modules (pipeline, pipe_path, device);
 
-  // proto more orthogonal version
+  // DYNAMIC RENDERING IS AN EXTENSION
   pipeline.ext.pipeline_rendering.color_formats.resize (1);
   pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
-
   CreateInfo  (pipeline.ext.pipeline_rendering.ci,
-                     pipeline.ext.pipeline_rendering.color_formats, depth_format); 
+               pipeline.ext.pipeline_rendering.color_formats, depth_format); 
 
-  auto& psci = pipeline.state.ci;
   //
+  auto& psci = pipeline.state.ci;
   CreateInfo (pipeline.ci,
               plo.handle,
               &pipeline.ext.pipeline_rendering.ci,                    
-              psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
-              &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-              &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-              &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
-              nullptr,                 // tesselation 
-              &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-              &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-              &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-              &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
-              &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
+              psci.shader_stages,       // const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+              &psci.input_assembly,     // const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+              &psci.vertexinputstate,   // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+              &psci.viewport_state,     // const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+              &psci.tesselation,        // tesselation 
+              &psci.rasterizer,         // const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+              &psci.multisampling,      // const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+              &psci.depthstencilstate,  // const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+              &psci.colorblendstate,    // const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+              &psci.dynamicstate);      // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
 
   if (!CreateGraphicsPipeline (pipeline, device.handle)) {     //const VkDevice                           b          device)
     printf ("[FAILED] --> CreateGraphicsPipeline \n"); 

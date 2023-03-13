@@ -1,25 +1,32 @@
-
+//
 #ifndef REKZ_LANSCAPE_PIPELINE_INCLUDE
 #define REKZ_LANSCAPE_PIPELINE_INCLUDE
 
 #include "rekz.h"
-
+#include "rokz/vert_defs.h"
 
 namespace rekz {
 
-
-  const size_t kMaxPatchCount = 256; 
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
   namespace landscape { 
-    typedef rekz::Vertex_pos_nrm_txc                     PatchVert;
+
+    const size_t kMaxPatchCount = 256; 
+    //typedef rekz::Vertex_pos_nrm_txc                     PatchVert;
+    typedef rokz::PNTx_Vert                               PatchVert;
     // ----------------------------------------------------------------------------------------------
     extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
     // ----------------------------------------------------------------------------------------------
     extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
     // ----------------------------------------------------------------------------------------------
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
+
+    // ----------------------------------------------------------------------------------------------
+    struct PushConstant {
+      glm::uvec4 IDs;
+      glm::vec4  coord;
+    }; 
   }
   // ----------------------------------------------------------------------------------------
   //                     

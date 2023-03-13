@@ -13,8 +13,8 @@
 
 using namespace rokz;
 //const size_t max_frames_in_flight  = rekz::Glob::MaxFramesInFlight; 
-const VkVertexInputBindingDescription&        rekz::polyobj::kVertexInputBindingDesc   = rokz::kPNCT_InputBindingDesc;
-const Vec<VkVertexInputAttributeDescription>& rekz::polyobj::kVertexInputAttributeDesc = rokz::kPNCT_InputAttributeDesc; 
+const VkVertexInputBindingDescription&        rekz::polyobj::kVertexInputBindingDesc   = rokz::kPNCTx_InputBindingDesc;
+const Vec<VkVertexInputAttributeDescription>& rekz::polyobj::kVertexInputAttributeDesc = rokz::kPNCTx_InputAttributeDesc; 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------

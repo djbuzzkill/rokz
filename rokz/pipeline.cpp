@@ -528,7 +528,7 @@ rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&          
   DynamicState_default (ps.dynamics); 
   //
   PipelineStateCreateInfo& psci = ps.ci;
-  CreateInfo (psci.tesselation, 69); 
+  CreateInfo (psci.tesselation, 4); 
   CreateInfo (psci.dynamicstate, ps.dynamics); 
   CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
   CreateInfo (psci.viewport_state, ps.viewport);
