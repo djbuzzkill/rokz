@@ -362,10 +362,11 @@ int rekz::OpenImageFile (const std::string& fqname, rekz::DevILOpenFileCB cb, vo
 
   DevILImageProps props; 
 
+  
   ilInit ();
   ilBindImage (ilGenImage ());
 
-  int res = 0;
+  int res = 125;
   if (ilLoadImage(fqname.c_str())) {
     
     printf ("Opened [%s]\n", fqname.c_str() ); 

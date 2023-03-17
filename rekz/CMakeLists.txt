@@ -13,6 +13,7 @@ set (REKZ_HEADER_FILES
   dark_obj_pipeline.h
   grid_pipeline.h
   landscape_pipeline.h
+  mars_files.h
   draw_mars.h
   image_loader.h
 )
@@ -32,6 +33,8 @@ set (REKZ_SOURCE_FILES
   grid_pipeline.cpp  
   drawgrid.cpp  
   image_loader.cpp
+  examine_TIFFs.cpp
+  mars_files.cpp
   # test_rokz.cpp
   rekz.cpp
 )

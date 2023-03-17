@@ -9,10 +9,9 @@
 
 namespace rokz { 
 
-
-  // ---------------------------------------------------
-  //
-  // ---------------------------------------------------
+  // ----------------------------------------------------------------------------------------------
+  //                                            
+  // ----------------------------------------------------------------------------------------------
   inline size_t SizeOf_file (const std::string& fn) {
     //printf  ( "%s[%s]\n", __FUNCTION__, fn.c_str());    
     if (std::FILE* f = std::fopen (fn.c_str(), "r")) {
@@ -24,18 +23,20 @@ namespace rokz {
     return 0; 
   }
 
-
-  // ----------------------------------------------------------
-  //
-  // ----------------------------------------------------------
-  template<typename Seq>
-  inline Seq& From_file (Seq& out, const std::string& fname) {
+  // ----------------------------------------------------------------------------------------------
+  //                                            
+  // ----------------------------------------------------------------------------------------------
+  template<template<typename> class Seq, typename Ty>
+  inline Seq<Ty>& From_file (Seq<Ty>& out, const std::string& fname, bool resize = true) {
 
     if (auto sizeOf_file = SizeOf_file (fname)) {
 
-      out.resize (sizeOf_file); 
-
-      ReadStreamRef rs = CreateReadFileStream (fname);
+      if (resize) { 
+        size_t num_el = sizeOf_file / sizeof(Ty);
+        out.resize (num_el); 
+      }
+      
+      ReadStream::Ref rs = CreateReadFileStream (fname);
 
       if (rs) {
 	rs->Read (&out[0], sizeOf_file); 

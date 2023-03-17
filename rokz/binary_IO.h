@@ -52,24 +52,27 @@ namespace rokz {
 
   struct read_stream : public byte_stream, public reader, public ut::destructor {
 
+    typedef std::shared_ptr<read_stream>  Ref;
+
   protected:
     read_stream () : byte_stream(), reader () {}
   }; 
 
   struct write_stream : public byte_stream, public writer, public ut::destructor {
+
+    typedef std::shared_ptr<write_stream> Ref;
+  
   protected:
     write_stream () : byte_stream(), writer () {}
   };
   
-  typedef std::shared_ptr<read_stream>  ReadStreamRef;
-  typedef std::shared_ptr<write_stream> WriteStreamRef;
   
+  typedef write_stream WriteStream;
+  typedef read_stream  ReadStream; 
   
-  WriteStreamRef CreateWriteMemStream (void* mem, size_t len);
-
-
-  ReadStreamRef  CreateReadMemStream  (const void* mem, size_t len);
-  ReadStreamRef  CreateReadFileStream (const std::string& fname); 
+  WriteStream::Ref CreateWriteMemStream (void* mem, size_t len);
+  ReadStream::Ref  CreateReadMemStream  (const void* mem, size_t len);
+  ReadStream::Ref  CreateReadFileStream (const std::string& fname); 
 
 
 

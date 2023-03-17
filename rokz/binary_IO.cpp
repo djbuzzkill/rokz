@@ -209,9 +209,9 @@ namespace rokz {
   //
   //
   //
-  ReadStreamRef CreateReadMemStream  (const void* mem, size_t len) {
+  ReadStream::Ref CreateReadMemStream  (const void* mem, size_t len) {
 
-    ReadStreamRef ref (new read_mem_stream_impl (mem, len));
+    ReadStream::Ref ref (new read_mem_stream_impl (mem, len));
     return ref; 
 
   }
@@ -219,15 +219,15 @@ namespace rokz {
   //
   //
   //
-  WriteStreamRef CreateWriteMemStream (void* mem, size_t len) {
-    WriteStreamRef ref (new write_mem_stream_impl(mem, len)); 
+  WriteStream::Ref CreateWriteMemStream (void* mem, size_t len) {
+    WriteStream::Ref ref (new write_mem_stream_impl(mem, len)); 
     return ref;
   }
 
   
-  ReadStreamRef CreateReadFileStream (const std::string& fname) {
+  ReadStream::Ref CreateReadFileStream (const std::string& fname) {
     //printf ("%s ", __FUNCTION__);
-    ReadStreamRef ref (nullptr); 
+    ReadStream::Ref ref (nullptr); 
     if (std::FILE* f = std::fopen (fname.c_str (), "r")) {
      
       std::fseek (f, 0, SEEK_END);

@@ -45,6 +45,6 @@ layout (push_constant) uniform PatchPushConstants {
 
 void main () {
 
-  out_color	= texture (colorsamp[pc.colorID], in_txcd);
+  out_color = texture (colorsamp[pc.colorID], in_txcd);
 
 }                                                  

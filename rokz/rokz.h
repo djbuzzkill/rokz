@@ -18,6 +18,7 @@
 #include "file.h"
 #include "buffer.h"
 #include "image.h"
+#include "imagebuff.h"
 #include "framebuffer.h"
 #include "renderpass.h"
 #include "render.h"

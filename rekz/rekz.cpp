@@ -351,6 +351,7 @@ int test_time ();
 int darkrootbasin (const Vec<std::string>& args);
 int run_marz (const Vec<std::string>& args);
 int mars_prelim (const Vec<std::string>& args);
+int examine_TIFs (const Vec<std::string>& args); 
 bool test_grid_geom_gen ();
 
 
@@ -360,9 +361,10 @@ int main (int argv, char** argc) {
   const Vec<std::string> args (argc, argc + argv);
 
   //mix_x (args);
-  darkrootbasin  (args);
+  //darkrootbasin  (args);
   //marz_run  (args);
-
+  examine_TIFs (args); 
+  
   // test_rokz_hpp (args); 
   // texture_tool (args); 
   //test_ouput (args);

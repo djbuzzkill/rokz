@@ -10,11 +10,7 @@
 // #include <glm/glm.hpp>
 // #include <glm/gtc/matrix_transform.hpp>
 
-
-
-
 typedef std::array<unsigned char, 4> rgba;
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -23,7 +19,7 @@ int texture_tool (const std::vector<std::string>& args) {
   ilInit ();
   iluInit (); 
 
-  printf   ("%s\n", __FUNCTION__); 
+  printf  ("%s\n", __FUNCTION__); 
 
   ILuint image_name = 0; 
 
@@ -39,7 +35,6 @@ int texture_tool (const std::vector<std::string>& args) {
     "solid_waves.png",
   };
 
-  
   size_t num_files = sizeof (file_names) / sizeof (const char*); 
 
   for (size_t  i = 0; i < num_files; ++i) {

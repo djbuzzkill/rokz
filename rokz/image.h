@@ -70,11 +70,6 @@ namespace rokz {
 
   } // cx
 
-  
-
-  bool LoadImage (Image& image, VkFormat format, void* image_source); 
-
-
 
 }
 

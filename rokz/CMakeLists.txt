@@ -18,6 +18,7 @@ set (ROKZ_HEADER_FILES
   attachment.h
   buffer.h
   image.h
+  imagebuff.h
   command.h
   pipeline.h
   framebuffer.h
