@@ -52,11 +52,11 @@ layout (set = 1, binding = 1) uniform sampler2D normalmap[128];
 // -----------------------------------------------------------------------------------------------
 layout (push_constant) uniform PatchPushConstants {
 
-  uint heightID;  // indices
-  uint normalID;  // indices
-  uint colorID; // indices
-  uint _unused03; // indices
+  vec3 position;
+  vec4 scale;
 
+  uint res_id;
+  
 } pc;
 
 
@@ -82,8 +82,12 @@ void main() {
     out_txcd = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
     vec4 pos = interpolate4 (in_position[0], in_position[1], in_position[2], in_position[3]);
 
-    pos.y = texture (heightmap[pc.heightID], out_txcd).r;
+    pos.x = pc.scale.x * pos.x; 
+    pos.y = pc.scale.y * texture (heightmap[pc.res_id], out_txcd).r;
+    pos.z = pc.scale.y * pos.z; 
 
+    pos.xyz = pos.xyz + pc.position;
+    
     gl_Position = mat.proj * mat.view * mat.model * pos;                                                    
 }				
 

@@ -69,3 +69,33 @@ bool rokz::CreateMSAAColorTarget  (rokz::Image&          color_image,
   return true;
 }
 
+
+
+// -------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------
+//bool SetupRenderingAttachments (Glob& glob, rokz::SwapchainGroup& scg, const rokz::Device& device) { 
+bool rokz::SetupMSAARenderingAttachments (Image&          msaa_color_image       ,
+                                          ImageView&      msaa_color_imageview   ,
+
+                                          Image&          msaa_depth_image       ,
+                                          ImageView&      msaa_depth_imageview   ,
+
+                                          VkSampleCountFlagBits msaa_samples           ,
+                                          VkFormat              swapchain_image_format ,
+                                          VkFormat              msaa_depth_format      ,
+                                          const VkExtent2D&     image_ext, 
+                                          const Device& device) { 
+
+  //CreateMSAAColorImage -> (image, imageview)
+  rokz::CreateMSAAColorTarget (msaa_color_image, msaa_color_imageview, msaa_samples,
+                               swapchain_image_format, image_ext, device);
+
+  // CreateDepthBufferImage -> (image, imageview)
+  rokz::CreateDepthBufferTarget (msaa_depth_image, msaa_depth_imageview, msaa_samples,
+                                 msaa_depth_format, image_ext, device);
+
+  return true;
+
+}
+

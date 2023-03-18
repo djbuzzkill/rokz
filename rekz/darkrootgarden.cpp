@@ -29,9 +29,6 @@ using namespace darkroot;
 // ---------------------------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------------------------
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
 Glob::Glob()
   : instance()
   , device ()
@@ -45,9 +42,9 @@ Glob::Glob()
   // queues.present = {}; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------------------------
 bool GenerateMipMaps (rokz::Image& image, bool generate_mipmap, uint32_t num_mipmaps) {
   assert (false); 
   return false; 
@@ -58,9 +55,9 @@ bool LoadVertexBuffer_static();
 
 
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------------------------
 void CleanupDarkroot (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
@@ -210,7 +207,7 @@ struct RootLoop {
       // update data needed to record drawlist
 
       // make sure the correct swapchain image is used
-      rekz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
+      rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
                                         glob.swapchain_group.imageviews[image_index]);
 
       // Transitioning Layout and stuff in here
@@ -342,17 +339,17 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   //
   
-  rekz::SetupRenderingAttachments (glob.msaa_color_image,
-                                   glob.msaa_color_imageview, 
+  rokz::SetupMSAARenderingAttachments (glob.msaa_color_image,
+                                       glob.msaa_color_imageview, 
                                                          
-                                   glob.depth_image,       
-                                   glob.depth_imageview,
+                                       glob.depth_image,       
+                                       glob.depth_imageview,
                             
-                                   glob.msaa_samples,
-                                   scg.swapchain.ci.imageFormat,
-                                   glob.depth_format,          
-                                   scg.swapchain.ci.imageExtent,
-                                   glob.device); // <-- this does all the additional  attachmentes
+                                       glob.msaa_samples,
+                                       scg.swapchain.ci.imageFormat,
+                                       glob.depth_format,          
+                                       scg.swapchain.ci.imageExtent,
+                                       glob.device); // <-- this does all the additional  attachmentes
 
   //
   glob.swapchain_reset_cb = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
@@ -360,7 +357,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
   //
   // for BeginRendering ()
-  rekz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
+  rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
                                    glob.depth_imageview, glob.swapchain_group.swapchain.ci.imageExtent); 
   //
 

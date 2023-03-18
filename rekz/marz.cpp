@@ -15,6 +15,51 @@ const VkExtent2D kDisplayDimensions {800, 600};
 
 }
 
+
+bool marz::SetupData   (MarsDat& dat) {
+
+  // struct MarsDat {
+  //   const uint32 x_tile_dim = 1024;
+  //   const uint32 z_tile_dim = 1024;
+  //   const uint32 x_tile_count = 6;
+  //   const uint32 z_tile_count = 16;
+
+  //   Buffer         vb_device;
+  //   Buffer         ib_device;
+  //   Vec<Image>     colormaps;
+  //   Vec<ImageView> colorviews;
+  //   Vec<Image>     heightmaps;
+  //   Vec<ImageView> heightviews;
+  //   Vec<Image>     normalmaps;
+  //   Vec<ImageView> normalviews;
+  //   Sampler        depthsampler;
+  //   Sampler        colorsampler;
+  //   Sampler        normalsampler;
+  // };
+ 
+  dat.vb_device;    // what rly needs  to b in here 
+  dat.ib_device;    
+
+  dat.colormaps;    
+  dat.colorviews;   
+
+  dat.heightmaps;   
+  dat.heightviews;  
+
+  
+  // dat.normalmaps;   
+  // dat.normalviews;  
+
+  dat.heightsampler; 
+  dat.colorsampler; 
+
+  //dat.normalsampler;
+  return false;
+}
+
+void marz::CleanupData (MarsDat& dat, rokz::Device& device) {
+}
+
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
@@ -258,18 +303,11 @@ int run_marz (const std::vector<std::string>& args) {
                              kDisplayDimensions, glob.device.physical, glob.device);
 
   //
-  rekz::SetupRenderingAttachments (glob.msaa_color_image,
-                                   glob.msaa_color_imageview, 
-                                                         
-                                   glob.depth_image,       
-                                   glob.depth_imageview,
-                            
-                                   glob.msaa_samples,
-                                   scg.swapchain.ci.imageFormat,
-                                   glob.depth_format,          
-                                   scg.swapchain.ci.imageExtent,
-                                   glob.device); // <-- this does all the additional  attachmentes
-
+  rokz::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
+                                       glob.depth_image, glob.depth_imageview,
+                                       glob.msaa_samples, scg.swapchain.ci.imageFormat,
+                                       glob.depth_format, scg.swapchain.ci.imageExtent,
+                                       glob.device); // <-- this does all the additional  attachmentes
   //
   glob.swapchain_reset_cb = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                            glob.depth_image, glob.depth_imageview,
@@ -283,7 +321,6 @@ int run_marz (const std::vector<std::string>& args) {
 
   // SetupMarsWindow (glob.window, &glob.input_state); 
 
-
   // grid only uses globals
   glob.grid.pipe.dslos.push_back (glob.global_dslo.handle);
   if (!rekz::InitGridPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
@@ -292,7 +329,6 @@ int run_marz (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
-
 
   // InitTerrainPipeline ()
   // SetupMarzData  ()
@@ -304,10 +340,8 @@ int run_marz (const std::vector<std::string>& args) {
 
   // if ( !SetupMarzData  ()) { 
   // }
-
   // if ( !SetupMarzDescriptor ()) { 
   // }
-
 
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
@@ -324,12 +358,11 @@ int run_marz (const std::vector<std::string>& args) {
     return false; 
   }      
 
-    rekz::SetupLandscapeResources;
-    rekz::BindLanscapeDescriptors;
+  rekz::SetupLandscapeResources;
 
+  rekz::BindLanscapeDescriptors;
 
-    //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
-
+  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
 //   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
 //   const double time_per_frame_sec = 1.0 / 60.0;

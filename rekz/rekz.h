@@ -150,17 +150,17 @@ namespace rekz {
   // bool BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device);
   // void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt);
 
-  bool SetupRenderingAttachments (rokz::Image&          msaa_color_image       ,
-                                  rokz::ImageView&      msaa_color_imageview   ,
+  // bool SetupRenderingAttachments (rokz::Image&          msaa_color_image       ,
+  //                                 rokz::ImageView&      msaa_color_imageview   ,
 
-                                  rokz::Image&          msaa_depth_image       ,
-                                  rokz::ImageView&      msaa_depth_imageview   ,
+  //                                 rokz::Image&          msaa_depth_image       ,
+  //                                 rokz::ImageView&      msaa_depth_imageview   ,
 
-                                  VkSampleCountFlagBits msaa_samples           ,
-                                  VkFormat              swapchain_image_format ,
-                                  VkFormat              msaa_depth_format      ,
-                                  const VkExtent2D&     image_ext, 
-                                  const rokz::Device&   device);
+  //                                 VkSampleCountFlagBits msaa_samples           ,
+  //                                 VkFormat              swapchain_image_format ,
+  //                                 VkFormat              msaa_depth_format      ,
+  //                                 const VkExtent2D&     image_ext, 
+  //                                 const rokz::Device&   device);
 
   
   // ----------------------------------------------------------------------------------------

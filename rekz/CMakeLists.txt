@@ -20,24 +20,27 @@ set (REKZ_HEADER_FILES
 )
 	
 set (REKZ_SOURCE_FILES
-  texture_tool.cpp
+  drawgrid.cpp  
   darkrootgarden.cpp
   dark_obj_pipeline.cpp
   darkthings.cpp
-  platonic.cpp
   draw_mars.cpp
   drawwireframe.cpp
   drawpolygon.cpp
   darkpolydata.cpp
-  marz.cpp
-  landscape_pipeline.cpp
+  griddata.cpp
   grid_pipeline.cpp  
-  drawgrid.cpp  
   image_loader.cpp
-  tile_tool.cpp
+  landscape_pipeline.cpp
+  marz.cpp
   mars_files.cpp
-  # test_rokz.cpp
+  platonic.cpp
   rekz.cpp
+  rekz_of_things.cpp
+  stonk.cpp
+  texture_tool.cpp
+  tile_tool.cpp
+  # test_rokz.cpp
 )
 
 add_executable (

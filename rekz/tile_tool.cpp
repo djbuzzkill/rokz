@@ -14,6 +14,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+#include <algorithm>
 #include <glm/fwd.hpp>
 #include <limits>
 //#include "rokz/shared_types.h"
@@ -98,27 +99,30 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
 //
 // -------------------------------------------------------------------------------------------
 int fheight_tile_handler (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile, void*) {
+  
+  float min_elem = *std::min_element (  tilei.dat.begin (), tilei.dat.end () );
+  float max_elem = *std::max_element (  tilei.dat.begin (), tilei.dat.end () );
+  printf (" tile_ext<min:%f, max:%f, diff:%f> ", min_elem, max_elem, max_elem - min_elem);
 
-  ilInit ();
-  iluInit (); 
-  ILuint testim = ilGenImage ();
-
-  ilBindImage (testim);
-
+  const float kDEM_MIN = -2550.0;
+  const float kDEM_MAX = -1400.0;
+  const float diff = kDEM_MAX - kDEM_MIN;
+  
   imagebuff<glm::u8vec3> otile (k_tile_dim, k_tile_dim); 
 
-  float hmin = -2550.0;
-  float hmax = -1400.0;
-  float diff = hmax - hmin; 
-
   for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
-    if (tilei.dat[i] > hmin ) {
-      uint8 u8grad = uint8 (256.0 * (tilei.dat[i] - hmin) / diff);
+    if (tilei.dat[i] > kDEM_MIN) {
+      uint8 u8grad = uint8 (256.0 * (tilei.dat[i] - kDEM_MIN) / diff);
       otile.dat[i] = glm::u8vec3 (u8grad, u8grad, u8grad);
     }
     else {
       otile.dat[i] = glm::u8vec3 (0); 
     }}
+
+  ilInit ();   // just save to png for now
+
+  ILuint testim = ilGenImage ();
+  ilBindImage (testim);
 
   bool imgres = ilTexImage (k_tile_dim, k_tile_dim, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, &otile.dat[0]); 
   if (!imgres) { 
@@ -131,7 +135,7 @@ int fheight_tile_handler (const imagebuff<float>& tilei, uint32 xtile, uint32 yt
   std::string savename = "/home/djbuzzkill/owenslake/tmp/";
   savename += buf;
 
-  printf ("saveing out to..\n    %s\n ", savename.c_str()); 
+  printf ("saving out to..\n    %s\n ", savename.c_str()); 
   ilSave (IL_PNG, savename.c_str());  
 
   ilDeleteImage (testim);
@@ -195,8 +199,6 @@ int generate_IGM_tiles (const Vec<std::string>& args) {
   printf ("bai %s\n ", __FUNCTION__); 
  return 0;
 }
-
-
 
 // ------------------------------------------------------------------------------------------
 // main()

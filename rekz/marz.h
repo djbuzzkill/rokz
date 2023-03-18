@@ -36,13 +36,12 @@ namespace marz {
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
-  struct MarzDat {
+  struct MarsDat {
 
-    uint32_t       X_tile_dim;
-    uint32_t       Z_tile_dim;
-
-    uint32_t       X_tile_width;
-    uint32_t       Z_tile_height;
+    const uint32 x_tile_dim   = 1024;
+    const uint32 z_tile_dim   = 1024;
+    const uint32 x_tile_count = 6;
+    const uint32 z_tile_count = 16;
 
     Buffer         vb_device;
     Buffer         ib_device;
@@ -56,12 +55,16 @@ namespace marz {
     Vec<Image>     normalmaps;
     Vec<ImageView> normalviews;
     
-    Sampler        depthsampler;
+    Sampler        heightsampler;
     Sampler        colorsampler;
     Sampler        normalsampler;
     
   };
 
+
+  bool SetupData   (MarsDat& dat);
+  void CleanupData (MarsDat& dat, rokz::Device& device);
+  
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
@@ -105,7 +108,7 @@ namespace marz {
     DrawSequence::DescriptorLayoutMap                           dslomap;
     // 
     // GRID
-    struct { 
+    struct Grid { 
       PipelineLayout    plo;
       Pipeline          pipe;
       DrawSequence::Ref draw;
@@ -113,16 +116,17 @@ namespace marz {
     } grid; 
     // 
     // LANDSCAPE
-    struct landscape { 
+    struct Landscape { 
       PipelineLayout    plo;
       Pipeline          pipe;
       DrawSequence::Ref draw;
-      MarzDat           data;
+      MarsDat           data;
     } scape; 
 
   }; 
 
 
+  //Glob::Landscape;
 
 }
 

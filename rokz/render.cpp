@@ -234,3 +234,70 @@ int rokz::cx::FrameDrawEnd (SwapchainGroup& scg, VkCommandBuffer command_buffer,
   return 0;
 
 }
+
+
+
+
+
+
+
+
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                const rokz::ImageView&    msaa_color_imageview ,
+                                const rokz::ImageView&    msaa_depth_imageview ,
+                                const VkExtent2D&         image_extent) {
+
+  // const rokz::ImageView& msaa_color_imageview = glob.msaa_color_imageview;
+  // const rokz::ImageView& msaa_depth_imageview = glob.depth_imageview;
+  // const VkExtent2D& image_extent              = glob.swapchain_group.swapchain.ci.imageExtent;
+  ri.clear_colors.resize (1);
+  ri.color_attachment_infos.resize (1);
+
+  ri.clear_colors[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  //rig.clear_colors[1].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  ri.clear_depth.depthStencil = {1.0f, 0};
+
+  cx::AttachmentInfo (ri.color_attachment_infos[0],
+                            msaa_color_imageview.handle,
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            VK_RESOLVE_MODE_AVERAGE_BIT,
+                            VK_NULL_HANDLE, // swapchain_group.imageviews[i].handle <-- this will change
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            VK_ATTACHMENT_LOAD_OP_CLEAR,
+                            VK_ATTACHMENT_STORE_OP_STORE,
+                            ri.clear_colors[0]);
+
+  cx::AttachmentInfo (ri.depth_attachment_info,
+                            msaa_depth_imageview.handle,
+                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                            VK_RESOLVE_MODE_NONE,
+                            nullptr,
+                            VK_IMAGE_LAYOUT_UNDEFINED,
+                            VK_ATTACHMENT_LOAD_OP_CLEAR,
+                            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                            ri.clear_depth);
+
+  
+  ri.render_area = { VkOffset2D {0, 0}, image_extent };
+
+  cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
+  return true;
+}
+
+// -------------------------------------------------------------------------------------------
+// basically populates the AttachmentInfo
+// -------------------------------------------------------------------------------------------
+void rokz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                       const rokz::ImageView&    msaa_color_imageview ,
+                                       const rokz::ImageView&    target_imageview) {
+  //printf ("%s\n", __FUNCTION__); 
+  cx::AttachmentInfo (ri.color_attachment_infos[0],
+                        msaa_color_imageview.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                        VK_RESOLVE_MODE_AVERAGE_BIT, target_imageview.handle,
+                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR,
+                        VK_ATTACHMENT_STORE_OP_STORE, ri.clear_colors[0]);
+
+}

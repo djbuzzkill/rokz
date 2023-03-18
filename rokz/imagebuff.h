@@ -26,10 +26,15 @@ namespace rokz {
     uint32      height;
     Vec<Ty>     dat;
 
+    size_t numpixels () const {
+      return  width * height;
+    }
     size_t sizebytes () const {
-      return  width * height * sizeof(Ty);
+      return numpixels () * sizeof(Ty);
     }
 
+
+    
     void resize (uint32 w, uint32 h) {
       width = w;
       height = h;
@@ -70,7 +75,7 @@ namespace rokz {
   }
 
   // ------------------------------------------------------------------------------------------
-  // !! this doesnt depend on *imagebuff* 
+  // !! doesnt necessarily depend on *imagebuff* 
   // ------------------------------------------------------------------------------------------
   template<template<typename> class ImTy, typename Ty> inline imagebuff<Ty>&
   copy_sub_image (ImTy<Ty>& dsti, const ImTy<Ty>& srci, const glm::uvec2& begp, const glm::uvec2& endp) {
@@ -87,16 +92,19 @@ namespace rokz {
     assert (begp.x < endp.x);
     assert (begp.y < endp.y);
 
-    
     glm::uvec2 dim = endp - begp;
-
-    uint32 total_pixs = dim.x * dim.y;
-    printf ("--> subimage dim <%u, %u>\n", dim.x, dim.y);
+    //printf ("--> subimage dim <%u, %u>\n", dim.x, dim.y);
 
     if (resize)  
       dsti.resize (dim.x, dim.y);
 
-    assert (dsti.dat.size () == total_pixs);
+    uint32 total_pixs = dim.x * dim.y;
+    if (dsti.numpixels () < total_pixs) {
+      printf (" --> failed size check  dim <%u, %u>, resize(%s)\n",
+              dim.x, dim.y,
+              (resize ? "true" : "false"));
+      return dsti; 
+    }
 
     for (uint32 iy = begp.y; iy < endp.y; ++iy) {
       uint32 ydist = iy - begp.y;
@@ -105,8 +113,6 @@ namespace rokz {
 
     return dsti;
   }
-
-
   
   // ------------------------------------------------------------------------------------------
 }

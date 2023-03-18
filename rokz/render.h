@@ -49,6 +49,16 @@ namespace rokz {
                                     const VkRenderingAttachmentInfoKHR*           stencil_attachment); 
 
   } // cx
+
+
+  bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                  const rokz::ImageView&    msaa_color_imageview ,
+                                  const rokz::ImageView&    msaa_depth_imageview ,
+                                  const VkExtent2D&         image_extent); 
+  void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                   const rokz::ImageView&    msaa_color_imageview ,
+                                   const rokz::ImageView&    target_imageview);
+
 } // rokz
 
 #endif

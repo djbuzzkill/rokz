@@ -142,7 +142,7 @@ bool rekz::SetupLandscapeResources (Buffer& patches_vb, Buffer& patches_ib,
                                     uint32_t num_sets, const Device& device) {
 
 
-  
+  // wat happens n here
 
   
   return false;
@@ -161,5 +161,7 @@ bool rekz::BindLanscapeDescriptors (VkDescriptorSet            ds,
                                     const DescriptorSetLayout& dslayout, 
                                     const Device&              device) {
 
+
+  
   return false;
 }

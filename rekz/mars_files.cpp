@@ -71,7 +71,6 @@ void ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ()
     
     for (auto val : heightimage.dat ) {
 
-
       if (val > -1300.0f)
         below1300.push_back(val);          
       else if (val > -1400.0f)
