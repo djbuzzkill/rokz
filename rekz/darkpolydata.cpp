@@ -22,23 +22,29 @@ struct obj_params {
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int obj_image_handler (const unsigned char* dat, const rekz::DevILImageProps& props, void* up) {
 
-  obj_params*   params = reinterpret_cast<obj_params*> (up); 
-  rekz::PolygonData& polyd  = params->poly;
+struct obj_image_handler : public rekz::DevILOpenFileCB {
+
+  obj_image_handler (obj_params& p): params (p) {
+  }
+
+  obj_params& params;
+  
+  virtual int Exec (const unsigned char* dat, const rekz::DevILImageProps& props) {
+
+  rekz::PolygonData& polyd  = params.poly;
 
   
   if (rekz::LoadTexture_color_sampling (polyd.texture, VK_FORMAT_R8G8B8A8_SRGB ,
                                         VkExtent2D { (uint32_t) props.width, (uint32_t) props.height },
-                                        dat, params->device.allocator.handle, params->device.queues.graphics, 
-                                        params->device.command_pool, params->device)) {
+                                        dat, params.device.allocator.handle, params.device.queues.graphics, 
+                                        params.device.command_pool, params.device)) {
     return 0;  
   }
   
   
   return __LINE__;
-} 
-
+  } };
 
 // ------------------------------------------------------------------------------------------------
 //
@@ -49,17 +55,16 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
 
   printf ("%s \n", __FUNCTION__); 
   //rokz::ReadStreamRef rs = rokz::CreateReadFileStream (data_root + "/texture/blue_0_texture.png"); 
-  const char*  test_image_files[] = { 
+  const char* test_image_files[] = { 
     "out_0_blue-texture-image-hd_rgba.png",
     "out_1_abstract-texture-3_rgba.png",
   };
 
- 
   rokz::Buffer stage_image; 
   //   const std::string fq_test_file = data_root + "/texture/out_1_abstract-texture-3_rgba.png";  
   const std::string fq_test_file = data_root + "/texture/out_0_blue-texture-image-hd_rgba.png";  
 
-  int res =  rekz::OpenImageFile (fq_test_file, obj_image_handler, &params); 
+  int res =  rekz::OpenImageFile (fq_test_file, std::make_shared<obj_image_handler> (params)); 
   
   if (res == 0) {
     rokz::cx::CreateInfo (polyd.imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, polyd.texture);  
@@ -115,11 +120,9 @@ rekz::PolygonData& rekz::SetupPolygonData (rekz::PolygonData& pd, uint32_t num_f
 //
 // ------------------------------------------------------------------------------------------------
 rekz::PolygonData& rekz::CleanupPolygonData (PolygonData& pd, const VmaAllocator& allocator) {
-
     // SetupObjectUniforms ; 
     // SetupObjectTextureAndSampler;
     // SetupObjResources;
-    
     return  pd;
 }
 

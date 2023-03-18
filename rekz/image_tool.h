@@ -10,19 +10,25 @@ namespace rekz {
   // -------------------------------------------------------------------------------------------
   //
   // -------------------------------------------------------------------------------------------
-  struct tileparams {
+  struct iteratetileparams {
     glm::uvec2 tiledim;
     glm::uvec2 numtiles;
     bool       overlap; 
   }; 
 
-  // -------------------------------------------------------------------------------------------
-  template<typename Ty> 
-    using tilecb = int(*)(const imagebuff<Ty>& tilei, uint32 xtile, uint32 ytile, void* up);
+  template<typename Ty> struct TileCB {
+
+    typedef std::shared_ptr<TileCB> Ref;
+    //virtual imagebuff<Ty>& Buffer () = 0; 
+    virtual int Exec (const imagebuff<Ty>& tilei, uint32 xtile, uint32 ytile) = 0; 
+
+  protected:
+    TileCB () {}
+  };
 
   // -------------------------------------------------------------------------------------------
   template<typename Ty> inline int
-  iterate_over_tiles (const imagebuff<Ty>& srci, const tileparams& params, tilecb<Ty> cb, void* up) {
+  iterate_over_tiles (const imagebuff<Ty>& srci, const iteratetileparams& params, typename TileCB<Ty>::Ref cb) {
 
     imagebuff<Ty> dsti (params.tiledim.x, params.tiledim.y);
     
@@ -38,12 +44,11 @@ namespace rekz {
 
         copy_sub_image (dsti, srci, begp, endp, false); 
 
-        cb (dsti, xtile, ytile, up);
+        cb->Exec (dsti, xtile, ytile);
       }}
     
     return 0; 
   }
-
 
  
 }

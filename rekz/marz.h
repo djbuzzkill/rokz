@@ -58,7 +58,6 @@ namespace marz {
     Sampler        heightsampler;
     Sampler        colorsampler;
     Sampler        normalsampler;
-    
   };
 
 

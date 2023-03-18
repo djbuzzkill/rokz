@@ -32,7 +32,9 @@ const uint32 k_total_tile_pixels = k_tile_dim * k_tile_dim;
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
-int fcolor_tile_handler (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile, void*) {
+struct fcolor_tile_handler : public rekz::TileCB<float> { 
+
+  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
 
   ilInit ();
   iluInit (); 
@@ -69,7 +71,7 @@ int fcolor_tile_handler (const imagebuff<float>& tilei, uint32 xtile, uint32 yti
   ilShutDown ();
 
   return 0;  
-}
+  }};
 
 // -------------------------------------------------------------------------------------------
 int generate_DRG_tiles (const Vec<std::string>& args) {
@@ -82,13 +84,14 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
   imagebuff<float> colorimage (kWIDTH, kHEIGHT);
   load_from_file (colorimage, fqcolorfile); 
 
-  rekz::tileparams params {
+  rekz::iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
     true
   };
+
   
-  rekz::iterate_over_tiles (colorimage, params, fcolor_tile_handler, nullptr) ; 
+  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_handler>()) ; 
 
   printf ("bai %s\n ", __FUNCTION__); 
   return 0;
@@ -98,7 +101,9 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
-int fheight_tile_handler (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile, void*) {
+struct fheight_tile_handler : public rekz::TileCB<float> { 
+
+  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
   
   float min_elem = *std::min_element (  tilei.dat.begin (), tilei.dat.end () );
   float max_elem = *std::max_element (  tilei.dat.begin (), tilei.dat.end () );
@@ -142,7 +147,7 @@ int fheight_tile_handler (const imagebuff<float>& tilei, uint32 xtile, uint32 yt
   ilShutDown ();
 
   return 0;  
-}
+  }};
 
 // -------------------------------------------------------------------------------------------
 int generate_DEM_tiles (const Vec<std::string>& args) {
@@ -154,13 +159,13 @@ int generate_DEM_tiles (const Vec<std::string>& args) {
   imagebuff<float> colorimage (kWIDTH, kHEIGHT);
   load_from_file (colorimage, fqheightfile); 
 
-  rekz::tileparams params {
+  rekz::iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
     true
   };
   
-  rekz::iterate_over_tiles (colorimage, params, fheight_tile_handler, nullptr) ; 
+  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_handler>()) ; 
 
   printf ("bai %s\n ", __FUNCTION__); 
  return 0;
@@ -171,11 +176,12 @@ int generate_DEM_tiles (const Vec<std::string>& args) {
 // ------------------------------------------------------------------------------------------
 // 
 // ------------------------------------------------------------------------------------------
-int coord_tile_handler (const imagebuff<glm::vec2>& tilei, uint32 xtile, uint32 ytile, void*) {
-
+struct coord_tile_handler : rekz::TileCB<glm::vec2> {
   
+  int Exec (const imagebuff<glm::vec2>& tilei, uint32 xtile, uint32 ytile) {
+
   return 0;
-}
+  }};
 
 // ------------------------------------------------------------------------------------------
 int generate_IGM_tiles (const Vec<std::string>& args) {
@@ -188,13 +194,13 @@ int generate_IGM_tiles (const Vec<std::string>& args) {
   imagebuff<glm::vec2> coordimage (kWIDTH, kHEIGHT);
   load_from_file (coordimage, fqcoordfile); 
 
-  rekz::tileparams params {
+  rekz::iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
     true
   };
   
-  rekz::iterate_over_tiles (coordimage, params, coord_tile_handler, nullptr) ; 
+  rekz::iterate_over_tiles (coordimage, params, std::make_shared<coord_tile_handler>()) ; 
 
   printf ("bai %s\n ", __FUNCTION__); 
  return 0;
@@ -215,6 +221,5 @@ int tile_tool (const Vec<std::string>& args) {
   return 0; 
   
 }
-
 
 

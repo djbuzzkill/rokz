@@ -6,30 +6,10 @@
 
 namespace rekz { 
 
-  // ---------------------------------------------------------------------
-  // load texture to device memory
-  // ---------------------------------------------------------------------
-  bool LoadTexture_color_sampling (rokz::Image&             image,
-                                   VkFormat                 format,
-                                   const VkExtent2D&        ext2d,
-                                   const void*              srcimage,
-                                   const VmaAllocator&      allocator, 
-                                   const VkQueue&           queue, 
-                                   const rokz::CommandPool& commandpool, 
-                                   const rokz::Device&      device);
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  uint32_t SizeOfComponents (VkFormat format) ;
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  uint32_t NumberOfComponents (VkFormat format); 
 
-
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
   // image handling - should we keep
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
   struct DevILImageProps {
     int width          ; //= ilGetInteger (IL_IMAGE_WIDTH); 
     int height         ; //= ilGetInteger (IL_IMAGE_HEIGHT);
@@ -40,17 +20,23 @@ namespace rekz {
     int format         ; //= ilGetInteger (IL_IMAGE_FORMAT); 
   };
 
-  using DevILOpenFileCB =  int(*)(const unsigned char* dat, const DevILImageProps& props, void* up); 
+  // ------------------------------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------------------------------
+  struct DevILOpenFileCB {
 
-  int OpenImageFile (const std::string& fqname, DevILOpenFileCB cb, void* up);
+    typedef std::shared_ptr<DevILOpenFileCB> Ref;
 
-  // struct ImageCB {
-  //   virtual int do_shit (const unsigned char* dat, const DevILImageProps&) = 0; 
-  // protected:
-  //   ImageCB () { }
-  // } ;
+    virtual int Exec (const unsigned char* dat, const DevILImageProps& props) = 0;
 
-  // int OpenImageFile (const std::string& fqname, ImageCB*);
+  protected:
+    DevILOpenFileCB () {};
+  };
+  
+  // ------------------------------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------------------------------
+  int OpenImageFile (const std::string& fqname, DevILOpenFileCB::Ref cb);
 
 }
 #endif
