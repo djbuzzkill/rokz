@@ -73,18 +73,28 @@ namespace rokz {
   // !! this doesnt depend on *imagebuff* 
   // ------------------------------------------------------------------------------------------
   template<template<typename> class ImTy, typename Ty> inline imagebuff<Ty>&
+  copy_sub_image (ImTy<Ty>& dsti, const ImTy<Ty>& srci, const glm::uvec2& begp, const glm::uvec2& endp) {
+    return copy_sub_image (dsti, srci, begp, endp, true);
+  }
+
+  // ------------------------------------------------------------------------------------------
+  //
+  // ------------------------------------------------------------------------------------------
+  template<template<typename> class ImTy, typename Ty> inline imagebuff<Ty>&
   copy_sub_image (ImTy<Ty>& dsti, const ImTy<Ty>& srci, 
-                  const glm::uvec2& begp, const glm::uvec2& endp) {
+                  const glm::uvec2& begp, const glm::uvec2& endp, bool resize) {
 
     assert (begp.x < endp.x);
     assert (begp.y < endp.y);
 
+    
     glm::uvec2 dim = endp - begp;
 
     uint32 total_pixs = dim.x * dim.y;
     printf ("--> subimage dim <%u, %u>\n", dim.x, dim.y);
 
-    dsti.resize (dim.x, dim.y);
+    if (resize)  
+      dsti.resize (dim.x, dim.y);
 
     assert (dsti.dat.size () == total_pixs);
 
@@ -102,3 +112,4 @@ namespace rokz {
 }
 
 #endif
+

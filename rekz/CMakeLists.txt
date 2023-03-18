@@ -16,6 +16,7 @@ set (REKZ_HEADER_FILES
   mars_files.h
   draw_mars.h
   image_loader.h
+  image_tool.h
 )
 	
 set (REKZ_SOURCE_FILES
@@ -33,7 +34,7 @@ set (REKZ_SOURCE_FILES
   grid_pipeline.cpp  
   drawgrid.cpp  
   image_loader.cpp
-  examine_TIFFs.cpp
+  tile_tool.cpp
   mars_files.cpp
   # test_rokz.cpp
   rekz.cpp
