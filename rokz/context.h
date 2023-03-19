@@ -132,6 +132,7 @@ namespace rokz {
   bool               InitializeInstance  (rokz::Instance& instance); 
   PhysicalDevice&    ConfigureDevice     (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy); 
   bool               InitializeDevice    (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
+
   bool               InitializeSwapchain (rokz::SwapchainGroup& scg,
                                           const rokz::SwapchainSupportInfo& swapchain_support_info,
                                           const VkSurfaceKHR& surface,
@@ -139,9 +140,9 @@ namespace rokz {
                                           const rokz::PhysicalDevice& physdev,
                                           const rokz::Device& device) ; 
 
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   //
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
   bool               RecreateSwapchain (Swapchain&                          swapchain,
                                         std::vector<Image>&                 swapchain_images, 
                                         std::vector<Framebuffer>&           framebuffers,
@@ -158,6 +159,9 @@ namespace rokz {
                                         const VmaAllocator&                   allocator,
                                         GLFWwindow*                           glfwin); 
 
+  // -----------------------------------------------------------------------------------------------
+  //
+  // -----------------------------------------------------------------------------------------------
   void CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
                          std::vector<ImageView>&     fb_image_views,
 
@@ -168,31 +172,22 @@ namespace rokz {
                          rokz::ImageView&            depth_imageview,
 
                          rokz::Swapchain&            swapchain,
-                         const rokz::Device&         device,
-                         const VmaAllocator&         allocator); 
+                         const rokz::Device&         device); 
 
+  // -----------------------------------------------------------------------------------------------
+  // call this something like CleanupInstanceAndStuff
+  // -----------------------------------------------------------------------------------------------
   void Cleanup (VkPipeline&                       pipeline,
-
                 std::vector<Framebuffer>&         framebuffers,
-                std::vector<ImageView>&           fb_image_views,
-
-                rokz::Swapchain&                  swapchain,
-                VkSurfaceKHR&                     surf,
+                rokz::RenderPass&                 render_pass,
+                VkSurfaceKHR&                     surface,
                 VkCommandPool&                    command_pool,
                  std::vector<rokz::FrameSync>&    syncs, 
                 std::vector<rokz::ShaderModule>&  shader_modules,
                 VkPipelineLayout&                 pipeline_layout,
-                rokz::RenderPass&                 render_pass,
-                rokz::Image&                      msaa_color_image,
-                rokz::ImageView&                  msaa_color_imageview,
-
-                rokz::Image&                      depth_image,
-                rokz::ImageView&                  depth_imageview,
-
-                GLFWwindow*                       w,
+                GLFWwindow*                       win,
                 rokz::Device&                     device,
-                VmaAllocator&                     allocator, 
-                VkInstance&                       inst);
+                VkInstance&                       instance);
 
   // moved 
 

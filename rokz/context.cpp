@@ -773,7 +773,7 @@ bool rokz::RecreateSwapchain(Swapchain&                             swapchain,
                     depth_image, depth_imageview,
                     multisamp_color_image,
                     multisamp_color_imageview,
-                    swapchain, device, allocator);
+                    swapchain, device);
 
   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
   bool swapchain_res    = rokz::cx::CreateSwapchain (swapchain, device);
@@ -803,8 +803,7 @@ void rokz::CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
                              rokz::ImageView&            depth_imageview,
 
                              rokz::Swapchain&            swapchain,
-                             const rokz::Device&         device,
-                             const VmaAllocator&         allocator) {
+                             const rokz::Device&         device) {
 
   for (auto fb : framebuffers) {
     vkDestroyFramebuffer (device.handle, fb.handle, nullptr); 
@@ -814,10 +813,10 @@ void rokz::CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
     vkDestroyImageView(device.handle, fb_imageview.handle, nullptr);
   }
 
-  rokz::cx::Destroy (msaa_color_image, allocator);
+  rokz::cx::Destroy (msaa_color_image, device.allocator.handle);
   rokz::cx::Destroy (msaa_color_imageview, device.handle);
 
-  rokz::cx::Destroy (depth_image, allocator);
+  rokz::cx::Destroy (depth_image, device.allocator.handle);
   rokz::cx::Destroy (depth_imageview, device.handle);
 
   vkDestroySwapchainKHR(device.handle, swapchain.handle, nullptr);
@@ -842,44 +841,37 @@ void Destroy (rokz::FrameSyncGroup& fsg, const rokz::Device& device) {
 // ---------------------------------------------------------------------
 // DESTROY ALL THE THINGS
 // ---------------------------------------------------------------------
-void rokz::Cleanup (VkPipeline&                  pipeline,
-              std::vector<Framebuffer>&          framebuffers,
-              std::vector<ImageView>&            imageviews,
+void rokz::Cleanup (VkPipeline&                      pipeline,
+                    std::vector<Framebuffer>&        framebuffers,
+                    rokz::RenderPass&                render_pass,
+                    VkSurfaceKHR&                    surf,
+                    VkCommandPool&                   command_pool,
+                    std::vector<rokz::FrameSync>&    fsyncs, 
+                    std::vector<rokz::ShaderModule>& shader_modules,
+                    VkPipelineLayout&                pipeline_layout,
+                    GLFWwindow*                      w,
+                    rokz::Device&                    device,
+                    VkInstance&                      inst) {
 
-              rokz::Swapchain&                   swapchain,
-              VkSurfaceKHR&                      surf,
-              VkCommandPool&                     command_pool,
-                    std::vector<rokz::FrameSync>& fsyncs, 
-              std::vector<rokz::ShaderModule>&   shader_modules,
-              VkPipelineLayout&                  pipeline_layout,
-              rokz::RenderPass&                  render_pass,
+  // vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+  // CleanupSwapchain (framebuffers, 
+  //                    imageviews,
 
-                   rokz::Image&                      msaa_color_image,
-              rokz::ImageView&                  msaa_color_imageview,
+  //                    msaa_color_image,
+  //                    msaa_color_imageview,
 
-              rokz::Image&                      depth_image,
-              rokz::ImageView&                  depth_imageview,
+  //                    depth_image, 
+  //                    depth_imageview,
 
-              GLFWwindow*                       w,
-              rokz::Device&                     device,
-              VmaAllocator&                     allocator, 
-              VkInstance&                       inst) {
+  //                    swapchain,
+  //                    device, 
+  //                    allocator
+  //                    );
 
-  //    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-  CleanupSwapchain (framebuffers, 
-                     imageviews,
+  for (auto fb : framebuffers) { 
+    vkDestroyFramebuffer (device.handle, fb.handle, nullptr);
+  }
 
-                     msaa_color_image,
-                     msaa_color_imageview,
-
-                     depth_image, 
-                     depth_imageview,
-
-                     swapchain,
-                     device, 
-                     allocator
-                     );
-   
   vkDestroyPipeline (device.handle, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);
   vkDestroyCommandPool (device.handle, command_pool, nullptr);
@@ -896,7 +888,7 @@ void rokz::Cleanup (VkPipeline&                  pipeline,
   vkDestroyPipelineLayout (device.handle, pipeline_layout, nullptr);
   vkDestroyRenderPass (device.handle, render_pass.handle, nullptr); 
 
-  vmaDestroyAllocator(allocator);
+  vmaDestroyAllocator(device.allocator.handle);
   vkDestroyDevice    (device.handle, nullptr); 
   vkDestroyInstance  (inst, nullptr);
   glfwDestroyWindow(w);
@@ -1209,8 +1201,7 @@ bool rokz::InitializeSwapchain (rokz::SwapchainGroup& scg,
 
   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
     // manual transition b/c KHR_dynamic_rendering
-    rokz::cx::TransitionImageLayout (scg.images[iimg].handle,
-                                 scg.swapchain.ci.imageFormat,
+    rokz::cx::TransitionImageLayout (scg.images[iimg].handle, scg.swapchain.ci.imageFormat,
                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                  device.queues.graphics, device.command_pool.handle, device.handle);
   }

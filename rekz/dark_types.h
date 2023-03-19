@@ -87,7 +87,7 @@ namespace darkroot {
     std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
-    ResetSwapchainCB::Ref  swapchain_resetter;
+    SwapchainResetter::Ref  swapchain_resetter;
 
   };
 

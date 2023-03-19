@@ -12,29 +12,39 @@
 
 namespace rokz {
 
-
-
-  // ---------------------------------------------------------------------
-  // 
-  // ---------------------------------------------------------------------
-  struct ResetSwapchainCB {
+  // --------------------------------------------------------------------------------------------
+  //                         
+  // --------------------------------------------------------------------------------------------
+  struct SwapchainResetter {
     
   public:
 
-    typedef std::shared_ptr<ResetSwapchainCB> Ref; 
+    typedef std::shared_ptr<SwapchainResetter> Ref; 
     
     virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
 
-
   protected:
   
-    ResetSwapchainCB () {}
+    SwapchainResetter () {}
+
   };
 
+  // // --------------------------------------------------------------------------------------------
+  // //                         
+  // // --------------------------------------------------------------------------------------------
+  // struct ResetSwapchainCB {
+    
+  // public:
 
+  //   typedef std::shared_ptr<ResetSwapchainCB> Ref; 
+    
+  //   virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
 
-
+  // protected:
   
+  //   ResetSwapchainCB () {}
+
+  // };
 
 }
 #endif

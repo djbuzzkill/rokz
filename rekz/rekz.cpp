@@ -31,11 +31,14 @@ int main (int argv, char** argc) {
     {"stonk"        , stonk },
   };
 
-  int res = -1;
-  if (args.size () > 1 && exemap.count (args[1])) 
+  int res = __LINE__;
+
+  if (args.size () > 1 && exemap.count (args[1])) {
     res = exemap[ args[1] ](args);
-  else
-    res = darkrootbasin (args); 
+  }
+  else {
+    res = darkrootbasin (args);
+  }
   
   printf ("lolz bai %s\n", __FUNCTION__); 
   return res; 

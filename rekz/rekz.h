@@ -169,16 +169,14 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
-  void CleanupSwapchain (std::vector<rokz::ImageView>& sc_image_views,
-                         rokz::Image&                  msaa_color_image,
-                         rokz::ImageView&              msaa_color_imageview,
-
-                         rokz::Image&                  depth_image,
-                         rokz::ImageView&              depth_imageview,
-
-                         rokz::Swapchain&              swapchain,
-                         const rokz::Device&           device,
-                         const VmaAllocator&           allocator);
+  void CleanupSwapchain (Vec<rokz::ImageView>& sc_image_views,
+                         rokz::Image&          msaa_color_image,
+                         rokz::ImageView&      msaa_color_imageview,
+                         rokz::Image&          depth_image,
+                         rokz::ImageView&      depth_imageview,
+                         rokz::Swapchain&      swapchain,
+                         const rokz::Device&   device);
+  
 
   bool RecreateSwapchain (rokz::Swapchain&  swapchain, const rokz::Window& win, 
                           Vec<rokz::Image>& swapchain_images, Vec<rokz::ImageView>& imageviews,
@@ -187,12 +185,12 @@ namespace rekz {
                           const VmaAllocator& allocator, const rokz::Device& device); 
 
   //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
-  rokz::ResetSwapchainCB::Ref
+  rokz::SwapchainResetter::Ref
   CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis, Vec<rokz::ImageView>& scivs,
                            rokz::Image& dp, rokz::ImageView& div, rokz::Image& mscim, rokz::ImageView& mscimv); 
 
 
-  rokz::ResetSwapchainCB::Ref CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis,
+  rokz::SwapchainResetter::Ref CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis,
                                                        Vec<rokz::ImageView>& scivs,
                                                        rokz::Image& dp, rokz::ImageView& div,
                                                        rokz::Image& mscim, rokz::ImageView& mscimv);

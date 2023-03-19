@@ -27,31 +27,20 @@ namespace darkroot {
                          rokz::ImageView&            depth_imageview,
 
                          rokz::Swapchain&            swapchain,
-                         const rokz::Device&         device,
-                         const VmaAllocator&         allocator); 
+                         const rokz::Device&         device); 
 
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
-  void Cleanup (VkPipeline&                 pipeline,
-                //std::vector<Framebuffer>&         framebuffers,
-                std::vector<rokz::ImageView>&           imageviews,
-
-                rokz::Swapchain&                  swapchain,
-                VkSurfaceKHR&                     surf,
+  void Cleanup (VkPipeline&                       pipeline,
+                VkSurfaceKHR&                     surface,
                 VkCommandPool&                    command_pool,
                 std::vector<rokz::FrameSync>&     syncs, 
                 std::vector<rokz::ShaderModule>&  shader_modules,
                 VkPipelineLayout&                 pipeline_layout,
-                rokz::Image&                      msaa_color_image,
-                rokz::ImageView&                  msaa_color_imageview,
 
-                rokz::Image&                      depth_image,
-                rokz::ImageView&                  depth_imageview,
-
-                GLFWwindow*                       w,
+                rokz::Display&                    display,
                 rokz::Device&                     device,
-                VmaAllocator&                     allocator, 
                 VkInstance&                       inst);
   
 

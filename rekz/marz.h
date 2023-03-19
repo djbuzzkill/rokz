@@ -91,7 +91,7 @@ namespace marz {
     Image                  msaa_color_image;     //  
     ImageView              msaa_color_imageview; //
 
-    ResetSwapchainCB::Ref  swapchain_resetter; // swchresetter
+    SwapchainResetter::Ref  swapchain_resetter; // swchresetter
     //Vec<Buffer>            landscape_bu; //
     DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
     DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's

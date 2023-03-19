@@ -94,23 +94,22 @@ void CleanupDarkroot (Glob& glob) {
   // rokz::cx::Destroy (glob.vma_vb_device, glob.device.allocator.handle);
   // rokz::cx::Destroy (glob.vma_ib_device, glob.device.allocator.handle);
   // <<<<<<<<<<
-  Cleanup (glob.polys_pl.handle,
-           glob.swapchain_group.imageviews,
+  rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
+                          glob.msaa_color_image, glob.msaa_color_imageview,
+                          glob.depth_image, glob.depth_imageview,
+                          glob.swapchain_group.swapchain, 
+                          glob.device);
 
-           glob.swapchain_group.swapchain,
-           glob.display.surface,
-           glob.device.command_pool.handle,
-           glob.framesyncgroup.syncs, 
-           glob.polys_pl.shader_modules,
-           glob.polys_plo.handle,  
-           glob.msaa_color_image, glob.msaa_color_imageview,
 
-           glob.depth_image, glob.depth_imageview,
-
-           glob.display.window.glfw_window,
-           glob.device,
-           glob.device.allocator.handle, 
-           glob.instance.handle);
+  darkroot::Cleanup (glob.polys_pl.handle,
+                     glob.display.surface,
+                     glob.device.command_pool.handle,
+                     glob.framesyncgroup.syncs, 
+                     glob.polys_pl.shader_modules,
+                     glob.polys_plo.handle,  
+                     glob.display,
+                     glob.device,
+                     glob.instance.handle);
   //
   glfwTerminate();
 }

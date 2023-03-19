@@ -2,6 +2,7 @@
 
 #include "image.h"
 #include "utility.h"
+#include <vulkan/vulkan_core.h>
 
 
 
@@ -154,25 +155,12 @@ bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
   return true;   
 }
 
-
-
-#ifdef ROKZ_HIDE_CX_DESTROY_IMAGE
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void rokz::cx::Destroy (Image& image, const VkDevice& device) {
-
-    vkDestroyImage (device, image.handle, nullptr);
-    vkFreeMemory   (device, image.mem, nullptr);
-}
-#endif
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 void rokz::cx::Destroy (ImageView& iv, const VkDevice& device) {
-
   vkDestroyImageView(device, iv.handle, nullptr);
+  iv.handle = VK_NULL_HANDLE;
 }
 
 
@@ -197,6 +185,7 @@ bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
 // ---------------------------------------------------------------------
 void rokz::cx::Destroy (Image& image, VmaAllocator const& allocator) {
   vmaDestroyImage (allocator, image.handle, image.allocation); 
+  image.handle = VK_NULL_HANDLE;
 }
 
 

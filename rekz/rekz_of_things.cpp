@@ -2,6 +2,7 @@
 #include "rekz.h"              // 
 //#include "rokz/attachment.h"
 #include "grid_pipeline.h"
+#include "rokz/attachment.h"
 
 
 //#include "rokz/rokz.h"
@@ -44,7 +45,10 @@ glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
+
 void rekz::CleanupSwapchain (Vec<ImageView>&     sc_image_views,
+
+
                              Image&              msaa_color_image,
                              ImageView&          msaa_color_imageview,
 
@@ -52,8 +56,7 @@ void rekz::CleanupSwapchain (Vec<ImageView>&     sc_image_views,
                              ImageView&          depth_imageview,
 
                              Swapchain&          swapchain,
-                             const Device&       device,
-                             const VmaAllocator& allocator) {
+                             const Device&       device) {
 
   // for (auto fb : framebuffers) {
   //   vkDestroyFramebuffer (device.handle, fb.handle, nullptr); 
@@ -62,23 +65,23 @@ void rekz::CleanupSwapchain (Vec<ImageView>&     sc_image_views,
   for (auto sc_imageview : sc_image_views) {
     vkDestroyImageView(device.handle, sc_imageview.handle, nullptr);
   }
-
-  cx::Destroy (msaa_color_image, allocator);
-  cx::Destroy (msaa_color_imageview, device.handle);
-
-  cx::Destroy (depth_image, allocator);
-  cx::Destroy (depth_imageview, device.handle);
-
   vkDestroySwapchainKHR(device.handle, swapchain.handle, nullptr);
+
+  cx::Destroy (msaa_color_imageview, device.handle);
+  cx::Destroy (msaa_color_image, device.allocator.handle);
+
+  cx::Destroy (depth_imageview, device.handle);
+  cx::Destroy (depth_image, device.allocator.handle);
+
 }
 
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool rekz::RecreateSwapchain(Swapchain&  swapchain, const rokz::Window& win, 
+bool rekz::RecreateSwapchain(Swapchain& swapchain, const rokz::Window& win,
                              Vec<Image>& swapchain_images, Vec<ImageView>& imageviews,
                              Image& depth_image, ImageView& depth_imageview,
-                             Image& multisamp_color_image, ImageView& multisamp_color_imageview,
+                             Image& msaa_color_image, ImageView& msaa_color_imageview,
                              const VmaAllocator& allocator, const Device& device) {
 
   printf ("%s\n", __FUNCTION__);
@@ -92,22 +95,24 @@ bool rekz::RecreateSwapchain(Swapchain&  swapchain, const rokz::Window& win,
   }
   
   vkDeviceWaitIdle (device.handle);
-
-  CleanupSwapchain (imageviews,
-                    depth_image, depth_imageview,
-                    multisamp_color_image,
-                    multisamp_color_imageview,
-                    swapchain, device, allocator);
+  
+  CleanupSwapchain (imageviews, depth_image, depth_imageview,
+                    msaa_color_image, msaa_color_imageview,
+                    swapchain, device);
 
   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
   bool swapchain_res    = cx::CreateSwapchain (swapchain, device);
-  bool imageviews_res   = cx::CreateImageViews (imageviews, swapchain_images, device);
-
-  assert (false);
-  // rokz::Image& multisamp_color_image, rokz::ImageView& multisamp_color_imageview,
-
-  assert (false);
-  //rokz::Image& depth_image, rokz::ImageView& depth_imageview,
+  bool imageviews_res   = cx::CreateImageViews(imageviews, swapchain_images, device);
+  
+  //
+  assert (false); // not yet tested
+  // unless this changed --> msaa_color_image.ci.samples
+  rokz::CreateMSAAColorTarget (msaa_color_image, msaa_color_imageview, msaa_color_image.ci.samples,
+                               swapchain.ci.imageFormat, swapchain.ci.imageExtent, device);
+  //
+  assert (false); // not yet tested
+  rokz::CreateDepthBufferTarget (depth_image, depth_imageview,  msaa_color_image.ci.samples,
+                                 depth_image.ci.format, swapchain.ci.imageExtent, device);
 
   return (swapchain_res && imageviews_res); 
 }
@@ -115,21 +120,23 @@ bool rekz::RecreateSwapchain(Swapchain&  swapchain, const rokz::Window& win,
 // -------------------------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------------------------
-rokz::ResetSwapchainCB::Ref rekz::CreateSwapchainResetter (Swapchain& sc, 
+rokz::SwapchainResetter::Ref rekz::CreateSwapchainResetter (Swapchain& sc, 
                                                            Vec<Image>& scis, Vec<ImageView>& scivs,
                                                            Image& dp, ImageView& div,
                                                            Image& mscim, ImageView& mscimv) {
+  struct reset_def : public SwapchainResetter {
 
-  struct reset_def : public ResetSwapchainCB
-  {
+    // reset_def - basic msaa attachements
+
   public:
-  
+
     reset_def (Swapchain& sc, Vec<Image>& scis, Vec<ImageView>& scivs, Image& dp, ImageView& dpiv, Image& mscim, ImageView&  mscimv)
-      : ResetSwapchainCB (), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
+      : SwapchainResetter (), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
       , depth_image (dp), depth_imageview(dpiv), msaa_color_image(mscim), msaa_color_imageview(mscimv) { 
     }
 
     virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
+
       return rekz::RecreateSwapchain (swapchain, win, 
                                       swapchain_images, swapchain_imageviews,
                                       depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
