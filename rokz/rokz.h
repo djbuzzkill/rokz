@@ -38,7 +38,7 @@
 #include "draw_sequence.h"
 #include "swapchain_reset.h"
 #include "frame_loop.h"
-
+#include "synchronization.h"
 
 namespace rokz { 
 

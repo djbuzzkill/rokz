@@ -32,16 +32,16 @@ namespace darkroot {
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
-  void Cleanup (Vec<VkPipeline>&                  pipelines,
-                VkSurfaceKHR&                     surface,
-                VkCommandPool&                    command_pool,
-                std::vector<rokz::FrameSync>&     syncs, 
-                std::vector<rokz::ShaderModule>&  shader_modules,
-                VkPipelineLayout&                 pipeline_layout,
+  void Cleanup (Vec<VkPipeline>&          pipelines,
+                VkSurfaceKHR&             surface,
+                VkCommandPool&            command_pool,
+                Vec<rokz::FrameSync>&     syncs, 
+                Vec<rokz::ShaderModule>&  shader_modules,
+                VkPipelineLayout&         pipeline_layout,
 
-                rokz::Display&                    display,
-                rokz::Device&                     device,
-                VkInstance&                       inst);
+                rokz::Display&            display,
+                rokz::Device&             device,
+                VkInstance&               inst);
   
 
   

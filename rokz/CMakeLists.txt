@@ -38,10 +38,9 @@ set (ROKZ_HEADER_FILES
   input_state.h
   display.h
   vert_defs.h
-  # rokz_types.h
-  # rokz_funcs.h
   file.h
   shared_types.h
+  synchronization.h
   rokz_types.h
   common.h
 )
@@ -76,6 +75,7 @@ set (ROKZ_SOURCE_FILES
   binary_IO.cpp
   defaults.cpp
   rokz.cpp
+  synchronization.cpp
 )
 
 #

@@ -15,12 +15,13 @@ namespace darkroot {
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
-  typedef rekz::Vertex_pos_nrm_col_txc DarkVert;
+  //typedef rekz::PNCTx_Vert DarkVert;
 
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
-  typedef rekz::TriMesh<DarkVert> DarkMesh;
+  // typedef rekz::TriMesh<rekz::PNCTx_Vert> DarkMesh;
+  // typedef rekz::TriMesh<rekz::PNCTx_Vert> PNCTx_Mesh;
 
 
   //using rokz::Vec;
