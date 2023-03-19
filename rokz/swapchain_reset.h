@@ -23,7 +23,7 @@ namespace rokz {
 
     typedef std::shared_ptr<ResetSwapchainCB> Ref; 
     
-    virtual bool ResetSwapchain  (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
+    virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
 
 
   protected:

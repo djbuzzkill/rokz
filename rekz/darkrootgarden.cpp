@@ -181,7 +181,7 @@ struct RootLoop {
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
-      glob.swapchain_reset_cb->ResetSwapchain (glob.display.window, glob.device.allocator, glob.device);
+      glob.swapchain_resetter->Reset (glob.display.window, glob.device.allocator, glob.device);
       printf ("===> %i <=== ]\n", __LINE__);
       return true;
     }
@@ -352,7 +352,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                        glob.device); // <-- this does all the additional  attachmentes
 
   //
-  glob.swapchain_reset_cb = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                            glob.depth_image, glob.depth_imageview,
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
   //

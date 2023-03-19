@@ -13,6 +13,9 @@
 using namespace rokz;
 
 
+// --------------------------------------------------------------------------------------------
+// y r u here, y dont u just join objz
+// --------------------------------------------------------------------------------------------
 const Vec<VkDescriptorSetLayoutBinding> rekz::kObjDescriptorBindings = {
   { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::kMaxObjectCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
   { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
@@ -117,25 +120,16 @@ rokz::ResetSwapchainCB::Ref rekz::CreateSwapchainResetter (Swapchain& sc,
                                                            Image& dp, ImageView& div,
                                                            Image& mscim, ImageView& mscimv) {
 
-  struct DefaultResetSwapchain : public ResetSwapchainCB {
+  struct reset_def : public ResetSwapchainCB
+  {
   public:
   
-    DefaultResetSwapchain (Swapchain& sc, 
-                           Vec<Image>& scis, Vec<ImageView>& scivs,
-                           Image& dp, ImageView& dpiv,  
-                           Image& mscim, ImageView&  mscimv)
-      : ResetSwapchainCB ()
-      , swapchain (sc)
-      , swapchain_images (scis)
-      , swapchain_imageviews (scivs)
-      , depth_image (dp)
-      , depth_imageview(dpiv)
-      , msaa_color_image(mscim)
-      , msaa_color_imageview(mscimv) { 
+    reset_def (Swapchain& sc, Vec<Image>& scis, Vec<ImageView>& scivs, Image& dp, ImageView& dpiv, Image& mscim, ImageView&  mscimv)
+      : ResetSwapchainCB (), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
+      , depth_image (dp), depth_imageview(dpiv), msaa_color_image(mscim), msaa_color_imageview(mscimv) { 
     }
-    
-    //
-    virtual bool ResetSwapchain (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
+
+    virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
       return rekz::RecreateSwapchain (swapchain, win, 
                                       swapchain_images, swapchain_imageviews,
                                       depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
@@ -145,17 +139,16 @@ rokz::ResetSwapchainCB::Ref rekz::CreateSwapchainResetter (Swapchain& sc,
     
   protected:
     
-    Swapchain&              swapchain;
+    Swapchain&      swapchain;
     Vec<Image>&     swapchain_images;
     Vec<ImageView>& swapchain_imageviews;
     
-    Image&                  depth_image;
-    ImageView&              depth_imageview;  //
-    Image&                  msaa_color_image;
-    ImageView&              msaa_color_imageview; 
+    Image&          depth_image;
+    ImageView&      depth_imageview;  //
+    Image&          msaa_color_image;
+    ImageView&      msaa_color_imageview; 
   };
 
-
-  return std::make_shared<DefaultResetSwapchain> (sc, scis, scivs, dp, div, mscim, mscimv); 
+  return std::make_shared<reset_def> (sc, scis, scivs, dp, div, mscim, mscimv); 
 }
 

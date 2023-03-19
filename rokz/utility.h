@@ -9,7 +9,7 @@
 
 
 
-#define HERE(x) printf("%s --> [%s]:%i\n",(x), __FUNCTION__,__LINE__);
+#define HERE(x) printf("%s --> [%s|line:%i]\n",(x), __FUNCTION__,__LINE__);
 
 namespace rokz {
 

@@ -26,7 +26,7 @@ int main (int argv, char** argc) {
     {"texture_tool" , texture_tool},
     {"test_ouput"   , test_ouput },
     {"darkrootbasin", darkrootbasin },
-    {"run_marz"     , run_marz },
+    {"marz"     , run_marz },
     {"tile_tool"    , tile_tool},
     {"stonk"        , stonk },
   };

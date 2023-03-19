@@ -52,9 +52,8 @@ layout (set = 1, binding = 1) uniform sampler2D normalmap[128];
 // -----------------------------------------------------------------------------------------------
 layout (push_constant) uniform PatchPushConstants {
 
-  vec3 position;
+  vec4 position;
   vec4 scale;
-
   uint res_id;
   
 } pc;
@@ -86,7 +85,7 @@ void main() {
     pos.y = pc.scale.y * texture (heightmap[pc.res_id], out_txcd).r;
     pos.z = pc.scale.y * pos.z; 
 
-    pos.xyz = pos.xyz + pc.position;
+    pos.xyz = pos.xyz + pc.position.xyz;
     
     gl_Position = mat.proj * mat.view * mat.model * pos;                                                    
 }				

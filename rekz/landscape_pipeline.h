@@ -26,10 +26,9 @@ namespace rekz {
     // ----------------------------------------------------------------------------------------------
 
     struct PatchPushConstants {
-      uint32 heightID;  // indices
-      uint32 normalID;  // indices
-      uint32 colorID; // indices
-      uint32 _unused03; // indices
+      glm::vec4 position;
+      glm::vec4 scale;
+      uint32 res_id;
     };
   }
   // ----------------------------------------------------------------------------------------
@@ -46,7 +45,7 @@ namespace rekz {
                               const Device&                device);
   
   // ----------------------------------------------------------------------------------------
-  // 
+  // this serves no purpose
   // ----------------------------------------------------------------------------------------
   bool SetupLandscapeResources (Buffer& patches_vb, Buffer& patches_ib,
                                 uint32_t num_sets, const Device& device);
@@ -54,18 +53,18 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------
   // set 0= Global  descriptors ,  set 1= landscape descriptors
   // ----------------------------------------------------------------------------------------
-  bool BindLanscapeDescriptors (VkDescriptorSet            ds,
-                                const Sampler&             colorsamp,
-                                const Vec<VkImageView>&    colorviews,
+  bool BindLandscapeResources (VkDescriptorSet            ds,
+                              const Sampler&             colorsamp,
+                              const Vec<VkImageView>&    colorviews,
 
-                                const Sampler&             heightsamp, 
-                                const Vec<VkImageView>&    heightviews,
+                              const Sampler&             heightsamp, 
+                              const Vec<VkImageView>&    heightviews,
 
-                                const Sampler&             normalsamp, 
-                                const Vec<VkImageView>&    normalviews,
+                              const Sampler&             normalsamp, 
+                              const Vec<VkImageView>&    normalviews,
 
-                                const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-                                const Device&              device);
+                              const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                              const Device&              device);
 
   
 }

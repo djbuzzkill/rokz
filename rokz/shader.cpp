@@ -28,14 +28,14 @@ VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateIn
 //                
 //-------------------------------------------------------------------------------------
 VkShaderModuleCreateInfo& rokz::CreateInfo (VkShaderModuleCreateInfo& ci, const rokz::bytearray& bin) {
-  printf ( "%s", __FUNCTION__); 
+  //printf ( "%s\n", __FUNCTION__); 
   //printf ("\n     --> size[%zu] | %s   \n", sm.bin.size(), fsrc.c_str() ); 
   ci.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   ci.pNext    = nullptr;
   ci.flags    = 0; // NOT VkShaderStageFlagBits
   ci.codeSize = bin.size();
   ci.pCode    = reinterpret_cast<const uint32_t*>(&bin[0]);
-  //  printf (" %s --> bin.size : [%zu] \n", __FUNCTION__, bin.size ()); 
+  //printf (" %s --> bin.size : [%zu] \n", __FUNCTION__, bin.size ()); 
 
   return ci; 
 }
@@ -60,6 +60,10 @@ bool rokz::CreateShaderModule (VkShaderModule& shmod, const VkShaderModuleCreate
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModule (ShaderModule& sm, const VkDevice& device) {
 
+  if (sm.bin.size () < 4) {
+    HERE("ERROR BAD BINARY SIZE");
+    return false;
+  }
   //printf ( "%s", __FUNCTION__); 
 
   if (vkCreateShaderModule(device, &sm.ci, nullptr, &sm.handle) != VK_SUCCESS) {

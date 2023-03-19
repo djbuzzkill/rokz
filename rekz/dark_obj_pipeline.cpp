@@ -15,65 +15,6 @@ using namespace rokz;
 //const size_t max_frames_in_flight  = rekz::Glob::MaxFramesInFlight; 
 const VkVertexInputBindingDescription&        rekz::polyobj::kVertexInputBindingDesc   = rokz::kPNCTx_InputBindingDesc;
 const Vec<VkVertexInputAttributeDescription>& rekz::polyobj::kVertexInputAttributeDesc = rokz::kPNCTx_InputAttributeDesc; 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-
-//   typedef struct VkDescriptorSetLayoutBinding {
-  //     uint32_t              binding;
-  //     VkDescriptorType      descriptorType;
-  //     uint32_t              descriptorCount;
-  //     VkShaderStageFlags    stageFlags;
-  //     const VkSampler*      pImmutableSamplers;
-  // } VkDescriptorSetLayoutBinding;
-
-// #ifdef REKZ_HIDE_OBJ_BINDING_DEFS
-
-//   // --------------------------------------------------------------------
-//   // vert input binding, diffrnt from input attriubutes
-//   // --------------------------------------------------------------------
-//   const VkVertexInputBindingDescription kVertexInputBindingDesc = {
-//     0,                          // binding    
-//     sizeof (polyobj::kVert),       // stride      
-//     VK_VERTEX_INPUT_RATE_VERTEX // inputRate   
-//   }; 
-
-//   // --------------------------------------------------------------------
-//   // vert atribute desc
-//   // --------------------------------------------------------------------
-//   const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc = {
-  
-//     VkVertexInputAttributeDescription { // pos
-//       0,                             // .location 
-//       0,                             // .binding  
-//       VK_FORMAT_R32G32B32_SFLOAT,    // .format   
-//       offsetof(polyobj::kVert, pos),  // .offset   
-//     },
-
-//     VkVertexInputAttributeDescription { // normal
-//       1,                              
-//       0, 
-//       VK_FORMAT_R32G32B32_SFLOAT,
-//       offsetof(polyobj::kVert, nrm), 
-//     },
-
-//     VkVertexInputAttributeDescription { // color
-//       2,                              
-//       0, 
-//       VK_FORMAT_R32G32B32_SFLOAT,
-//       offsetof(polyobj::kVert, col), 
-//     },
-    
-//     VkVertexInputAttributeDescription { // tex coord
-//       3,                             
-//       0, 
-//       VK_FORMAT_R32G32_SFLOAT,
-//       offsetof(polyobj::kVert, txc0), 
-//     }
-
-//   }; 
-// }
-// #endif
 
 // ----------------------------------------------------------------------------------------------
 //                                    

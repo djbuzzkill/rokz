@@ -78,8 +78,11 @@ namespace rekz {
   namespace platonic {
     const PolyMesh& Octohedron ();
   }
+
+
+
   // ---------------------------------------------------------------------------------------
-  // PolygonData polyd resources the polygon pipeline will use
+  // what is this
   // ---------------------------------------------------------------------------------------
   struct PolygonData { 
 
@@ -101,6 +104,7 @@ namespace rekz {
   // ?? a drawlist is tied to data..       ??
   // ?? a data is tied to a drawlist..     no
   // ?? a drawlist is tied to a pipeline.. no
+
   rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg); 
   rokz::DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
   rokz::DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
@@ -108,7 +112,6 @@ namespace rekz {
   rekz::PolygonData& SetupPolygonData   (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
   rekz::PolygonData& CleanupPolygonData (rekz::PolygonData& pd, const VmaAllocator& allocator);
   
-
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------

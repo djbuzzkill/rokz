@@ -4,16 +4,14 @@
 #include "rekz/landscape_pipeline.h"
 //
 
-
-
-
 using namespace marz; 
 
 namespace { 
 
-const VkExtent2D kDisplayDimensions {800, 600}; 
+  const VkExtent2D kDisplayDimensions {800, 600}; 
 
 }
+
 
 
 bool marz::SetupData   (MarsDat& dat) {
@@ -309,7 +307,7 @@ int run_marz (const std::vector<std::string>& args) {
                                        glob.depth_format, scg.swapchain.ci.imageExtent,
                                        glob.device); // <-- this does all the additional  attachmentes
   //
-  glob.swapchain_reset_cb = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                            glob.depth_image, glob.depth_imageview,
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
   //
@@ -317,6 +315,9 @@ int run_marz (const std::vector<std::string>& args) {
   SetupDynamicRenderingInfo (glob); 
   // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rokz::kGlobalDescriptorBindings, glob.device); 
+
+
+  rokz::DefineDescriptorSetLayout (glob.landscape_dslo, rekz::landscape::kDescriptorBindings, glob.device); 
   //rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
 
   // SetupMarsWindow (glob.window, &glob.input_state); 
@@ -330,18 +331,6 @@ int run_marz (const std::vector<std::string>& args) {
     return false; 
   }
 
-  // InitTerrainPipeline ()
-  // SetupMarzData  ()
-  // SetupMarzDescriptor  ()
-
-
-  // if ( !InitTerrainPipeline () ) {
-  // }
-
-  // if ( !SetupMarzData  ()) { 
-  // }
-  // if ( !SetupMarzDescriptor ()) { 
-  // }
 
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
@@ -358,9 +347,12 @@ int run_marz (const std::vector<std::string>& args) {
     return false; 
   }      
 
-  rekz::SetupLandscapeResources;
 
-  rekz::BindLanscapeDescriptors;
+  HERE("351");
+
+  marz::SetupData ;
+
+  rekz::BindLandscapeResources;
 
   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 

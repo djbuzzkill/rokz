@@ -75,7 +75,6 @@ namespace marz {
     // system
     Instance               instance;
     Device                 device;
-    SwapchainGroup         swapchain_group;
     SwapchainSupportInfo   swapchain_support_info;
     FrameSyncGroup         framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
@@ -86,12 +85,13 @@ namespace marz {
     VkFormat               depth_format;        //
     VkSampleCountFlagBits  msaa_samples;        // = VK_SAMPLE_COUNT_1_BIT;
     // attachement set
+    SwapchainGroup         swapchain_group;
     Image                  depth_image;          //
     ImageView              depth_imageview;      //
     Image                  msaa_color_image;     //  
     ImageView              msaa_color_imageview; //
 
-    ResetSwapchainCB::Ref  swapchain_reset_cb;
+    ResetSwapchainCB::Ref  swapchain_resetter; // swchresetter
     //Vec<Buffer>            landscape_bu; //
     DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
     DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's

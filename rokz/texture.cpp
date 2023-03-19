@@ -356,13 +356,13 @@ uint32_t rokz::SizeOfComponents (VkFormat format) {
 // load texture to device memory
 // ---------------------------------------------------------------------
 bool rokz::LoadTexture_color_sampling (rokz::Image&             image,
-                                           VkFormat                 format,
-                                           const VkExtent2D&        ext2d,
-                                           const void*              srcimage,
-                                           const VmaAllocator&      allocator, 
-                                           const VkQueue&           queue, 
-                                           const rokz::CommandPool& commandpool, 
-                                           const rokz::Device&      device) {
+                                       VkFormat                 format,
+                                       const VkExtent2D&        ext2d,
+                                       const void*              srcimage,
+                                       const VmaAllocator&      allocator, 
+                                       const VkQueue&           queue, 
+                                       const rokz::CommandPool& commandpool, 
+                                       const rokz::Device&      device) {
 
   //size_t image_size = image_width * image_height *  bytes_per_pixel; 
   auto image_size = SizeOfComponents (format)
@@ -377,11 +377,12 @@ bool rokz::LoadTexture_color_sampling (rokz::Image&             image,
   rokz::cx::CreateBuffer (stage_buff, allocator); 
 
   void* mapped = nullptr; 
-  if (rokz::cx::MapMemory (&mapped, stage_buff.allocation, allocator)) { 
-  
-    const uint8_t* image_data = reinterpret_cast<const unsigned char*> (srcimage); 
-    std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
+  if (!rokz::cx::MapMemory (&mapped, stage_buff.allocation, allocator)) { 
+    HERE ("FAILED MAP MEMORY");
+    return false; 
   }
+  const uint8_t* image_data = reinterpret_cast<const unsigned char*> (srcimage); 
+  std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
   rokz::cx::UnmapMemory (stage_buff.allocation, allocator);
 
   rokz::cx::CreateInfo_2D_color_sampling  (image.ci, VK_SAMPLE_COUNT_1_BIT, ext2d.width, ext2d.height);

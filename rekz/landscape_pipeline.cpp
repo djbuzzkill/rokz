@@ -40,37 +40,50 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
   shader_modules.resize  (2);
   shader_stage_create_infos.resize(2);
   //
-  // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"landscape/landscape_vert.spv" ;
+  // VERT SHADER
+  std::string vert_name = "landscape/landscape_vert.spv";
+  std::filesystem::path vert_file_path  = fspath/vert_name;
   CreateInfo (shader_modules[0].ci, From_file (shader_modules[0].bin, vert_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[0], device.handle))
-    return false; 
+  if (!CreateShaderModule (shader_modules[0], device.handle)) {
+    printf (" this didnt work out -> %s\n", vert_name.c_str ()); 
+    return false;
+  }
+
   CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT,
               shader_modules[0].entry_point, shader_modules[0].handle); //   
 
-
-  // TESS CTRL SHADER 
-  std::filesystem::path tesc_file_path  = fspath/"landscape/landscape_tesc.spv" ;
+  // TESS CTRL SHADER
+  std::string tesc_name = "landscape/landscape_tesc.spv" ;
+  std::filesystem::path tesc_file_path  = fspath/tesc_name;
   CreateInfo (shader_modules[1].ci, From_file (shader_modules[1].bin, tesc_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[1], device.handle))
-    return false; 
+  if (!CreateShaderModule (shader_modules[1], device.handle)) {
+    printf (" this didnt work out -> %s\n", tesc_name.c_str ()); 
+    return false;
+  }
   CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
               shader_modules[1].entry_point, shader_modules[1].handle); //   
 
-  // TESS CTRL SHADER 
-  std::filesystem::path tese_file_path  = fspath/"landscape/landscape_tese.spv" ;
+  // TESS CTRL SHADER
+  std::string tese_name = "landscape/landscape_tese.spv" ;
+  std::filesystem::path tese_file_path  = fspath/tese_name;
   CreateInfo (shader_modules[2].ci, From_file (shader_modules[2].bin, tese_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[2], device.handle))
-    return false; 
+  if (!CreateShaderModule (shader_modules[2], device.handle)) {
+    printf (" this didnt work out -> %s\n", tese_name.c_str ()); 
+    return false;
+  }
+
   CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
               shader_modules[2].entry_point, shader_modules[2].handle); //   
 
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"landscape/landscape_frag.spv"; 
+  std::string frag_name = "landscape/landscape_frag.spv"; 
+  std::filesystem::path frag_file_path = fspath/frag_name;
   //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str());
   CreateInfo (shader_modules[3].ci, From_file (shader_modules[3].bin, frag_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[3], device.handle))
-    return false; 
+  if (!CreateShaderModule (shader_modules[3], device.handle)) {
+    printf (" this didnt work out -> %s\n", frag_name.c_str ()); 
+    return false;
+  }
   
   CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT,
               shader_modules[3].entry_point,  shader_modules[3].handle); 
@@ -92,19 +105,21 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
                                   const VkExtent2D&            displayextent,
                                   const Device&                device)
 {
+  HERE("hai");
 
-  // landscape::kDescriptorBindings;
-  // landscape::kVertexInputBindingDesc;
-  // landscape::kVertexInputAttributeDesc;
-  
-  printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstants), dslos, device.handle);
 
+  
   PipelineState_default (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
                          landscape::kVertexInputBindingDesc, displayextent); 
-  // ^ !! shader modules is part of pipelinestate 
-  setup_landscape_shader_modules (pipeline, pipe_path, device);
 
+  // ^ !! shader modules is part of pipelinestate 
+  bool shmodres = setup_landscape_shader_modules (pipeline, pipe_path, device);
+  if (!shmodres) {
+    HERE("FAILED setup_landscape_shader_modules"); 
+    return false;
+  }
+  
   // DYNAMIC RENDERING IS AN EXTENSION
   pipeline.ext.pipeline_rendering.color_formats.resize (1);
   pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
@@ -132,6 +147,7 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
     return false;
   }
 
+  HERE("bai");
   return true;
 }
 
@@ -142,7 +158,8 @@ bool rekz::SetupLandscapeResources (Buffer& patches_vb, Buffer& patches_ib,
                                     uint32_t num_sets, const Device& device) {
 
 
-  // wat happens n here
+  
+  // wat happens n here, iz this the same as 'SetupLandscapeData'
 
   
   return false;
@@ -151,15 +168,15 @@ bool rekz::SetupLandscapeResources (Buffer& patches_vb, Buffer& patches_ib,
 // ----------------------------------------------------------------------------------------
 // set 0= Global  descriptors ,  set 1= landscape descriptors
 // ----------------------------------------------------------------------------------------
-bool rekz::BindLanscapeDescriptors (VkDescriptorSet            ds,
-                                    const Sampler&             colorsamp,
-                                    const Vec<VkImageView>&    colorviews,
-                                    const Sampler&             heightsamp, 
-                                    const Vec<VkImageView>&    heightviews,
-                                    const Sampler&             normalsamp, 
-                                    const Vec<VkImageView>&    normalviews,
-                                    const DescriptorSetLayout& dslayout, 
-                                    const Device&              device) {
+bool rekz::BindLandscapeResources (VkDescriptorSet            ds,
+                                  const Sampler&             colorsamp,
+                                  const Vec<VkImageView>&    colorviews,
+                                  const Sampler&             heightsamp, 
+                                  const Vec<VkImageView>&    heightviews,
+                                  const Sampler&             normalsamp, 
+                                  const Vec<VkImageView>&    normalviews,
+                                  const DescriptorSetLayout& dslayout, 
+                                  const Device&              device) {
 
 
   
