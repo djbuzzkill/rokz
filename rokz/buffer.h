@@ -51,7 +51,7 @@ namespace rokz {
   
   bool Create_VB_device    (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
   bool Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
-  void Destroy             (Buffer& buffer, VmaAllocator const& allocator); 
+  void Destroy             (Buffer& buffer, const rokz::Allocator& allocator); 
   
 } // rokz
 

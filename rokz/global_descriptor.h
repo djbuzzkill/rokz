@@ -39,6 +39,7 @@ namespace rokz {
   bool SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, const Device& device);
   bool BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<Buffer>& buffs, const Device& device);
   void UpdateGlobals (DrawSequence::Globals& shared, const Buffer& buf, const VkExtent2D& viewext, double dt);
+  void CleanupGlobalUniforms (Vec<Buffer>& uniform_buffs, const Device& device);
 
 }
 

@@ -119,10 +119,22 @@ rekz::PolygonData& rekz::SetupPolygonData (rekz::PolygonData& pd, uint32_t num_f
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-rekz::PolygonData& rekz::CleanupPolygonData (PolygonData& pd, const VmaAllocator& allocator) {
+void rekz::CleanupPolygonData (PolygonData& pd, const rokz::Device& device) {
     // SetupObjectUniforms ; 
     // SetupObjectTextureAndSampler;
+  HERE ("TODO: code me");
     // SetupObjResources;
-    return  pd;
+  rokz::Destroy ( pd.ib_device, device.allocator); 
+  pd.vb_device;
+  pd.sampler;
+  pd.texture;
+  pd.imageview;
+
+  
+  // rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
+  // rokz::cx::Destroy (glob.sampler, glob.device.handle); 
+  // rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
+
+  assert (false); 
 }
 

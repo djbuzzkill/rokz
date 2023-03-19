@@ -44,6 +44,16 @@ bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, c
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
+void rokz::CleanupGlobalUniforms (Vec<Buffer>& uniform_buffs, const Device& device) {
+
+  for (auto& ub : uniform_buffs) {
+    rokz::Destroy (ub, device.allocator); 
+  }
+
+}
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
 bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device) {
 
    printf ("[%i]  %s\n", __LINE__, __FUNCTION__);

@@ -110,7 +110,7 @@ namespace rekz {
   rokz::DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
 
   rekz::PolygonData& SetupPolygonData   (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
-  rekz::PolygonData& CleanupPolygonData (rekz::PolygonData& pd, const VmaAllocator& allocator);
+  void               CleanupPolygonData (rekz::PolygonData& pd, const rokz::Device& device);
   
   // ---------------------------------------------------------------------------------------
   //                   

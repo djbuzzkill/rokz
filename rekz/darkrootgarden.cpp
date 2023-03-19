@@ -62,38 +62,24 @@ void CleanupDarkroot (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
 
-  CleanupPolygonData (glob.polyd, glob.device.allocator.handle);
 
-
-  // create by pipeline, but freed here
-  for (auto& ub : glob.global_uniform_bu) {
-    rokz::Destroy (ub, glob.device.allocator.handle); 
-  }
-
-  {
-    assert (false); 
-    //rokz::cx::Destroy (glob.objres_dslo, glob.device.handle); 
-    //
-    // for (auto buf : glob.object_uniform_bu) {  
-    //   rokz::Destroy (buf, glob.device.allocator.handle);
-    // }
-  }
-
+  rekz::CleanupPolygonData (glob.polyd, glob.device); 
   
+  // descriptor set layouts
+  rokz::cx::Destroy (glob.global_dslo, glob.device.handle); 
+  rokz::cx::Destroy (glob.object_dslo, glob.device.handle); 
+
+  rokz::CleanupGlobalUniforms (glob.global_uniform_bu, glob.device); 
+
+
+
   // dont bother freeing if pool is destroyed anyways
   //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
   rokz::cx::Destroy (glob.global_uniform_de.pool, glob.device.handle); 
 
-  rokz::cx::Destroy (glob.global_dslo, glob.device.handle); 
-  // moved to DrawPolygon
-  // rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
-  // rokz::cx::Destroy (glob.sampler, glob.device.handle); 
-  // rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
+  rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device.handle);
 
-  assert (false); // >>>>>>>>>>>
-  // rokz::cx::Destroy (glob.vma_vb_device, glob.device.allocator.handle);
-  // rokz::cx::Destroy (glob.vma_ib_device, glob.device.allocator.handle);
-  // <<<<<<<<<<
+  //
   rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
                           glob.msaa_color_image, glob.msaa_color_imageview,
                           glob.depth_image, glob.depth_imageview,
@@ -470,8 +456,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   vkDeviceWaitIdle(glob.device.handle);
   // CLEAN UP
+
   CleanupDarkroot (glob); 
-  printf ("===> %i <=== ]\n", __LINE__);
   
   //  globmem.reset ();
   return 0;

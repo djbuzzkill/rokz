@@ -3,17 +3,15 @@
 #include "darkrootgarden.h"
 
 
-void darkroot::Cleanup (VkPipeline&                 pipeline,
-
-
-                        VkSurfaceKHR&                     surf,
-                        VkCommandPool&                    command_pool,
-                        std::vector<rokz::FrameSync>&     syncs, 
-                        std::vector<rokz::ShaderModule>&  shader_modules,
-                        VkPipelineLayout&                 pipeline_layout,
-                        rokz::Display&                    display,
-                        rokz::Device&                     device,
-                        VkInstance&                       inst) {
+void darkroot::Cleanup (VkPipeline&                      pipeline,
+                        VkSurfaceKHR&                    surf,
+                        VkCommandPool&                   command_pool,
+                        std::vector<rokz::FrameSync>&    syncs, 
+                        std::vector<rokz::ShaderModule>& shader_modules,
+                        VkPipelineLayout&                pipeline_layout,
+                        rokz::Display&                   display,
+                        rokz::Device&                    device,
+                        VkInstance&                      inst) {
    
   vkDestroyPipeline (device.handle, pipeline, nullptr);
   vkDestroySurfaceKHR (inst, surf, nullptr);
