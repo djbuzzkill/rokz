@@ -155,15 +155,16 @@ bool rokz::cx::CreateDescriptorSetLayout (VkDescriptorSetLayout& dsl, VkDescript
 // 
 // ----------------------------------------------------------------------------------------------
 
-void rokz::cx::Destroy (DescriptorPool& dsl, const VkDevice& device) {
-  vkDestroyDescriptorPool(device, dsl.handle, nullptr);
+void rokz::cx::Destroy (DescriptorPool& dsl, const Device& device) {
+  vkDestroyDescriptorPool(device.handle, dsl.handle, nullptr);
+  dsl.handle = VK_NULL_HANDLE;
   
 }
 
-void rokz::cx::Destroy (DescriptorSetLayout& dsl, const VkDevice& device) {
+void rokz::cx::Destroy (DescriptorSetLayout& dsl, const Device& device) {
 
-  vkDestroyDescriptorSetLayout (device, dsl.handle, nullptr);
-  
+  vkDestroyDescriptorSetLayout (device.handle, dsl.handle, nullptr);
+  dsl.handle = VK_NULL_HANDLE; 
 }
 
 void rokz::cx::FreeDescriptorSets (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device) {

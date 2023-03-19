@@ -3,7 +3,8 @@
 #include "darkrootgarden.h"
 
 
-void darkroot::Cleanup (VkPipeline&                      pipeline,
+void darkroot::Cleanup (Vec<VkPipeline>&                      pipelines,
+                        
                         VkSurfaceKHR&                    surf,
                         VkCommandPool&                   command_pool,
                         std::vector<rokz::FrameSync>&    syncs, 
@@ -12,8 +13,10 @@ void darkroot::Cleanup (VkPipeline&                      pipeline,
                         rokz::Display&                   display,
                         rokz::Device&                    device,
                         VkInstance&                      inst) {
-   
-  vkDestroyPipeline (device.handle, pipeline, nullptr);
+
+  for (auto p : pipelines) 
+    vkDestroyPipeline (device.handle, p, nullptr);
+  
   vkDestroySurfaceKHR (inst, surf, nullptr);
   vkDestroyCommandPool (device.handle, command_pool, nullptr);
 

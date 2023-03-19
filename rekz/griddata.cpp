@@ -62,7 +62,8 @@ bool rekz::SetupGridData (GridData& gd, const Device& device) {
 // -------------------------------------------------------------------------------------------
 void rekz::CleanupGridData (GridData& gd, const Device& device) {
 
-  rokz::Destroy (gd.vb_device, device.allocator); 
+  rokz::cx::Destroy (gd.vb_device, device.allocator); 
+  rokz::cx::Destroy (gd.ib_device, device.allocator); 
   
 }
 

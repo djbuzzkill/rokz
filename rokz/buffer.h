@@ -23,6 +23,7 @@ namespace rokz {
     //
     bool                CreateBuffer         (Buffer&, VmaAllocator const& allocator);
     bool                CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator); 
+    void                Destroy              (Buffer& buffer, const rokz::Allocator& allocator); 
 
     bool MoveToBuffer_XB2DB (Buffer&         buff_dst, // device buffer
                              Buffer&         buff_src, // user buffer, 
@@ -51,7 +52,6 @@ namespace rokz {
   
   bool Create_VB_device    (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
   bool Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
-  void Destroy             (Buffer& buffer, const rokz::Allocator& allocator); 
   
 } // rokz
 

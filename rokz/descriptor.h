@@ -57,8 +57,8 @@ namespace rokz {
     void FreeDescriptorSets (std::vector<VkDescriptorSet>& descriptorsets, const DescriptorPool& descrpool, const VkDevice& device); 
 
 
-    void Destroy (DescriptorPool& dsl, const VkDevice& device) ;
-    void Destroy (DescriptorSetLayout& dsl, const VkDevice& device) ;
+    void Destroy (DescriptorPool& dsl, const Device& device) ;
+    void Destroy (DescriptorSetLayout& dsl, const Device& device) ;
 
     //void Destroy (DescriptorGroup& dg, const VkDevice& device) ;
     //void Destroy (DescriptorGroup& dg, const DescriptorPool& dsl, const VkDevice& device); 
@@ -68,7 +68,7 @@ namespace rokz {
 
 
 
-  typedef std::vector<VkDescriptorSetLayoutBinding> DSLOBs; 
+  typedef Vec<VkDescriptorSetLayoutBinding> DescriptorSetLayoutBindings; 
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------

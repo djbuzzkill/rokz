@@ -218,7 +218,7 @@ bool transfer_memory_to_device_buffer (rokz::Buffer& dstb, const void* mem, size
   
   rokz::cx::MoveToBuffer_XB2DB (dstb, vb_tmp, sz_mem, device.command_pool.handle, device.queues.graphics, device.handle); 
 
-  rokz::Destroy (vb_tmp, device.allocator);
+  rokz::cx::Destroy (vb_tmp, device.allocator);
 
   return true; 
 }
@@ -308,7 +308,7 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-void rokz::Destroy (Buffer& buffer, const rokz::Allocator& allocator) {
+void rokz::cx::Destroy (Buffer& buffer, const rokz::Allocator& allocator) {
   vmaDestroyBuffer (allocator.handle, buffer.handle, buffer.allocation); 
   buffer.handle = VK_NULL_HANDLE; 
   

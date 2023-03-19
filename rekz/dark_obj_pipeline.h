@@ -11,15 +11,26 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
-  namespace polyobj {   
+  namespace obz {   
 
-    typedef rokz::PNCTx_Vert                              kVert;
+    typedef rokz::PNCTx_Vert                             kVert;
     // ----------------------------------------------------------------------------------------------
-    const size_t                                         kMaxCount = rekz::kMaxObjectCount;
+    const size_t                                         kMaxCount = 128; // y?
     // ----------------------------------------------------------------------------------------------
     extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;   // rokz::kPNCT_InputBindingDesc;
     // ----------------------------------------------------------------------------------------------
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; // rokz::kPNCT_InputBindingAttributeDesc; 
+
+    extern const DescriptorSetLayoutBindings             kDescriptorBindings;
+
+    struct PushConstants {
+    
+      uint32 resourceID;
+      uint32 _unused_01;
+      uint32 _unused_02;
+      uint32 _unused_03;
+    }; 
+
   }
 
   // ----------------------------------------------------------------------------------------------

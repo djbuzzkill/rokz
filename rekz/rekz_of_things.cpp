@@ -14,15 +14,6 @@
 using namespace rokz;
 
 
-// --------------------------------------------------------------------------------------------
-// y r u here, y dont u just join objz
-// --------------------------------------------------------------------------------------------
-const Vec<VkDescriptorSetLayoutBinding> rekz::kObjDescriptorBindings = {
-  { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::kMaxObjectCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
-};
-
-
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------

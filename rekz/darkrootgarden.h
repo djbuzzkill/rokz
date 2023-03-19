@@ -32,7 +32,7 @@ namespace darkroot {
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
-  void Cleanup (VkPipeline&                       pipeline,
+  void Cleanup (Vec<VkPipeline>&                  pipelines,
                 VkSurfaceKHR&                     surface,
                 VkCommandPool&                    command_pool,
                 std::vector<rokz::FrameSync>&     syncs, 

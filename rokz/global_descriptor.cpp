@@ -47,7 +47,7 @@ bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, c
 void rokz::CleanupGlobalUniforms (Vec<Buffer>& uniform_buffs, const Device& device) {
 
   for (auto& ub : uniform_buffs) {
-    rokz::Destroy (ub, device.allocator); 
+    rokz::cx::Destroy (ub, device.allocator); 
   }
 
 }

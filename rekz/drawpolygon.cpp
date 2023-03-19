@@ -56,12 +56,12 @@ struct PolygonDraw : public rokz::DrawSequence {
   // ------------------------------------------------------------------------------------------------
   //
   // ------------------------------------------------------------------------------------------------
-  struct DrawCmdEnv {
-    Globals&          globals;
-    PipelineAssembly& pa;
-    DescriptorMap&    descriptormap; 
-  };
-  // ------------------------------------------------------------------------------------------------
+  // struct DrawCmdEnv {
+  //   Globals&          globals;
+  //   PipelineAssembly& pa;
+  //   DescriptorMap&    descriptormap; 
+  // };
+  // // ------------------------------------------------------------------------------------------------
   //
   // ------------------------------------------------------------------------------------------------
   virtual int Exec (VkCommandBuffer combuf, uint32_t currentframe, const RenderEnv& env) { 
@@ -93,7 +93,7 @@ struct PolygonDraw : public rokz::DrawSequence {
     const uint32_t num_test_objects =  2; 
     for (uint32_t i = 0; i < num_test_objects; ++i) {
 
-      rekz::PushConstants pcs {};
+      rekz::obz::PushConstants pcs {};
       pcs.resourceID = i; 
       pcs._unused_01 = i; 
       pcs._unused_02 = i; 
@@ -106,7 +106,7 @@ struct PolygonDraw : public rokz::DrawSequence {
                           env.pa.plo, 
                           shader_stages,
                           0,
-                          sizeof(rekz::PushConstants),
+                          sizeof(rekz::obz::PushConstants),
                           &pcs);
 
       vkCmdDrawIndexed (combuf, darkmesh.indices.size(), 1, 0, 0, 0);
@@ -122,7 +122,8 @@ struct PolygonDraw : public rokz::DrawSequence {
 // -------------------------------------------------------------------------
 rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const PolygonData&               dat,
                                                  const std::vector<rokz::Buffer>& objres,
-                                                 const rokz::DescriptorGroup&     descg) {
+                                                 const rokz::DescriptorGroup&     descg)
+{
   return std::make_shared<PolygonDraw> (dat, objres, descg);
 }
 

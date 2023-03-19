@@ -12,12 +12,7 @@
 namespace rekz {
 
   using namespace rokz;
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  const size_t kMaxObjectCount = 128;
 
-  extern const Vec<VkDescriptorSetLayoutBinding>      kObjDescriptorBindings;
   // extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
   // extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
   //extern const Vec<VkDescriptorSetLayoutBinding> kGlobalDescriptorBindings;
@@ -54,19 +49,6 @@ namespace rekz {
   // --------------------------------------------------------------------
   template<typename VTy> 
   using TriMesh = rekz::GeometryData<VTy, uint16_t>; 
-
-  // --------------------------------------------------------------------
-  // 
-  // --------------------------------------------------------------------
-  struct PushConstants {
-
-    uint32_t resourceID;
-    uint32_t _unused_01;
-    uint32_t _unused_02;
-    uint32_t _unused_03;
-
-  }; 
-
   
   // ---------------------------------------------------------------------------------------
   //

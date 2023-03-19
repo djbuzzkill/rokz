@@ -3,6 +3,7 @@
 #include "rekz/dark_types.h"
 
 #include "image_loader.h"
+#include <vulkan/vulkan_core.h>
 
 
 using namespace darkroot;
@@ -122,19 +123,14 @@ rekz::PolygonData& rekz::SetupPolygonData (rekz::PolygonData& pd, uint32_t num_f
 void rekz::CleanupPolygonData (PolygonData& pd, const rokz::Device& device) {
     // SetupObjectUniforms ; 
     // SetupObjectTextureAndSampler;
-  HERE ("TODO: code me");
     // SetupObjResources;
-  rokz::Destroy ( pd.ib_device, device.allocator); 
-  pd.vb_device;
-  pd.sampler;
-  pd.texture;
-  pd.imageview;
+  rokz::cx::Destroy (pd.ib_device, device.allocator); 
+  rokz::cx::Destroy (pd.vb_device, device.allocator); 
 
-  
-  // rokz::cx::Destroy (glob.texture_image, glob.device.allocator.handle);
-  // rokz::cx::Destroy (glob.sampler, glob.device.handle); 
-  // rokz::cx::Destroy (glob.texture_imageview, glob.device.handle);
+  rokz::cx::Destroy (pd.sampler, device.handle); 
+  rokz::cx::Destroy (pd.texture, device.allocator.handle); 
 
-  assert (false); 
+  rokz::cx::Destroy (pd.imageview, device.handle); 
+
 }
 

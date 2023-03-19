@@ -64,20 +64,29 @@ void CleanupDarkroot (Glob& glob) {
 
 
   rekz::CleanupPolygonData (glob.polyd, glob.device); 
-  
+  rekz::CleanupGridData (glob.gridata, glob.device); 
+    
   // descriptor set layouts
-  rokz::cx::Destroy (glob.global_dslo, glob.device.handle); 
-  rokz::cx::Destroy (glob.object_dslo, glob.device.handle); 
+  rokz::cx::Destroy (glob.global_dslo, glob.device); 
+  rokz::cx::Destroy (glob.object_dslo, glob.device); 
 
   rokz::CleanupGlobalUniforms (glob.global_uniform_bu, glob.device); 
 
 
-
   // dont bother freeing if pool is destroyed anyways
   //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
-  rokz::cx::Destroy (glob.global_uniform_de.pool, glob.device.handle); 
+  rokz::cx::Destroy (glob.global_uniform_de.pool, glob.device); 
 
-  rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device.handle);
+
+
+
+  //glob.poly_objects_de; // ?!?! how r descriptors handled
+  rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device); 
+  // ?  
+  // polygons will make use of object descriptors
+  for (auto& buf : glob.poly_objects_bu) { 
+    rokz::cx::Destroy  (buf, glob.device.allocator); 
+  }
 
   //
   rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
@@ -86,8 +95,16 @@ void CleanupDarkroot (Glob& glob) {
                           glob.swapchain_group.swapchain, 
                           glob.device);
 
+  // the the  poly stuff is done in Cleanup, grids is done here
+  for (auto shmod : glob.grid_pl.shader_modules) {
+    vkDestroyShaderModule (glob.device.handle, shmod.handle, nullptr); 
+  }
+  vkDestroyPipelineLayout (glob.device.handle, glob.grid_plo.handle, nullptr);
 
-  darkroot::Cleanup (glob.polys_pl.handle,
+  
+  Vec<VkPipeline> pipes = { 
+    glob.polys_pl.handle, glob.grid_pl.handle }; 
+  darkroot::Cleanup (pipes,
                      glob.display.surface,
                      glob.device.command_pool.handle,
                      glob.framesyncgroup.syncs, 
@@ -298,7 +315,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
-  rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::obz::kDescriptorBindings, glob.device); 
 
   // polygon pipeline uses both descriptor sets
   glob.polys_pl.dslos.push_back (glob.global_dslo.handle);
@@ -387,7 +404,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // SetupObjDescriptorPool
   //if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rekz::kObjDescriptorBindings, glob.device)) {
 
-  if (!rokz::MakeDescriptorPool(glob.poly_objects_de.pool, kMaxFramesInFlight, rekz::kObjDescriptorBindings, glob.device)) {
+  if (!rokz::MakeDescriptorPool(glob.poly_objects_de.pool, kMaxFramesInFlight, rekz::obz::kDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
   }

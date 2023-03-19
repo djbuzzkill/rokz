@@ -13,8 +13,14 @@
 
 using namespace rokz;
 //const size_t max_frames_in_flight  = rekz::Glob::MaxFramesInFlight; 
-const VkVertexInputBindingDescription&        rekz::polyobj::kVertexInputBindingDesc   = rokz::kPNCTx_InputBindingDesc;
-const Vec<VkVertexInputAttributeDescription>& rekz::polyobj::kVertexInputAttributeDesc = rokz::kPNCTx_InputAttributeDesc; 
+const VkVertexInputBindingDescription&        rekz::obz::kVertexInputBindingDesc   = rokz::kPNCTx_InputBindingDesc;
+const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDesc = rokz::kPNCTx_InputAttributeDesc; 
+
+
+const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
+  { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1                         , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+};
 
 // ----------------------------------------------------------------------------------------------
 //                                    
@@ -63,7 +69,7 @@ bool rekz::SetupObjectUniforms (Vec<Buffer>& objparams, uint32_t num_sets, const
  objparams.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
 
-   CreateUniformBuffer (objparams[i], sizeof(PolygonParam), kMaxObjectCount, device);
+   CreateUniformBuffer (objparams[i], sizeof(PolygonParam), obz::kMaxCount, device);
  }
 
  //printf (" --> [true] \n"); 
@@ -87,7 +93,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&      dss ,
   //
   for (uint32_t i = 0; i < dss.size (); i++) {
     
-    Vec<VkDescriptorBufferInfo> obparams (polyobj::kMaxCount, VkDescriptorBufferInfo {});
+    Vec<VkDescriptorBufferInfo> obparams (obz::kMaxCount, VkDescriptorBufferInfo {});
 
     for (size_t iobj = 0; iobj < obparams.size (); ++iobj) { 
       obparams[iobj].buffer   = objparam_buffs[i].handle;    //
@@ -150,13 +156,13 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
 
   printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
 
-  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(PushConstants), dslos, device.handle);
+  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(obz::PushConstants), dslos, device.handle);
 
 
 
   
-  PipelineState_default (pipeline.state, msaa_samples, polyobj::kVertexInputAttributeDesc,
-                         polyobj::kVertexInputBindingDesc, viewport_extent); 
+  PipelineState_default (pipeline.state, msaa_samples, obz::kVertexInputAttributeDesc,
+                         obz::kVertexInputBindingDesc, viewport_extent); 
   // ^ !! shader modules is part of pipelinestate 
   setup_object_shader_modules (pipeline, fspath, device);
 
