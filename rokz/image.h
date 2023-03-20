@@ -6,6 +6,8 @@
 
 #include "common.h"
 #include "rokz_types.h"
+#include "rc_types.h"
+#include <vulkan/vulkan_core.h>
 
 
 namespace rokz {
@@ -17,7 +19,9 @@ namespace rokz {
 
 
   namespace cx {
-    VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image); 
+    VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image);
+    VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image);
+    
     bool CreateImageView (ImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
     bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
   
@@ -38,8 +42,9 @@ namespace rokz {
 
     // for color textures
     inline VkImageCreateInfo& CreateInfo_2D_color_sampling (VkImageCreateInfo& ci,
-                                                            VkSampleCountFlagBits num_samples,
+                                                            VkSampleCountFlagBits  num_samples,
                                                             uint32_t wd, uint32_t ht) {
+
       return CreateInfo_2D (ci, VK_FORMAT_B8G8R8A8_SRGB,  kSamplingUsage, num_samples, wd, ht); 
     }
   

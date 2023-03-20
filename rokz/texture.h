@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "rokz_types.h"
+#include "rc_types.h"
 
 
 namespace rokz {
@@ -29,7 +30,16 @@ namespace rokz {
                                    const VkQueue&           queue, 
                                    const rokz::CommandPool& commandpool, 
                                    const rokz::Device&      device);
-  
+
+
+  rokz::rc::Image::Ref
+  LoadTexture_color_sampling (VkFormat                 format,
+                              const VkExtent2D&        ext2d,
+                              const void*              srcimage,
+                              const VmaAllocator&      allocator, 
+                              const VkQueue&           queue, 
+                              const rokz::CommandPool& commandpool, 
+                              const rokz::Device&      device); 
 
 }
 #endif

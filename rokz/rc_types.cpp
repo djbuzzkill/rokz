@@ -2,6 +2,7 @@
 #include "rc_types.h"
 #include "allocation.h"
 #include "buffer.h"
+#include "image.h"
 
 
 
@@ -60,9 +61,10 @@ rc::Buffer::Ref rc::Create_uniform_mapped  (size_t size_e, size_t num_e, const D
 // -----------------------------------------------------------------------------------------------
 rc::Buffer::~Buffer () {
 
-  vmaDestroyBuffer (device.allocator.handle, handle, allocation); 
-  handle = VK_NULL_HANDLE; 
-
+  if (handle != VK_NULL_HANDLE) { 
+    vmaDestroyBuffer (device.allocator.handle, handle, allocation); 
+    handle = VK_NULL_HANDLE;
+  }
 }
 
 
@@ -73,21 +75,45 @@ rc::Buffer::~Buffer () {
 // -----------------------------------------------------------------------------------------------
 rc::Image::Ref rokz::rc::CreateImage (const VkImageCreateInfo& ci, const Device& device) {
 
-  std::shared_ptr<rc::Image> img = std::make_shared<rc::Image> (device) ;
+  rc::Image::Ref img = std::make_shared<rc::Image> (device) ;
 
   if( VK_SUCCESS != vmaCreateImage (device.allocator.handle, &ci, &img->alloc_ci, &img->handle, &img->allocation, &img->alloc_info)) {
     printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
-    return hresourc<VkImage>::Ref(nullptr); 
+    return rc::Image::Ref (nullptr); 
   }
   
   return img; 
 }
 
 
+rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
+                                                        VkSampleCountFlagBits sampleflags,
+                                                        const Device& device) {
+
+  VkImageCreateInfo ci {};
+  rokz::cx::CreateInfo_2D_color_sampling  (ci, sampleflags, wd, ht);
+
+  rc::Image::Ref image = std::make_shared<rc::Image> (device) ;
+
+  rokz::cx::AllocCreateInfo_device (image->alloc_ci);
+
+  if( VK_SUCCESS != vmaCreateImage (device.allocator.handle, &ci, &image->alloc_ci,
+                                    &image->handle, &image->allocation, &image->alloc_info)) {
+    printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
+    rc::Image::Ref (nullptr);
+  }
+  
+  return image;
+
+}
+
+
 // -----------------------------------------------------------------------------------------------
 rc::Image::~Image() {
 
-  vmaDestroyImage (device.allocator.handle, handle, allocation); 
-  handle = VK_NULL_HANDLE;
+  if (handle != VK_NULL_HANDLE) { 
+    vmaDestroyImage (device.allocator.handle, handle, allocation); 
+    handle = VK_NULL_HANDLE;
+  }
   
 }

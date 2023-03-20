@@ -6,6 +6,7 @@
 #include "rokz/rokz.h"
 #include "rokz/vert_defs.h"
 #include "meshery.h"
+#include <vulkan/vulkan_core.h>
 
 
 //#include <vulkan/vulkan_core.h>
@@ -52,7 +53,7 @@ namespace rekz {
     rokz::Buffer          ib_device;
     // rokz::DescriptorGroup descrgroup;
     // image/texture
-    rokz::Image           texture;   // color texture
+    rokz::rc::Image::Ref  texture;   // color texture
     rokz::ImageView       imageview; // 
     rokz::Sampler         sampler;   // 
 

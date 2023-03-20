@@ -86,11 +86,11 @@ namespace rokz {
   // ----------------------------------------------------------------------------------------------
   //                                                
   // ----------------------------------------------------------------------------------------------
-  template<typename HandlTy> struct hresourc : public destructor {
+  template<typename HandlTy> struct deviceob : public destructor {
 
-    typedef std::shared_ptr<hresourc> Ref;
+    typedef std::shared_ptr<deviceob> Ref;
     
-    hresourc (const Device& d) : device (d), handle (VK_NULL_HANDLE) {
+    deviceob (const Device& d) : device (d), handle (VK_NULL_HANDLE) {
     }
 
     const Device& device;

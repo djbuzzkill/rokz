@@ -35,17 +35,21 @@ struct obj_image_handler : public rekz::DevILOpenFileCB {
 
   rekz::PolygonData& polyd  = params.poly;
 
+  VkImageCreateInfo     ci {};
   
-  if (rekz::LoadTexture_color_sampling (polyd.texture, VK_FORMAT_R8G8B8A8_SRGB ,
-                                        VkExtent2D { (uint32_t) props.width, (uint32_t) props.height },
-                                        dat, params.device.allocator.handle, params.device.queues.graphics, 
-                                        params.device.command_pool, params.device)) {
-    return 0;  
+
+
+  polyd.texture = rekz::LoadTexture_color_sampling (VK_FORMAT_R8G8B8A8_SRGB, VkExtent2D { (uint32_t) props.width, (uint32_t) props.height },
+                                                    dat, params.device.allocator.handle, params.device.queues.graphics, 
+                                                    params.device.command_pool, params.device);
+  
+  if (polyd.texture) {
+    return 0;
   }
   
   
   return __LINE__;
-  } };
+  }};
 
 // ------------------------------------------------------------------------------------------------
 //
@@ -68,7 +72,13 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
   int res =  rekz::OpenImageFile (fq_test_file, std::make_shared<obj_image_handler> (params)); 
   
   if (res == 0) {
-    rokz::cx::CreateInfo (polyd.imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, polyd.texture);  
+
+    // VkImageViewCreateInfo& CreateInfo (
+    //      VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlags aspect_flags, const rc::Image::Ref image);
+
+    rokz::cx::CreateInfo (polyd.imageview.ci, VK_FORMAT_B8G8R8A8_SRGB, 
+                          VK_IMAGE_ASPECT_COLOR_BIT, polyd.texture);  
+
     if (VK_SUCCESS == vkCreateImageView(device.handle, &polyd.imageview.ci, nullptr, &polyd.imageview.handle)) {
       // make the sampler
       rokz::cx::CreateInfo (polyd.sampler.ci, device.physical.properties);
@@ -128,7 +138,8 @@ void rekz::CleanupPolygonData (PolygonData& pd, const rokz::Device& device) {
   rokz::cx::Destroy (pd.vb_device, device.allocator); 
 
   rokz::cx::Destroy (pd.sampler, device.handle); 
-  rokz::cx::Destroy (pd.texture, device.allocator.handle); 
+
+  pd.texture.reset (); // rokz::cx::Destroy (pd.texture, device.allocator.handle); 
 
   rokz::cx::Destroy (pd.imageview, device.handle); 
 

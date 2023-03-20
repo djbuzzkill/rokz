@@ -131,9 +131,13 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
 // ----------------------------------------------------------------------------------------------
 bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rc::Buffer::Ref>& buffs, const rokz::Device& device) {
 
-   printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+  const rc::Buffer canidothis (device);
+  canidothis.handle;
+  canidothis.alloc_ci.pool;
+  
+  printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
 
-   assert (descs.size () == buffs.size ());
+  assert (descs.size () == buffs.size ());
 
   for (uint32_t i = 0; i < descs.size (); i++) {
     // wtf does this do

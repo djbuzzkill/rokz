@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "rokz_types.h"
+#include <vulkan/vulkan_core.h>
 
 namespace rokz {
   // -----------------------------------------------------------------------------------------------
@@ -15,14 +16,13 @@ namespace rokz {
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
-    struct Buffer : public hresourc<VkBuffer> {
+    struct Buffer : public deviceob <VkBuffer> {
 
       typedef std::shared_ptr<Buffer> Ref;
       
-      Buffer (const Device& d) : hresourc (d), alloc_ci (), allocation (), alloc_info () {
+      Buffer (const Device& d) : deviceob (d), alloc_ci (), allocation (), alloc_info () {
       }
 
-      
       VmaAllocationCreateInfo alloc_ci; 
       VmaAllocation           allocation;
       VmaAllocationInfo       alloc_info;
@@ -48,16 +48,15 @@ namespace rokz {
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
-    struct Image:  public hresourc<VkImage>  {
+    struct Image:  public deviceob<VkImage>  {
 
-      Image (const Device& d) : hresourc (d), alloc_ci (), allocation (), alloc_info () {
+      Image (const Device& d) : deviceob (d), alloc_ci (), allocation (), alloc_info () {
       }
+
+      typedef std::shared_ptr<Image> Ref;
 
       virtual ~Image (); 
       
-      //VkDeviceMemory       mem; 
-      //    VkMemoryAllocateInfo alloc_info;
-    
       // vmaCreateBuffer(glob.allocator, &buffer_info, &allocInfo, &buffer, &allocation, nullptr);
       VmaAllocationCreateInfo alloc_ci; 
       VmaAllocation           allocation;
@@ -66,6 +65,13 @@ namespace rokz {
     }; 
 
     Image::Ref CreateImage (const VkImageCreateInfo& ci, const Device& device);
+
+    Image::Ref CreateImage_2D_color_sampling (uint32 , uint32, VkSampleCountFlagBits sampleflags, const Device& device); 
+
+    // -----------------------------------------------------------------------------------------
+
+
+    // -----------------------------------------------------------------------------------------
 
   }
 

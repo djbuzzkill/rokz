@@ -104,12 +104,36 @@ VkImageCreateInfo& rokz::cx::CreateInfo (VkImageCreateInfo& ci, const VkSwapchai
 
 }
 
-// ---------------------------------------------------------------------
-// CreateINFO for imageview from image 
-// ---------------------------------------------------------------------
-VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlags aspect_flags, const Image& image) {
+// ------------------------------------------------------------------------------------------------
+//                                 
+// ------------------------------------------------------------------------------------------------
+VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image) {
 
   // printf ("%s\n", __FUNCTION__);  
+
+  ci = {}; 
+  ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.image    = image->handle;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  ci.format   = format; 
+  ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+  ci.subresourceRange.aspectMask = aspect_flags; 
+  ci.subresourceRange.baseMipLevel = 0;
+  ci.subresourceRange.levelCount = 1;
+  ci.subresourceRange.baseArrayLayer = 0;
+  ci.subresourceRange.layerCount = 1;
+  return ci; 
+}
+
+// ------------------------------------------------------------------------------------------------
+//                                 
+// ------------------------------------------------------------------------------------------------
+VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image) {
 
   ci = {}; 
   ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -168,10 +192,13 @@ void rokz::cx::Destroy (ImageView& iv, const VkDevice& device) {
 // VMA
 // ---------------------------------------------------------------------
 bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
+
+  HERE ("??");
   image.alloc_ci = {};
   image.alloc_ci.usage = VMA_MEMORY_USAGE_AUTO;
+  HERE ("??");
 
-  printf ("%s VMA\n", __FUNCTION__); 
+  
   if( VK_SUCCESS != vmaCreateImage (allocator, &image.ci, &image.alloc_ci, &image.handle, &image.allocation, &image.alloc_info)) {
     printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
     return false; 
