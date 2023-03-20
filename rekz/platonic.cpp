@@ -4,9 +4,9 @@
 
 using namespace rekz;
 
-
 namespace { 
-  const PolyVert OctohedronVerts[] = {
+
+  const platonic::Vert OctohedronVerts[] = {
     // top 
     {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.2, 0.3, 1.0 }, {0.5, 0.5}}, 
 
@@ -20,7 +20,7 @@ namespace {
     
   }; 
 
-  const size_t kOctohedronVertexCount = sizeof(OctohedronVerts) / sizeof (PolyVert);
+  const size_t kOctohedronVertexCount = sizeof(OctohedronVerts) / sizeof (platonic::Vert);
   static_assert (kOctohedronVertexCount == 6, "");
 
   // CW
@@ -44,7 +44,7 @@ namespace {
   static_assert (kOctohedronIndicesCount == 24, "");
 
 
-  struct OctoMesh : public PolyMesh {
+  struct OctoMesh : public platonic::Mesh {
 
     OctoMesh () {
       verts.assign  (OctohedronVerts, OctohedronVerts + kOctohedronVertexCount); 
@@ -59,6 +59,6 @@ namespace {
 // ------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------
-const rekz::PolyMesh& rekz::platonic::Octohedron () {
+const rekz::platonic::Mesh& rekz::platonic::Octohedron () {
   return kOctoMesh;
 }

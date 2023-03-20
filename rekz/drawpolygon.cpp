@@ -68,7 +68,7 @@ struct PolygonDraw : public rokz::DrawSequence {
   //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
     const DescriptorMap& descrmap = env.descriptormap;
     
-    const rekz::PolyMesh& darkmesh = rekz::platonic::Octohedron ();
+    const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron ();
     vkCmdBindPipeline (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.pipeline.handle);
 
     // b/c these r dynamic state

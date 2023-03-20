@@ -92,10 +92,10 @@ bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root
   // used in here:
   // SetupObjectUniforms;
   // SetupObjectTextureAndSampler;
-  const rekz::PolyMesh& darkmesh = rekz::platonic::Octohedron (); 
+  const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
 
   // vertex buffer
-  rokz::Create_VB_device (polyd.vb_device,  &darkmesh.verts[0], rekz::PolyMesh::VertexSize * darkmesh.verts.size(), device) ;
+  rokz::Create_VB_device (polyd.vb_device,  &darkmesh.verts[0], rekz::platonic::Mesh::VertexSize * darkmesh.verts.size(), device) ;
   // index buffer 
   rokz::Create_IB_16_device (polyd.ib_device, &darkmesh.indices[0], darkmesh.indices.size (), device) ;
 

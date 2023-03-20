@@ -3,6 +3,7 @@
 #define ROKZ_SHARED_TYPES
 
 #include "common.h"
+#include <vulkan/vulkan_core.h>
 
 
 namespace rokz { 
@@ -69,6 +70,33 @@ namespace rokz {
 
   typedef Spherical<float>  Sphericf;
   typedef Spherical<double> Sphericd;
+    // ----------------------------------------------------------------------------------------------
+    //                                                
+    // ----------------------------------------------------------------------------------------------
+    struct destructor {
+    
+      virtual ~destructor () = default;
+
+    protected:
+      destructor () = default;
+    }; 
+  
+
+  struct Device;
+  // ----------------------------------------------------------------------------------------------
+  //                                                
+  // ----------------------------------------------------------------------------------------------
+  template<typename HandlTy> struct hresourc : public destructor {
+
+    typedef std::shared_ptr<hresourc> Ref;
+    
+    hresourc (const Device& d) : device (d), handle (VK_NULL_HANDLE) {
+    }
+
+    const Device& device;
+    HandlTy       handle;
+
+  };
 
 }
 

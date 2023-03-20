@@ -50,7 +50,7 @@ namespace rokz {
   };
   
 
-  struct read_stream : public byte_stream, public reader, public ut::destructor {
+  struct read_stream : public byte_stream, public reader, public destructor {
 
     typedef std::shared_ptr<read_stream>  Ref;
 
@@ -58,7 +58,7 @@ namespace rokz {
     read_stream () : byte_stream(), reader () {}
   }; 
 
-  struct write_stream : public byte_stream, public writer, public ut::destructor {
+  struct write_stream : public byte_stream, public writer, public destructor {
 
     typedef std::shared_ptr<write_stream> Ref;
   

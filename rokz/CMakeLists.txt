@@ -7,8 +7,6 @@ project (rokz)
 
 #  
 set (ROKZ_HEADER_FILES
-
-
   draw_sequence.h
   
   rokz.h
@@ -42,6 +40,7 @@ set (ROKZ_HEADER_FILES
   shared_types.h
   synchronization.h
   rokz_types.h
+  rc_types.h
   common.h
 )
 
@@ -75,6 +74,7 @@ set (ROKZ_SOURCE_FILES
   binary_IO.cpp
   defaults.cpp
   rokz.cpp
+  rc_types.cpp
   synchronization.cpp
 )
 

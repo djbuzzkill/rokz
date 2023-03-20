@@ -4,6 +4,9 @@
 
 
 #include "rokz/rokz.h"
+#include "rokz/vert_defs.h"
+#include "meshery.h"
+
 
 //#include <vulkan/vulkan_core.h>
 
@@ -28,40 +31,17 @@ namespace rekz {
   typedef RGBx<unsigned char> RGBu8;
   typedef RGBx<float>         RGBf;
   
-  // // ----------------------------------------------------------------------------------------------
-  //                           
-  // ----------------------------------------------------------------------------------------------
-  template<typename VTy, typename IndTy>
-  struct GeometryData {
-
-    typedef  VTy         VertexType; 
-    typedef  IndTy       IndexType; 
-
-    enum { VertexSize = sizeof(VTy) }; 
-    enum { IndexSize  = sizeof(IndTy) }; 
-  
-    Vec<VTy>   verts;
-    Vec<IndTy> indices;
-  }; 
-
-  // --------------------------------------------------------------------
-  //
-  // --------------------------------------------------------------------
-  template<typename VTy> 
-  using TriMesh = rekz::GeometryData<VTy, uint16_t>; 
-  
   // ---------------------------------------------------------------------------------------
   //
-  // ---------------------------------------------------------------------------------------
-  typedef rokz::Vertex_pos_nrm_col_txc PolyVert;
-  typedef rekz::TriMesh<PolyVert>      PolyMesh;
-
   // ---------------------------------------------------------------------------------------
   namespace platonic {
-    const PolyMesh& Octohedron ();
+
+    typedef rokz::PNCTx_Vert Vert;
+
+    typedef rekz::geom::TriMesh<Vert> Mesh;
+
+    const Mesh& Octohedron ();
   }
-
-
 
   // ---------------------------------------------------------------------------------------
   // what is this

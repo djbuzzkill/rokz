@@ -70,7 +70,13 @@ void CleanupDarkroot (Glob& glob) {
   rokz::cx::Destroy (glob.global_dslo, glob.device); 
   rokz::cx::Destroy (glob.object_dslo, glob.device); 
 
-  rokz::CleanupGlobalUniforms (glob.global_uniform_bu, glob.device); 
+
+
+
+  glob.global_rc_uniform_bu.clear ();
+  
+  
+  //rokz::CleanupGlobalUniforms (glob.global_uniform_bu, glob.device); 
 
 
   // dont bother freeing if pool is destroyed anyways
@@ -104,6 +110,8 @@ void CleanupDarkroot (Glob& glob) {
   
   Vec<VkPipeline> pipes = { 
     glob.polys_pl.handle, glob.grid_pl.handle }; 
+
+  
   darkroot::Cleanup (pipes,
                      glob.display.surface,
                      glob.device.command_pool.handle,
@@ -202,7 +210,7 @@ struct RootLoop {
   
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       
-      rokz::UpdateGlobals (glob.shared, glob.global_uniform_bu[curr_frame],
+      rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame],
                            glob.swapchain_group.swapchain.ci.imageExtent, Dt);  
       //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
 
@@ -375,7 +383,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   //
   // GLOBAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  rokz::SetupGlobalUniforms (glob.global_uniform_bu, kMaxFramesInFlight, glob.device); 
+  rokz::SetupGlobalUniforms (glob.global_rc_uniform_bu, kMaxFramesInFlight, glob.device); 
   
   if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rokz::kGlobalDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
@@ -390,7 +398,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   }
 
-  rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_uniform_bu, glob.device);
+  rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_rc_uniform_bu, glob.device);
   // Bind*DescriptorSets is part of a pipeline definition
   // if (!rekz::BindGridDescriptorResources (glob.global_uniform_de.descrsets, glob.global_uniform_bu, glob.device)) {
   //   printf ("[FAILED] --> BindGridDescriptorResources \n"); 

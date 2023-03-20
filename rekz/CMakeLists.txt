@@ -6,6 +6,7 @@ project (rekz)
 #set ("CMAKE_C_FLAGS=-g -O0")
   
 set (REKZ_HEADER_FILES
+  meshery.h
   rekz.h
   dark_types.h
   marz.h

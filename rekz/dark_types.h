@@ -62,7 +62,8 @@ namespace darkroot {
     DescriptorSetLayout    object_dslo;          // object r 'generic', but belong to instance
 
     // UniformBundle
-    Vec<Buffer>            global_uniform_bu;    // vma_shared_uniforms;
+    //Vec<Buffer>            global_uniform_bu;    // vma_shared_uniforms;
+    Vec<rc::Buffer::Ref>   global_rc_uniform_bu;    // vma_shared_uniforms;
     DescriptorGroup        global_uniform_de;
 
     // POLYGONS

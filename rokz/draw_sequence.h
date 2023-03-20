@@ -27,7 +27,7 @@ namespace rokz {
   //  encapsulate a list of draw commands
   // DrawList renamed to DrawSequence to avoid confusion
   // ---------------------------------------------------------------------
-  struct DrawSequence : public rokz::ut::destructor {
+  struct DrawSequence : public destructor {
 
     typedef std::shared_ptr<DrawSequence>  Ref;
 
