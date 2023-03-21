@@ -53,6 +53,28 @@ namespace rekz {
     rokz::Buffer          ib_device;
     // rokz::DescriptorGroup descrgroup;
     // image/texture
+    rokz::rc::Image::Ref     texture;   // color texture
+    rokz::rc::ImageView::Ref imageview;
+    //rokz::ImageView       imageview; // 
+    VkImageViewCreateInfo imageview_ci;
+
+    rokz::Sampler         sampler;   // 
+
+    float                 obj_theta[2];     // scene objects 
+    //rekz::Sphericalf      objatt;
+    std::array<glm::vec3, 32> objrot;     // scene objects 
+    std::array<glm::vec3, 32> objpos;
+  } ;
+
+  // ---------------------------------------------------------------------------------------
+  // what is this
+  // ---------------------------------------------------------------------------------------
+  struct ObzData { 
+
+    rokz::rc::Buffer::Ref devicebuffer;
+
+    // rokz::DescriptorGroup descrgroup;
+    // image/texture
     rokz::rc::Image::Ref  texture;   // color texture
     rokz::ImageView       imageview; // 
     rokz::Sampler         sampler;   // 

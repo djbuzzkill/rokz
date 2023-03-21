@@ -66,11 +66,11 @@ bool rokz::cx::AllocateImageMemory (rokz::Image& image, const VkDevice& device) 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::cx::CreateImageView (ImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
+bool rokz::cx::CreateImageView (VkImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
 
   //printf ("%s\n", __FUNCTION__);  
 
-  if (vkCreateImageView (device, &ci, nullptr, &iv.handle) != VK_SUCCESS) {
+  if (vkCreateImageView (device, &ci, nullptr, &iv) != VK_SUCCESS) {
     printf ("[FAILED] %s  create image view!", __FUNCTION__);
     return false;
   }
@@ -104,17 +104,14 @@ VkImageCreateInfo& rokz::cx::CreateInfo (VkImageCreateInfo& ci, const VkSwapchai
 
 }
 
-// ------------------------------------------------------------------------------------------------
-//                                 
-// ------------------------------------------------------------------------------------------------
-VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image) {
 
-  // printf ("%s\n", __FUNCTION__);  
+
+VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const VkImage& image) { 
 
   ci = {}; 
   ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   ci.pNext = nullptr;
-  ci.image    = image->handle;
+  ci.image    = image;
   ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
   ci.format   = format; 
   ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -130,29 +127,14 @@ VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat
   return ci; 
 }
 
-// ------------------------------------------------------------------------------------------------
-//                                 
-// ------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------
 VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image) {
 
-  ci = {}; 
-  ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  ci.pNext = nullptr;
-  ci.image    = image.handle;
-  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.format   = image.ci.format; 
-  ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-  ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-  ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-  ci.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+  return CreateInfo (ci, image.ci.format, aspect_flags, image.handle);
 
-  ci.subresourceRange.aspectMask = aspect_flags; 
-  ci.subresourceRange.baseMipLevel = 0;
-  ci.subresourceRange.levelCount = 1;
-  ci.subresourceRange.baseArrayLayer = 0;
-  ci.subresourceRange.layerCount = 1;
-  return ci; 
 }
+
+
 
 // ---------------------------------------------------------------------
 //
@@ -169,7 +151,7 @@ bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
     // CREATEINFO for imageviews from swapchain images
     CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
     
-    if (!CreateImageView (imageviews[i], imageviews[i].ci, device.handle)) {
+    if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
        printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
     }
 
@@ -179,12 +161,22 @@ bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
   return true;   
 }
 
+
+
+
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+void rokz::cx::Destroy (VkImageView& iv, const VkDevice& device) {
+  vkDestroyImageView (device, iv, nullptr);
+  iv = VK_NULL_HANDLE;
+}
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
 void rokz::cx::Destroy (ImageView& iv, const VkDevice& device) {
-  vkDestroyImageView(device, iv.handle, nullptr);
-  iv.handle = VK_NULL_HANDLE;
+  Destroy (iv, device);
 }
 
 

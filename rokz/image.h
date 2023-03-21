@@ -19,18 +19,18 @@ namespace rokz {
 
 
   namespace cx {
+
+    VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const VkImage& image);
     VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image);
-    VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image);
     
-    bool CreateImageView (ImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
+    bool CreateImageView (VkImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
     bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
-  
+    
     // ------------------------------------------------------------------
     bool CreateImage (Image& image, const VkDevice& device); 
     void Destroy (Image& image, const VkDevice& device);
     void Destroy (ImageView& image, const VkDevice& device);
-
-
+    void Destroy (VkImageView& image, const VkDevice& device);
     // alloc old fashioned way
 
     // VkMemoryAllocateInfo& AllocInfo (VkMemoryAllocateInfo& alloc_info,  VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev); 

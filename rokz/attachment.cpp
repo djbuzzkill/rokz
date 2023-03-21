@@ -32,7 +32,7 @@ bool rokz::CreateDepthBufferTarget (rokz::Image&          depth_image,
   rokz::cx::CreateImage (depth_image, device.allocator.handle);
 
   rokz::cx::CreateInfo (depth_imageview.ci, VK_IMAGE_ASPECT_DEPTH_BIT, depth_image); 
-  rokz::cx::CreateImageView (depth_imageview, depth_imageview.ci, device.handle);
+  rokz::cx::CreateImageView (depth_imageview.handle, depth_imageview.ci, device.handle);
 
   // manual transition b/c dynamic_rendering
   rokz::cx::TransitionImageLayout (depth_image.handle, depth_format,
@@ -61,7 +61,7 @@ bool rokz::CreateMSAAColorTarget  (rokz::Image&          color_image,
 
   // imageview 
   rokz::cx::CreateInfo (color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, color_image);
-  rokz::cx::CreateImageView (color_imageview, color_imageview.ci, device.handle);
+  rokz::cx::CreateImageView (color_imageview.handle, color_imageview.ci, device.handle);
   // dynamic_rendering
   rokz::cx::TransitionImageLayout (color_image.handle, image_format, VK_IMAGE_LAYOUT_UNDEFINED,
                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, device.queues.graphics,

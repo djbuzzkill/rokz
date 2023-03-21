@@ -252,11 +252,11 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
 // VkPipelineTessellationStateCreateInfo
 // ---------------------------------------------------------------------
 VkPipelineTessellationStateCreateInfo& rokz::CreateInfo (VkPipelineTessellationStateCreateInfo& ci, uint32_t num_control_points) { 
-
+ 
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
   ci.pNext = nullptr;
   ci.flags = 0;
-  ci.patchControlPoints =  num_control_points;
+  ci.patchControlPoints = num_control_points;
   return ci;
 }
 
@@ -556,8 +556,9 @@ rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&          
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
-rokz::PipelineState& rokz::PipelineState_tessellation (rokz::PipelineState&                                  ps,
+rokz::PipelineState& rokz::PipelineState_tessellation (rokz::PipelineState&                                 ps,
                                                       VkSampleCountFlagBits                                 msaa_samples,
+                                                      uint32                                                controlpoints, 
                                                       const std::vector<VkVertexInputAttributeDescription>& vert_input_attrib_desc,
                                                       const VkVertexInputBindingDescription&                vert_bindiing_desc,
                                                       const VkExtent2D&                                     vpext) {
@@ -571,7 +572,7 @@ rokz::PipelineState& rokz::PipelineState_tessellation (rokz::PipelineState&     
   DynamicState_default (ps.dynamics); 
   //
   PipelineStateCreateInfo& psci = ps.ci;
-  CreateInfo (psci.tesselation, 4); 
+  CreateInfo (psci.tesselation, controlpoints); 
   CreateInfo (psci.dynamicstate, ps.dynamics); 
   CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
   CreateInfo (psci.viewport_state, ps.viewport);

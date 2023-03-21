@@ -46,7 +46,6 @@ bool SetupRenderAttachments (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 void CleanupMars (Glob& glob) {
 
-  
   // printf ("%s \n", __FUNCTION__); 
 
   // for (auto& ub : glob.uniform_mvp) {
@@ -229,9 +228,6 @@ int run_marz (const std::vector<std::string>& args) {
   
   std::filesystem::path pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
   std::filesystem::path data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
-
-
-  
   //Default (glob); 
   
   glfwInit();

@@ -16,10 +16,8 @@ namespace rokz {
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
-    struct Buffer : public deviceob <VkBuffer> {
+    struct Buffer : public deviceob <VkBuffer, Buffer> {
 
-      typedef std::shared_ptr<Buffer> Ref;
-      
       Buffer (const Device& d) : deviceob (d), alloc_ci (), allocation (), alloc_info () {
       }
 
@@ -44,12 +42,10 @@ namespace rokz {
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
-    struct Image:  public deviceob<VkImage>  {
+    struct Image:  public deviceob<VkImage, Image>  {
 
       Image (const Device& d) : deviceob (d), alloc_ci (), allocation (), alloc_info () {
       }
-
-      typedef std::shared_ptr<Image> Ref;
 
       virtual ~Image (); 
       
@@ -65,12 +61,24 @@ namespace rokz {
     Image::Ref CreateImage_2D_color_sampling (uint32 , uint32, VkSampleCountFlagBits sampleflags, const Device& device); 
 
     // -----------------------------------------------------------------------------------------
+    struct ImageView:  public deviceob<VkImageView, ImageView>  {
 
+      ImageView (const Device& d) : deviceob (d) {
+      }
+      // VkImageView             handle;
+      // VkImageViewCreateInfo   ci; 
+      virtual ~ImageView (); 
 
+    };
+
+    //    ImageView::Ref CreateImageView (const VkImageViewCreateInfo& ci, const VkDevice& device); 
+    ImageView::Ref CreateImageView (Image::Ref image, VkFormat format, const Device& device); 
     // -----------------------------------------------------------------------------------------
 
-  }
+    // ------------------------------------------------------------------
+    // VkImageViewCreateInfo& 
+    // CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image);
 
-  
+  }
 }
 #endif

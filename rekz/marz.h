@@ -17,18 +17,6 @@ namespace marz {
   
   enum { kMaxFramesInFlight = 2 }; 
 
-  // ---------------------------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------------------------
-  // typedef rekz::Vertex_pos_nrm_txc  kPatchVert;
-
-  // // ----------------------------------------------------------------------------------------------
-  // // 
-  // // ----------------------------------------------------------------------------------------------
-  // extern const Vec<VkDescriptorSetLayoutBinding>      kDescriptorSetBindings;
-  // extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
-  // extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
-
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
@@ -56,7 +44,7 @@ namespace marz {
     Image                  msaa_color_image;     //  
     ImageView              msaa_color_imageview; //
 
-    SwapchainResetter::Ref  swapchain_resetter; // swchresetter
+    SwapchainResetter::Ref swapchain_resetter; // swchresetter
     //Vec<Buffer>            landscape_bu; //
     DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
     DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's

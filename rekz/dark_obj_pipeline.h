@@ -3,9 +3,6 @@
 #define REKZ_OBJ_PIPELINE
 
 #include "rekz.h"
-#include "rokz/vert_defs.h"
-#include <vulkan/vulkan_core.h>
-//#include <vulkan/vulkan_core.h>
 
 namespace rekz {
 
@@ -63,6 +60,7 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   //                                    
   // ----------------------------------------------------------------------------------------------
+
   bool BindObjectDescriptorSets (Vec<VkDescriptorSet>&    dss ,
                                  const Vec<Buffer>&       vma_uniform_buffs,
                                  const Vec<Buffer>&       vma_objparam_buffs,
@@ -76,20 +74,20 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   // these r the new ones
   // ----------------------------------------------------------------------------------------------
-  bool BindObjectDescriptorResources (Vec<VkDescriptorSet>& dss ,
-                                      const Vec<Buffer>&    objparam_bu,
-                                      const ImageView&             texture_imageview, 
+  bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&    dss ,
+                                      const Vec<Buffer>&       objparam_bu,
+                                      const rc::ImageView::Ref texture_imageview, 
                                       const Sampler&               sampler, 
                                       const DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
                                       const Device&                device);
 
   
-  bool BindObjectDescriptorResources (VkDescriptorSet                  ds,
-                                      Buffer&                    objparam_buff,
-                                      const ImageView&           texture_imageview, 
-                                      const Sampler&             sampler, 
-                                      const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-                                      const Device&              device) ; 
+  // bool BindObjectDescriptorResources (VkDescriptorSet                  ds,
+  //                                     Buffer&                    objparam_buff,
+  //                                     const ImageView&           texture_imageview, 
+  //                                     const Sampler&             sampler, 
+  //                                     const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+  //                                     const Device&              device) ; 
 
   //
   // 

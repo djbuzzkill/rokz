@@ -30,11 +30,8 @@ bool marz::SetupData (marz::Data& dat) {
 
   dat.heightmaps;   
   dat.heightviews;  
-
-  
   // dat.normalmaps;   
   // dat.normalviews;  
-
   dat.heightsampler; 
   dat.colorsampler; 
 

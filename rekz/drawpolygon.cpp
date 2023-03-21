@@ -104,7 +104,7 @@ struct PolygonDraw : public rokz::DrawSequence {
 
       vkCmdPushConstants (combuf,
                           env.pa.plo, 
-                          shader_stages,
+                          rekz::obz::PCStages, //   shader_stages,
                           0,
                           sizeof(rekz::obz::PushConstant),
                           &pcs);

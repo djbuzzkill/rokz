@@ -13,21 +13,6 @@ namespace darkroot {
   using namespace rokz;
   using namespace rekz;
   // ---------------------------------------------------------------------------------------
-  //                   
-  // ---------------------------------------------------------------------------------------
-  //typedef rekz::PNCTx_Vert DarkVert;
-
-  // ---------------------------------------------------------------------------------------
-  //                   
-  // ---------------------------------------------------------------------------------------
-  // typedef rekz::TriMesh<rekz::PNCTx_Vert> DarkMesh;
-  // typedef rekz::TriMesh<rekz::PNCTx_Vert> PNCTx_Mesh;
-
-
-  //using rokz::Vec;
-// ---------------------------------------------------------------------------------------
-  //                   
-  // ---------------------------------------------------------------------------------------
   struct Glob {
 
     enum { MaxFramesInFlight = 2 }; 
@@ -72,6 +57,7 @@ namespace darkroot {
 
     // ? this belongs with the polygons
     PolygonData            polyd;
+    
     DrawSequence::Ref      drawpoly;
 
     Vec<Buffer>            poly_objects_bu; // polygons will make use of object descriptors
@@ -93,9 +79,11 @@ namespace darkroot {
 
   };
 
+  // * unify vb/ib
+  // texture per obj
+  //
 
   
-
   // 
 } // darkroot
 

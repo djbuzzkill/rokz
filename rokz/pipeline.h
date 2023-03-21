@@ -140,16 +140,24 @@ namespace rokz {
   //
   // ----------------------------------------------------------------------------------------
 
-  PipelineState& PipelineState_tessellation (rokz::PipelineState&                                  ps,
-                                        VkSampleCountFlagBits                                 msaa_samples,
-                                        const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
-                                        const VkVertexInputBindingDescription&                vert_bindiing_desc,
-                                        const VkExtent2D&                                     vpext);
-  PipelineState& PipelineState_default (rokz::PipelineState&                                  ps,
-                                        VkSampleCountFlagBits                                 msaa_samples,
-                                        const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
-                                        const VkVertexInputBindingDescription&                vert_bindiing_desc,
-                                        const VkExtent2D&                                     vpext);
+  PipelineState& PipelineState_tessellation (
+   rokz::PipelineState&                                  ps,
+   VkSampleCountFlagBits                                 msaa_samples,
+   uint32                                                control_points,
+   
+   const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
+   const VkVertexInputBindingDescription&                vert_bindiing_desc,
+   const VkExtent2D&                                     vpext
+   );
+
+
+  PipelineState& PipelineState_default (
+   rokz::PipelineState&                                  ps,
+   VkSampleCountFlagBits                                 msaa_samples,
+   const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
+   const VkVertexInputBindingDescription&                vert_bindiing_desc,
+   const VkExtent2D&                                     vpext
+   );
 
   // ---------------------------------------------------------------------
   //

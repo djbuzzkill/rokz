@@ -105,3 +105,56 @@ rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
 rc::Image::~Image() {
   rokz::cx::Destroy (handle, allocation, device.allocator.handle);
 }
+
+
+rc::ImageView::~ImageView () {
+
+  rokz::cx::Destroy (handle, device.handle);
+
+}
+
+
+
+rc::ImageView::Ref rc::CreateImageView (rc::Image::Ref image, VkFormat format, const Device& device) {
+
+
+  VkImageViewCreateInfo ci;
+  
+  cx::CreateInfo (ci, format, VK_IMAGE_ASPECT_COLOR_BIT, image->handle);  
+  
+  rc::ImageView::Ref  ret = std::make_shared<rc::ImageView> (device); 
+
+  if (!rokz::cx::CreateImageView (ret->handle, ci, device.handle)) { 
+    printf (""); 
+    return rc::ImageView::Ref (nullptr); 
+  }
+
+  return ret;
+}
+
+// ------------------------------------------------------------------------------------------------
+//                                 
+// ------------------------------------------------------------------------------------------------
+// VkImageViewCreateInfo& rc::CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image) {
+
+//   // printf ("%s\n", __FUNCTION__);  
+
+//   ci = {}; 
+//   ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+//   ci.pNext = nullptr;
+//   ci.image    = image->handle;
+//   ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+//   ci.format   = format; 
+//   ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+//   ci.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+//   ci.subresourceRange.aspectMask = aspect_flags; 
+//   ci.subresourceRange.baseMipLevel = 0;
+//   ci.subresourceRange.levelCount = 1;
+//   ci.subresourceRange.baseArrayLayer = 0;
+//   ci.subresourceRange.layerCount = 1;
+//   return ci; 
+// }
+

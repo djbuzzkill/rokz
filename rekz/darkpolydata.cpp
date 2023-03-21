@@ -3,6 +3,7 @@
 #include "rekz/dark_types.h"
 
 #include "image_loader.h"
+#include "rokz/rc_types.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -75,21 +76,27 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
 
     // VkImageViewCreateInfo& CreateInfo (
     //      VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlags aspect_flags, const rc::Image::Ref image);
+    rokz::cx::CreateInfo (polyd.imageview_ci, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, polyd.texture->handle);  
 
-    rokz::cx::CreateInfo (polyd.imageview.ci, VK_FORMAT_B8G8R8A8_SRGB, 
-                          VK_IMAGE_ASPECT_COLOR_BIT, polyd.texture);  
+    
+    polyd.imageview = rc::CreateImageView (polyd.texture, VK_FORMAT_B8G8R8A8_SRGB, device);
 
-    if (VK_SUCCESS == vkCreateImageView(device.handle, &polyd.imageview.ci, nullptr, &polyd.imageview.handle)) {
-      // make the sampler
-      rokz::cx::CreateInfo (polyd.sampler.ci, device.physical.properties);
-      rokz::cx::CreateSampler (polyd.sampler, device.handle);
-      printf ("[SUCCESS] %s all things created\n", __FUNCTION__);
-
-    }
-    else {
+    if (!polyd.imageview ) {
       printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
       res = __LINE__;
-    }
+      }
+
+    // if (VK_SUCCESS == vkCreateImageView(device.handle, &polyd.imageview.ci, nullptr, &polyd.imageview.handle)) {
+    //   // make the sampler
+    rokz::cx::CreateInfo (polyd.sampler.ci, device.physical.properties);
+    rokz::cx::CreateSampler (polyd.sampler, device.handle);
+    printf ("[SUCCESS] %s all things created\n", __FUNCTION__);
+
+    // }
+    // else {
+    //   printf ("[FAILED] %s create texture image view\n", __FUNCTION__);
+    //   res = __LINE__;
+    // }
   }
 
   return (res == 0); 
@@ -140,7 +147,7 @@ void rekz::CleanupPolygonData (PolygonData& pd, const rokz::Device& device) {
 
   pd.texture.reset (); // rokz::cx::Destroy (pd.texture, device.allocator.handle); 
 
-  rokz::cx::Destroy (pd.imageview, device.handle); 
+  pd.imageview.reset(); //rokz::cx::Destroy (pd.imageview, device.handle); 
 
 }
 

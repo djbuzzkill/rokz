@@ -82,7 +82,7 @@ bool rekz::SetupObjectUniforms (Vec<Buffer>& objparams, uint32_t num_sets, const
 // ----------------------------------------------------------------------------------------------
 bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&      dss ,
                                           const Vec<Buffer>&         objparam_buffs,
-                                          const ImageView&           texture_imageview, 
+                                          const rc::ImageView::Ref texture_imageview,  //const ImageView&           texture_imageview, 
                                           const Sampler&             sampler, 
                                           const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
                                           const Device&              device) {
@@ -104,7 +104,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&      dss ,
     // vector<VkDescriptorImageInfo> imageinfos; 
     VkDescriptorImageInfo image_info {};
     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
-    image_info.imageView   = texture_imageview.handle;
+    image_info.imageView   = texture_imageview->handle;
     image_info.sampler     = sampler.handle;
 
     //

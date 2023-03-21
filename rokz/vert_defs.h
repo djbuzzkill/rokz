@@ -41,15 +41,12 @@ namespace rokz {
   extern const Vec<VkVertexInputAttributeDescription> kPNCTx_InputAttributeDesc; 
 
   // -------------------------------------------------------------------------------------------
-  //                        
-  // -------------------------------------------------------------------------------------------
   struct Vertex_pos_nrm_txc {
     glm::vec3 pos; 
     glm::vec3 nrm; 
     glm::vec2 txc; 
   };
-  
-  typedef Vertex_pos_nrm_col_txc                      PNTx_Vert;
+  typedef      Vertex_pos_nrm_col_txc                 PNTx_Vert;
   extern const VkVertexInputBindingDescription        kPNTx_InputBindingDesc;
   extern const Vec<VkVertexInputAttributeDescription> kPNTx_InputAttributeDesc; 
 
@@ -73,7 +70,7 @@ namespace rokz {
     glm::vec2 txc; 
   };
 
-  typedef Vertex_pos_txc                              PTx_Vert; 
+  typedef Vertex_pos_txc                              PTx_Vert;
   extern const VkVertexInputBindingDescription        kPTx_InputBindingDesc;
   extern const Vec<VkVertexInputAttributeDescription> kPTx_InputAttributeDesc; 
 

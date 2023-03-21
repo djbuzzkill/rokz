@@ -14,17 +14,13 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   namespace landscape { 
 
-    const size_t kMaxPatchCount = 128; 
-    //typedef rekz::Vertex_pos_nrm_txc                     PatchVert;
-    typedef rokz::PNTx_Vert                               PatchVert;
-    // ----------------------------------------------------------------------------------------------
-    extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
-    // ----------------------------------------------------------------------------------------------
-    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
-    // ----------------------------------------------------------------------------------------------
-    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
+    typedef rokz::PNTx_Vert    PatchVert;
+    const size_t               kMaxPatchCount = 128; 
+    const size_t               kControlPoints = 4; 
 
-    // ----------------------------------------------------------------------------------------------
+    extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
 
     struct PatchPushConstant {
       glm::vec4 position;

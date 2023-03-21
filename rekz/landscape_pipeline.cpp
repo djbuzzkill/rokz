@@ -123,13 +123,13 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
                                   const VkExtent2D&            displayextent,
                                   const Device&                device)
 {
-  HERE("hai");
 
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstant),
                                 landscape::kPCStages, dslos, device.handle);
-
   
-  PipelineState_tessellation (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
+  PipelineState_tessellation (pipeline.state, msaa_samples,
+                              landscape::kControlPoints,
+                              landscape::kVertexInputAttributeDesc,
                               landscape::kVertexInputBindingDesc, displayextent); 
 
   // ^ !! shader modules is part of pipelinestate 
