@@ -2,6 +2,7 @@
 #include "global_descriptor.h"
 #include "utility.h"
 #include "rc_types.h"
+#include <vulkan/vulkan_core.h>
 
 //#include "grid_pipeline.h"
 
@@ -15,12 +16,23 @@ using namespace rokz;
 //     const VkSampler*      pImmutableSamplers;
 // } VkDescriptorSetLayoutBinding;
 
+
+
+
+
 const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
    
-  {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
-  { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- GridState
+  {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL_GRAPHICS , nullptr }, // <- MVPTransform
+  { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL_GRAPHICS , nullptr }, // <- GridState
 
 };
+
+// const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
+   
+//   {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
+//   { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- GridState
+
+// };
 
 // ----------------------------------------------------------------------------------------------
 //                                    
@@ -130,12 +142,8 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
 //                                     RC Ver 
 // ----------------------------------------------------------------------------------------------
 bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rc::Buffer::Ref>& buffs, const rokz::Device& device) {
-
-  const rc::Buffer canidothis (device);
-  canidothis.handle;
-  canidothis.alloc_ci.pool;
   
-  printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+  HERE ("hai");
 
   assert (descs.size () == buffs.size ());
 

@@ -60,11 +60,7 @@ rc::Buffer::Ref rc::Create_uniform_mapped  (size_t size_e, size_t num_e, const D
 }
 // -----------------------------------------------------------------------------------------------
 rc::Buffer::~Buffer () {
-
-  if (handle != VK_NULL_HANDLE) { 
-    vmaDestroyBuffer (device.allocator.handle, handle, allocation); 
-    handle = VK_NULL_HANDLE;
-  }
+  rokz::cx::Destroy (handle, allocation, device.allocator.handle);
 }
 
 
@@ -85,11 +81,10 @@ rc::Image::Ref rokz::rc::CreateImage (const VkImageCreateInfo& ci, const Device&
   return img; 
 }
 
-
+// -----------------------------------------------------------------------------------------------
 rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
                                                         VkSampleCountFlagBits sampleflags,
                                                         const Device& device) {
-
   VkImageCreateInfo ci {};
   rokz::cx::CreateInfo_2D_color_sampling  (ci, sampleflags, wd, ht);
 
@@ -104,16 +99,9 @@ rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
   }
   
   return image;
-
 }
-
 
 // -----------------------------------------------------------------------------------------------
 rc::Image::~Image() {
-
-  if (handle != VK_NULL_HANDLE) { 
-    vmaDestroyImage (device.allocator.handle, handle, allocation); 
-    handle = VK_NULL_HANDLE;
-  }
-  
+  rokz::cx::Destroy (handle, allocation, device.allocator.handle);
 }

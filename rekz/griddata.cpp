@@ -27,7 +27,7 @@ bool rekz::SetupGridData (GridData& gd, const Device& device) {
   
   const glm::vec3 voffs (-dimsize * 0.5f, 0.0f, -dimsize * 0.5f);
 
-  Vec<GridVert> verts (vertdim * vertdim);
+  Vec<grid::Vert> verts (vertdim * vertdim);
   Vec<uint16_t> inds (2 * totalverts);
 
   // -- vertices --
@@ -38,7 +38,7 @@ bool rekz::SetupGridData (GridData& gd, const Device& device) {
 
     }
   } // move 2 vb
-  Create_VB_device (gd.vb_device, &verts[0], verts.size () * sizeof(GridVert), device); 
+  Create_VB_device (gd.vb_device, &verts[0], verts.size () * sizeof(grid::Vert), device); 
 
   // -- indices --
   for (uint16_t iz = 0; iz < vertdim; ++iz) { // draw x lines

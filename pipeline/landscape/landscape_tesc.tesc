@@ -9,21 +9,50 @@
 //        .comp - a compute shader
 //
 
-
 // LANDSCAPE TESSELLATION CONTROL PROGRAM
 layout(vertices = 4) out;
 
-// -------------------------------------------------------------------------
-// 
-// -------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------------------------
+// push constants
+// -----------------------------------------------------------------------------------------------
+layout (push_constant) uniform PatchPushConstants {
+
+  vec4 position;
+  vec4 scale;
+  uint res_id;
+  
+} pc;
+
+
+
+// -----------------------------------------------------------------------------------------------
+// descriptors
+// -----------------------------------------------------------------------------------------------
+layout (set = 0, binding = 0) uniform MVPTransform {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+} mat;                                             
+
+
+layout (set = 1, binding = 3) uniform PatchParams {
+    mat4 model;
+    vec4 unused0;
+    vec4 unused1;
+} params[128];                                             
+
+
+
+// -----------------------------------------------------------------------------------------------
+//  BUILTIN
+// -----------------------------------------------------------------------------------------------
 in gl_PerVertex {
   vec4 gl_Position; 
-
 } gl_in[]; 
 
-// these pass thru
 // -------------------------------------------------------------------------
-// 
+//  BUILTIN
 // -------------------------------------------------------------------------
 out gl_PerVertex {
   vec4 gl_Position; 
@@ -33,13 +62,13 @@ out gl_PerVertex {
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-layout (location = 0) in vec2 in_txco[];
+layout (location = 0) in vec2 in_txc[];
 
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-layout (location = 0) out vec2 out_txco[];
+layout (location = 0) out vec2 out_txc[];
 
 //
 void main ()
@@ -57,6 +86,6 @@ void main ()
   }
 
   gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position; 
-  out_txco[gl_InvocationID]           = in_txco[gl_InvocationID]; 
+  out_txc[gl_InvocationID]           = in_txc[gl_InvocationID]; 
 
 }

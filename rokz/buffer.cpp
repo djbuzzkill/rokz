@@ -308,10 +308,16 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_uniform (VkBufferCreateInfo& ci, size_t
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-void rokz::cx::Destroy (Buffer& buffer, const rokz::Allocator& allocator) {
-  vmaDestroyBuffer (allocator.handle, buffer.handle, buffer.allocation); 
-  buffer.handle = VK_NULL_HANDLE; 
+void rokz::cx::Destroy (VkBuffer& buffer, VmaAllocation allocation, VmaAllocator allocator) {
+  vmaDestroyBuffer (allocator, buffer, allocation); 
+  buffer  = VK_NULL_HANDLE; 
   
 }
+
+void rokz::cx::Destroy (Buffer& buffer, const rokz::Allocator& allocator) {
+  cx::Destroy (buffer.handle, buffer.allocation, allocator.handle); 
+}
+
+
 
 

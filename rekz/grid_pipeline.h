@@ -9,33 +9,32 @@ namespace rekz {
 
   //
   //
-  typedef rekz::Vertex_pos_col    GridVert; 
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  extern const VkVertexInputBindingDescription        kGridVertexBindingDesc;
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  extern const Vec<VkVertexInputAttributeDescription> kGridVertInputAttributeDesc;
+  namespace grid {
 
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  struct GridPushConstant {
+    typedef rekz::Vertex_pos_col    Vert; 
+    // ----------------------------------------------------------------------------------------------
+    //                                    
+    // ----------------------------------------------------------------------------------------------
+    extern const VkVertexInputBindingDescription        kVertexBindingDesc;
+    extern const Vec<VkVertexInputAttributeDescription> kVertInputAttributeDesc;
 
-    glm::vec4 x_color;  // 10 is reasonable
-    glm::vec4 z_color;  // 10 is reasonable
-    glm::vec4 origin_color; 
+    // ----------------------------------------------------------------------------------------------
+    //                                    
+    // ----------------------------------------------------------------------------------------------
+    struct PushConstant {
 
-    float     xstep;    // size every 'column'
-    float     zstep;    // size every 'row' 
-    float     xoffset;
-    float     zoffset;
-  };
+      glm::vec4 x_color;  // 10 is reasonable
+      glm::vec4 z_color;  // 10 is reasonable
+      glm::vec4 origin_color; 
 
+      float     xstep;    // size every 'column'
+      float     zstep;    // size every 'row' 
+      float     xoffset;
+      float     zoffset;
+    };
 
-  //
+    const VkShaderStageFlags kPCStages = VK_SHADER_STAGE_VERTEX_BIT;
+  }
 
   // ----------------------------------------------------------------------------------------------
   //                                    

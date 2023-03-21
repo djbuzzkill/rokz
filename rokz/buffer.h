@@ -23,8 +23,10 @@ namespace rokz {
     //
     bool                CreateBuffer         (Buffer&, VmaAllocator const& allocator);
     bool                CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, VmaAllocator const& allocator); 
-    void                Destroy              (Buffer& buffer, const rokz::Allocator& allocator); 
 
+    void                Destroy              (VkBuffer& buffer, VmaAllocation allocation, VmaAllocator allocator);
+    void                Destroy              (Buffer& buffer, const rokz::Allocator& allocator); 
+    
     bool MoveToBuffer_XB2DB (Buffer&         buff_dst, // device buffer
                              Buffer&         buff_src, // user buffer, 
                              size_t               size,

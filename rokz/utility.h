@@ -8,8 +8,7 @@
 //#include "binary_IO.h"
 
 
-
-#define HERE(x) printf("%s --> [%s|line:%i]\n",(x), __FUNCTION__,__LINE__);
+#define HERE(x) printf(" [%s|line:%i] --> %s \n",__FUNCTION__,__LINE__,(x));
 
 namespace rokz {
 

@@ -16,26 +16,29 @@ layout(location=2) in vec2 in_txcd;
 
 // output vertex 
 //layout (location = 0) out vec4 gl_Position; 
-layout (location = 0) out vec2 out_col0;                                                   
-layout (location = 1) out vec2 out_txco;                                                   
+layout (location = 0) out vec2 out_txco;                                                   
+
+out gl_PerVertex {
+  vec4 gl_Position;
+};
 
 
 ////
 // uniform constants 
-layout (binding = 0) uniform MVPTransform {
+layout (set = 0, binding = 0) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;
 } mat;                                             
 
-layout (binding = 1) uniform PatchParams {
+
+layout (set = 1, binding = 3) uniform PatchParams {
     mat4 model;
     vec4 unused0;
     vec4 unused1;
 
 } params[100];                                             
 
-////
 
 // 
 void main () {

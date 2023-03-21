@@ -307,20 +307,20 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //
   rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
 
-  rokz::ConfigureDevice  (glob.device.physical , VK_TRUE);
+  VkPhysicalDeviceFeatures2 features2 {};  
+  //rokz::ConfigureDevice (glob.device.physical, VK_TRUE);
+  rokz::ConfigureFeatures (features2, glob.device.physical);
 
   // this does a lot of shit
-  rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device, features2, glob.device.physical, glob.instance);
   
-  // put these somwehere
+  // put these somwehere else
   glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
   rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                              kTestExtent, glob.device.physical, glob.device);
-  //assert (false);
-
   // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
   rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::obz::kDescriptorBindings, glob.device); 

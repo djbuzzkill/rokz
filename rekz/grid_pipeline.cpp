@@ -10,9 +10,9 @@ using namespace rokz;
 // ----------------------------------------------------------------------------------------
 // vertex input
 // ----------------------------------------------------------------------------------------
-const VkVertexInputBindingDescription rekz::kGridVertexBindingDesc =  {
+const VkVertexInputBindingDescription rekz::grid::kVertexBindingDesc =  {
   0,                            // binding    
-  sizeof (rekz::GridVert),       // stride      
+  sizeof (rekz::grid::Vert),       // stride      
   VK_VERTEX_INPUT_RATE_VERTEX   // inputRate   
 
 };
@@ -20,20 +20,20 @@ const VkVertexInputBindingDescription rekz::kGridVertexBindingDesc =  {
 // ----------------------------------------------------------------------------------------
 // vertex attributes...pos, norm, color
 // ----------------------------------------------------------------------------------------
-const Vec<VkVertexInputAttributeDescription> rekz::kGridVertInputAttributeDesc = {
+const Vec<VkVertexInputAttributeDescription> rekz::grid::kVertInputAttributeDesc = {
 
   VkVertexInputAttributeDescription { // pos
     0,                                // .location 
     0,                                // .binding  
     VK_FORMAT_R32G32B32_SFLOAT,       // .format   
-    offsetof(rekz::GridVert, pos),    // .offset   
+    offsetof(rekz::grid::Vert, pos),    // .offset   
   },
 
   VkVertexInputAttributeDescription { // color
     1,                              
     0, 
     VK_FORMAT_R32G32B32_SFLOAT,
-    offsetof(rekz::GridVert, col), 
+    offsetof(rekz::grid::Vert, col), 
   },
 };
 
@@ -107,14 +107,18 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
   // Descriptor Set
   //rokz::DefineDescriptorSetLayout (dslo,  kGridDescriptorBindings, device);
 
+  
+  
+  
   //
   // Pipeline Layout
-  rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::GridPushConstant), dslos, device.handle);
+    rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::grid::PushConstant),
+                                        grid::kPCStages, dslos, device.handle);
 
   //
   // Pipeline States
-  rokz::PipelineState_default (pipeline.state, msaa_samples,  kGridVertInputAttributeDesc,
-                               kGridVertexBindingDesc, viewport_extent); 
+  rokz::PipelineState_default (pipeline.state, msaa_samples,  grid::kVertInputAttributeDesc,
+                               grid::kVertexBindingDesc, viewport_extent); 
   // change defaults
   // pipeline.state.ci.rasterizer.polygonMode = VK_POLYGON_MODE_LINE
 

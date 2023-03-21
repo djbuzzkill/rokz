@@ -14,38 +14,56 @@
 
 //#extension GL_EXT_nonuniform_qualifier : enable
 
-
-
 layout(quads, equal_spacing, cw) in;
 // -----------------------------------------------------------------------------------------------
-//
+// incoming
 // -----------------------------------------------------------------------------------------------
-layout (location = 0) in vec4 in_position[];
-layout (location = 1) in vec2 in_txcrd[]; 
+//layout (location = 0) in vec4 in_position[];
+layout (location = 0) in vec2 in_txcrd[]; 
 
+in gl_PerVertex {
+  vec4 gl_Position; 
+} gl_in[]; 
 
-// -----------------------------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------------------------
+// these pass thru
+// -------------------------------------------------------------------------
+//  outgoing
+// -------------------------------------------------------------------------
+out gl_PerVertex {
+  vec4 gl_Position; 
+}; 
+
 layout (location = 0) out vec2 out_txcd; 
 
 
 // -----------------------------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------------------------
 // uniforms
 // -----------------------------------------------------------------------------------------------
+
+// uniform constants 
 layout (set = 0, binding = 0) uniform MVPTransform {
-    mat4 model;   // !! model = rotm * scalem + translm 
-    mat4 view;    // 
-    mat4 proj;    // 
+    mat4 model;
+    mat4 view;
+    mat4 proj;
 } mat;                                             
 
 
 // -----------------------------------------------------------------------------------------------
-// samplers  
+// set 1 
 // -----------------------------------------------------------------------------------------------
+
 layout (set = 1, binding = 0) uniform sampler2D heightmap[128];                                                  
 layout (set = 1, binding = 1) uniform sampler2D normalmap[128];                                                  
 
+layout (set = 1, binding = 3) uniform PatchParams {
+    mat4 model;
+    vec4 unused0;
+    vec4 unused1;
+} params[128];                                             
 // 
 // -----------------------------------------------------------------------------------------------
 // push constants
@@ -79,7 +97,8 @@ vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3) {
 void main() {
   
     out_txcd = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		
-    vec4 pos = interpolate4 (in_position[0], in_position[1], in_position[2], in_position[3]);
+   //vec4 pos = interpolate4 (in_position[0], in_position[1], in_position[2], in_position[3]);
+    vec4 pos = interpolate4 (gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
 
     pos.x = pc.scale.x * pos.x; 
     pos.y = pc.scale.y * texture (heightmap[pc.res_id], out_txcd).r;
@@ -87,7 +106,6 @@ void main() {
 
     pos.xyz = pos.xyz + pc.position.xyz;
     
-    gl_Position = mat.proj * mat.view * mat.model * pos;                                                    
+    gl_Position = mat.proj * mat.view * params[pc.res_id].model * pos; 
+    //gl_Position = mat.proj * mat.view * mat.model * pos;  
 }				
-
- 

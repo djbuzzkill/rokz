@@ -57,6 +57,7 @@ namespace rokz {
   bool DefineGraphicsPipelineLayout (VkPipelineLayout&            pipeline_layout,
                                      VkPipelineLayoutCreateInfo&  create_info,
                                      uint32_t                     push_constant_size,
+                                     VkShaderStageFlags           stageflags, 
                                      const std::vector<VkDescriptorSetLayout>& desc_set_layouts, 
                                      const VkDevice&              device); 
 
@@ -139,6 +140,11 @@ namespace rokz {
   //
   // ----------------------------------------------------------------------------------------
 
+  PipelineState& PipelineState_tessellation (rokz::PipelineState&                                  ps,
+                                        VkSampleCountFlagBits                                 msaa_samples,
+                                        const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
+                                        const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                        const VkExtent2D&                                     vpext);
   PipelineState& PipelineState_default (rokz::PipelineState&                                  ps,
                                         VkSampleCountFlagBits                                 msaa_samples,
                                         const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,

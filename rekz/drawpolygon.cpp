@@ -93,7 +93,7 @@ struct PolygonDraw : public rokz::DrawSequence {
     const uint32_t num_test_objects =  2; 
     for (uint32_t i = 0; i < num_test_objects; ++i) {
 
-      rekz::obz::PushConstants pcs {};
+      rekz::obz::PushConstant pcs {};
       pcs.resourceID = i; 
       pcs._unused_01 = i; 
       pcs._unused_02 = i; 
@@ -106,7 +106,7 @@ struct PolygonDraw : public rokz::DrawSequence {
                           env.pa.plo, 
                           shader_stages,
                           0,
-                          sizeof(rekz::obz::PushConstants),
+                          sizeof(rekz::obz::PushConstant),
                           &pcs);
 
       vkCmdDrawIndexed (combuf, darkmesh.indices.size(), 1, 0, 0, 0);

@@ -2,6 +2,7 @@
 #include "marz.h"
 #include "grid_pipeline.h"
 #include "rekz/landscape_pipeline.h"
+#include "rokz/context.h"
 //
 
 using namespace marz; 
@@ -287,10 +288,12 @@ int run_marz (const std::vector<std::string>& args) {
   //
   rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
 
-  rokz::ConfigureDevice  (glob.device.physical , VK_TRUE);
+  VkPhysicalDeviceFeatures2 f2 {};
+  rokz::ConfigureFeatures  (f2, glob.device.physical);
 
   // this does a lot of shit
-  rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
+  //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
   
   // put these somwehere
   glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 

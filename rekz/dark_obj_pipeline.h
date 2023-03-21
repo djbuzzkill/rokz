@@ -4,6 +4,7 @@
 
 #include "rekz.h"
 #include "rokz/vert_defs.h"
+#include <vulkan/vulkan_core.h>
 //#include <vulkan/vulkan_core.h>
 
 namespace rekz {
@@ -23,7 +24,7 @@ namespace rekz {
 
     extern const DescriptorSetLayoutBindings             kDescriptorBindings;
 
-    struct PushConstants {
+    struct PushConstant {
     
       uint32 resourceID;
       uint32 _unused_01;
@@ -31,6 +32,8 @@ namespace rekz {
       uint32 _unused_03;
     }; 
 
+    const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT;
+    
   }
 
   // ----------------------------------------------------------------------------------------------

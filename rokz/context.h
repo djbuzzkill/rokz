@@ -127,10 +127,12 @@ namespace rokz {
   } // cx
 
 
+  VkPhysicalDeviceFeatures2& ConfigureFeatures  (VkPhysicalDeviceFeatures2& features2, const rokz::PhysicalDevice& physical_device);
   
   bool               InitializeInstance  (rokz::Instance& instance); 
   PhysicalDevice&    ConfigureDevice     (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy); 
   bool               InitializeDevice    (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
+  bool               InitializeDevice    (rokz::Device& device, const VkPhysicalDeviceFeatures2& , const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
 
   bool               InitializeSwapchain (rokz::SwapchainGroup& scg,
                                           const rokz::SwapchainSupportInfo& swapchain_support_info,

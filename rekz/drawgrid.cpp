@@ -8,6 +8,8 @@
 
 struct DrawGrid : public rokz::DrawSequence {
 
+
+  
   DrawGrid (const rekz::GridData& dat) : data (dat) {
   }
 
@@ -22,9 +24,11 @@ struct DrawGrid : public rokz::DrawSequence {
     // the draw sequence recording, mebe rename to DrawSeq::Rec() 
   virtual int Exec (VkCommandBuffer comb, uint32_t current_frame, const RenderEnv& env) { 
 
+    using namespace rekz;
+
     const DescriptorMap& descrmap = env.descriptormap; 
 
-    rekz::GridPushConstant push_consts = {};
+    grid::PushConstant push_consts = {};
 
     push_consts.z_color      = glm::vec4 (0.4, 0.7, 0.2, 1.0); 
     push_consts.x_color      = glm::vec4 (0.2, 0.3, 0.9, 1.0);
@@ -54,7 +58,7 @@ struct DrawGrid : public rokz::DrawSequence {
     const VkShaderStageFlags shader_stages =
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    vkCmdPushConstants (comb, env.pa.plo, shader_stages, 0, sizeof(rekz::GridPushConstant), &push_consts);
+    vkCmdPushConstants (comb, env.pa.plo, shader_stages, 0, sizeof(grid::PushConstant), &push_consts);
 
     const uint32_t vdim   = 11; // matches SetupGrid
     const uint32_t totalv = vdim * vdim;

@@ -11,6 +11,7 @@ std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicSt
   dynamic_states.clear ();
   dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
   dynamic_states.push_back (VK_DYNAMIC_STATE_SCISSOR);
+  //dynamic_states.push_back (VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT);
 
   // ?! wtf
   //dynamic_states.push_back (VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
@@ -276,6 +277,15 @@ VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci,
   ci.pushConstantRangeCount = pc.size();    
   ci.pPushConstantRanges    = pc.size() ? &pc[0] : nullptr;
 
+
+  // VUID-VkGraphicsPipelineCreateInfo-layout-00756(ERROR / SPEC): msgNum: 1165064310 - Validation Error:
+  //   [ VUID-VkGraphicsPipelineCreateInfo-layout-00756 ] Object 0: handle = 0x908683000000001d,
+  //   type = VK_OBJECT_TYPE_SHADER_MODULE; Object 1: handle = 0x95a125000000001a, type = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+
+  //   | MessageID = 0x45717876 | Push constant is used in VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT of VkShaderModule 0x908683000000001d[].
+  //       But VkPipelineLayout 0x95a125000000001a[] doesn't set VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT.
+  //       The Vulkan spec states: layout must be consistent with all shaders specified in pStages (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkGraphicsPipelineCreateInfo-layout-00756)
+  
   return ci;
 }
 
@@ -286,6 +296,7 @@ bool rokz::DefineGraphicsPipelineLayout (
     VkPipelineLayout&            pipeline_layout,
     VkPipelineLayoutCreateInfo&  create_info,
     uint32_t                     push_constant_size,
+    VkShaderStageFlags           pcstages, 
     const std::vector<VkDescriptorSetLayout>& desc_set_layouts, 
     const VkDevice&              device)
 {
@@ -302,7 +313,8 @@ bool rokz::DefineGraphicsPipelineLayout (
 
   VkPushConstantRange pcr;
   if (push_constant_size) {
-    pcr.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    pcr.stageFlags = pcstages; 
     pcr.offset     = 0;
     pcr.size       = push_constant_size; 
     create_info.pushConstantRangeCount = 1;    
@@ -533,6 +545,37 @@ rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&          
   CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
   CreateInfo (psci.viewport_state, ps.viewport);
   CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  CreateInfo (psci.rasterizer); 
+  CreateInfo (psci.colorblendstate, ps.colorblend_attachments); 
+  CreateInfo (psci.multisampling, msaa_samples); 
+  CreateInfo (psci.depthstencilstate); 
+
+  return ps;
+  
+}
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+rokz::PipelineState& rokz::PipelineState_tessellation (rokz::PipelineState&                                  ps,
+                                                      VkSampleCountFlagBits                                 msaa_samples,
+                                                      const std::vector<VkVertexInputAttributeDescription>& vert_input_attrib_desc,
+                                                      const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                                      const VkExtent2D&                                     vpext) {
+
+  SetupViewportState (ps.viewport, vpext); 
+
+  ps.colorblend_attachments.resize (1);
+
+  ColorBlendState_default (ps.colorblend_attachments[0]); 
+
+  DynamicState_default (ps.dynamics); 
+  //
+  PipelineStateCreateInfo& psci = ps.ci;
+  CreateInfo (psci.tesselation, 4); 
+  CreateInfo (psci.dynamicstate, ps.dynamics); 
+  CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
+  CreateInfo (psci.viewport_state, ps.viewport);
+  CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST); 
   CreateInfo (psci.rasterizer); 
   CreateInfo (psci.colorblendstate, ps.colorblend_attachments); 
   CreateInfo (psci.multisampling, msaa_samples); 

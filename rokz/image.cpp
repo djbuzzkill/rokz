@@ -188,18 +188,17 @@ void rokz::cx::Destroy (ImageView& iv, const VkDevice& device) {
 }
 
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 // VMA
-// ---------------------------------------------------------------------
-bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
-
-  HERE ("??");
-  image.alloc_ci = {};
-  image.alloc_ci.usage = VMA_MEMORY_USAGE_AUTO;
-  HERE ("??");
-
+// ---------------------------------------------------------------------------------------------
+bool CreateImage (VkImage&                   image,
+                  VmaAllocationCreateInfo&   alloc_ci,
+                  VmaAllocationInfo          alloc_info, 
+                  VmaAllocation&             allocation,
+                  const VkImageCreateInfo&   ci,
+                  VmaAllocator const&        allocator) {
   
-  if( VK_SUCCESS != vmaCreateImage (allocator, &image.ci, &image.alloc_ci, &image.handle, &image.allocation, &image.alloc_info)) {
+  if( VK_SUCCESS != vmaCreateImage (allocator, &ci, &alloc_ci, &image, &allocation, &alloc_info)) {
     printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
     return false; 
   }
@@ -207,12 +206,31 @@ bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
   return true; 
 }
 
+// ---------------------------------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------------------------------
+bool rokz::cx::CreateImage (Image& image, VmaAllocator const& allocator) {
+  return  CreateImage (image.handle, image.alloc_ci, image.alloc_info, image.allocation, image.ci, allocator);
+}
+
+
+
+
 // ---------------------------------------------------------------------
 // VMA 
 // ---------------------------------------------------------------------
-void rokz::cx::Destroy (Image& image, VmaAllocator const& allocator) {
-  vmaDestroyImage (allocator, image.handle, image.allocation); 
-  image.handle = VK_NULL_HANDLE;
+void rokz::cx::Destroy (VkImage& image, VmaAllocation allocation,  VmaAllocator allocator) {
+
+  vmaDestroyImage (allocator, image, allocation); 
+  image = VK_NULL_HANDLE;
+}
+
+// ---------------------------------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------------------------------
+void rokz::cx::Destroy (Image& image, VmaAllocator allocator) {
+
+  cx::Destroy (image.handle, image.allocation, allocator);
 }
 
 

@@ -83,12 +83,12 @@ namespace rokz {
   // -----------------------------------------------------------------------------------------------
   struct PhysicalDevice {
     PhysicalDevice () : handle (VK_NULL_HANDLE),
-      properties (),  features (), family_indices () {}
+      properties (),  features2 (), family_indices () {}
     
     
     VkPhysicalDevice           handle;
     VkPhysicalDeviceProperties properties;
-    VkPhysicalDeviceFeatures   features;
+    VkPhysicalDeviceFeatures2  features2;
     QueueFamilyIndices         family_indices;
   }; 
 

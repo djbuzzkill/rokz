@@ -37,10 +37,6 @@ namespace rokz {
 
     Buffer::Ref Create_uniform_mapped  (size_t size_e, size_t num_e, const Device& device); 
 
-    
-    /* hresourc<VkBuffer>::Ref Create_IB_16_device  (const void* mem, size_t sz_mem, const rokz::Device& device); */
-    /* hresourc<VkBuffer>::Ref Create_uniform  (const void* mem, size_t sz_mem, const rokz::Device& device); */
-
     inline void* MappedPointer (rc::Buffer::Ref buff) { 
       return  buff->alloc_info.pMappedData;
     }

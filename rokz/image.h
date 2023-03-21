@@ -29,6 +29,8 @@ namespace rokz {
     bool CreateImage (Image& image, const VkDevice& device); 
     void Destroy (Image& image, const VkDevice& device);
     void Destroy (ImageView& image, const VkDevice& device);
+
+
     // alloc old fashioned way
 
     // VkMemoryAllocateInfo& AllocInfo (VkMemoryAllocateInfo& alloc_info,  VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev); 
@@ -68,14 +70,10 @@ namespace rokz {
     // 
     // VMA -------------------------------------------------------------------------->
     bool                CreateImage   (Image& image, VmaAllocator const& allocator);
-    //
-    void                Destroy       (Image& image, VmaAllocator const& allocator); 
+    void                Destroy       (Image& image, VmaAllocator allocator); 
+    void                Destroy       (VkImage& image, VmaAllocation allocation, VmaAllocator allocator);
     // <---------------------------------------------------------------------------VMA
-
-
   } // cx
-
-
 }
 
 #endif

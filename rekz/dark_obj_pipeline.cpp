@@ -156,7 +156,11 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
 
   printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
 
-  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(obz::PushConstants), dslos, device.handle);
+  
+  
+  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(obz::PushConstant),
+                                obz::PCStages, 
+                                dslos, device.handle);
 
 
 

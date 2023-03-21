@@ -1,6 +1,7 @@
 
 
 #include "landscape_pipeline.h"
+#include "rokz/pipeline.h"
 #include "rokz/vert_defs.h"
 #include <vulkan/vulkan_core.h>
 
@@ -8,14 +9,22 @@ using namespace rokz;
 // ----------------------------------------------------------------------------------------
 // 
 // ----------------------------------------------------------------------------------------
+const VkShaderStageFlags landscape_shader_stages = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT
+                                                 | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
+                                                 | VK_SHADER_STAGE_VERTEX_BIT
+                                                 | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
 const Vec<VkDescriptorSetLayoutBinding> rekz::landscape::kDescriptorBindings = {
 
   // height
-  { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, nullptr }, // height
+  { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, landscape_shader_stages, nullptr }, // height
   // normal 
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, nullptr }, // normnal
+  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, landscape_shader_stages, nullptr }, // normnal
   // color
-  { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr                }, // color
+  { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, landscape::kMaxPatchCount, landscape_shader_stages, nullptr }, // color
+  // PatchParams
+  { 3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , landscape::kMaxPatchCount, landscape_shader_stages, nullptr }, // color
 
 };
 
@@ -37,8 +46,8 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
   Vec<ShaderModule>&                    shader_modules            = pipeline.shader_modules;
 
-  shader_modules.resize  (2);
-  shader_stage_create_infos.resize(2);
+  shader_modules.resize  (4);
+  shader_stage_create_infos.resize(4);
   //
   // VERT SHADER
   std::string vert_name = "landscape/landscape_vert.spv";
@@ -51,7 +60,7 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
 
   CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT,
               shader_modules[0].entry_point, shader_modules[0].handle); //   
-
+  HERE("vert");
   // TESS CTRL SHADER
   std::string tesc_name = "landscape/landscape_tesc.spv" ;
   std::filesystem::path tesc_file_path  = fspath/tesc_name;
@@ -62,6 +71,8 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
   }
   CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
               shader_modules[1].entry_point, shader_modules[1].handle); //   
+
+  HERE("tesc");
 
   // TESS CTRL SHADER
   std::string tese_name = "landscape/landscape_tese.spv" ;
@@ -75,6 +86,7 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
   CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
               shader_modules[2].entry_point, shader_modules[2].handle); //   
 
+  HERE("eval");
   // FRAG SHADER
   std::string frag_name = "landscape/landscape_frag.spv"; 
   std::filesystem::path frag_file_path = fspath/frag_name;
@@ -87,6 +99,12 @@ bool setup_landscape_shader_modules (Pipeline& pipeline,
   
   CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT,
               shader_modules[3].entry_point,  shader_modules[3].handle); 
+
+  HERE("frag");
+
+
+  //VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME
+  
   //
   return true; 
 }
@@ -107,12 +125,14 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
 {
   HERE("hai");
 
-  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstants), dslos, device.handle);
+  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstants),
+                                landscape::kPCStages, dslos, device.handle);
 
   
-  PipelineState_default (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
-                         landscape::kVertexInputBindingDesc, displayextent); 
+  PipelineState_tessellation (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
+                              landscape::kVertexInputBindingDesc, displayextent); 
 
+  
   // ^ !! shader modules is part of pipelinestate 
   bool shmodres = setup_landscape_shader_modules (pipeline, pipe_path, device);
   if (!shmodres) {

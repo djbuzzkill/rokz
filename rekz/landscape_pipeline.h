@@ -5,6 +5,7 @@
 
 #include "rekz.h"
 #include "rokz/vert_defs.h"
+#include <vulkan/vulkan_core.h>
 
 namespace rekz {
 
@@ -13,7 +14,7 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   namespace landscape { 
 
-    const size_t kMaxPatchCount = 256; 
+    const size_t kMaxPatchCount = 128; 
     //typedef rekz::Vertex_pos_nrm_txc                     PatchVert;
     typedef rokz::PNTx_Vert                               PatchVert;
     // ----------------------------------------------------------------------------------------------
@@ -30,6 +31,11 @@ namespace rekz {
       glm::vec4 scale;
       uint32 res_id;
     };
+
+    const VkShaderStageFlags kPCStages = VK_SHADER_STAGE_VERTEX_BIT
+                                       | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
+                                       | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT
+                                       | VK_SHADER_STAGE_FRAGMENT_BIT;
   }
   // ----------------------------------------------------------------------------------------
   //                     

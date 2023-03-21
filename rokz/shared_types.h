@@ -90,11 +90,11 @@ namespace rokz {
 
     typedef std::shared_ptr<deviceob> Ref;
     
-    deviceob (const Device& d) : device (d), handle (VK_NULL_HANDLE) {
+    deviceob (Device const& d) : device (d), handle (VK_NULL_HANDLE) {
     }
 
-    const Device& device;
-    HandlTy       handle;
+    Device const& device;
+    HandlTy handle;
 
   };
 

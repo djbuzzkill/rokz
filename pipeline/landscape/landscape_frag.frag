@@ -17,13 +17,20 @@ const vec3 mars_color = vec3 (1.0, 0.8, 0.6);
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-layout(location = 1) in vec2  in_txcd;                       
-layout(location = 0) in vec3  in_color;
+layout(location = 0) in vec2  in_txcd;                       
 
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
 layout (set = 1, binding = 2) uniform sampler2D colorsamp[128];
+
+
+layout (set = 1, binding = 3) uniform PatchParams {
+    mat4 model;
+    vec4 unused0;
+    vec4 unused1;
+} params[128];                                             
+
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
@@ -32,19 +39,18 @@ layout(location = 0) out vec4 out_color;
 // -----------------------------------------------------------------------------------------------
 // push constants
 // -----------------------------------------------------------------------------------------------
-layout (push_constant) uniform PatchPushConstants {
+layout (push_constant) uniform PatchPushConstant {
 
-  uint heightID;  // indices
-  uint normalID;  // indices
-  uint colorID; // indices
-  uint _unused03; // indices
-
+  vec4 position;
+  vec4 scale;
+  uint res_id;
+  
 } pc;
 
 
 
 void main () {
 
-  out_color = texture (colorsamp[pc.colorID], in_txcd);
+  out_color = texture (colorsamp[pc.res_id], in_txcd);
 
 }                                                  
