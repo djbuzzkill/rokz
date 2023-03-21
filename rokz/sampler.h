@@ -10,9 +10,14 @@ namespace rokz {
 
 
   namespace cx { 
-    VkSamplerCreateInfo& CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
+    VkSamplerCreateInfo& CreateInfo    (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
+    // deprecate
     bool                 CreateSampler (Sampler& sampler, const VkDevice& device); 
-    void                 Destroy (Sampler& sampler, const VkDevice& device); 
+    void                 Destroy       (Sampler& sampler, const VkDevice& device); 
+    // pass native vk
+    bool                 CreateSampler (VkSampler& sampler, const VkSamplerCreateInfo& ci, const VkDevice& device); 
+    void                 Destroy       (VkSampler& sampler, const VkDevice& device);
+
   } // cx
 } // rokz
     

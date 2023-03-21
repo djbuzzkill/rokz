@@ -77,7 +77,7 @@ namespace rekz {
   bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&    dss ,
                                       const Vec<Buffer>&       objparam_bu,
                                       const rc::ImageView::Ref texture_imageview, 
-                                      const Sampler&               sampler, 
+                                      const rc::Sampler::Ref   sampler, 
                                       const DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
                                       const Device&                device);
 

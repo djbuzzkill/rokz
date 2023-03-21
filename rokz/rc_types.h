@@ -72,12 +72,19 @@ namespace rokz {
     };
 
     //    ImageView::Ref CreateImageView (const VkImageViewCreateInfo& ci, const VkDevice& device); 
-    ImageView::Ref CreateImageView (Image::Ref image, VkFormat format, const Device& device); 
+    ImageView::Ref CreateImageView (Image::Ref image, VkFormat format, VkImageAspectFlagBits imageaspect, const Device& device); 
     // -----------------------------------------------------------------------------------------
 
     // ------------------------------------------------------------------
-    // VkImageViewCreateInfo& 
-    // CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const rc::Image::Ref image);
+    struct Sampler : public deviceob<VkSampler, Sampler> {
+      Sampler (const Device& d): deviceob (d) {
+      }
+
+      virtual ~Sampler (); 
+    };
+    //
+    
+    Sampler::Ref CreateSampler_default (const Device& device); 
 
   }
 }

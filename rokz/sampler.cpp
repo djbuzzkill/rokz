@@ -1,34 +1,41 @@
 
 #include "sampler.h"
-
+#include <vulkan/vulkan_core.h>
 
 
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::cx::CreateSampler (rokz::Sampler& sampler, const VkDevice& device){
-
-  printf ("%s \n", __FUNCTION__); 
+bool rokz::cx::CreateSampler (VkSampler& sampler, const VkSamplerCreateInfo& ci, const VkDevice& device) {
   
-  if (vkCreateSampler (device, &sampler.ci, nullptr, &sampler.handle) != VK_SUCCESS) {
+  if (vkCreateSampler (device, &ci, nullptr, &sampler) != VK_SUCCESS) {
     printf ("failed to create texture sampler!");
     return false;
   }
-
   return true;
 }
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
+void rokz::cx::Destroy (VkSampler& sampler, const VkDevice& device) {
+  vkDestroySampler (device, sampler, nullptr);
+}
+
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+bool rokz::cx::CreateSampler (rokz::Sampler& sampler, const VkDevice& device){
+  return  CreateSampler (sampler.handle, sampler.ci, device); 
+}
+
 void rokz::cx::Destroy (rokz::Sampler& sampler, const VkDevice& device) {
 
-  vkDestroySampler(device, sampler.handle, nullptr);
+  Destroy (sampler.handle, device);
 }
   
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------
 //
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------
 VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
 
   printf ("%s SamplerCreateInfo \n", __FUNCTION__); 

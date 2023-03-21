@@ -55,10 +55,7 @@ namespace rekz {
     // image/texture
     rokz::rc::Image::Ref     texture;   // color texture
     rokz::rc::ImageView::Ref imageview;
-    //rokz::ImageView       imageview; // 
-    VkImageViewCreateInfo imageview_ci;
-
-    rokz::Sampler         sampler;   // 
+    rokz::rc::Sampler::Ref   sampler;   // 
 
     float                 obj_theta[2];     // scene objects 
     //rekz::Sphericalf      objatt;
