@@ -3,6 +3,7 @@
 #define REKZ_GRID_PIPELINE
 
 #include "rekz.h"
+#include "rokz/vert_defs.h"
 
 namespace rekz { 
 
@@ -11,15 +12,11 @@ namespace rekz {
   //
   namespace grid {
 
-    typedef rekz::Vertex_pos_col    Vert; 
-    // ----------------------------------------------------------------------------------------------
-    //                                    
-    // ----------------------------------------------------------------------------------------------
+    typedef rekz::PC_Vert Vert; 
+
     extern const VkVertexInputBindingDescription        kVertexBindingDesc;
     extern const Vec<VkVertexInputAttributeDescription> kVertInputAttributeDesc;
-
-    // ----------------------------------------------------------------------------------------------
-    //                                    
+    // const Vec<VkDescriptorSetLayoutBinding>          kGridDescriptorBindings = dont need
     // ----------------------------------------------------------------------------------------------
     struct PushConstant {
 

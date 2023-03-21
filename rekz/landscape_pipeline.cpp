@@ -125,14 +125,13 @@ bool rekz::InitLandscapePipeline (Pipeline&                    pipeline,
 {
   HERE("hai");
 
-  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstants),
+  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(landscape::PatchPushConstant),
                                 landscape::kPCStages, dslos, device.handle);
 
   
   PipelineState_tessellation (pipeline.state, msaa_samples, landscape::kVertexInputAttributeDesc,
                               landscape::kVertexInputBindingDesc, displayextent); 
 
-  
   // ^ !! shader modules is part of pipelinestate 
   bool shmodres = setup_landscape_shader_modules (pipeline, pipe_path, device);
   if (!shmodres) {

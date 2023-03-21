@@ -99,9 +99,8 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
 //
 // ------------------------------------------------------------------------------------------------
 bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root, const rokz::Device& device) { 
-  // used in here:
-  // SetupObjectUniforms;
-  // SetupObjectTextureAndSampler;
+
+
   const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
 
   // vertex buffer

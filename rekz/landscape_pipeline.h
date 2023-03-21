@@ -26,7 +26,7 @@ namespace rekz {
 
     // ----------------------------------------------------------------------------------------------
 
-    struct PatchPushConstants {
+    struct PatchPushConstant {
       glm::vec4 position;
       glm::vec4 scale;
       uint32 res_id;

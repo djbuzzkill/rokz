@@ -7,7 +7,9 @@
 #include "rokz/display.h"
 #include "rokz/input_state.h"
 #include "rokz/global_descriptor.h"
+#include "rokz/rc_types.h"
 
+#include "marzdata.h"
 
 namespace marz {
 
@@ -18,52 +20,15 @@ namespace marz {
   // ---------------------------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------------------------
-  typedef rekz::Vertex_pos_nrm_txc  kPatchVert;
+  // typedef rekz::Vertex_pos_nrm_txc  kPatchVert;
 
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
-  extern const Vec<VkDescriptorSetLayoutBinding>      kDescriptorSetBindings;
-  extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
-  extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
+  // // ----------------------------------------------------------------------------------------------
+  // // 
+  // // ----------------------------------------------------------------------------------------------
+  // extern const Vec<VkDescriptorSetLayoutBinding>      kDescriptorSetBindings;
+  // extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
+  // extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
 
- 
-  struct PatchPushConstant {
-    glm::uvec4 cell;  // only x, y are used
-    glm::uvec4 objIDs;// only x is used
-  };
-
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
-  struct MarsDat {
-
-    const uint32 x_tile_dim   = 1024;
-    const uint32 z_tile_dim   = 1024;
-    const uint32 x_tile_count = 6;
-    const uint32 z_tile_count = 16;
-
-    Buffer         vb_device;
-    Buffer         ib_device;
-    
-    Vec<Image>     colormaps;
-    Vec<ImageView> colorviews;
-
-    Vec<Image>     heightmaps;
-    Vec<ImageView> heightviews;
-
-    Vec<Image>     normalmaps;
-    Vec<ImageView> normalviews;
-    
-    Sampler        heightsampler;
-    Sampler        colorsampler;
-    Sampler        normalsampler;
-  };
-
-
-  bool SetupData   (MarsDat& dat);
-  void CleanupData (MarsDat& dat, rokz::Device& device);
-  
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
@@ -119,7 +84,7 @@ namespace marz {
       PipelineLayout    plo;
       Pipeline          pipe;
       DrawSequence::Ref draw;
-      MarsDat           data;
+      marz::Data        data;
     } scape; 
 
   }; 

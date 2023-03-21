@@ -15,6 +15,7 @@ set (REKZ_HEADER_FILES
   grid_pipeline.h
   landscape_pipeline.h
   mars_files.h
+  marzdata.h
   draw_mars.h
   image_loader.h
   image_tool.h
@@ -34,6 +35,7 @@ set (REKZ_SOURCE_FILES
   image_loader.cpp
   landscape_pipeline.cpp
   marz.cpp
+  marzdata.cpp
   mars_files.cpp
   platonic.cpp
   rekz.cpp

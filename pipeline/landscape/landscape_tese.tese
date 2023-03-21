@@ -1,16 +1,14 @@
+// -- LANDSCAPE TESSELLATION EVALUATION PROGRAM -- 
 #version 460
 
-//        .vert - a vertex shader
-//        .tesc - a tessellation control shader
-//        .tese - a tessellation evaluation shader
-//        .geom - a geometry shader
-//        .frag - a fragment shader
-//        .comp - a compute shader
 
+//  .vert - a vertex shader
+//  .tesc - a tessellation control shader
+//  .tese - a tessellation evaluation shader
+//  .geom - a geometry shader
+//  .frag - a fragment shader
+//  .comp - a compute shader
 
-
-
-// -- LANDSCAPE TESSELLATION EVALUATION PROGRAM -- 
 
 //#extension GL_EXT_nonuniform_qualifier : enable
 
@@ -25,7 +23,8 @@ in gl_PerVertex {
   vec4 gl_Position; 
 } gl_in[]; 
 
-// these pass thru
+
+
 // -------------------------------------------------------------------------
 //  outgoing
 // -------------------------------------------------------------------------
@@ -36,35 +35,7 @@ out gl_PerVertex {
 layout (location = 0) out vec2 out_txcd; 
 
 
-// -----------------------------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------------------------
-// uniforms
-// -----------------------------------------------------------------------------------------------
-
-// uniform constants 
-layout (set = 0, binding = 0) uniform MVPTransform {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} mat;                                             
-
-
-// -----------------------------------------------------------------------------------------------
-// set 1 
-// -----------------------------------------------------------------------------------------------
-
-layout (set = 1, binding = 0) uniform sampler2D heightmap[128];                                                  
-layout (set = 1, binding = 1) uniform sampler2D normalmap[128];                                                  
-
-layout (set = 1, binding = 3) uniform PatchParams {
-    mat4 model;
-    vec4 unused0;
-    vec4 unused1;
-} params[128];                                             
-// 
 // -----------------------------------------------------------------------------------------------
 // push constants
 // -----------------------------------------------------------------------------------------------
@@ -76,8 +47,34 @@ layout (push_constant) uniform PatchPushConstants {
   
 } pc;
 
+// -----------------------------------------------------------------------------------------------
+// descriptors
+// -----------------------------------------------------------------------------------------------
+// uniform constants 
+layout (set = 0, binding = 0) uniform MVPTransform {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+} mat;                                             
+
+
+// set 1 
+layout (set = 1, binding = 0) uniform sampler2D heightmap[128];                                                  
+// not used yet
+layout (set = 1, binding = 1) uniform sampler2D normalmap[128];                                                  
+
+layout (set = 1, binding = 3) uniform PatchParams {
+    mat4 model;
+    vec4 unused0;
+    vec4 unused1;
+} params[128];                                             
+// 
+
 
 //
+// -----------------------------------------------------------------------------------------------
+// 
+// -----------------------------------------------------------------------------------------------
 vec2 interpolate2 (in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3) {
 	vec2 a = mix(v0, v1, gl_TessCoord.x);
 	vec2 b = mix(v3, v2, gl_TessCoord.x);
@@ -91,9 +88,9 @@ vec4 interpolate4(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3) {
 	return mix(a, b, gl_TessCoord.y);
 }
 
-// -------------------------------------------------------------------------
-// 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------
+// main
+// -----------------------------------------------------------------------------------------------
 void main() {
   
     out_txcd = interpolate2 (in_txcrd[0], in_txcrd[1], in_txcrd[2], in_txcrd[3] ); 		

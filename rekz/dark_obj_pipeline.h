@@ -14,16 +14,13 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   namespace obz {   
 
-    //typedef rokz::PNCTx_Vert                             Vertex; 
+    typedef rokz::PNCTx_Vert                             Vertex; 
     // ----------------------------------------------------------------------------------------------
     const size_t                                         kMaxCount = 128; // y?
-    // ----------------------------------------------------------------------------------------------
-    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;   // rokz::kPNCT_InputBindingDesc;
-    // ----------------------------------------------------------------------------------------------
-    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; // rokz::kPNCT_InputBindingAttributeDesc; 
-
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;   
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; 
     extern const DescriptorSetLayoutBindings             kDescriptorBindings;
-
+    // ----------------------------------------------------------------------------------------------
     struct PushConstant {
     
       uint32 resourceID;
@@ -32,8 +29,8 @@ namespace rekz {
       uint32 _unused_03;
     }; 
 
-    const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT;
-    
+    const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT
+                                      | VK_SHADER_STAGE_FRAGMENT_BIT;
   }
 
   // ----------------------------------------------------------------------------------------------

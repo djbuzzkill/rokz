@@ -19,7 +19,7 @@ const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDe
 
 const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
   { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1                         , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1                   , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
 
 // ----------------------------------------------------------------------------------------------
@@ -159,8 +159,7 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
   
   
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(obz::PushConstant),
-                                obz::PCStages, 
-                                dslos, device.handle);
+                                obz::PCStages, dslos, device.handle);
 
 
 
