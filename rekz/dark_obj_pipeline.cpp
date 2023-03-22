@@ -19,7 +19,7 @@ const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDe
 
 const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
   { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1                   , VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
 
 // ----------------------------------------------------------------------------------------------
@@ -149,6 +149,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
                                           const rc::Sampler::Ref        sampler, 
                                           const DescriptorSetLayout&    dslayout, //const rokz::DescriptorPool& descpool,
                                           const Device&                 device) {
+  
   //printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
    assert (dss.size () == objparam_buffs.size ());
   //
@@ -162,16 +163,24 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
       obparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
     }
     //VkDescriptorImageInfo image_info {};
-    Vec<VkDescriptorImageInfo> imageinfos (imageviews.size());; 
-    for (size_t iview = 0; iview < imageviews.size(); ++iview) { 
-      imageinfos[iview] = {};
-      imageinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
-      imageinfos[iview].imageView   = imageviews[i]->handle;
-      imageinfos[iview].sampler     = sampler->handle;
+    Vec<VkDescriptorImageInfo> imageinfos (rekz::obz::kMaxCount);
+    for (size_t iview = 0; iview < rekz::obz::kMaxCount; ++iview) { 
+
+      if (iview < imageviews.size ()) { 
+        imageinfos[iview] = {};
+        imageinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+        imageinfos[iview].imageView   = imageviews[iview]->handle;
+        imageinfos[iview].sampler     = sampler->handle;
+      }
+      else { // err'thing must b written
+        imageinfos[iview] = {};
+        imageinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+        imageinfos[iview].imageView   = imageviews[0]->handle;
+        imageinfos[iview].sampler     = sampler->handle;
+        }
     }
     //
     std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
-
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;
     descriptor_writes[0].dstSet           = dss[i];

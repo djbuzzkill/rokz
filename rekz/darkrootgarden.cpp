@@ -425,14 +425,24 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   // Bind*DescriptorSets is part of a pipeline definition
 
-  
+  HERE (" new BindObjectDescriptorResources");
   // object params are bound here but we never bound the global
+  // if (!rekz::BindObjectDescriptorResources (glob.poly_objects_de.descrsets, glob.poly_objects_bu,
+  //                                      glob.polyd.imageview, glob.polyd.sampler, glob.object_dslo,
+  //                                      glob.device)) {
+  //   printf ("[FAILED] --> BindObjectDescriptorSets \n"); 
+  //   return false;
+  // } 
+
+  // assert (false);
   if (!rekz::BindObjectDescriptorResources (glob.poly_objects_de.descrsets, glob.poly_objects_bu,
-                                       glob.polyd.imageview, glob.polyd.sampler, glob.object_dslo,
+                                       glob.polyd.imageviews, glob.polyd.sampler, glob.object_dslo,
                                        glob.device)) {
     printf ("[FAILED] --> BindObjectDescriptorSets \n"); 
     return false;
   } 
+
+  HERE (" new BindObjectDescriptorResources");
 
 
   //

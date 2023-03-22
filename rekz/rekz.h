@@ -53,18 +53,14 @@ namespace rekz {
     size_t                   indexoffs;
     size_t                   vertexoffs;
     rc::Buffer::Ref          devicebuffer;
-
-    // rokz::Buffer             vb_device;
-    // rokz::Buffer             ib_device;
-
     // rokz::DescriptorGroup descrgroup;
+
     // image/texture
-    rokz::rc::Image::Ref     texture;   // color texture
-    rokz::rc::ImageView::Ref imageview;
+    rc::Image::Ref     texture;   // color texture
+    rc::ImageView::Ref imageview;
 
     Vec<rc::Image::Ref>      textures;   // color texture
     Vec<rc::ImageView::Ref>  imageviews;
-
 
     rokz::rc::Sampler::Ref   sampler;   // 
 
@@ -77,21 +73,17 @@ namespace rekz {
   // ---------------------------------------------------------------------------------------
   // what is this
   // ---------------------------------------------------------------------------------------
-  struct ObzData { 
+  struct Obdat { 
 
-    rokz::rc::Buffer::Ref devicebuffer;
-
-    // rokz::DescriptorGroup descrgroup;
+    rokz::rc::Buffer::Ref    devicebuffer;
     // image/texture
-    rokz::rc::Image::Ref  texture;   // color texture
-    rokz::ImageView       imageview; // 
-    rokz::Sampler         sampler;   // 
+    rokz::Sampler            sampler;   // 
+    Vec<rc::Image::Ref>      textures;  // color texture
+    Vec<rc::ImageView::Ref>  imageviews;
 
-    float                 obj_theta[2];     // scene objects 
-    //rekz::Sphericalf      objatt;
-    std::array<glm::vec3, 32> objrot;     // scene objects 
-    std::array<glm::vec3, 32> objpos;
-  } ;
+    std::array<glm::vec4, 32> objrot;     // scene objects 
+    std::array<glm::vec4, 32> objpos;
+  };
 
   // ?? a pipeline is tied to a drawlist.. no.
   // ?? a drawlist is tied to data..       ??

@@ -100,9 +100,6 @@ struct PolygonDraw : public rokz::DrawSequence {
       pcs._unused_02 = i; 
       pcs._unused_03 = i; 
 
-      const VkShaderStageFlags shader_stages =
-        VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
-
       vkCmdPushConstants (combuf,
                           env.pa.plo, 
                           rekz::obz::PCStages, //   shader_stages,

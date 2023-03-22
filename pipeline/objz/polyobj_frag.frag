@@ -19,14 +19,13 @@ layout (push_constant) uniform PushConstants {
 } pc;
 
 
-layout(binding = 1, set = 1) uniform sampler2D tex_sampler;
-
+layout(binding = 1, set = 1) uniform sampler2D tex_sampler[128];
 
 layout(location = 0) out vec4 out_color;
 
 void main() {
      
-     out_color = texture (tex_sampler, txcrd2);
+  out_color = texture (tex_sampler[pc.resourceIDs.x], txcrd2);
 
 }
 
