@@ -1,5 +1,7 @@
 #version 460
 
+#include "polyobj.h"
+
 //        .vert - a vertex shader
 //        .tesc - a tessellation control shader
 //        .tese - a tessellation evaluation shader
@@ -11,7 +13,6 @@ layout(location = 0) in vec3 frag_color;
 layout(location = 1) in vec3 frag_norm;
 layout(location = 2) in vec2 txcrd2;
 
-
 layout (push_constant) uniform PushConstants {
 
   ivec4 resourceIDs; 
@@ -19,7 +20,7 @@ layout (push_constant) uniform PushConstants {
 } pc;
 
 
-layout(binding = 1, set = 1) uniform sampler2D tex_sampler[128];
+layout(binding = 1, set = 1) uniform sampler2D tex_sampler[max_count];
 
 layout(location = 0) out vec4 out_color;
 
