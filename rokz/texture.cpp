@@ -423,7 +423,6 @@ rokz::LoadTexture_color_sampling (VkFormat                 format,
                                   const rokz::CommandPool& commandpool, 
                                   const rokz::Device&      device) {
 
-  HERE("BAI");
   //size_t image_size = image_width * image_height *  bytes_per_pixel; 
   auto image_size = SizeOfComponents (format)
                   * NumberOfComponents (format)
@@ -445,15 +444,6 @@ rokz::LoadTexture_color_sampling (VkFormat                 format,
   std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
   rokz::cx::UnmapMemory (stage_buff.allocation, allocator);
 
-  // VkImageCreateInfo ci {};
-  //rokz::cx::CreateInfo_2D_color_sampling  (ci, VK_SAMPLE_COUNT_1_BIT, ext2d.width, ext2d.height);
-  // rokz::cx::AllocCreateInfo_device (image.alloc_ci);
-  // if (!rokz::cx::CreateImage (image, allocator)) {
-  //   printf ("[FAILED] %s setup test texture", __FUNCTION__);
-  //   return false;
-  // }
-
-  
   rokz::rc::Image::Ref image =
     rokz::rc::CreateImage_2D_color_sampling (ext2d.width, ext2d.height, VK_SAMPLE_COUNT_1_BIT, device); 
 

@@ -70,7 +70,7 @@ namespace darkroot {
 
     // rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate from pipelines 
     DrawSequence::Ref      drawgrid;
-    GridData               gridata;
+    rc::Buffer::Ref        gridbuff;
 
     std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;

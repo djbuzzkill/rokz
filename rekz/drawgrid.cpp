@@ -4,24 +4,30 @@
 #include "rekz/grid_pipeline.h"
 #include "rokz/draw_sequence.h"
 
+// ---------------------------------------------------------------------------------------
+//                   
+// ---------------------------------------------------------------------------------------
 
+struct drawgrid_buff : public rokz::DrawSequence {
 
-struct DrawGrid : public rokz::DrawSequence {
-
-
+  rokz::rc::Buffer::Ref gd; 
+  size_t vertexoffset;
+  size_t indexoffset;
   
-  DrawGrid (const rekz::GridData& dat) : data (dat) {
+  drawgrid_buff (rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs)
+    : gd (griddata), vertexoffset (voffs) , indexoffset (ioffs) {
   }
 
-  virtual ~DrawGrid () {
+  virtual ~drawgrid_buff () {
   }
   
-    // do crap before recording ("UpdateDescriptors()", etc)
+  // do crap before recording ("UpdateDescriptors()", etc)
   virtual int Prep (uint32_t current_frame, const RenderEnv& env, const rokz::Device& device) { 
     // nada 
     return 0; 
   }
-    // the draw sequence recording, mebe rename to DrawSeq::Rec() 
+  
+  // the draw sequence recording, mebe rename to DrawSeq::Rec() 
   virtual int Exec (VkCommandBuffer comb, uint32_t current_frame, const RenderEnv& env) { 
 
     using namespace rekz;
@@ -38,7 +44,6 @@ struct DrawGrid : public rokz::DrawSequence {
     push_consts.xoffset      = 0.0f;  
     push_consts.zoffset      = 0.0f;  
 
-    
     vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.pipeline.handle);
 
     vkCmdSetViewport  (comb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].viewport);
@@ -48,12 +53,12 @@ struct DrawGrid : public rokz::DrawSequence {
     const uint32_t descr_set_count = 1; // b/c grid only needs Globals
     vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.plo, 0, descr_set_count, &descrmap.at("Global"), 0, nullptr);
 
-    VkBuffer     vertex_buffers[] = {data.vb_device.handle};
-    VkDeviceSize offsets[]        = {0};
+    VkBuffer     vertex_buffers[] = {gd->handle};
+    VkDeviceSize offsets[]        = {vertexoffset};
 
     vkCmdBindVertexBuffers(comb, 0, 1, vertex_buffers, offsets);
 
-    vkCmdBindIndexBuffer(comb, data.ib_device.handle, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer(comb, gd->handle,  indexoffset, VK_INDEX_TYPE_UINT16);
 
     const VkShaderStageFlags shader_stages =
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -77,25 +82,16 @@ struct DrawGrid : public rokz::DrawSequence {
   }
 
 
-  const rekz::GridData& data;
-
 };
 
-// -------------------------------------------------------------------------------------------
-//                                             
-// -------------------------------------------------------------------------------------------
+  
+// ---------------------------------------------------------------------------------------
+//                   
+// ---------------------------------------------------------------------------------------
+rokz::DrawSequence::Ref rekz::CreateDrawGrid (
+                 rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs) {
 
-
-// -------------------------------------------------------------------------------------------
-// draw sequence recording, mebe rename to DrawSeq::Rec() 
-// -------------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------------
-//                                             
-// -------------------------------------------------------------------------------------------
-rokz::DrawSequence::Ref rekz::CreateDrawGrid (const GridData& dat) {
-
-  return std::make_shared<DrawGrid> (dat); 
+  return std::make_shared<drawgrid_buff> (griddata, voffs, ioffs); 
 }
 
 

@@ -30,7 +30,9 @@ namespace rekz {
       float     zoffset;
     };
 
-    const VkShaderStageFlags kPCStages = VK_SHADER_STAGE_VERTEX_BIT;
+    const VkShaderStageFlags kPCStages =
+      VK_SHADER_STAGE_VERTEX_BIT;
+
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -39,12 +41,12 @@ namespace rekz {
   bool InitGridPipeline  (Pipeline&              pipeline,
                           PipelineLayout&        plo,
                           //0
-                          const Vec<VkDescriptorSetLayout>&   dslos,
-                          const std::filesystem::path& fspath,
-                          const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
-                          VkSampleCountFlagBits        msaa_samples,
-                          VkFormat                     color_format,
-                          VkFormat                     depth_format,
+                          const Vec<VkDescriptorSetLayout>& dslos,
+                          const std::filesystem::path&      fspath,
+                          const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
+                          VkSampleCountFlagBits             msaa_samples,
+                          VkFormat                          color_format,
+                          VkFormat                          depth_format,
                           const Device&          device) ; 
 
   // ----------------------------------------------------------------------------------------------
@@ -52,9 +54,7 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   bool BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rokz::Buffer>& global_uniforms, const rokz::Device& device);
   
-
-
-
+  bool BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, std::vector<rc::Buffer::Ref> global_uniform, const rokz::Device& device);
   
 }
 

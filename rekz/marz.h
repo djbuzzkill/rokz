@@ -64,7 +64,7 @@ namespace marz {
       PipelineLayout    plo;
       Pipeline          pipe;
       DrawSequence::Ref draw;
-      rekz::GridData    data;
+      rc::Buffer::Ref   buff;
     } grid; 
     // 
     // LANDSCAPE

@@ -28,8 +28,6 @@ namespace rokz {
   template<typename Ty> 
     using Vec = std::vector<Ty>;
     
-
-
   // --------------------------------------------------------------------------------------------
   //                                          
   // --------------------------------------------------------------------------------------------
@@ -58,14 +56,15 @@ namespace rokz {
   // ----------------------------------------------------------------------------------------------
   template<typename Ty> struct Spherical {
 
-    Spherical () : theta (0.0f), phi (0.0f) {
+    Spherical () : theta (0.0), phi (0.0), radius(0.0) {
     }
     
-    Spherical (Ty th, Ty ph) : theta (th), phi (ph) {
+    Spherical (Ty th, Ty ph, Ty r) : theta (th), phi (ph), radius (r) {
     }
 
     Ty theta; // "longitude" 0 -> 360
     Ty phi;   // "latitude"  -90 -> +90
+    Ty radius;
   }; 
 
   typedef Spherical<float>  Sphericf;
@@ -86,7 +85,8 @@ namespace rokz {
   // ----------------------------------------------------------------------------------------------
   //                                                
   // ----------------------------------------------------------------------------------------------
-  template<typename VkTy, typename ObjTy> struct deviceob : public destructor {
+  template<typename VkTy,
+           typename ObjTy> struct deviceob : public destructor {
 
     typedef std::shared_ptr<ObjTy> Ref;
     
@@ -98,6 +98,14 @@ namespace rokz {
 
   };
 
+  template<typename Ty> struct xz {
+    Ty x;
+    Ty z; 
+  };
+
+  typedef xz<float>          fxz;
+  typedef xz<unsigned char>  ucxz;
+  
 }
 
 #endif

@@ -29,12 +29,8 @@ struct PolygonDraw : public rokz::DrawSequence {
   //
   // ------------------------------------------------------------------------------------------------
   virtual int Prep (uint32_t currentframe, const RenderEnv& env, const rokz::Device& device) { 
-  //virtual int Prep (const shared_globals& globals, const pipeline_assembly& pa, const rokz::Device& device) {
-    //polyd.vma_poly_uniforms[globals.current_frame]
 
     // update uniform buffer 
-    // SceneObjParam
-    //if (PolygonParam& obj = GetObjectRef ()) {
     if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (object_buffs[currentframe]))) {
       //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
       glm::vec3 va, vb;
@@ -45,7 +41,8 @@ struct PolygonDraw : public rokz::DrawSequence {
       glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, 0.0, 0.0));
       glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (2.0, 4.0, 0.0));
       //for (size_t i = 0; i < kSceneObjCount; ++i) {
-      obj[0].modelmat = glm::rotate(model0, polyd.obj_theta[0], glm::vec3(0.0f, -1.0f, 0.0f));
+      obj[0].modelmat = glm::rotate(model0, polyd.objrot[0].y, glm::vec3(0.0f, -1.0f, 0.0f));
+
       obj[1].modelmat = glm::rotate(model1, env.globals.sim_time * glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     }
@@ -54,14 +51,6 @@ struct PolygonDraw : public rokz::DrawSequence {
   }
 
   // ------------------------------------------------------------------------------------------------
-  //
-  // ------------------------------------------------------------------------------------------------
-  // struct DrawCmdEnv {
-  //   Globals&          globals;
-  //   PipelineAssembly& pa;
-  //   DescriptorMap&    descriptormap; 
-  // };
-  // // ------------------------------------------------------------------------------------------------
   //
   // ------------------------------------------------------------------------------------------------
   virtual int Exec (VkCommandBuffer combuf, uint32_t currentframe, const RenderEnv& env) { 

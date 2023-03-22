@@ -320,7 +320,9 @@ bool transfer_memory_to_device_buffer (rokz::Buffer& dstb, const void* mem, size
 // ----------------------------------------------------------------------------------------
 //                    
 // ----------------------------------------------------------------------------------------
-bool rokz::Create_VB_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device) {
+bool
+//rokz::
+Create_VB_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device) {
 
   printf ("%s", __FUNCTION__);
 
@@ -353,7 +355,9 @@ bool rokz::Create_VB_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, 
 //                    
 // ----------------------------------------------------------------------------------------
 
-bool rokz::Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t num_inds, const rokz::Device& device) {
+bool
+//rokz::
+Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t num_inds, const rokz::Device& device) {
   printf ("%s", __FUNCTION__);
 
   if (!mem) {

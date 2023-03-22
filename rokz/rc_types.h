@@ -1,18 +1,12 @@
 
 #ifndef ROKZ_RC_TYPES_INCLUDE
-#define  ROKZ_RC_TYPES_INCLUDE
+#define ROKZ_RC_TYPES_INCLUDE
 
 
 #include "common.h"
 #include "rokz_types.h"
-#include <vulkan/vulkan_core.h>
 
-namespace rokz {
-  // -----------------------------------------------------------------------------------------------
-
-
-  namespace rc {
-
+namespace rokz { namespace rc {
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
@@ -27,7 +21,7 @@ namespace rokz {
       virtual ~Buffer ();
 
     protected:
-
+      //
     };
 
 

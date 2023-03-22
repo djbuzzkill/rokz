@@ -2,68 +2,124 @@
 #include "rekz.h"
 
 #include "grid_pipeline.h"
+#include "rokz/buffer.h"
+#include "rokz/rc_types.h"
 using namespace rokz;
 
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
+struct fillparams {
 
+  uint32 totalverts   ;
+  uint32 totalindices ;
+  size_t reqsize      ;
+
+  glm::uvec3 vertcount;
+  glm::vec3  dimsize;
+
+  glm::vec3 origin_co ; // (0.0, 0.4, 0.6);
+  glm::vec3 xaxis_co  ; // (0.3, 0.5, 1.0);
+  glm::vec3 zaxis_co  ; // (1.0, 0.4, 0.8);
+};
 
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-bool rekz::SetupGridData (GridData& gd, const Device& device) {
+struct fillgridbuffer : public cx::mappedbuffer_cb {
 
-  void*  mem = nullptr;
-  size_t szmem = 0;
+  size_t&           vertexoffset;
+  size_t&           indexoffset;
+  const fillparams& p;
+  //
+  fillgridbuffer (size_t& voffs, size_t& ioffs, const fillparams& params)
+    : p(params) , vertexoffset (voffs), indexoffset(ioffs) {
+  }
+  //
+  virtual int on_mapped  (void* mappedp, size_t maxsize) {
 
-  const uint16_t vertdim    = 11;
-  const uint16_t totalverts = vertdim * vertdim;
-  const float    dimsize    = 20.0f;
-  const float    dimstep    = float (dimsize) / float (vertdim - 1);
+    byte* ucp = (byte*) mappedp;
 
-  glm::vec3 zaxis_co  (1.0, 0.4, 0.8);
-  glm::vec3 xaxis_co  (0.3, 0.5, 1.0);
-  glm::vec3 origin_co (0.0, 0.4, 0.6);
+    uint32 totalvertsize  = p.totalverts * sizeof(rekz::grid::Vert);
+    uint32 totalindexsize = 2 * p.totalverts * sizeof(uint16);
 
-  float dx = 1.0f / float (vertdim);
+    vertexoffset = 0;
+    indexoffset  = totalvertsize;
+    
+    float xstep = float(p.dimsize.x) / float(p.vertcount.x); 
+    float zstep = float(p.dimsize.z) / float(p.vertcount.z); 
+
+    float dx = 1.0f / float (p.vertcount.x - 1);
+    float dz = 1.0f / float (p.vertcount.z - 1);
   
-  const glm::vec3 voffs (-dimsize * 0.5f, 0.0f, -dimsize * 0.5f);
+    const glm::vec3 voffs (-p.dimsize.x * 0.5f, 0.0f, -p.dimsize.z * 0.5f);
 
-  Vec<grid::Vert> verts (vertdim * vertdim);
-  Vec<uint16_t> inds (2 * totalverts);
+    rekz::grid::Vert* verts = reinterpret_cast<rekz::grid::Vert*> (ucp); 
+    uint16*           inds  = reinterpret_cast<uint16*> (ucp + totalvertsize);
 
-  // -- vertices --
-  for (uint16_t iz = 0; iz < vertdim; ++iz) {
-    for (uint16_t ix = 0; ix < vertdim; ++ix) {
-      verts[iz * vertdim + ix].pos = glm::vec3 (ix * dimstep, 0.0f, iz * dimstep) + voffs;
-      verts[iz * vertdim + ix].col = glm::mix (origin_co, zaxis_co, ix * dx); 
+    // -- vertices --
+    for (uint16_t iz = 0; iz < p.vertcount.z; ++iz) {
+      for (uint16_t ix = 0; ix < p.vertcount.x; ++ix) {
+        verts[iz * p.vertcount.x + ix].pos = glm::vec3 (ix * xstep, 0.0f, iz * zstep) + voffs;
+        verts[iz * p.vertcount.x + ix].col = glm::mix (p.origin_co, p.zaxis_co, ix * dx); 
+      }
+    } // move 2 vb
 
-    }
-  } // move 2 vb
-  Create_VB_device (gd.vb_device, &verts[0], verts.size () * sizeof(grid::Vert), device); 
+    // -- indices --
+    for (uint16_t iz = 0; iz < p.vertcount.z; ++iz) { // draw x lines
+      for (uint16_t ix = 0; ix < p.vertcount.x; ++ix) { 
+        inds[iz * p.vertcount.x + ix] = iz * p.vertcount.x + ix;   
+      }}
 
-  // -- indices --
-  for (uint16_t iz = 0; iz < vertdim; ++iz) { // draw x lines
-    for (uint16_t ix = 0; ix < vertdim; ++ix) { 
-      inds[iz * vertdim + ix] = iz * vertdim + ix;   
-    }}
+    for (uint32_t ix = 0; ix < p.vertcount.x; ++ix) {  // draw z lines
+      for (uint32_t iz = 0; iz < p.vertcount.z; ++iz) { 
+        inds[p.totalverts + ix * p.vertcount.z + iz] = iz * p.vertcount.x + ix; 
+      }
+    } // move
 
-  for (uint32_t ix = 0; ix < vertdim; ++ix) {  // draw z lines
-    for (uint32_t iz = 0; iz < vertdim; ++iz) { 
-      inds[totalverts + ix * vertdim + iz] = iz * vertdim + ix; 
-    }
-  } // move
-  Create_IB_16_device (gd.ib_device, &inds[0], inds.size (), device); 
-  
-  return true; 
-}
+    return 0;
 
+  }
 
-// -------------------------------------------------------------------------------------------
-//                                             
-// -------------------------------------------------------------------------------------------
-void rekz::CleanupGridData (GridData& gd, const Device& device) {
+};
 
-  rokz::cx::Destroy (gd.vb_device, device.allocator); 
-  rokz::cx::Destroy (gd.ib_device, device.allocator); 
-  
+// ----------------------------------------------------------------------------------------------
+//                                                
+// ----------------------------------------------------------------------------------------------
+rc::Buffer::Ref rekz::SetupGridData (size_t& vertoffset, size_t& indoffset, 
+                                     uint32 xvertcount, uint32 zvertcount,
+                                     float xsize, float zsize,
+                                     const Device& device) {
+  // v.y is ignored mostly
+  const uint32 totalverts   = xvertcount *  zvertcount;
+  const uint32 totalindices = 2 * totalverts;
+  const uint32 reqsize      = totalverts*sizeof(rekz::grid::Vert) + totalindices*sizeof(uint16); 
+
+  fillparams params = {
+    totalverts, 
+    totalindices,
+    reqsize,
+
+    glm::uvec3 (xvertcount, 0, zvertcount),  // num verts in a direction
+    glm::fvec3 (xsize, 0.0f, zsize),         //in world units
+
+    glm::vec3 (0.0, 0.4, 0.6), // origin color
+    glm::vec3 (0.3, 0.5, 1.0), // x color
+    glm::vec3 (1.0, 0.4, 0.8), // zcolor
+  }; 
+
+  rc::Buffer::Ref buf = rc::CreateDeviceBuffer (reqsize, cx::kDeviceGeometryUsage, device);
+
+  int res = cx::TransferToDeviceBuffer (buf->handle, reqsize,
+                                        std::make_shared <fillgridbuffer> (vertoffset, indoffset, params),
+                                        device); 
+
+  if (res != 0) {
+    return rc::Buffer::Ref(nullptr); 
+  }
+
+  //const uint16_t vertdim    = 11;
+
+  return buf; 
 }
 

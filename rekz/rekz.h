@@ -49,24 +49,15 @@ namespace rekz {
   // what is this
   // ---------------------------------------------------------------------------------------
   struct PolygonData { 
-
-    size_t                   indexoffs;
-    size_t                   vertexoffs;
-    rc::Buffer::Ref          devicebuffer;
-    // rokz::DescriptorGroup descrgroup;
-
+    size_t                    indexoffs;
+    size_t                    vertexoffs;
+    rc::Buffer::Ref           devicebuffer;
     // image/texture
-    rc::Image::Ref     texture;   // color texture
-    rc::ImageView::Ref imageview;
+    Vec<rc::Image::Ref>       textures;   // color texture
+    Vec<rc::ImageView::Ref>   imageviews;
+    rc::Sampler::Ref          sampler;    // just color samp
 
-    Vec<rc::Image::Ref>      textures;   // color texture
-    Vec<rc::ImageView::Ref>  imageviews;
-
-    rokz::rc::Sampler::Ref   sampler;   // 
-
-    float                    obj_theta[2];     // scene objects 
-    //rekz::Sphericalf      objatt;
-    std::array<glm::vec3, 32> objrot;     // scene objects 
+    std::array<glm::vec3, 32> objrot;   // scene objects 
     std::array<glm::vec3, 32> objpos;
   };
 
@@ -75,9 +66,9 @@ namespace rekz {
   // ---------------------------------------------------------------------------------------
   struct Obdat { 
 
-    rokz::rc::Buffer::Ref    devicebuffer;
+    rc::Buffer::Ref    devicebuffer;
     // image/texture
-    rokz::Sampler            sampler;   // 
+    Sampler            sampler;   // 
     Vec<rc::Image::Ref>      textures;  // color texture
     Vec<rc::ImageView::Ref>  imageviews;
 
@@ -86,13 +77,13 @@ namespace rekz {
   };
 
   // ?? a pipeline is tied to a drawlist.. no.
-  // ?? a drawlist is tied to data..       ??
+  // ?? a drawlist is tied to data..       mebe
   // ?? a data is tied to a drawlist..     no
   // ?? a drawlist is tied to a pipeline.. no
 
-  rokz::DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg); 
-  rokz::DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
-  rokz::DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
+  DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg); 
+  DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
+  DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
 
   rekz::PolygonData& SetupPolygonData   (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device); 
   void               CleanupPolygonData (rekz::PolygonData& pd, const rokz::Device& device);
@@ -100,17 +91,12 @@ namespace rekz {
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
-  struct GridData {
-    // some shit like this
-    rokz::Buffer          vb_device;
-    rokz::Buffer          ib_device;
-    //rokz::DescriptorGroup descrgroup;
-  };
-  
-  bool SetupGridData   (GridData& gd, const rokz::Device& device);
-  void CleanupGridData (GridData& gd, const rokz::Device& device);
-  
-  rokz::DrawSequence::Ref CreateDrawGrid (const GridData& dat);
+  rc::Buffer::Ref SetupGridData (size_t& vertoffset, size_t& indoffset, 
+                                 uint32 xvertcount, uint32 zvertcount,
+                                 float xsize, float zsize,
+                                 const Device& device); 
+
+  rokz::DrawSequence::Ref CreateDrawGrid (rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs); 
 
   // --------------------------------------------------------------------
   // 

@@ -7,9 +7,13 @@
 #include "rokz_types.h"
 
 
-namespace rokz {
- 
-  namespace cx { 
+namespace rokz { namespace cx { 
+
+  const VkBufferUsageFlags kDeviceGeometryUsage = VK_BUFFER_USAGE_TRANSFER_DST_BIT 
+                                                | VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+                                                | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+
     VkBufferCreateInfo& CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem); 
     VkBufferCreateInfo& CreateInfo_IB_16_stage  (VkBufferCreateInfo& ci, uint32_t num_elem); 
     VkBufferCreateInfo& CreateInfo_IB_16_local  (VkBufferCreateInfo& ci, uint32_t num_elem); 
@@ -71,14 +75,20 @@ namespace rokz {
 
     struct mappedbuffer_cb {
       virtual int on_mapped  (void* mappedmemory, size_t maxsize) = 0;
+
+      typedef std::shared_ptr<mappedbuffer_cb> Ref;
     };
 
     int TransferToDeviceBuffer (VkBuffer& dstb, size_t sizemem, mappedbuffer_cb*, const rokz::Device& device);
 
+    inline int TransferToDeviceBuffer (VkBuffer& dstb, size_t sizemem, mappedbuffer_cb::Ref cb, const rokz::Device& device) {
+      return TransferToDeviceBuffer (dstb, sizemem, cb.get (), device); 
+    }
+
   }    
   
-  bool Create_VB_device    (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
-  bool Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
+  // bool Create_VB_device    (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
+  // bool Create_IB_16_device (rokz::Buffer& buf, const void* mem, size_t sz_mem, const rokz::Device& device);
   
 } // rokz
 
