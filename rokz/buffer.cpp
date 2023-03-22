@@ -21,9 +21,31 @@ bool rokz::cx::CreateBuffer (rokz::Buffer& buffer, VmaAllocator const& allocator
   return true; 
 }
 
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------
+//                         
+// --------------------------------------------------------------------------------------------
+bool rokz::cx::CreateBuffer (VkBuffer&                      buffer,
+                             VmaAllocation&                 allocation,
+                             VmaAllocationInfo&             alloc_info,
+                             const VmaAllocationCreateInfo& alloc_ci,
+                             const VkBufferCreateInfo&      ci,
+                             VmaAllocator const&            allocator) {
+
+  if (VK_SUCCESS != vmaCreateBuffer(allocator, &ci, &alloc_ci, &buffer, &allocation, &alloc_info)) {
+
+    printf ("[FAILED] %s vmaCreateBuffer", __FUNCTION__);
+    return false; 
+  }
+  
+  return true; 
+}
+
+
+
+// --------------------------------------------------------------------------------------------
+//                         
+// --------------------------------------------------------------------------------------------
 VmaAllocationCreateInfo& rokz::cx::CreateInfo_default (VmaAllocationCreateInfo& ci) {
 
 
@@ -61,6 +83,7 @@ bool rokz::cx::CreateBuffer_aligned (Buffer& buffer, VkDeviceSize min_align, Vma
 VkBufferCreateInfo& rokz::cx::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.size  = sizeOf_vert * numv; 
   ci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT; 
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -70,6 +93,7 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_VB_stage (VkBufferCreateInfo& ci, uint3
 VkBufferCreateInfo& rokz::cx::CreateInfo_VB_device (VkBufferCreateInfo& ci, uint32_t sizeOf_vert, uint32_t numv) {
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.size  = sizeOf_vert * numv; 
   ci.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -116,6 +140,7 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, ui
 
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  ci.pNext = nullptr;
   ci.size  = sizeof_index * num_elem; 
   ci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -123,15 +148,32 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_IB_16_stage (VkBufferCreateInfo& ci, ui
   return ci; 
 }
 
-// ---------------------------------------------------------------------
-// in device
-// ---------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------------
+// 
+// -------------------------------------------------------------------------------------------
+VkBufferCreateInfo& rokz::cx::CreateInfo (VkBufferCreateInfo& ci, uint32_t reqsize, VkBufferUsageFlags usage) {
+
+  ci = {};
+  ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.size  = reqsize; 
+  ci.usage = usage;
+  ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  return ci; 
+}
+
+// -------------------------------------------------------------------------------------------
+// in device                      
+// -------------------------------------------------------------------------------------------
 VkBufferCreateInfo& rokz::cx::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, uint32_t num_elem) {
 
   const size_t sizeof_index = sizeof (uint16_t);
 
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  ci.pNext = nullptr;
+
   ci.size  = sizeof_index * num_elem; 
   ci.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
   ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -139,25 +181,46 @@ VkBufferCreateInfo& rokz::cx::CreateInfo_IB_16_device (VkBufferCreateInfo& ci, u
 }
 
 
-// ---------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------
-bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
-                                Buffer& buff_src, // user buffer, 
-                                size_t size,
-                                const VkCommandPool& command_pool, 
-                                const VkQueue& que, 
-                                const VkDevice& device) {
+// -----------------------------------------------------------------------------------------------
+//                            
+// -----------------------------------------------------------------------------------------------
+bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& dstb, // device buffer
+                                    Buffer& srcb, // user buffer, 
+                                    size_t size,
+                                    const VkCommandPool& command_pool, 
+                                    const VkQueue& que, 
+                                    const VkDevice& device) {
 
-  if ( !(buff_src.ci.usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)) {
+  if ( !(srcb.ci.usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)) {
     printf ("buff_src is not TRANSFER_SRC "); 
     return false; 
   }
 
-  if ( !(buff_dst.ci.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT)) {
+  if ( !(dstb.ci.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT)) {
     printf ("buff_dst is not TRANSFER_DST "); 
     return false; 
   }
+
+
+  return MoveToBuffer_XB2DB  (dstb.handle, // device buffer
+                              srcb, // user buffer, 
+                              size,
+                              command_pool, 
+                              que, 
+                              device);
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//                            
+// -----------------------------------------------------------------------------------------------
+bool rokz::cx::MoveToBuffer_XB2DB  (VkBuffer& buff_dst, // device buffer
+                                    Buffer& buff_src, // user buffer, 
+                                    size_t size,
+                                    const VkCommandPool& command_pool, 
+                                    const VkQueue& que, 
+                                    const VkDevice& device) {
+
   
   VkCommandBufferAllocateInfo alloc_info{};
   alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -179,7 +242,7 @@ bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
 
   copy_desc.size = size;
 
-  vkCmdCopyBuffer(cmdbuf, buff_src.handle, buff_dst.handle, 1, &copy_desc);
+  vkCmdCopyBuffer(cmdbuf, buff_src.handle, buff_dst, 1, &copy_desc);
   vkEndCommandBuffer(cmdbuf);    
 
   VkSubmitInfo submit_info{};
@@ -193,6 +256,37 @@ bool rokz::cx::MoveToBuffer_XB2DB  (Buffer& buff_dst, // device buffer
   vkFreeCommandBuffers (device, command_pool, 1, &cmdbuf);
 
   return true; 
+}
+
+
+// ----------------------------------------------------------------------------------------
+//                    
+// ----------------------------------------------------------------------------------------
+int rokz::cx::TransferToDeviceBuffer (VkBuffer& dstb, size_t sizemem, mappedbuffer_cb* cb, const rokz::Device& device) {
+  void* pmapped  = nullptr;
+  rokz::Buffer vb_tmp; 
+
+  rokz::cx::CreateInfo_buffer_stage (vb_tmp.ci, sizemem); 
+  rokz::cx::AllocCreateInfo_stage (vb_tmp.alloc_ci);
+  rokz::cx::CreateBuffer (vb_tmp, device.allocator.handle);
+
+  int res = __LINE__;
+  if (rokz::cx::MapMemory (&pmapped, vb_tmp.allocation, device.allocator.handle)) {
+
+    if (cb) res = cb->on_mapped (pmapped, sizemem); 
+
+    rokz::cx::UnmapMemory (vb_tmp.allocation, device.allocator.handle); 
+  }
+  else {
+    printf ("[FAILED] rokz::cx::MapMemory\n");
+    return false;
+  }
+  
+  rokz::cx::MoveToBuffer_XB2DB (dstb, vb_tmp, sizemem, device.command_pool.handle, device.queues.graphics, device.handle); 
+
+  rokz::cx::Destroy (vb_tmp, device.allocator);
+
+  return res; 
 }
 
 // ----------------------------------------------------------------------------------------

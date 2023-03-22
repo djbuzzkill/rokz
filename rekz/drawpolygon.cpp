@@ -84,11 +84,12 @@ struct PolygonDraw : public rokz::DrawSequence {
     vkCmdBindDescriptorSets (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.plo,
                              0, descrsets.size(), &descrsets[0], 0, nullptr);
 
-    VkBuffer vertex_buffers[] = {polyd.vb_device.handle};
-    VkDeviceSize offsets[] = {0};
+    //VkBuffer vertex_buffers[] = {polyd.vb_device.handle};
+    VkBuffer vertex_buffers[] = {polyd.devicebuffer->handle};
+    VkDeviceSize offsets[] = { polyd.vertexoffs };
 
     vkCmdBindVertexBuffers(combuf, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer  (combuf, polyd.ib_device.handle, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer  (combuf, polyd.devicebuffer->handle, polyd.indexoffs, VK_INDEX_TYPE_UINT16);
 
     const uint32_t num_test_objects =  2; 
     for (uint32_t i = 0; i < num_test_objects; ++i) {

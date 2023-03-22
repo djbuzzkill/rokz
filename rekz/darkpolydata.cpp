@@ -3,7 +3,11 @@
 #include "rekz/dark_types.h"
 
 #include "image_loader.h"
+#include "rekz/meshery.h"
+#include "rekz/rekz.h"
+#include "rokz/buffer.h"
 #include "rokz/rc_types.h"
+#include "rokz/ut_offset.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -88,16 +92,59 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
   return (res == 0); 
 }
 
+
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
+struct prepbuff : public rokz::cx::mappedbuffer_cb {
+
+  prepbuff (rekz::PolygonData& pd) :polyd (pd) { }
+
+  virtual int on_mapped  (void* dstp, size_t maxsize) {
+
+    const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
+    assert (maxsize == geom::ComputeTotalSize (darkmesh));
+
+    std::array<size_t, 4> asize = {
+      geom::ComputeVertexSize (darkmesh),
+      geom::ComputeIndexSize  (darkmesh),
+    };
+
+    polyd.vertexoffs= ut::offset_at (asize, 0);    
+    polyd.indexoffs = ut::offset_at (asize, 1);
+
+    unsigned char* dstuc = (unsigned char*) dstp;
+
+    memcpy (dstuc + polyd.vertexoffs, &darkmesh.verts[0],  asize[0]);
+    memcpy (dstuc + polyd.indexoffs , &darkmesh.indices[0], asize[1]); 
+
+    return 0; 
+  }
+
+  rekz::PolygonData& polyd;
+};
+
+
 bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root, const rokz::Device& device) { 
 
+    const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
 
-  const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
+  const VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
+                                 | VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+                                 | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
+  polyd.devicebuffer =
+      rc::CreateDeviceBuffer (rekz::geom::ComputeTotalSize (darkmesh), usage, device); 
+
+  prepbuff prepb (polyd);
+  
+  rokz::cx::TransferToDeviceBuffer (
+        polyd.devicebuffer->handle, rekz::geom::ComputeTotalSize (darkmesh), &prepb, device);
+
+
+  
   // vertex buffer
-  rokz::Create_VB_device (polyd.vb_device,  &darkmesh.verts[0], rekz::platonic::Mesh::VertexSize * darkmesh.verts.size(), device) ;
+  rokz::Create_VB_device (polyd.vb_device,  &darkmesh.verts[0], geom::ComputeVertexSize (darkmesh), device);
   // index buffer 
   rokz::Create_IB_16_device (polyd.ib_device, &darkmesh.indices[0], darkmesh.indices.size (), device) ;
 
@@ -132,6 +179,6 @@ void rekz::CleanupPolygonData (PolygonData& pd, const rokz::Device& device) {
   pd.sampler.reset (); 
   pd.texture.reset (); // rokz::cx::Destroy (pd.texture, device.allocator.handle); 
   pd.imageview.reset(); //rokz::cx::Destroy (pd.imageview, device.handle); 
-
+  pd.devicebuffer.reset ();
 }
 

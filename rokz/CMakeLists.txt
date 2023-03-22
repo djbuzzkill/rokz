@@ -27,7 +27,6 @@ set (ROKZ_HEADER_FILES
   uniform.h
   sampler.h
   window.h
-  utility.h
   binary_IO.h
   defaults.h
 
@@ -41,6 +40,9 @@ set (ROKZ_HEADER_FILES
   synchronization.h
   rokz_types.h
   rc_types.h
+
+  utility.h
+  ut_offset.h
   common.h
 )
 

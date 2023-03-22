@@ -133,6 +133,30 @@ rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
 }
 
 
+// -----------------------------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------------------------
+rc::Buffer::Ref rokz::rc::CreateDeviceBuffer (size_t reqsize, VkBufferUsageFlags usage, const Device& device) {
+
+  VkBufferCreateInfo ci {};
+  rc::Buffer::Ref buf = std::make_shared<rc::Buffer>(device); 
+
+  if (rokz::cx::CreateBuffer ( buf->handle,
+                               buf->allocation,
+                               buf->alloc_info,
+                               cx::AllocCreateInfo_device (buf->alloc_ci),
+                               cx::CreateInfo (ci, reqsize, usage),
+                               device.allocator.handle))
+    {
+      HERE("success");
+
+
+      return buf;
+    }
+
+  //  cx::CreateBuffer (buf->handle,   
+  return rc::Buffer::Ref (nullptr); 
+}
 
 // ------------------------------------------------------------------------------------------------
 //                                 

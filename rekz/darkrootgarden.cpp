@@ -38,6 +38,7 @@ Glob::Glob()
   , swapchain_support_info()
   , shared ()
 { 
+
   // queues.graphics = {};
   // queues.present = {}; 
 }
@@ -53,8 +54,6 @@ bool GenerateMipMaps (rokz::Image& image, bool generate_mipmap, uint32_t num_mip
 bool LoadIndexBuffer_static ();
 bool LoadVertexBuffer_static();
 
-
-
 // ---------------------------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------------------------
@@ -62,9 +61,8 @@ void CleanupDarkroot (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
 
-
   rekz::CleanupPolygonData (glob.polyd, glob.device); 
-  rekz::CleanupGridData (glob.gridata, glob.device); 
+  rekz::CleanupGridData    (glob.gridata, glob.device); 
     
   // descriptor set layouts
   rokz::cx::Destroy (glob.global_dslo, glob.device); 
