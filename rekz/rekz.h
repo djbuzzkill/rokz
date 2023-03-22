@@ -61,6 +61,11 @@ namespace rekz {
     // image/texture
     rokz::rc::Image::Ref     texture;   // color texture
     rokz::rc::ImageView::Ref imageview;
+
+    Vec<rc::Image::Ref>      textures;   // color texture
+    Vec<rc::ImageView::Ref>  imageviews;
+
+
     rokz::rc::Sampler::Ref   sampler;   // 
 
     float                    obj_theta[2];     // scene objects 

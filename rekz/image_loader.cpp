@@ -33,7 +33,7 @@ int rekz::OpenImageFile (const std::string& fqname, rekz::DevILOpenFileCB::Ref c
     props.type     = ilGetInteger (IL_IMAGE_TYPE);
     props.format   = ilGetInteger (IL_IMAGE_FORMAT);
 
-    res = cb->Exec (ilGetData (), props); 
+    res = cb ? cb->Exec (ilGetData (), props) : 0;
 
     ilDeleteImage (ilGetInteger (IL_ACTIVE_IMAGE)); 
 

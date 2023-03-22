@@ -140,6 +140,68 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&      dss ,
 
 }
 
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
+                                          const Vec<Buffer>&            objparam_buffs,
+                                          const Vec<rc::ImageView::Ref> imageviews,  //const ImageView&           texture_imageview, 
+                                          const rc::Sampler::Ref        sampler, 
+                                          const DescriptorSetLayout&    dslayout, //const rokz::DescriptorPool& descpool,
+                                          const Device&                 device) {
+  //printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+   assert (dss.size () == objparam_buffs.size ());
+  //
+  for (uint32_t i = 0; i < dss.size (); i++) {
+    
+    Vec<VkDescriptorBufferInfo> obparams (obz::kMaxCount, VkDescriptorBufferInfo {});
+
+    for (size_t iobj = 0; iobj < obparams.size (); ++iobj) { 
+      obparams[iobj].buffer   = objparam_buffs[i].handle;    //
+      obparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
+      obparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
+    }
+    //VkDescriptorImageInfo image_info {};
+    Vec<VkDescriptorImageInfo> imageinfos (imageviews.size());; 
+    for (size_t iview = 0; iview < imageviews.size(); ++iview) { 
+      imageinfos[iview] = {};
+      imageinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+      imageinfos[iview].imageView   = imageviews[i]->handle;
+      imageinfos[iview].sampler     = sampler->handle;
+    }
+    //
+    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+
+    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].pNext            = nullptr;
+    descriptor_writes[0].dstSet           = dss[i];
+    descriptor_writes[0].dstBinding       = 0;       // does it match in shader? 
+    descriptor_writes[0].dstArrayElement  = 0;
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = obparams.size(); // <
+    descriptor_writes[0].pBufferInfo      = &obparams[0]; 
+    descriptor_writes[0].pImageInfo       = nullptr; 
+    descriptor_writes[0].pTexelBufferView = nullptr; 
+                      
+    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].dstSet           = dss[i];
+    descriptor_writes[1].dstBinding       = 1;      // <-- change shader too
+    descriptor_writes[1].dstArrayElement  = 0;
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[1].descriptorCount  = imageinfos.size(); 
+    descriptor_writes[1].pBufferInfo      = nullptr;
+    descriptor_writes[1].pImageInfo       = &imageinfos[0]; 
+    descriptor_writes[1].pTexelBufferView = nullptr; 
+
+    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  }
+
+  return true;
+
+}
+
 // ----------------------------------------------------------------------------------------
 // init proto more orthogonal version (new SetupObjectPipeline)
 // ----------------------------------------------------------------------------------------

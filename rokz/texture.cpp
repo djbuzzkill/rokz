@@ -423,7 +423,7 @@ rokz::LoadTexture_color_sampling (VkFormat                 format,
                                   const rokz::CommandPool& commandpool, 
                                   const rokz::Device&      device) {
 
-
+  HERE("BAI");
   //size_t image_size = image_width * image_height *  bytes_per_pixel; 
   auto image_size = SizeOfComponents (format)
                   * NumberOfComponents (format)
@@ -457,8 +457,6 @@ rokz::LoadTexture_color_sampling (VkFormat                 format,
   rokz::rc::Image::Ref image =
     rokz::rc::CreateImage_2D_color_sampling (ext2d.width, ext2d.height, VK_SAMPLE_COUNT_1_BIT, device); 
 
-
-
   
   //VK_FORMAT_R8G8B8A8_SRGB
   rokz::cx::TransitionImageLayout (image->handle, format, VK_IMAGE_LAYOUT_UNDEFINED,
@@ -473,6 +471,8 @@ rokz::LoadTexture_color_sampling (VkFormat                 format,
                                queue, commandpool.handle, device.handle);
 
   rokz::cx::Destroy (stage_buff, device.allocator); 
+
+  HERE("BAI");
   return image;
 
 }
