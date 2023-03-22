@@ -50,19 +50,19 @@ namespace rekz {
   // ---------------------------------------------------------------------------------------
   struct PolygonData { 
 
+    size_t                   indexoffs;
+    size_t                   vertexoffs;
     rc::Buffer::Ref          devicebuffer;
 
-    rokz::Buffer             vb_device;
-    rokz::Buffer             ib_device;
+    // rokz::Buffer             vb_device;
+    // rokz::Buffer             ib_device;
+
     // rokz::DescriptorGroup descrgroup;
     // image/texture
     rokz::rc::Image::Ref     texture;   // color texture
     rokz::rc::ImageView::Ref imageview;
     rokz::rc::Sampler::Ref   sampler;   // 
 
-    size_t                   indexoffs;
-    size_t                   vertexoffs;
-    
     float                    obj_theta[2];     // scene objects 
     //rekz::Sphericalf      objatt;
     std::array<glm::vec3, 32> objrot;     // scene objects 

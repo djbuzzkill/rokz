@@ -96,18 +96,19 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-struct prepbuff : public rokz::cx::mappedbuffer_cb {
+struct preparebuff : public rokz::cx::mappedbuffer_cb {
 
-  prepbuff (rekz::PolygonData& pd) :polyd (pd) { }
-
+  preparebuff (rekz::PolygonData& pd) :polyd (pd) { }
+  // 
   virtual int on_mapped  (void* dstp, size_t maxsize) {
 
     const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
+
     assert (maxsize == geom::ComputeTotalSize (darkmesh));
 
     std::array<size_t, 4> asize = {
-      geom::ComputeVertexSize (darkmesh),
-      geom::ComputeIndexSize  (darkmesh),
+      geom::ComputeVertexSize (darkmesh), 
+      geom::ComputeIndexSize  (darkmesh), 
     };
 
     polyd.vertexoffs= ut::offset_at (asize, 0);    
@@ -115,7 +116,7 @@ struct prepbuff : public rokz::cx::mappedbuffer_cb {
 
     unsigned char* dstuc = (unsigned char*) dstp;
 
-    memcpy (dstuc + polyd.vertexoffs, &darkmesh.verts[0],  asize[0]);
+    memcpy (dstuc + polyd.vertexoffs, &darkmesh.verts[0],   asize[0]);
     memcpy (dstuc + polyd.indexoffs , &darkmesh.indices[0], asize[1]); 
 
     return 0; 
@@ -125,28 +126,23 @@ struct prepbuff : public rokz::cx::mappedbuffer_cb {
 };
 
 
+// ------------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------------
 bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root, const rokz::Device& device) { 
 
-    const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
+  const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
 
   const VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
                                  | VK_BUFFER_USAGE_INDEX_BUFFER_BIT
                                  | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
   polyd.devicebuffer =
       rc::CreateDeviceBuffer (rekz::geom::ComputeTotalSize (darkmesh), usage, device); 
 
-  prepbuff prepb (polyd);
-  
-  rokz::cx::TransferToDeviceBuffer (
-        polyd.devicebuffer->handle, rekz::geom::ComputeTotalSize (darkmesh), &prepb, device);
-
-
-  
-  // vertex buffer
-  rokz::Create_VB_device (polyd.vb_device,  &darkmesh.verts[0], geom::ComputeVertexSize (darkmesh), device);
-  // index buffer 
-  rokz::Create_IB_16_device (polyd.ib_device, &darkmesh.indices[0], darkmesh.indices.size (), device) ;
+  preparebuff prepb (polyd); 
+  rokz::cx::TransferToDeviceBuffer (polyd.devicebuffer->handle,
+                                    rekz::geom::ComputeTotalSize (darkmesh),
+                                    &prepb, device);
 
   if (!setup_object_texture_and_sampler(polyd, data_root, device)) {
     printf ("[FAILED] --> SetupObjectTexture \n"); 
@@ -155,7 +151,6 @@ bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root
 
   return true;
 }
-//#endif
 
 // ------------------------------------------------------------------------------------------------
 //
@@ -170,11 +165,6 @@ rekz::PolygonData& rekz::SetupPolygonData (rekz::PolygonData& pd, uint32_t num_f
 //
 // ------------------------------------------------------------------------------------------------
 void rekz::CleanupPolygonData (PolygonData& pd, const rokz::Device& device) {
-    // SetupObjectUniforms ; 
-    // SetupObjectTextureAndSampler;
-    // SetupObjResources;
-  rokz::cx::Destroy (pd.ib_device, device.allocator); 
-  rokz::cx::Destroy (pd.vb_device, device.allocator); 
 
   pd.sampler.reset (); 
   pd.texture.reset (); // rokz::cx::Destroy (pd.texture, device.allocator.handle); 
