@@ -105,13 +105,18 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
-  bool InitializeSwapchain (rokz::SwapchainGroup& scg,
-                            const rokz::SwapchainSupportInfo& swapchain_support_info,
-                            const VkSurfaceKHR& surface,
-                            const VkExtent2D&   extent, 
-                            const rokz::PhysicalDevice& physdev,
-                            const rokz::Device& device) ; 
-  //
+  // bool InitializeSwapchain (rokz::SwapchainGroup& scg,
+  //                           const rokz::SwapchainSupportInfo& swapchain_support_info,
+  //                           const VkSurfaceKHR& surface,
+  //                           const VkExtent2D&   extent, 
+  //                           const rokz::PhysicalDevice& physdev,
+  //                           const rokz::Device& device) ; 
+
+
+
+
+
+  // //
   // actually Initize,Instance,SurfaceAndDevice ()
   // bool InitializeInstance (rokz::Instance& instance); 
   // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
@@ -145,11 +150,18 @@ namespace rekz {
                          VkSwapchainKHR&       swapchain,
                          const rokz::Device&   device);
 
-  bool RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const rokz::Window& win,
-                          Vec<rc::Image::Ref>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
+  bool RecreateSwapchain (VkSwapchainKHR& swapchain, const rokz::Display& win, 
+                          Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
                           rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
                           rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
                           const Device& device) ;
+
+  bool RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display& win, 
+                          Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
+                          rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
+                          rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
+                          const Device& device) ;
+
 
   //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
   rokz::SwapchainResetter::Ref
@@ -157,8 +169,8 @@ namespace rekz {
                            rokz::Image& dp, rokz::ImageView& div, rokz::Image& mscim, rokz::ImageView& mscimv); 
 
   rokz::SwapchainResetter::Ref
-  CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
-                           Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
+  CreateSwapchainResetter (rc::Swapchain::Ref& swapchain, const rokz::Display& display, 
+                           Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                            rc::Image::Ref& depthim, rc::ImageView::Ref& depthiv,
                            rc::Image::Ref& msaacolorim, rc::ImageView::Ref& msaacoloriv); 
 
@@ -170,10 +182,11 @@ namespace rekz {
 
 
 
-  rokz::SwapchainResetter::Ref CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
-                                                        Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
-                                                        rc::Image::Ref& dp, rc::ImageView::Ref& div,
-                                                        rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv);
+  // rokz::SwapchainResetter::Ref
+  // CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
+  //                          Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
+  //                          rc::Image::Ref& dp, rc::ImageView::Ref& div,
+  //                          rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv);
 
 
   

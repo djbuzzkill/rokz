@@ -4,42 +4,14 @@
 
 
 #include "common.h"
-#include "rc_types.h"
-#include "rc_image.h"
+#include "shared_types.h"
 
 namespace rokz { namespace rc {
-    // -----------------------------------------------------------------------------------------
-    //
-    // -----------------------------------------------------------------------------------------
-    struct Buffer : public deviceob <VkBuffer, Buffer> {
-
-      Buffer (const Device& d) : deviceob (d), alloc_ci (), allocation (), alloc_info () {
-      }
-
-      VmaAllocationCreateInfo alloc_ci; 
-      VmaAllocation           allocation;
-      VmaAllocationInfo       alloc_info;
-      virtual ~Buffer ();
-
-    protected:
-      //
-    };
-
-
-    Buffer::Ref Create_VB_device  (const void* mem, size_t sz_mem, const rokz::Device& device);
-    Buffer::Ref Create_uniform_mapped  (size_t size_e, size_t num_e, const Device& device); 
-
-    Buffer::Ref CreateDeviceBuffer (size_t reqsize, VkBufferUsageFlags usage, const Device& device);
-
-    inline void* MappedPointer (rc::Buffer::Ref buff) { 
-      return  buff->alloc_info.pMappedData;
-    }
-
 
     // -----------------------------------------------------------------------------------------
     struct Sampler : public deviceob<VkSampler, Sampler> {
-      Sampler (const Device& d): deviceob (d) {
-      }
+
+      Sampler (const Device& d): deviceob (d) { }
 
       virtual ~Sampler (); 
     };

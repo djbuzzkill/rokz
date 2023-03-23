@@ -41,51 +41,14 @@ rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
   return image;
 }
 
-// -----------------------------------------------------------------------------------------------
-bool rc::GetSwapChainImages (Vec<rc::Image::Ref> &swapchain_images,
-                               const Swapchain& swapchain,
-                               const Device& device) {
-  printf ("%s\n", __FUNCTION__);
-
-  uint32_t image_count = 0; 
-
-  VkResult res;
-  res = vkGetSwapchainImagesKHR(device.handle, swapchain.handle, &image_count, nullptr);
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after image_count %s\n", __FUNCTION__);
-    return false;
-  }
-  printf ( "no. swapchain images[%u]\n", image_count); 
-  
-  std::vector<VkImage> vk_images(image_count);
-  res = vkGetSwapchainImagesKHR (device.handle, swapchain.handle, &image_count, &vk_images[0]);
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
-    return false;
-  }
-
-  swapchain_images.resize(image_count);
-  for (size_t i = 0; i < image_count; ++i) {
-    // Createinfo for image from swapchain
-    // rokz::cx::CreateInfo (swapchain_images[i].ci, swapchain.ci); 
-    // swapchain_images[i].handle = vk_images[i];
-    swapchain_images[i] = std::make_shared<rc::Image> (device);
-    swapchain_images[i]->handle = vk_images[i];
-    
-  }
-  
-  printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
-  return true;
-}
-
 
 
 // ------------------------------------------------------------------------------------------------
 //                                 
 // ------------------------------------------------------------------------------------------------
-rc::ImageView::Ref rc::CreateImageView (rc::Image::Ref image, VkFormat format, VkImageAspectFlagBits imageaspect, const Device& device) {
+rc::ImageView::Ref rc::CreateImageView (VkImage image, VkFormat format, VkImageAspectFlagBits imageaspect, const Device& device) {
   VkImageViewCreateInfo ci {};
-  cx::CreateInfo (ci, format, imageaspect, image->handle);  
+  cx::CreateInfo (ci, format, imageaspect, image);  
 
   rc::ImageView::Ref  ret = std::make_shared<rc::ImageView> (device); 
 
@@ -101,7 +64,7 @@ rc::ImageView::Ref rc::CreateImageView (rc::Image::Ref image, VkFormat format, V
 //
 // ---------------------------------------------------------------------
 bool rc::CreateImageViews (std::vector<rc::ImageView::Ref>&   imageviews, 
-                           const std::vector<rc::Image::Ref>& images,
+                           const std::vector<VkImage>&        images,
                            VkFormat                           format, 
                            VkImageAspectFlagBits              aspectflags,
                            const Device&                      device) {
@@ -116,7 +79,7 @@ bool rc::CreateImageViews (std::vector<rc::ImageView::Ref>&   imageviews,
     //CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
 
     VkImageViewCreateInfo ci {}; 
-    rokz::cx::CreateInfo (ci, format, aspectflags, images[i]->handle);
+    rokz::cx::CreateInfo (ci, format, aspectflags, images[i] );
     imageviews[i] = rc::CreateImageView (images[i], format, aspectflags, device);
 
     if ( !imageviews[i] ) { //                                      if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
@@ -132,10 +95,10 @@ bool rc::CreateImageViews (std::vector<rc::ImageView::Ref>&   imageviews,
 
 // -----------------------------------------------------------------------------------------------
 rc::Image::~Image() {
-  rokz::cx::Destroy (handle, allocation, device.allocator.handle);
+  if (handle) rokz::cx::Destroy (handle, allocation, device.allocator.handle);
 }
 
 // -----------------------------------------------------------------------------------------------
 rc::ImageView::~ImageView () {
-  rokz::cx::Destroy (handle, device.handle);
+  if (handle) rokz::cx::Destroy (handle, device.handle);
 }

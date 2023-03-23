@@ -3,7 +3,6 @@
 #include "image.h"
 #include "allocation.h"
 #include "command.h"
-#include "rokz/rc_types.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -58,7 +57,7 @@ bool rokz::rc::CreateDepthBufferTarget (rc::Image::Ref&          depthimage,
   //rokz::cx::AllocCreateInfo_device (depthimage->alloc_ci); 
   //rokz::cx::CreateImage (depth_image, device.allocator.handle);
 
-  depthimageview = rc::CreateImageView (depthimage, depth_format,  VK_IMAGE_ASPECT_DEPTH_BIT, device); 
+  depthimageview = rc::CreateImageView (depthimage->handle, depth_format,  VK_IMAGE_ASPECT_DEPTH_BIT, device); 
 
 
   // rokz::cx::CreateInfo (depthimageviewci, VK_IMAGE_ASPECT_DEPTH_BIT, depth_image); 
@@ -117,7 +116,7 @@ bool rc::CreateMSAAColorTarget (rc::Image::Ref&          colorimage,
   // imageview 
   // rokz::cx::CreateInfo (color_imageview.ci, VK_IMAGE_ASPECT_COLOR_BIT, color_image);
   // rokz::cx::CreateImageView (color_imageview.handle, color_imageview.ci, device.handle);
-  colorimageview = rc::CreateImageView (colorimage, image_format, VK_IMAGE_ASPECT_COLOR_BIT, device);
+  colorimageview = rc::CreateImageView (colorimage->handle, image_format, VK_IMAGE_ASPECT_COLOR_BIT, device);
 
   // dynamic_rendering
   rokz::cx::TransitionImageLayout (colorimage->handle, image_format, VK_IMAGE_LAYOUT_UNDEFINED,

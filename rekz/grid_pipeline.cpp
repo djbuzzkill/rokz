@@ -3,8 +3,6 @@
 #include "rokz/descriptor.h"
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
-#include <vulkan/vulkan_core.h>
-
 
 using namespace rokz;
 // ----------------------------------------------------------------------------------------
@@ -165,49 +163,13 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
 // ----------------------------------------------------------------------------------------------
 // 
 // ----------------------------------------------------------------------------------------------
-bool rekz::BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rokz::Buffer>& global_uniforms, const rokz::Device& device) {
+
+bool rekz::BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rc::Buffer::Ref>& global_uniforms, const rokz::Device& device) {
 
   printf (" FYI:%s does nothtng. ", __FUNCTION__);
-  // DescriptorSets should be allocated
-  // global_buffers should be create + allocated
 
-  // if (dss.size () != global_uniforms.size ()) {
-  //   printf (" ERROR @line %i -->  descrriptorsets[%zu] != uniformbuffers[%zu]\n", __LINE__, dss.size (), global_uniforms.size ());
-  //   return false; 
-  // }
-
-  // // is this rly necessary? grid may only need push constants
-  // //
-  // //
-  // //
-  // //
-
-  // size_t num_frames_in_flight = global_uniforms.size (); 
-  // //rokz::DescriptorGroup& dg = pipelinegroup.descrgroup;
-  // for (uint32_t iframe = 0; iframe < num_frames_in_flight; ++iframe) {
-
-  //   VkDescriptorBufferInfo buffer_info{};
-  //   buffer_info.buffer     = global_uniforms[iframe].handle;
-  //   buffer_info.offset     = 0;
-  //   buffer_info.range      = global_uniforms[iframe].ci.size ;
-    
-  //   // only MVP 
-  //   std::array<VkWriteDescriptorSet, 1>  descriptor_writes {};
-  //   descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  //   descriptor_writes[0].pNext            = nullptr;    
-  //   descriptor_writes[0].dstSet           = dss[iframe];
-  //   descriptor_writes[0].dstBinding       = 0;
-  //   descriptor_writes[0].dstArrayElement  = 0;
-  //   descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  //   descriptor_writes[0].descriptorCount  = 1;
-  //   descriptor_writes[0].pBufferInfo      = &buffer_info;
-  //   descriptor_writes[0].pImageInfo       = nullptr; 
-  //   descriptor_writes[0].pTexelBufferView = nullptr; 
-
-  //   vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-  // }
-
-
+  // grid uses data defined as part of global 
+  
   printf (" bai\n");
   return true; 
 }

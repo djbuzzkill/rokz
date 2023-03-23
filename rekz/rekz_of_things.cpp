@@ -3,6 +3,7 @@
 //#include "rokz/attachment.h"
 #include "grid_pipeline.h"
 #include "rokz/attachment.h"
+#include "rokz/rokz_types.h"
 
 
 //#include "rokz/rokz.h"
@@ -52,11 +53,11 @@ void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
   // for (auto fb : framebuffers) {
   //   vkDestroyFramebuffer (device.handle, fb.handle, nullptr); 
   // }
-
-  for (auto sc_imageview : sc_image_views) {
+  for (auto& sc_imageview : sc_image_views) {
     vkDestroyImageView(device.handle, sc_imageview->handle, nullptr);
+    sc_imageview->handle = 0;
   }
-  vkDestroySwapchainKHR(device.handle, swapchain, nullptr);
+
 
   msaa_color_imageview.reset ();
   msaa_color_image.reset ();
@@ -64,16 +65,17 @@ void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
   // cx::Destroy (msaa_color_image, device.allocator.handle);
   depth_imageview.reset ();
   depth_image.reset ();
+
+
+  vkDestroySwapchainKHR(device.handle, swapchain, nullptr);
+  swapchain = 0;
   // cx::Destroy (depth_imageview, device.handle);
   // cx::Destroy (depth_image, device.allocator.handle);
 
 }
 
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const rokz::Window& win,
-                              Vec<rc::Image::Ref>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
+bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const rokz::Display& display,
+                              Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
                               rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
                               rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
                               const Device& device) {
@@ -81,13 +83,17 @@ bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreate
   printf ("%s\n", __FUNCTION__);
 
   int width = 0, height = 0;
-  glfwGetFramebufferSize(win.glfw_window, &width, &height);
+  glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
 
   while (width == 0 || height == 0) {
-    glfwGetFramebufferSize(win.glfw_window, &width, &height);
+    glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
     glfwWaitEvents();
   }
   
+  const VkExtent2D newext { (uint32)width, (uint32) height };
+
+
+
   vkDeviceWaitIdle (device.handle);
   
   CleanupSwapchain (imageviews, depth_image, depth_imageview,
@@ -95,8 +101,74 @@ bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreate
                     swapchain, device);
 
   VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
+  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,
+
+  VkSwapchainCreateInfoKHR ci {};
+
+  
   bool swapchain_res    = cx::CreateSwapchain (swapchain, ci, device);
+  bool imageviews_res   = rc::CreateImageViews( imageviews, swapchain_images, ci.imageFormat, aspect, device);
+  //
+  assert (false); // not yet tested
+
+  VkSampleCountFlagBits msaa_samples; 
+  VkFormat depthformat; //  = depth_image.ci.format;
+  VkFormat colorformat = ci.imageFormat; 
+  
+  // unless this changed --> msaa_color_image.ci.samples
+  rc::CreateMSAAColorTarget (msaa_color_image, msaa_color_imageview, msaa_samples,
+                             colorformat, ci.imageExtent, device);
+  //
+
+  rc::CreateDepthBufferTarget (depth_image, depth_imageview,  msaa_samples,
+                                 depthformat, ci.imageExtent, device);
+
+  return (swapchain_res && imageviews_res); 
+}
+
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display& display,
+                              Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
+                              rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
+                              rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
+                              const Device& device) {
+
+  printf ("%s\n", __FUNCTION__);
+
+  int width = 0, height = 0;
+  glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
+
+  while (width == 0 || height == 0) {
+    glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
+    glfwWaitEvents();
+  }
+  
+  const VkExtent2D newext { (uint32)width, (uint32) height };
+
+  vkDeviceWaitIdle (device.handle);
+  
+  CleanupSwapchain (imageviews, depth_image, depth_imageview,
+                    msaa_color_image, msaa_color_imageview,
+                    swapchain->handle, device);
+
+  VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,
+
+
+  rokz::SwapchainSupportInfo supp;
+
+  rokz::cx::QuerySwapchainSupport (supp, display.surface, device.physical.handle);
+
+  VkSwapchainCreateInfoKHR ci {};
+  rokz::cx::CreateInfo_default (ci,
+                                display.surface,
+                                swapchain->family_indices,
+                                newext,
+                                supp);
+  
+  bool swapchain_res    = cx::CreateSwapchain (swapchain->handle, ci, device);
   bool imageviews_res   = rc::CreateImageViews( imageviews, swapchain_images, ci.imageFormat, aspect, device);
   //
   assert (false); // not yet tested
@@ -121,8 +193,8 @@ bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreate
 //
 // -----------------------------------------------------------------------------------------
 rokz::SwapchainResetter::Ref 
-rekz::CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
-                               Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
+rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc, const rokz::Display& display, 
+                               Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                                rc::Image::Ref& dp, rc::ImageView::Ref& div,
                                rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv)
 {
@@ -131,15 +203,14 @@ rekz::CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKH
     // reset_def - basic msaa attachements
 
   public:
-
-    reset_ref_def (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& scci, Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs, rc::Image::Ref& dp, rc::ImageView::Ref& dpiv, rc::Image::Ref& mscim, rc::ImageView::Ref&  mscimv)
-      : SwapchainResetter (), swapchain (sc), ci (scci), swapchain_images (scis), swapchain_imageviews (scivs)
+  reset_ref_def (rc::Swapchain::Ref& sc, const rokz::Display& displ, Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs, rc::Image::Ref& dp, rc::ImageView::Ref& dpiv, rc::Image::Ref& mscim, rc::ImageView::Ref&  mscimv)
+      : SwapchainResetter (), swapchain (sc), display (displ), swapchain_images (scis), swapchain_imageviews (scivs)
       , depth_image (dp), depth_imageview(dpiv), msaa_color_image(mscim), msaa_color_imageview(mscimv) { 
     }
 
     virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
 
-      return rekz::RecreateSwapchain (swapchain, ci, win, 
+      return rekz::RecreateSwapchain (swapchain, display, 
                                     swapchain_images, swapchain_imageviews,
                                     depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
                                     msaa_color_image, msaa_color_imageview,
@@ -148,10 +219,10 @@ rekz::CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKH
     
   protected:
     
-    VkSwapchainKHR&                 swapchain;
-    const VkSwapchainCreateInfoKHR& ci;
+    rc::Swapchain::Ref&      swapchain;
+    const rokz::Display&     display;
     
-    Vec<rc::Image::Ref>&     swapchain_images;
+    Vec<VkImage>&            swapchain_images;
     Vec<rc::ImageView::Ref>& swapchain_imageviews;
     
     rc::Image::Ref&          depth_image;
@@ -160,5 +231,5 @@ rekz::CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKH
     rc::ImageView::Ref&      msaa_color_imageview; 
   };
 
-  return std::make_shared<reset_ref_def> (sc, ci, scis, scivs, dp, div, mscim, mscimv); 
+  return std::make_shared<reset_ref_def> (sc, display, scis, scivs, dp, div, mscim, mscimv); 
 } 

@@ -38,7 +38,7 @@ struct obj_image_handler : public rekz::DevILOpenFileCB {
                                                               dat, device.allocator.handle, device.queues.graphics, 
                                                               device.command_pool, device);
     if (polyd.textures[index]) {
-      polyd.imageviews[index] = rc::CreateImageView (polyd.textures[index], VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, device);
+      polyd.imageviews[index] = rc::CreateImageView (polyd.textures[index]->handle, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, device);
       return 0;
     }
   

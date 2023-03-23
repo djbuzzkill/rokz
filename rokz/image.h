@@ -6,7 +6,7 @@
 
 #include "common.h"
 #include "rokz_types.h"
-#include "rc_types.h"
+#include "rc_image.h"
 #include <vulkan/vulkan_core.h>
 
 

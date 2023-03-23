@@ -8,7 +8,6 @@
 
 namespace rokz { namespace rc { 
 
-    
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
@@ -30,7 +29,6 @@ namespace rokz { namespace rc {
 
     Image::Ref CreateImage_2D_color_sampling (uint32 , uint32, VkSampleCountFlagBits sampleflags, const Device& device); 
     
-    bool GetSwapChainImages (Vec<rc::Image::Ref> &swapchain_images, const Swapchain& swapchain, const Device& device); 
 
     // -----------------------------------------------------------------------------------------
     struct ImageView:  public deviceob<VkImageView, ImageView>  {
@@ -40,12 +38,11 @@ namespace rokz { namespace rc {
       // VkImageView             handle;
       // VkImageViewCreateInfo   ci; 
       virtual ~ImageView (); 
-
     };
 
     //    ImageView::Ref CreateImageView (const VkImageViewCreateInfo& ci, const VkDevice& device); 
-    ImageView::Ref CreateImageView  (Image::Ref image, VkFormat format, VkImageAspectFlagBits imageaspect, const Device& device); 
-    bool           CreateImageViews (std::vector<rc::ImageView::Ref>& imageviews, const std::vector<rc::Image::Ref>& images,
+    ImageView::Ref CreateImageView  (VkImage image, VkFormat format, VkImageAspectFlagBits imageaspect, const Device& device); 
+    bool           CreateImageViews (std::vector<rc::ImageView::Ref>& imageviews, const Vec<VkImage>& images,
                                      VkFormat format, VkImageAspectFlagBits aspectflags, const Device& device); 
 
     

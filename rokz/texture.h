@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "rokz_types.h"
-#include "rc_types.h"
+#include "rc_image.h"
 
 
 namespace rokz {

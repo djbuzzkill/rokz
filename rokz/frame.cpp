@@ -8,19 +8,30 @@
 
 using namespace rokz;
 
+// --------------------------------------------------------------------
+//
+// --------------------------------------------------------------------
+bool rc::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
+
+  std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
+  std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
+
+  VkPresentInfoKHR pi {};
+
+ return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, signal_sems));
+}
+
 
 
 
 int rc::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                               uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
 
-  
-  rokz::Swapchain& swapchain = scg.swapchain;
+  //rc::Swapchain::Ref& swapchain = scg.swapchain;
   
   // dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index]->handle,
-                             swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                              device.queues.graphics, device.command_pool.handle, device.handle);
 
   if (VK_SUCCESS != vkResetCommandBuffer (command_buffer, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
@@ -56,7 +67,7 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
   }
 
 
-  rokz::Swapchain& swapchain = scg.swapchain;
+  //rokz::Swapchain& swapchain = scg.swapchain;
 
   VkSubmitInfo submit_info {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -78,14 +89,13 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
   }
 
   //  dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index]->handle,
-                                   swapchain.ci.imageFormat,
-                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                                   VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                   device.queues.graphics, device.command_pool.handle, device.handle);
+  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
+                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                             device.queues.graphics, device.command_pool.handle, device.handle);
 
   
-  if (!cx::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
+  if (!rc::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
     return __LINE__;
   }
 

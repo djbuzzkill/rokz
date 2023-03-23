@@ -62,52 +62,43 @@ void CleanupDarkroot (Glob& glob) {
   printf ("%s \n", __FUNCTION__); 
 
   rekz::CleanupPolygonData (glob.polyd, glob.device); 
+  glob.drawpoly.reset ();
+  glob.poly_objects_bu.clear ();
 
   glob.gridbuff.reset (); //rekz::CleanupGridData    (glob.gridata, glob.device); 
-    
+  glob.drawgrid.reset (); 
   // descriptor set layouts
   rokz::cx::Destroy (glob.global_dslo, glob.device); 
   rokz::cx::Destroy (glob.object_dslo, glob.device); 
 
-
-
-
   glob.global_rc_uniform_bu.clear ();
-  
-  
-  //rokz::CleanupGlobalUniforms (glob.global_uniform_bu, glob.device); 
-
 
   // dont bother freeing if pool is destroyed anyways
   //rokz::cx::Free   (glob.descrgroup_objs.descrsets, glob.descrgroup_objs.pool, glob.device.handle); 
   rokz::cx::Destroy (glob.global_uniform_de.pool, glob.device); 
-
-
-
-
   //glob.poly_objects_de; // ?!?! how r descriptors handled
   rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device); 
   // ?  
   // polygons will make use of object descriptors
-  for (auto& buf : glob.poly_objects_bu) { 
-    buf.reset ();
-    //rokz::cx::Destroy  (buf, glob.device.allocator); 
-  }
+
+  // for (auto& buf : glob.poly_objects_bu) { 
+  //   buf.reset ();
+  //   //rokz::cx::Destroy  (buf, glob.device.allocator); 
+  // }
 
   //
   rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
                           glob.msaacolorimage, glob.msaacolorimageview,
                           glob.depthimage, glob.depthimageview,
-                          glob.swapchain_group.swapchain.handle, 
+                          glob.swapchain_group.swapchain->handle, 
                           glob.device);
 
   // the the  poly stuff is done in Cleanup, grids is done here
   for (auto shmod : glob.grid_pl.shader_modules) {
     vkDestroyShaderModule (glob.device.handle, shmod.handle, nullptr); 
   }
-  vkDestroyPipelineLayout (glob.device.handle, glob.grid_plo.handle, nullptr);
 
-  
+  vkDestroyPipelineLayout (glob.device.handle, glob.grid_plo.handle, nullptr);
   Vec<VkPipeline> pipes = { 
     glob.polys_pl.handle, glob.grid_pl.handle }; 
 
@@ -121,8 +112,10 @@ void CleanupDarkroot (Glob& glob) {
                      glob.display,
                      glob.device,
                      glob.instance.handle);
+
   //
   glfwTerminate();
+  
 }
 
 // ---------------------------------------------------------------------------------------
@@ -187,7 +180,7 @@ struct RootLoop {
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
     uint32_t image_index; 
-    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain.handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
+    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
@@ -210,8 +203,9 @@ struct RootLoop {
   
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       
-      rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame],
-                           glob.swapchain_group.swapchain.ci.imageExtent, Dt);  
+      rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
+
+      
       //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
 
       // update data needed to record drawlist
@@ -325,8 +319,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
   glob.polys_pl.dslos.push_back (glob.global_dslo.handle);
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
   if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
-                              glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
-                              scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) {
+                              kTestExtent, glob.msaa_samples,
+                              scg.image_format, glob.depth_format, glob.device)) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
@@ -334,8 +328,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // grid only uses globals
   glob.grid_pl.dslos.push_back (glob.global_dslo.handle);
   if (!rekz::InitGridPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
-                               glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
-                               scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) { 
+                               kTestExtent, glob.msaa_samples,
+                               scg.image_format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
@@ -354,19 +348,19 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      glob.depthimageview,
                             
                                      glob.msaa_samples,
-                                     scg.swapchain.ci.imageFormat,
+                                     scg.image_format,
                                      glob.depth_format,          
-                                     scg.swapchain.ci.imageExtent,
+                                     kTestExtent,
                                      glob.device); // <-- this does all the additional  attachmentes
 
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain.handle, scg.swapchain.ci, scg.images, scg.imageviews,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, glob.display, scg.images, scg.imageviews,
                                                            glob.depthimage, glob.depthimageview,
                                                            glob.msaacolorimage, glob.msaacolorimageview); 
   //
   // for BeginRendering ()
   rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
-                                   glob.depthimageview->handle, glob.swapchain_group.swapchain.ci.imageExtent); 
+                                   glob.depthimageview->handle, scg.extent); 
 
   //
   // setup object data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -397,7 +391,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> MakeDescriptorSets \n"); 
     return false;
   }
-
   
   if (!rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_rc_uniform_bu, glob.device)) {
     printf ("[FAILED] --> BindGridDescriptorResources \n"); 
@@ -406,8 +399,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // object descriptor set 
   rekz::SetupObjectUniforms (glob.poly_objects_bu, kMaxFramesInFlight, glob.device);
   // SetupObjDescriptorPool
-
-
   if (!rokz::MakeDescriptorPool(glob.poly_objects_de.pool, kMaxFramesInFlight, rekz::obz::kDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
@@ -429,14 +420,11 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   } 
 
-
-  //
   // 
   for (size_t iframe = 0; iframe < kMaxFramesInFlight; ++iframe) { 
     rokz::DrawSequence::DescriptorMap& descrmap = glob.descriptormaps[iframe];
     descrmap["Global"] = glob.global_uniform_de.descrsets[iframe];
   }
-
 
   //
   // create draw list
@@ -444,8 +432,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //
   glob.drawgrid = rekz::CreateDrawGrid (glob.gridbuff, vertoffs, indoffs);
     //rekz::CreateDrawGrid (glob.gridata); 
-
-    
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);
   rokz::FrameSyncGroup& fsg = glob.framesyncgroup;
@@ -459,7 +445,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
     rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], fsg.command_buffer_alloc_info, glob.device.handle);
     rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
   } 
-
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   const double time_per_frame_sec = 1.0 / 60.0;
@@ -468,16 +453,13 @@ int darkrootbasin (const std::vector<std::string>& args) {
   auto t0 = std::chrono::high_resolution_clock::now(); 
   std::chrono::system_clock::time_point then = t0; 
 
-
   RootLoop rootloop (glob, Dt ); 
   rokz::FrameLoop  (rootloop);
 
   vkDeviceWaitIdle(glob.device.handle);
   // CLEAN UP
-
   CleanupDarkroot (glob); 
-  
-  //  globmem.reset ();
+  HERE("bai");
   return 0;
 }
 

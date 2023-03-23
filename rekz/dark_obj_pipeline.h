@@ -41,9 +41,17 @@ namespace rekz {
   // this function is sus, it is setting up a global buffer
   // ----------------------------------------------------------------------------------------------
   bool SetupObjectUniforms (Vec<rc::Buffer::Ref>& uniform_buffs, uint32_t num_sets, const Device& device);
-  
   // ----------------------------------------------------------------------------------------------
-  // sorta does same thing as  SetupObjectPipeline
+  // 
+  // ----------------------------------------------------------------------------------------------
+  bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
+                                      const Vec<rc::Buffer::Ref>&   objbuffs,
+                                      const Vec<rc::ImageView::Ref> imageviews,  
+                                      const rc::Sampler::Ref        sampler, 
+                                      const DescriptorSetLayout&    dslayout, 
+                                      const Device&                 device) ;
+  // ----------------------------------------------------------------------------------------------
+  // 
   // ----------------------------------------------------------------------------------------------
   bool InitObjPipeline     (Pipeline&                         pipeline,
                             PipelineLayout&                   plo,
@@ -55,49 +63,7 @@ namespace rekz {
                             VkFormat                          color_format,
                             VkFormat                          depth_format,
                             const Device&                     device); 
-
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-
-  bool BindObjectDescriptorSets (Vec<VkDescriptorSet>&    dss ,
-                                 const Vec<Buffer>&       vma_uniform_buffs,
-                                 const Vec<Buffer>&       vma_objparam_buffs,
-
-                                 const ImageView&           texture_imageview, 
-                                 const Sampler&             sampler, 
-                                 const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-                                 const Device&              device);
-
-
-  // ----------------------------------------------------------------------------------------------
-  // these r the new ones
-  // ----------------------------------------------------------------------------------------------
-  // bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&    dss ,
-  //                                     const Vec<Buffer>&       objparam_bu,
-  //                                     const rc::ImageView::Ref texture_imageview, 
-  //                                     const rc::Sampler::Ref   sampler, 
-  //                                     const DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
-  //                                     const Device&                device);
-
-  bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
-                                      const Vec<rc::Buffer::Ref>&   objbuffs,
-                                      const Vec<rc::ImageView::Ref> imageviews,  
-                                      const rc::Sampler::Ref        sampler, 
-                                      const DescriptorSetLayout&    dslayout, 
-                                      const Device&                 device) ;
   
-  // bool BindObjectDescriptorResources (VkDescriptorSet                  ds,
-  //                                     Buffer&                    objparam_buff,
-  //                                     const ImageView&           texture_imageview, 
-  //                                     const Sampler&             sampler, 
-  //                                     const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-  //                                     const Device&              device) ; 
-
-  //
-  // 
-  //bool SetupObjectUniforms (Vec<Buffer>& objparams, uint32_t num_sets, const Device& device);
-  // 
 
 }
 

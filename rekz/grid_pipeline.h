@@ -4,6 +4,7 @@
 
 #include "rekz.h"
 #include "rokz/vert_defs.h"
+//#include "rc_buffer.h"
 
 namespace rekz { 
 
@@ -52,9 +53,8 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   // connect descriptors to buffers images samplers etc
   // ----------------------------------------------------------------------------------------------
-  bool BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rokz::Buffer>& global_uniforms, const rokz::Device& device);
   
-  bool BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, std::vector<rc::Buffer::Ref> global_uniform, const rokz::Device& device);
+  bool BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rc::Buffer::Ref>& globalbuffs, const rokz::Device& device);
   
 }
 

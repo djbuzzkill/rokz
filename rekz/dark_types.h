@@ -35,26 +35,23 @@ namespace darkroot {
     // struct Display
     rokz::Display                display;             //
 
-
-    // device props
-
-    // framebuffer properties
-    VkFormat                     depth_format;        //
-    VkSampleCountFlagBits        msaa_samples;        // = VK_SAMPLE_COUNT_1_BIT;
+    // device props - framebuffer properties
+    VkFormat                     depth_format;  
+    VkSampleCountFlagBits        msaa_samples;  
     // attachement set
 
-    rc::Image::Ref         depthimage      ; //Image                depth_image;          //
-    rc::ImageView::Ref     depthimageview  ; // depth_imageview;      //b
-    rc::Image::Ref         msaacolorimage  ;     //  msaa_color_image
-    rc::ImageView::Ref     msaacolorimageview; // msaa_color_imageview
+    rc::Image::Ref         depthimage;          
+    rc::ImageView::Ref     depthimageview;      
 
-    DrawSequence::Globals  shared;               // DrawSequence::shared_globals
-    DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
-    DescriptorSetLayout    object_dslo;          // object r 'generic', but belong to instance
+    rc::Image::Ref         msaacolorimage;      
+    rc::ImageView::Ref     msaacolorimageview;  
+
+    DrawSequence::Globals  shared;             
+    DescriptorSetLayout    global_dslo;        
+    DescriptorSetLayout    object_dslo;        
 
     // UniformBundle
-    //Vec<Buffer>            global_uniform_bu;    // vma_shared_uniforms;
-    Vec<rc::Buffer::Ref>   global_rc_uniform_bu;    // vma_shared_uniforms;
+    Vec<rc::Buffer::Ref>   global_rc_uniform_bu;    
     DescriptorGroup        global_uniform_de;
 
     // POLYGONS
@@ -63,14 +60,12 @@ namespace darkroot {
     // ? this belongs with the polygons
     PolygonData            polyd;
     DrawSequence::Ref      drawpoly;
-    Vec<rc::Buffer::Ref>   poly_objects_bu; // polygons will make use of object descriptors
-    DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
-
+    Vec<rc::Buffer::Ref>   poly_objects_bu; //
+    DescriptorGroup        poly_objects_de; //
     // 
     // GRID
     Pipeline               grid_pl;
     PipelineLayout         grid_plo;
-// rokz::DescriptorSetLayout grid_dlso; <++ dslo's r separate from pipelines 
     DrawSequence::Ref      drawgrid;
     rc::Buffer::Ref        gridbuff;
 
@@ -78,7 +73,6 @@ namespace darkroot {
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
     SwapchainResetter::Ref  swapchain_resetter;
-
   };
 
   // * unify vb/ib

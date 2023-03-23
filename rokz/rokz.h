@@ -13,6 +13,7 @@
 #include "rokz_types.h"
 
 #include "context.h"
+#include "display.h"
 #include "command.h"
 #include "allocation.h"
 #include "attachment.h"
@@ -42,10 +43,10 @@
 
 #include "frame.h"
 #include "rc_attachment.h"
+#include "rc_buffer.h"
 #include "rc_image.h"
 #include "rc_swapchain.h"
 #include "rc_types.h"
-
 
 namespace rokz { 
 

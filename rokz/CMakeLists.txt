@@ -41,6 +41,7 @@ set (ROKZ_HEADER_FILES
   synchronization.h
   rokz_types.h
   rc_types.h
+  rc_buffer.h
   rc_image.h
   rc_attachment.h
   rc_swapchain.h
@@ -53,10 +54,10 @@ set (ROKZ_HEADER_FILES
 #
 set (ROKZ_SOURCE_FILES
 
-  rc_attachment.cpp
   attachment.cpp
   context.cpp
   command.cpp
+  defaults.cpp
   pipeline.cpp
   framebuffer.cpp
   renderpass.cpp
@@ -79,11 +80,13 @@ set (ROKZ_SOURCE_FILES
   frame.cpp
   utility.cpp
   binary_IO.cpp
-  defaults.cpp
-  rokz.cpp
+  
+  rc_attachment.cpp
+  rc_buffer.cpp
   rc_types.cpp
   rc_image.cpp
   rc_swapchain.cpp
+  rokz.cpp
   synchronization.cpp
 )
 

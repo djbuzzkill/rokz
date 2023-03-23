@@ -19,6 +19,7 @@ bool rokz::cx::CreateSampler (VkSampler& sampler, const VkSamplerCreateInfo& ci,
 // ---------------------------------------------------------------------
 void rokz::cx::Destroy (VkSampler& sampler, const VkDevice& device) {
   vkDestroySampler (device, sampler, nullptr);
+  sampler = VK_NULL_HANDLE;
 }
 
 // ----------------------------------------------------------------------------------------
