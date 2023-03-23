@@ -63,9 +63,9 @@ bool rokz::cx::AllocateImageMemory (rokz::Image& image, const VkDevice& device) 
 }
 #endif
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
 bool rokz::cx::CreateImageView (VkImageView& iv, const VkImageViewCreateInfo& ci, const VkDevice& device) {
 
   //printf ("%s\n", __FUNCTION__);  
@@ -78,9 +78,9 @@ bool rokz::cx::CreateImageView (VkImageView& iv, const VkImageViewCreateInfo& ci
   return true; 
 }
 
-// ---------------------------------------------------------------------
-// CreateInfo for images from swapchain
-// ---------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
 VkImageCreateInfo& rokz::cx::CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci) {
   // printf ("%s VMA\n", __FUNCTION__); 
   ci = {}; 
@@ -99,13 +99,13 @@ VkImageCreateInfo& rokz::cx::CreateInfo (VkImageCreateInfo& ci, const VkSwapchai
   ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
   ci.samples       = VK_SAMPLE_COUNT_1_BIT; // ??is it  always 1 ??
   ci.flags         = 0; 
+
   return ci;
-
-
 }
 
-
-
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
 VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const VkImage& image) { 
 
   ci = {}; 
@@ -127,46 +127,16 @@ VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat
   return ci; 
 }
 
-// ---------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
 VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image) {
 
   return CreateInfo (ci, image.ci.format, aspect_flags, image.handle);
-
 }
-
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-// bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
-//                                  const std::vector<Image>&  images,
-//                                  const Device&              device) {
-
-//   printf ("%s\n", __FUNCTION__); 
-  
-//   imageviews.resize (images.size()); 
-  
-//   for (size_t i = 0; i < images.size(); i++) {
-//     // CREATEINFO for imageviews from swapchain images
-//     CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
-    
-//     if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
-//        printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
-//     }
-
-//   }
-
-//   printf ("BAI %s\n", __FUNCTION__); 
-//   return true;   
-// }
-
-
-
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
 void rokz::cx::Destroy (VkImageView& iv, const VkDevice& device) {
   vkDestroyImageView (device, iv, nullptr);
   iv = VK_NULL_HANDLE;

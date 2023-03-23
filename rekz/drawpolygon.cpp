@@ -12,13 +12,13 @@ using namespace rekz;
 // -------------------------------------------------------------------------
 struct PolygonDraw : public rokz::DrawSequence {
   //
-  const rekz::PolygonData&         polyd;
-  const rokz::DescriptorGroup&     object_descr;
-  const std::vector<rokz::Buffer>& object_buffs;
+  const rekz::PolygonData&            polyd;
+  const rokz::DescriptorGroup&        object_descr;
+  const std::vector<rc::Buffer::Ref>& objbuffs;
 
   // 
-  PolygonDraw (const rekz::PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg)
-    : polyd (d), object_buffs(objres), object_descr (descg) {
+  PolygonDraw (const rekz::PolygonData& d, const std::vector<rc::Buffer::Ref>& objres, const rokz::DescriptorGroup& descg)
+    : polyd (d), objbuffs (objres), object_descr (descg) {
   }
 
   virtual ~PolygonDraw () {
@@ -31,7 +31,7 @@ struct PolygonDraw : public rokz::DrawSequence {
   virtual int Prep (uint32_t currentframe, const RenderEnv& env, const rokz::Device& device) { 
 
     // update uniform buffer 
-    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer (object_buffs[currentframe]))) {
+    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rc::MappedPointer (objbuffs[currentframe] ))) {
       //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
       glm::vec3 va, vb;
       rekz::unit_angle_xz (va, 5.0 * env.globals.sim_time ); 
@@ -107,9 +107,9 @@ struct PolygonDraw : public rokz::DrawSequence {
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const PolygonData&               dat,
-                                                 const std::vector<rokz::Buffer>& objres,
-                                                 const rokz::DescriptorGroup&     descg)
+rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const PolygonData&                  dat,
+                                                 const std::vector<rc::Buffer::Ref>& objres,
+                                                 const rokz::DescriptorGroup&        descg)
 {
   return std::make_shared<PolygonDraw> (dat, objres, descg);
 }

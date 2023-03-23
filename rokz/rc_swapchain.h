@@ -8,10 +8,6 @@
 
 
 namespace rokz { namespace rc { 
-
-
-
-
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
@@ -21,8 +17,9 @@ namespace rokz { namespace rc {
       Vec<rc::ImageView::Ref> imageviews;//= glob.swapchain_imageviews; 
     }; 
     
-
-    
+    // -----------------------------------------------------------------------------------------
+    //
+    // -----------------------------------------------------------------------------------------
     bool InitializeSwapchain (rc::SwapchainGroup& scg,
                               const rokz::SwapchainSupportInfo& swapchain_support_info,
                               const VkSurfaceKHR& surface,
@@ -30,21 +27,7 @@ namespace rokz { namespace rc {
                               const rokz::PhysicalDevice& physdev,
                               const rokz::Device& device);
 
-  /* bool RecreateSwapchain (Swapchain&                          swapchain, */
-  /*                         Vec<rc::Image::Ref>&                 swapchain_images,  */
-  /*                         //std::vector<Framebuffer>&           framebuffers, */
-  /*                         Vec<rc::ImageView::Ref>&             image_views,  */
 
-  /*                         //RenderPass&                         render_pass,  */
-  /*                         Image&                              depth_image,  */
-  /*                         ImageView&                          depth_imageview, */
-
-  /*                         Image&                              multisamp_color_image,  */
-  /*                         ImageView&                          multisamp_color_imageview, */
-
-  /*                         const Device&                         device, */
-  /*                         const VmaAllocator&                   allocator, */
-  /*                         GLFWwindow*                           glfwin);  */
   }}
 
 #endif

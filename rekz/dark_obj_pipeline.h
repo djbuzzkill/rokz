@@ -28,7 +28,7 @@ namespace rekz {
 
     const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT
                                       | VK_SHADER_STAGE_FRAGMENT_BIT;
-  }
+  } // obz
 
   // ----------------------------------------------------------------------------------------------
   //                                    
@@ -40,9 +40,8 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   // this function is sus, it is setting up a global buffer
   // ----------------------------------------------------------------------------------------------
-  bool SetupObjectUniforms (Vec<Buffer>& uniform_buffs, Vec<Buffer>& objparams,
-                            uint32_t num_sets, const Device& device);
-
+  bool SetupObjectUniforms (Vec<rc::Buffer::Ref>& uniform_buffs, uint32_t num_sets, const Device& device);
+  
   // ----------------------------------------------------------------------------------------------
   // sorta does same thing as  SetupObjectPipeline
   // ----------------------------------------------------------------------------------------------
@@ -74,15 +73,15 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   // these r the new ones
   // ----------------------------------------------------------------------------------------------
-  bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&    dss ,
-                                      const Vec<Buffer>&       objparam_bu,
-                                      const rc::ImageView::Ref texture_imageview, 
-                                      const rc::Sampler::Ref   sampler, 
-                                      const DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
-                                      const Device&                device);
+  // bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&    dss ,
+  //                                     const Vec<Buffer>&       objparam_bu,
+  //                                     const rc::ImageView::Ref texture_imageview, 
+  //                                     const rc::Sampler::Ref   sampler, 
+  //                                     const DescriptorSetLayout&   dslayout, //const rokz::DescriptorPool& descpool,
+  //                                     const Device&                device);
 
   bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
-                                      const Vec<Buffer>&            objparam_buffs,
+                                      const Vec<rc::Buffer::Ref>&   objbuffs,
                                       const Vec<rc::ImageView::Ref> imageviews,  
                                       const rc::Sampler::Ref        sampler, 
                                       const DescriptorSetLayout&    dslayout, 
@@ -97,7 +96,7 @@ namespace rekz {
 
   //
   // 
-  bool SetupObjectUniforms (Vec<Buffer>& objparams, uint32_t num_sets, const Device& device);
+  //bool SetupObjectUniforms (Vec<Buffer>& objparams, uint32_t num_sets, const Device& device);
   // 
 
 }

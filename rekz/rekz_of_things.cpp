@@ -116,50 +116,10 @@ bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreate
   return (swapchain_res && imageviews_res); 
 }
 
-// -------------------------------------------------------------------------------------------
-// 
-// -------------------------------------------------------------------------------------------
-// rokz::SwapchainResetter::Ref rekz::CreateSwapchainResetter (Swapchain& sc, 
-//                                                            Vec<Image>& scis, Vec<ImageView>& scivs,
-//                                                            Image& dp, ImageView& div,
-//                                                            Image& mscim, ImageView& mscimv) {
-//   struct reset_def : public SwapchainResetter {
 
-//     // reset_def - basic msaa attachements
-
-//   public:
-
-//     reset_def (Swapchain& sc, Vec<Image>& scis, Vec<ImageView>& scivs, Image& dp, ImageView& dpiv, Image& mscim, ImageView&  mscimv)
-//       : SwapchainResetter (), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
-//       , depth_image (dp), depth_imageview(dpiv), msaa_color_image(mscim), msaa_color_imageview(mscimv) { 
-//     }
-
-//     virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
-
-//       return rekz::RecreateSwapchain (swapchain, win, 
-//                                       swapchain_images, swapchain_imageviews,
-//                                       depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
-//                                       msaa_color_image, msaa_color_imageview,
-//                                       allocator.handle, device);
-//     }
-    
-//   protected:
-    
-//     Swapchain&      swapchain;
-//     Vec<Image>&     swapchain_images;
-//     Vec<ImageView>& swapchain_imageviews;
-    
-//     Image&          depth_image;
-//     ImageView&      depth_imageview;  //
-//     Image&          msaa_color_image;
-//     ImageView&      msaa_color_imageview; 
-//   };
-
-//   return std::make_shared<reset_def> (sc, scis, scivs, dp, div, mscim, mscimv); 
-// }
-
-
-
+// -----------------------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------------------
 rokz::SwapchainResetter::Ref 
 rekz::CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
                                Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,

@@ -25,11 +25,11 @@ namespace darkroot {
     glm::ivec2                   mouse_prev; 
     int                          prev_inside;
     // system
-    Instance               instance;
-    Device                 device;
-    rc::SwapchainGroup     swapchain_group;
-    SwapchainSupportInfo   swapchain_support_info;
-    FrameSyncGroup         framesyncgroup;
+    Instance                     instance;
+    Device                       device;
+    rc::SwapchainGroup           swapchain_group;
+    SwapchainSupportInfo         swapchain_support_info;
+    FrameSyncGroup               framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
     rokz::RenderingInfoGroup     rendering_info_group;
     // struct Display
@@ -63,7 +63,7 @@ namespace darkroot {
     // ? this belongs with the polygons
     PolygonData            polyd;
     DrawSequence::Ref      drawpoly;
-    Vec<Buffer>            poly_objects_bu; // polygons will make use of object descriptors
+    Vec<rc::Buffer::Ref>   poly_objects_bu; // polygons will make use of object descriptors
     DescriptorGroup        poly_objects_de; // ?!?! how r descriptors handled
 
     // 

@@ -467,22 +467,6 @@ VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR
   return ci;
 }
 
-// -------------------------------------------------------------------------
-//
-// -------------------------------------------------------------------------
-// bool rokz::cx::CreateSwapchain (Swapchain& swapchain, const Device& device) {
-
-//   printf (" %s ", __FUNCTION__);
-
-//   if (vkCreateSwapchainKHR (device.handle, &swapchain.ci, nullptr, &swapchain.handle) != VK_SUCCESS) {
-//     printf (" --> LEAVING[FALSE] %s Create Swapchain\n", __FUNCTION__);
-//     return false; 
-//   }
-
-//   printf (" --> [SUCCESS]\n");
-//   return true;
-// }
-
 // ------------------------------------------------------------------------------------------
 //                  
 // ------------------------------------------------------------------------------------------
@@ -498,100 +482,8 @@ bool rokz::cx::CreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCrea
   printf (" --> [SUCCESS]\n");
   return true;
 }
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::cx::GetSwapChainImages (std::vector<Image> &swapchain_images,
-                               const Swapchain& swapchain,
-                               const VkDevice& dev) {
-  printf ("%s\n", __FUNCTION__);
-
-  uint32_t image_count = 0; 
-
-  VkResult res;
-  res = vkGetSwapchainImagesKHR(dev, swapchain.handle, &image_count, nullptr);
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after image_count %s\n", __FUNCTION__);
-    return false;
-  }
-  printf ( "no. swapchain images[%u]\n", image_count); 
-  
-  std::vector<VkImage> vk_images(image_count);
-  res = vkGetSwapchainImagesKHR (dev, swapchain.handle, &image_count, &vk_images[0]);
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
-    return false;
-  }
-
-  swapchain_images.resize(image_count);
-  for (size_t i = 0; i < image_count; ++i) {
-    // Createinfo for image from swapchain
-    rokz::cx::CreateInfo (swapchain_images[i].ci, swapchain.ci); 
-    swapchain_images[i].handle = vk_images[i];
-  }
-  
-  printf ("LEAVING[TRUE] %s\n", __FUNCTION__);
-  return true;
-}
 
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-// bool rokz::CreateRenderPass(VkRenderPass &render_pass,
-//                             VkRenderPassCreateInfo &create_info,
-//                             VkFormat swapchain_format, const VkDevice &device) {
-
-
-//   // COLOR ATTACHMENT
-//   VkAttachmentDescription color_attachment{};
-//   color_attachment.format = swapchain_format ;
-//   color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-//   color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-//   color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-//   color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-//   color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-//   color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-//   color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-//   // 
-//   VkAttachmentReference color_attachment_ref{};
-//   color_attachment_ref.attachment = 0;
-//   color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-//   // SUBPASS 
-//   VkSubpassDescription subpass{};
-//   subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-
-//   subpass.colorAttachmentCount = 1;
-//   subpass.pColorAttachments = &color_attachment_ref;
-
-//   subpass.inputAttachmentCount = 0;
-//   subpass.pInputAttachments = nullptr;
-
-//   subpass.pDepthStencilAttachment = nullptr;
-
-//   subpass.preserveAttachmentCount = 0;
-//   subpass.pPreserveAttachments = nullptr;
-
-//   subpass.pResolveAttachments = nullptr;
-//   subpass.flags = 0 ; 
-
-//   // CREATEINFO. gets passed back out
-//   create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-//   create_info.attachmentCount = 1;
-//   create_info.pAttachments = &color_attachment;
-//   create_info.subpassCount = 1;
-//   create_info.pSubpasses = &subpass;
-
-//   if (vkCreateRenderPass(device, &create_info, nullptr, &render_pass) != VK_SUCCESS) {
-//     printf ("failed to create render pass!\n");
-//     return false; 
-//   }
-
-//   return true;
-// }
-
-//
-  
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -715,69 +607,69 @@ void rokz::cx::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& d
   return vkGetDeviceQueue (device, fam_ind, que_index, que);
 }
 
+
+
+
+
+#ifdef ROKZ_HIDE_CREATERENDERPASS
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-
-// bool rokz::RecreateSwapchain(Swapchain&                             swapchain,
-//                              std::vector<Image>&                    swapchain_images,
-
-//                              std::vector<Framebuffer>&              framebuffers,
-//                              std::vector<ImageView>&                imageviews,
-
-//                              // std::vector<VkFramebuffer>&              framebuffers,
-//                              // std::vector<VkFramebufferCreateInfo>&    create_infos,
-
-//                              RenderPass&                              render_pass,
-//                              //VkImageView& depth_imageview,
-
-//                              Image&           depth_image, 
-//                              ImageView&       depth_imageview,
-                     
-//                              Image&           multisamp_color_image, 
-//                              ImageView&       multisamp_color_imageview,
-
-//                              //VkSurfaceKHR&     surface,
-//                              //VkPhysicalDevice& physdev,
-//                              //const SwapchainSupportInfo& swapchain_support_info,
-//                              const Device&     device,
-//                              const VmaAllocator& allocator,
-//                              GLFWwindow *  glfwin) {
-
-//   printf ("%s\n", __FUNCTION__);
-
-//   int width = 0, height = 0;
-//   glfwGetFramebufferSize(glfwin, &width, &height);
-
-//   while (width == 0 || height == 0) {
-//     glfwGetFramebufferSize(glfwin, &width, &height);
-//     glfwWaitEvents();
-//   }
-  
-//   vkDeviceWaitIdle (device.handle);
-
-//   CleanupSwapchain (framebuffers, imageviews,
-//                     depth_image, depth_imageview,
-//                     multisamp_color_image,
-//                     multisamp_color_imageview,
-//                     swapchain, device);
-
-//   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
-//   bool swapchain_res    = rokz::cx::CreateSwapchain (swapchain, device);
-//   bool imageviews_res   = rokz::cx::CreateImageViews (imageviews, swapchain_images, device);
-//   bool framebuffers_res = rokz::CreateFramebuffers (framebuffers,
-//                                               imageviews,
-//                                               render_pass,
-//                                               swapchain.ci.imageExtent,
-//                                               multisamp_color_imageview.handle,
-//                                               depth_imageview.handle,
-//                                               device);
-
-//   return (swapchain_res && imageviews_res && framebuffers_res); 
-// }
+bool rokz::CreateRenderPass (VkRenderPass &render_pass,
+                            VkRenderPassCreateInfo &create_info,
+                            VkFormat swapchain_format, const VkDevice &device) {
 
 
+  // COLOR ATTACHMENT
+  VkAttachmentDescription color_attachment{};
+  color_attachment.format = swapchain_format ;
+  color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  // 
+  VkAttachmentReference color_attachment_ref{};
+  color_attachment_ref.attachment = 0;
+  color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  // SUBPASS 
+  VkSubpassDescription subpass{};
+  subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
+  subpass.colorAttachmentCount = 1;
+  subpass.pColorAttachments = &color_attachment_ref;
+
+  subpass.inputAttachmentCount = 0;
+  subpass.pInputAttachments = nullptr;
+
+  subpass.pDepthStencilAttachment = nullptr;
+
+  subpass.preserveAttachmentCount = 0;
+  subpass.pPreserveAttachments = nullptr;
+
+  subpass.pResolveAttachments = nullptr;
+  subpass.flags = 0 ; 
+
+  // CREATEINFO. gets passed back out
+  create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  create_info.attachmentCount = 1;
+  create_info.pAttachments = &color_attachment;
+  create_info.subpassCount = 1;
+  create_info.pSubpasses = &subpass;
+
+  if (vkCreateRenderPass(device, &create_info, nullptr, &render_pass) != VK_SUCCESS) {
+    printf ("failed to create render pass!\n");
+    return false; 
+  }
+
+  return true;
+}
+#endif
+
+
+#ifdef ROKZ_HIDE_CLEANUPSWAPCHAIN
 // ---------------------------------------------------------------------
 // nu
 // ---------------------------------------------------------------------
@@ -808,10 +700,13 @@ void rokz::CleanupSwapchain (std::vector<Framebuffer>&   framebuffers,
 
   vkDestroySwapchainKHR(device.handle, swapchain.handle, nullptr);
 }
+#endif
 
 
 
-
+// -----------------------------------------------------------------------------------------------
+//                              
+// -----------------------------------------------------------------------------------------------
 void Destroy (rokz::FrameSyncGroup& fsg, const rokz::Device& device) {
   
 
@@ -1203,45 +1098,4 @@ rokz::PhysicalDevice& rokz::ConfigureDevice (rokz::PhysicalDevice& physical_devi
   //VK_EXT_extended_dynamic_state2
   return physical_device; 
 }
-
-
-// -------------------------------------------------------------------------
-//
-// -------------------------------------------------------------------------
-// bool rokz::InitializeSwapchain (rokz::SwapchainGroup& scg,
-//                           const rokz::SwapchainSupportInfo& swapchain_support_info,
-//                           const VkSurfaceKHR& surface,
-//                           const VkExtent2D&   extent, 
-//                           const rokz::PhysicalDevice& physdev,
-//                           const rokz::Device& device) {
-
-//   scg.swapchain.family_indices.clear ();
-//   if (physdev.family_indices.graphics != physdev.family_indices.present) {
-//     scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value());
-//     scg.swapchain.family_indices.push_back (physdev.family_indices.present.value ());
-//   }
-//   else {
-//     scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value ());
-//   }
-  
-//   rokz::cx::CreateInfo_default (scg.swapchain.ci,  
-//                                 surface,
-//                                 scg.swapchain.family_indices,
-//                                 extent, 
-//                                 swapchain_support_info);
-
-//   rokz::cx::CreateSwapchain (scg.swapchain, device); 
-  
-//   rokz::cx::GetSwapChainImages (scg.images, scg.swapchain, device.handle); 
-//   rokz::cx::CreateImageViews       (scg.imageviews, scg.images, device); //  (std::vector<VkImageView>& swapchain_imageviews);
-
-//   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
-//     // manual transition b/c KHR_dynamic_rendering
-//     rokz::cx::TransitionImageLayout (scg.images[iimg].handle, scg.swapchain.ci.imageFormat,
-//                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-//                                  device.queues.graphics, device.command_pool.handle, device.handle);
-//   }
-//   // end InitializeSwapchain
-//   return true;
-// }
 

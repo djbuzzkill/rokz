@@ -30,9 +30,7 @@ namespace rokz { namespace rc {
 
     Image::Ref CreateImage_2D_color_sampling (uint32 , uint32, VkSampleCountFlagBits sampleflags, const Device& device); 
     
-    bool GetSwapChainImages (Vec<rc::Image::Ref> &swapchain_images,
-                             const Swapchain& swapchain,
-                             const Device& device); 
+    bool GetSwapChainImages (Vec<rc::Image::Ref> &swapchain_images, const Swapchain& swapchain, const Device& device); 
 
     // -----------------------------------------------------------------------------------------
     struct ImageView:  public deviceob<VkImageView, ImageView>  {

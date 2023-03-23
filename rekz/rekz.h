@@ -17,9 +17,6 @@ namespace rekz {
 
   using namespace rokz;
 
-  // extern const VkVertexInputBindingDescription        kVertexInputBindingDesc;
-  // extern const Vec<VkVertexInputAttributeDescription> kVertexInputBindingAttributeDesc;
-  //extern const Vec<VkDescriptorSetLayoutBinding> kGlobalDescriptorBindings;
   // ----------------------------------------------------------------------------------------------
   //                           
   // ----------------------------------------------------------------------------------------------
@@ -81,7 +78,7 @@ namespace rekz {
   // ?? a data is tied to a drawlist..     no
   // ?? a drawlist is tied to a pipeline.. no
 
-  DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rokz::Buffer>& objres, const rokz::DescriptorGroup& descg); 
+  DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rc::Buffer::Ref>& objres, const rokz::DescriptorGroup& descg); 
   DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
   DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
 
@@ -148,18 +145,11 @@ namespace rekz {
                          VkSwapchainKHR&       swapchain,
                          const rokz::Device&   device);
 
-  // bool RecreateSwapchain (rokz::Swapchain&  swapchain, const rokz::Window& win, 
-  //                         Vec<rc::Image::Ref>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
-  //                         rc::Image::Ref& msaa_depth_image, rc::ImageView::Ref& msaa_depth_imageview,
-  //                         rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
-  //                         const VmaAllocator& allocator, const rokz::Device& device);
   bool RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const rokz::Window& win,
                           Vec<rc::Image::Ref>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
                           rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
                           rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
                           const Device& device) ;
-
-  
 
   //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
   rokz::SwapchainResetter::Ref
@@ -172,16 +162,15 @@ namespace rekz {
                            rc::Image::Ref& depthim, rc::ImageView::Ref& depthiv,
                            rc::Image::Ref& msaacolorim, rc::ImageView::Ref& msaacoloriv); 
 
-  rokz::SwapchainResetter::Ref CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis,
-                                                       Vec<rokz::ImageView>& scivs,
-                                                       rokz::Image& dp, rokz::ImageView& div,
-                                                       rokz::Image& mscim, rokz::ImageView& mscimv);
+  // rokz::SwapchainResetter::Ref CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis,
+  //                                                      Vec<rokz::ImageView>& scivs,
+  //                                                      rokz::Image& dp, rokz::ImageView& div,
+  //                                                      rokz::Image& mscim, rokz::ImageView& mscimv);
 
 
 
 
-  rokz::SwapchainResetter::Ref CreateSwapchainResetter (VkSwapchainKHR& sc,
-                                                        const VkSwapchainCreateInfoKHR& ci, 
+  rokz::SwapchainResetter::Ref CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
                                                         Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
                                                         rc::Image::Ref& dp, rc::ImageView::Ref& div,
                                                         rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv);

@@ -90,7 +90,8 @@ void CleanupDarkroot (Glob& glob) {
   // ?  
   // polygons will make use of object descriptors
   for (auto& buf : glob.poly_objects_bu) { 
-    rokz::cx::Destroy  (buf, glob.device.allocator); 
+    buf.reset ();
+    //rokz::cx::Destroy  (buf, glob.device.allocator); 
   }
 
   //
@@ -366,7 +367,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // for BeginRendering ()
   rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
                                    glob.depthimageview->handle, glob.swapchain_group.swapchain.ci.imageExtent); 
-  //
 
   //
   // setup object data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
