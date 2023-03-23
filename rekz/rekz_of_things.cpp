@@ -60,9 +60,7 @@ void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
   depth_image.reset ();
 
   swapchain.reset ();
-
 }
-
 
 // --------------------------------------------------------------------------------------------
 //                        
@@ -83,7 +81,9 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
     glfwWaitEvents();
   }
   
-  const VkExtent2D newext { (uint32)width, (uint32) height };
+
+
+  const VkExtent2D newext { 800, 600 };
 
   vkDeviceWaitIdle (device.handle);
   
@@ -131,34 +131,31 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
 //
 // -----------------------------------------------------------------------------------------
 rokz::SwapchainResetter::Ref 
-rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc, const rokz::Display& display, 
+rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc, 
                                Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                                rc::Image::Ref& dp, rc::ImageView::Ref& div,
                                rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv)
 {
 
   struct reset_ref_def : public SwapchainResetter {
-    // reset_def - basic msaa attachements
-
+    
   public:
-  reset_ref_def (rc::Swapchain::Ref& sc, const rokz::Display& displ, Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs, rc::Image::Ref& dp, rc::ImageView::Ref& dpiv, rc::Image::Ref& mscim, rc::ImageView::Ref&  mscimv)
-      : SwapchainResetter (), swapchain (sc), display (displ), swapchain_images (scis), swapchain_imageviews (scivs)
+
+    reset_ref_def (rc::Swapchain::Ref& sc, Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs, rc::Image::Ref& dp, rc::ImageView::Ref& dpiv, rc::Image::Ref& mscim, rc::ImageView::Ref&  mscimv)
+      : SwapchainResetter (), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
       , depth_image (dp), depth_imageview(dpiv), msaa_color_image(mscim), msaa_color_imageview(mscimv) { 
     }
 
-    virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator,  const rokz::Device& device) {
-
+    virtual bool Reset (const rokz::Display& display, const rokz::Device& device) {
       return rekz::RecreateSwapchain (swapchain, display, 
-                                    swapchain_images, swapchain_imageviews,
-                                    depth_image,      depth_imageview,  //glob.depth_image, glob.depth_imageview,
-                                    msaa_color_image, msaa_color_imageview,
-                                    device);
+                                      swapchain_images, swapchain_imageviews,
+                                      depth_image,      depth_imageview,  
+                                      msaa_color_image, msaa_color_imageview,
+                                      device);
     }
-    
-  protected:
-    
+
+    // --------------- own no data -------------------
     rc::Swapchain::Ref&      swapchain;
-    const rokz::Display&     display;
     
     Vec<VkImage>&            swapchain_images;
     Vec<rc::ImageView::Ref>& swapchain_imageviews;
@@ -169,5 +166,5 @@ rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc, const rokz::Display& disp
     rc::ImageView::Ref&      msaa_color_imageview; 
   };
 
-  return std::make_shared<reset_ref_def> (sc, display, scis, scivs, dp, div, mscim, mscimv); 
+  return std::make_shared<reset_ref_def> (sc, scis, scivs, dp, div, mscim, mscimv); 
 } 

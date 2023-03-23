@@ -48,7 +48,6 @@ namespace rokz { namespace rc {
                               const rokz::PhysicalDevice& physdev,
                               const rokz::Device& device);
 
-
   }}
 
 #endif

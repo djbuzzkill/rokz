@@ -184,7 +184,7 @@ struct RootLoop {
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
-      glob.swapchain_resetter->Reset (glob.display.window, glob.device.allocator, glob.device);
+      glob.swapchain_resetter->Reset (glob.display, glob.device);
       printf ("===> %i <=== ]\n", __LINE__);
       return true;
     }
@@ -308,7 +308,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                            kTestExtent, glob.device.physical, glob.device);
 
-
   // define first
   //rekz::kGlobalDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
@@ -334,11 +333,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false; 
   }
                                
-    rc::Image::Ref         depthimage      ; //Image                depth_image;          //
-    rc::ImageView::Ref     depthimageview  ; // depth_imageview;      //b
-    rc::Image::Ref         msaacolorimage  ;     //  msaa_color_image
-    rc::ImageView::Ref     msaacolorimageview; // msaa_color_imageview
-
 
   //
   rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
@@ -354,7 +348,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      glob.device); // <-- this does all the additional  attachmentes
 
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, glob.display, scg.images, scg.imageviews,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                            glob.depthimage, glob.depthimageview,
                                                            glob.msaacolorimage, glob.msaacolorimageview); 
   //

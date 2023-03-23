@@ -38,18 +38,18 @@ namespace marz {
     VkFormat               depth_format;        //
     VkSampleCountFlagBits  msaa_samples;        // = VK_SAMPLE_COUNT_1_BIT;
     // attachement set
-    SwapchainGroup         swapchain_group;
-    Image                  depth_image;          //
-    ImageView              depth_imageview;      //
-    Image                  msaa_color_image;     //  
-    ImageView              msaa_color_imageview; //
+    rc::SwapchainGroup     swapchain_group;
+    rc::Image::Ref         depth_image;          //
+    rc::ImageView::Ref     depth_imageview;      //
+    rc::Image::Ref         msaa_color_image;     //  
+    rc::ImageView::Ref     msaa_color_imageview; //
 
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
     //Vec<Buffer>            landscape_bu; //
     DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
     DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's
     // uniformbundle
-    Vec<Buffer>                  global_uniform_bu;    // vma_shared_uniforms;
+    Vec<rc::Buffer::Ref>   global_uniform_bu;    // vma_shared_uniforms;
     // descriptors sets
     DescriptorGroup              landscape_de; //
     DescriptorGroup              global_uniform_de;

@@ -13,8 +13,6 @@ namespace {
 
 }
 
-
-
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
@@ -223,7 +221,7 @@ int run_marz (const std::vector<std::string>& args) {
   printf ("%s\n", __FUNCTION__);
 
   Glob glob; //
-  rokz::SwapchainGroup&  scg   = glob.swapchain_group;
+  rc::SwapchainGroup&  scg   = glob.swapchain_group;
   rokz::FrameSyncGroup&  fsg   = glob.framesyncgroup; 
   
   std::filesystem::path pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
@@ -252,21 +250,19 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
-  assert (false); 
-  // rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
-  //                            kDisplayDimensions, glob.device.physical, glob.device);
+  rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+                           kDisplayDimensions, glob.device.physical, glob.device);
 
   //
-  rokz::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
-                                       glob.depth_image, glob.depth_imageview,
-                                       glob.msaa_samples, scg.swapchain.ci.imageFormat,
-                                       glob.depth_format, scg.swapchain.ci.imageExtent,
-                                       glob.device); // <-- this does all the additional  attachmentes
+  rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
+                                     glob.depth_image, glob.depth_imageview,
+                                     glob.msaa_samples, scg.image_format,
+                                     glob.depth_format, scg.extent,
+                                     glob.device); // <-- this does all the additional  attachmentes
   //
-  assert (false);
-  // glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
-  //                                                          glob.depth_image, glob.depth_imageview,
-  //                                                          glob.msaa_color_image, glob.msaa_color_imageview); 
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+                                                           glob.depth_image, glob.depth_imageview,
+                                                           glob.msaa_color_image, glob.msaa_color_imageview); 
 
 
   //
@@ -284,8 +280,8 @@ int run_marz (const std::vector<std::string>& args) {
   // grid only uses globals
   glob.grid.pipe.dslos.push_back (glob.global_dslo.handle);
   if (!rekz::InitGridPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
-                               glob.swapchain_group.swapchain.ci.imageExtent, glob.msaa_samples,
-                               scg.swapchain.ci.imageFormat, glob.depth_format, glob.device)) { 
+                               scg.extent, glob.msaa_samples,
+                               scg.image_format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
@@ -293,15 +289,10 @@ int run_marz (const std::vector<std::string>& args) {
 
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
+
   if (!rekz::InitLandscapePipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
-
-                                    glob.msaa_samples,
-                                    scg.swapchain.ci.imageFormat,
-                                    glob.depth_format,
-
-                                    pipe_path, 
-                                    glob.swapchain_group.swapchain.ci.imageExtent,
-                                    glob.device)) {
+                                    glob.msaa_samples, scg.image_format, glob.depth_format,
+                                    pipe_path, scg.extent, glob.device)) {
     printf ("[FAILED] --> InitLandscapeTiler \n"); 
     return false; 
   }      

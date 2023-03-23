@@ -5,8 +5,8 @@
 
 
 #include "common.h"
-#include <memory>
 #include "rokz_types.h"
+#include "display.h"
 
 
 
@@ -21,30 +21,13 @@ namespace rokz {
 
     typedef std::shared_ptr<SwapchainResetter> Ref; 
     
-    virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
+    virtual bool Reset (const rokz::Display& display, const rokz::Device& device) = 0;
 
   protected:
   
     SwapchainResetter () {}
 
   };
-
-  // // --------------------------------------------------------------------------------------------
-  // //                         
-  // // --------------------------------------------------------------------------------------------
-  // struct ResetSwapchainCB {
-    
-  // public:
-
-  //   typedef std::shared_ptr<ResetSwapchainCB> Ref; 
-    
-  //   virtual bool Reset (const rokz::Window& win, const rokz::Allocator& allocator, const rokz::Device& device) = 0;
-
-  // protected:
-  
-  //   ResetSwapchainCB () {}
-
-  // };
 
 }
 #endif

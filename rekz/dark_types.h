@@ -36,16 +36,18 @@ namespace darkroot {
     rokz::Display                display;             //
 
     // device props - framebuffer properties
+    //AttachmentProps { 
     VkFormat                     depth_format;  
-    VkSampleCountFlagBits        msaa_samples;  
+    VkSampleCountFlagBits        msaa_samples;
+    VkFormat                     color_format;
+    //}  
     // attachement set
-
     rc::Image::Ref         depthimage;          
     rc::ImageView::Ref     depthimageview;      
-
+  
     rc::Image::Ref         msaacolorimage;      
     rc::ImageView::Ref     msaacolorimageview;  
-
+  
     DrawSequence::Globals  shared;             
     DescriptorSetLayout    global_dslo;        
     DescriptorSetLayout    object_dslo;        
@@ -73,7 +75,7 @@ namespace darkroot {
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
     SwapchainResetter::Ref  swapchain_resetter;
-  };
+};
 
   // * unify vb/ib
   // texture per obj

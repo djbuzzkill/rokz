@@ -93,6 +93,7 @@ namespace rekz {
                                  float xsize, float zsize,
                                  const Device& device); 
 
+
   rokz::DrawSequence::Ref CreateDrawGrid (rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs); 
 
   // --------------------------------------------------------------------
@@ -102,43 +103,7 @@ namespace rekz {
   glm::vec3& unit_angle_xz (glm::vec3& v, float theta);
   glm::vec3& unit_angle_yz (glm::vec3& v, float theta);
 
-  // ----------------------------------------------------------------------------------------
-  //                     
-  // ----------------------------------------------------------------------------------------
-  // bool InitializeSwapchain (rokz::SwapchainGroup& scg,
-  //                           const rokz::SwapchainSupportInfo& swapchain_support_info,
-  //                           const VkSurfaceKHR& surface,
-  //                           const VkExtent2D&   extent, 
-  //                           const rokz::PhysicalDevice& physdev,
-  //                           const rokz::Device& device) ; 
 
-
-
-
-
-  // //
-  // actually Initize,Instance,SurfaceAndDevice ()
-  // bool InitializeInstance (rokz::Instance& instance); 
-  // bool InitializeDevice (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance); 
-  // bool InitializeDevice (rokz::Instance& instance, rokz::Device& device, rokz::Window& window,  VkSurfaceKHR& surface, rokz::PhysicalDevice& physical_device); 
-
-  // bool SetupGlobalUniforms (Vec<rokz::Buffer>& uniform_buffs, uint32_t num_sets, const rokz::Device& device); 
-  // bool BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device);
-  // void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt);
-
-  // bool SetupRenderingAttachments (rokz::Image&          msaa_color_image       ,
-  //                                 rokz::ImageView&      msaa_color_imageview   ,
-
-  //                                 rokz::Image&          msaa_depth_image       ,
-  //                                 rokz::ImageView&      msaa_depth_imageview   ,
-
-  //                                 VkSampleCountFlagBits msaa_samples           ,
-  //                                 VkFormat              swapchain_image_format ,
-  //                                 VkFormat              msaa_depth_format      ,
-  //                                 const VkExtent2D&     image_ext, 
-  //                                 const rokz::Device&   device);
-
-  
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
@@ -150,12 +115,6 @@ namespace rekz {
                          rc::Swapchain::Ref&   swapchain,
                          const rokz::Device&   device);
 
-  // bool RecreateSwapchain (VkSwapchainKHR& swapchain, const rokz::Display& win, 
-  //                         Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
-  //                         rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
-  //                         rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
-  //                         const Device& device) ;
-
   bool RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display& win, 
                           Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
                           rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
@@ -163,40 +122,13 @@ namespace rekz {
                           const Device& device) ;
 
 
-  //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
-  // rokz::SwapchainResetter::Ref
-  // CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis, Vec<rokz::ImageView>& scivs,
-  //                          rokz::Image& dp, rokz::ImageView& div, rokz::Image& mscim, rokz::ImageView& mscimv); 
-
   rokz::SwapchainResetter::Ref
-  CreateSwapchainResetter (rc::Swapchain::Ref& swapchain, const rokz::Display& display, 
+  CreateSwapchainResetter (rc::Swapchain::Ref& swapchain, 
                            Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                            rc::Image::Ref& depthim, rc::ImageView::Ref& depthiv,
                            rc::Image::Ref& msaacolorim, rc::ImageView::Ref& msaacoloriv); 
 
-  // rokz::SwapchainResetter::Ref CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis,
-  //                                                      Vec<rokz::ImageView>& scivs,
-  //                                                      rokz::Image& dp, rokz::ImageView& div,
-  //                                                      rokz::Image& mscim, rokz::ImageView& mscimv);
-
-
-
-
-  // rokz::SwapchainResetter::Ref
-  // CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
-  //                          Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
-  //                          rc::Image::Ref& dp, rc::ImageView::Ref& div,
-  //                          rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv);
-
-
   
-  bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
-                                  const rokz::ImageView&    msaa_color_imageview ,
-                                  const rokz::ImageView&    msaa_depth_imageview ,
-                                  const VkExtent2D&         image_extent); 
-  void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
-                                   const rokz::ImageView&    msaa_color_imageview ,
-                                   const rokz::ImageView&    target_imageview); 
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
