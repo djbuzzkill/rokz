@@ -32,8 +32,8 @@ using namespace darkroot;
 Glob::Glob()
   : instance()
   , device ()
-  , depth_image()
-  , depth_imageview()
+  // , depth_image()
+  // , depth_imageview()
   , msaa_samples ()
   , swapchain_support_info()
   , shared ()
@@ -95,9 +95,9 @@ void CleanupDarkroot (Glob& glob) {
 
   //
   rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
-                          glob.msaa_color_image, glob.msaa_color_imageview,
-                          glob.depth_image, glob.depth_imageview,
-                          glob.swapchain_group.swapchain, 
+                          glob.msaacolorimage, glob.msaacolorimageview,
+                          glob.depthimage, glob.depthimageview,
+                          glob.swapchain_group.swapchain.handle, 
                           glob.device);
 
   // the the  poly stuff is done in Cleanup, grids is done here
@@ -183,10 +183,10 @@ struct RootLoop {
     rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state);
     
     //
-    rokz::SwapchainGroup& scg = glob.swapchain_group; 
+    rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
     uint32_t image_index; 
-    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
+    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain.handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
@@ -216,13 +216,13 @@ struct RootLoop {
       // update data needed to record drawlist
 
       // make sure the correct swapchain image is used
-      rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
-                                        glob.swapchain_group.imageviews[image_index]);
+      rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
+                                        glob.swapchain_group.imageviews[image_index]->handle);
 
       // Transitioning Layout and stuff in here
       // BeginCommandBuffer is called here
-      rokz::cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
-                                image_index, glob.rendering_info_group.ri, glob.device);
+      rc::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
+                          image_index, glob.rendering_info_group.ri, glob.device);
       // EXECUTE DRAW LIST RECORDING 
 
       // for drawseq's
@@ -245,7 +245,7 @@ struct RootLoop {
       glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
 
       // we are done, submit
-      rokz::cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
+      rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
     }
     
@@ -275,7 +275,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //GLFWwindow* glfwin = nullptr; 
 
   Glob  glob; // *globmem; // something representing the app state
-  rokz::SwapchainGroup& scg = glob.swapchain_group;
+  rc::SwapchainGroup& scg = glob.swapchain_group;
   
   glob.mouse_prev.x = 0;
   glob.mouse_prev.y = 0;
@@ -310,7 +310,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
-  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+  rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                            kTestExtent, glob.device.physical, glob.device);
 
 
@@ -339,27 +339,33 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false; 
   }
                                
-  //
-  rokz::SetupMSAARenderingAttachments (glob.msaa_color_image,
-                                       glob.msaa_color_imageview, 
-                                                         
-                                       glob.depth_image,       
-                                       glob.depth_imageview,
-                            
-                                       glob.msaa_samples,
-                                       scg.swapchain.ci.imageFormat,
-                                       glob.depth_format,          
-                                       scg.swapchain.ci.imageExtent,
-                                       glob.device); // <-- this does all the additional  attachmentes
+    rc::Image::Ref         depthimage      ; //Image                depth_image;          //
+    rc::ImageView::Ref     depthimageview  ; // depth_imageview;      //b
+    rc::Image::Ref         msaacolorimage  ;     //  msaa_color_image
+    rc::ImageView::Ref     msaacolorimageview; // msaa_color_imageview
+
 
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
-                                                           glob.depth_image, glob.depth_imageview,
-                                                           glob.msaa_color_image, glob.msaa_color_imageview); 
+  rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
+                                     glob.msaacolorimageview, 
+                                     
+                                     glob.depthimage,       
+                                     glob.depthimageview,
+                            
+                                     glob.msaa_samples,
+                                     scg.swapchain.ci.imageFormat,
+                                     glob.depth_format,          
+                                     scg.swapchain.ci.imageExtent,
+                                     glob.device); // <-- this does all the additional  attachmentes
+
+  //
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain.handle, scg.swapchain.ci, scg.images, scg.imageviews,
+                                                           glob.depthimage, glob.depthimageview,
+                                                           glob.msaacolorimage, glob.msaacolorimageview); 
   //
   // for BeginRendering ()
-  rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview,
-                                   glob.depth_imageview, glob.swapchain_group.swapchain.ci.imageExtent); 
+  rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
+                                   glob.depthimageview->handle, glob.swapchain_group.swapchain.ci.imageExtent); 
   //
 
   //

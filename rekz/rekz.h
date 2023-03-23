@@ -140,32 +140,54 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
-  void CleanupSwapchain (Vec<rokz::ImageView>& sc_image_views,
-                         rokz::Image&          msaa_color_image,
-                         rokz::ImageView&      msaa_color_imageview,
-                         rokz::Image&          depth_image,
-                         rokz::ImageView&      depth_imageview,
-                         rokz::Swapchain&      swapchain,
+  void CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
+                         rc::Image::Ref&       msaa_color_image,
+                         rc::ImageView::Ref&   msaa_color_imageview,
+                         rc::Image::Ref&       depth_image,
+                         rc::ImageView::Ref&   depth_imageview,
+                         VkSwapchainKHR&       swapchain,
                          const rokz::Device&   device);
-  
 
-  bool RecreateSwapchain (rokz::Swapchain&  swapchain, const rokz::Window& win, 
-                          Vec<rokz::Image>& swapchain_images, Vec<rokz::ImageView>& imageviews,
-                          rokz::Image& msaa_depth_image, rokz::ImageView& msaa_depth_imageview,
-                          rokz::Image& msaa_color_image, rokz::ImageView& msaa_color_imageview,
-                          const VmaAllocator& allocator, const rokz::Device& device); 
+  // bool RecreateSwapchain (rokz::Swapchain&  swapchain, const rokz::Window& win, 
+  //                         Vec<rc::Image::Ref>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
+  //                         rc::Image::Ref& msaa_depth_image, rc::ImageView::Ref& msaa_depth_imageview,
+  //                         rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
+  //                         const VmaAllocator& allocator, const rokz::Device& device);
+  bool RecreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const rokz::Window& win,
+                          Vec<rc::Image::Ref>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
+                          rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
+                          rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
+                          const Device& device) ;
+
+  
 
   //void SetupViewportState (rokz::ViewportState & vps, const VkExtent2D& swapchain_extent); 
   rokz::SwapchainResetter::Ref
   CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis, Vec<rokz::ImageView>& scivs,
                            rokz::Image& dp, rokz::ImageView& div, rokz::Image& mscim, rokz::ImageView& mscimv); 
 
+  rokz::SwapchainResetter::Ref
+  CreateSwapchainResetter (VkSwapchainKHR& sc, const VkSwapchainCreateInfoKHR& ci, 
+                           Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
+                           rc::Image::Ref& depthim, rc::ImageView::Ref& depthiv,
+                           rc::Image::Ref& msaacolorim, rc::ImageView::Ref& msaacoloriv); 
 
   rokz::SwapchainResetter::Ref CreateSwapchainResetter (rokz::Swapchain& sc, Vec<rokz::Image>& scis,
                                                        Vec<rokz::ImageView>& scivs,
                                                        rokz::Image& dp, rokz::ImageView& div,
                                                        rokz::Image& mscim, rokz::ImageView& mscimv);
 
+
+
+
+  rokz::SwapchainResetter::Ref CreateSwapchainResetter (VkSwapchainKHR& sc,
+                                                        const VkSwapchainCreateInfoKHR& ci, 
+                                                        Vec<rc::Image::Ref>& scis, Vec<rc::ImageView::Ref>& scivs,
+                                                        rc::Image::Ref& dp, rc::ImageView::Ref& div,
+                                                        rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv);
+
+
+  
   bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
                                   const rokz::ImageView&    msaa_color_imageview ,
                                   const rokz::ImageView&    msaa_depth_imageview ,

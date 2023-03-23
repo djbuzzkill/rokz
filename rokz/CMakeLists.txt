@@ -36,11 +36,15 @@ set (ROKZ_HEADER_FILES
   display.h
   vert_defs.h
   file.h
+  frame.h
   shared_types.h
   synchronization.h
   rokz_types.h
   rc_types.h
-
+  rc_image.h
+  rc_attachment.h
+  rc_swapchain.h
+  
   utility.h
   ut_offset.h
   common.h
@@ -49,6 +53,7 @@ set (ROKZ_HEADER_FILES
 #
 set (ROKZ_SOURCE_FILES
 
+  rc_attachment.cpp
   attachment.cpp
   context.cpp
   command.cpp
@@ -71,12 +76,14 @@ set (ROKZ_SOURCE_FILES
   input_state.cpp
   display.cpp
   vert_defs.cpp
-
+  frame.cpp
   utility.cpp
   binary_IO.cpp
   defaults.cpp
   rokz.cpp
   rc_types.cpp
+  rc_image.cpp
+  rc_swapchain.cpp
   synchronization.cpp
 )
 

@@ -427,6 +427,7 @@ namespace rokz {
     // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
   }; 
 
+  
   // --------------------------------------------------------
   struct FrameSyncCreateInfo {
 

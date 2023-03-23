@@ -5,11 +5,7 @@
 #include "image.h"
 #include "sampler.h"
 
-
-
 using namespace rokz;
-
-
 // -----------------------------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------------------------
@@ -17,15 +13,6 @@ rc::Buffer::~Buffer () {
   rokz::cx::Destroy (handle, allocation, device.allocator.handle);
 }
 
-// -----------------------------------------------------------------------------------------------
-rc::Image::~Image() {
-  rokz::cx::Destroy (handle, allocation, device.allocator.handle);
-}
-
-// -----------------------------------------------------------------------------------------------
-rc::ImageView::~ImageView () {
-  rokz::cx::Destroy (handle, device.handle);
-}
 
 
 rc::Sampler::~Sampler () {
@@ -97,41 +84,6 @@ rc::Buffer::Ref rc::Create_uniform_mapped  (size_t size_e, size_t num_e, const D
 
   return buf;
 }
-// -----------------------------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------------------------
-rc::Image::Ref rokz::rc::CreateImage (const VkImageCreateInfo& ci, const Device& device) {
-
-  rc::Image::Ref img = std::make_shared<rc::Image> (device) ;
-
-  if( VK_SUCCESS != vmaCreateImage (device.allocator.handle, &ci, &img->alloc_ci, &img->handle, &img->allocation, &img->alloc_info)) {
-    printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
-    return rc::Image::Ref (nullptr); 
-  }
-  
-  return img; 
-}
-
-// -----------------------------------------------------------------------------------------------
-rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
-                                                        VkSampleCountFlagBits sampleflags,
-                                                        const Device& device) {
-  VkImageCreateInfo ci {};
-  rokz::cx::CreateInfo_2D_color_sampling  (ci, sampleflags, wd, ht);
-
-  rc::Image::Ref image = std::make_shared<rc::Image> (device) ;
-
-  rokz::cx::AllocCreateInfo_device (image->alloc_ci);
-
-  if( VK_SUCCESS != vmaCreateImage (device.allocator.handle, &ci, &image->alloc_ci,
-                                    &image->handle, &image->allocation, &image->alloc_info)) {
-    printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
-    rc::Image::Ref (nullptr);
-  }
-  
-  return image;
-}
-
 
 // -----------------------------------------------------------------------------------------------
 //
@@ -156,22 +108,5 @@ rc::Buffer::Ref rokz::rc::CreateDeviceBuffer (size_t reqsize, VkBufferUsageFlags
 
   //  cx::CreateBuffer (buf->handle,   
   return rc::Buffer::Ref (nullptr); 
-}
-
-// ------------------------------------------------------------------------------------------------
-//                                 
-// ------------------------------------------------------------------------------------------------
-rc::ImageView::Ref rc::CreateImageView (rc::Image::Ref image, VkFormat format, VkImageAspectFlagBits imageaspect, const Device& device) {
-  VkImageViewCreateInfo ci {};
-  cx::CreateInfo (ci, format, imageaspect, image->handle);  
-
-  rc::ImageView::Ref  ret = std::make_shared<rc::ImageView> (device); 
-
-  if (!rokz::cx::CreateImageView (ret->handle, ci, device.handle)) { 
-    HERE("FAILED CreateImageView");
-    return rc::ImageView::Ref (nullptr); 
-  }
-
-  return ret;
 }
 

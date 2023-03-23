@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "rokz_types.h"
+#include <vulkan/vulkan_core.h>
 
 namespace rokz { 
 
@@ -15,7 +16,8 @@ namespace rokz {
     // ----------------------------------------------------------------------------
     VkPresentInfoKHR& PresentInfo  (VkPresentInfoKHR& pi, uint32_t& image_index, const std::vector<VkSwapchainKHR>& swapchains,  const std::vector<VkSemaphore>& signal_sems); 
 
-    VkResult          AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
+    //VkResult          AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
+    VkResult          AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
 
     bool              PresentFrame (VkQueue present_que, const Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync); 
     bool              PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi); 
@@ -51,13 +53,25 @@ namespace rokz {
   } // cx
 
 
+  // bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+  //                                 const rokz::ImageView&    msaa_color_imageview ,
+  //                                 const rokz::ImageView&    msaa_depth_imageview ,
+  //                                 const VkExtent2D&         image_extent); 
+  // void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+  //                                  const rokz::ImageView&    msaa_color_imageview ,
+  //                                  const rokz::ImageView&    target_imageview);
+
+
   bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
-                                  const rokz::ImageView&    msaa_color_imageview ,
-                                  const rokz::ImageView&    msaa_depth_imageview ,
-                                  const VkExtent2D&         image_extent); 
-  void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
-                                   const rokz::ImageView&    msaa_color_imageview ,
-                                   const rokz::ImageView&    target_imageview);
+                                  const VkImageView& msaa_color_imageview ,
+                                  const VkImageView& msaa_depth_imageview ,
+                                  const VkExtent2D&  image_extent);
+
+  void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri, 
+                                   const VkImageView&  msaa_color_imageview ,
+                                   const VkImageView&  target_imageview);
+
+
 
 } // rokz
 

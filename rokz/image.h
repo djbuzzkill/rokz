@@ -24,7 +24,12 @@ namespace rokz {
     VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image);
     
     bool CreateImageView (VkImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
-    bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
+    //bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
+
+
+    bool CreateImageViews (std::vector<rc::ImageView::Ref>&   imageviews,
+                           const std::vector<rc::Image::Ref>& images, VkFormat format,
+                           VkImageAspectFlagBits aspectflags, const Device& device);
     
     // ------------------------------------------------------------------
     bool CreateImage (Image& image, const VkDevice& device); 

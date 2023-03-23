@@ -252,8 +252,9 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
-  rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
-                             kDisplayDimensions, glob.device.physical, glob.device);
+  assert (false); 
+  // rokz::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+  //                            kDisplayDimensions, glob.device.physical, glob.device);
 
   //
   rokz::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 

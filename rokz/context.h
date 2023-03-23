@@ -42,10 +42,10 @@ namespace rokz {
                                                   const PhysicalDevice&        physdev); 
     // like above but no phys dev
     VkSwapchainCreateInfoKHR& CreateInfo_default (VkSwapchainCreateInfoKHR&   ci, 
-                                                        VkSurfaceKHR                surface,
-                                                        const std::vector<uint32_t>&      family_indices,
-                                                        const VkExtent2D&           extent, 
-                                                        const SwapchainSupportInfo& swapchain_support_info);
+                                                  VkSurfaceKHR                surface,
+                                                  const std::vector<uint32_t>&      family_indices,
+                                                  const VkExtent2D&           extent, 
+                                                  const SwapchainSupportInfo& swapchain_support_info);
 
   
     VkDeviceQueueCreateInfo&  CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
@@ -96,7 +96,10 @@ namespace rokz {
     // -------------------------------------------------------------------------
     //
     // -------------------------------------------------------------------------
-    bool               CreateSwapchain (Swapchain& swapchain, const Device& device);
+    //bool               CreateSwapchain (Swapchain& swapchain, const Device& device);
+    bool               CreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const Device& device);
+
+
     bool               CheckDeviceExtensionSupport (const VkPhysicalDevice& device); 
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat (const std::vector<VkSurfaceFormatKHR>& available_formats);
     bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
@@ -144,21 +147,22 @@ namespace rokz {
   // -----------------------------------------------------------------------------------------------
   //
   // -----------------------------------------------------------------------------------------------
-  bool               RecreateSwapchain (Swapchain&                          swapchain,
-                                        std::vector<Image>&                 swapchain_images, 
-                                        std::vector<Framebuffer>&           framebuffers,
-                                        std::vector<ImageView>&             image_views, 
 
-                                        RenderPass&                         render_pass, 
-                                        Image&                              depth_image, 
-                                        ImageView&                          depth_imageview,
+  // bool               RecreateSwapchain (Swapchain&                          swapchain,
+  //                                       std::vector<Image>&                 swapchain_images, 
+  //                                       std::vector<Framebuffer>&           framebuffers,
+  //                                       std::vector<ImageView>&             image_views, 
 
-                                        Image&                              multisamp_color_image, 
-                                        ImageView&                          multisamp_color_imageview,
+  //                                       RenderPass&                         render_pass, 
+  //                                       Image&                              depth_image, 
+  //                                       ImageView&                          depth_imageview,
 
-                                        const Device&                         device,
-                                        const VmaAllocator&                   allocator,
-                                        GLFWwindow*                           glfwin); 
+  //                                       Image&                              multisamp_color_image, 
+  //                                       ImageView&                          multisamp_color_imageview,
+
+  //                                       const Device&                         device,
+  //                                       const VmaAllocator&                   allocator,
+  //                                       GLFWwindow*                           glfwin); 
 
   // -----------------------------------------------------------------------------------------------
   //

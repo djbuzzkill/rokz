@@ -11,7 +11,6 @@
 #include "common.h"
 
 #include "rokz_types.h"
-#include "rc_types.h"
 
 #include "context.h"
 #include "command.h"
@@ -36,10 +35,17 @@
 #include "defaults.h"
 #include "binary_IO.h"
 #include "vert_defs.h"
+#include "frame_loop.h"
 #include "draw_sequence.h"
 #include "swapchain_reset.h"
-#include "frame_loop.h"
 #include "synchronization.h"
+
+#include "frame.h"
+#include "rc_attachment.h"
+#include "rc_image.h"
+#include "rc_swapchain.h"
+#include "rc_types.h"
+
 
 namespace rokz { 
 

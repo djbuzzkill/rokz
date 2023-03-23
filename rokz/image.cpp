@@ -139,27 +139,27 @@ VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkImageA
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
-                            const std::vector<Image>&  images,
-                            const Device&              device) {
+// bool rokz::cx::CreateImageViews (std::vector<ImageView>&   imageviews,
+//                                  const std::vector<Image>&  images,
+//                                  const Device&              device) {
 
-  printf ("%s\n", __FUNCTION__); 
+//   printf ("%s\n", __FUNCTION__); 
   
-  imageviews.resize (images.size()); 
+//   imageviews.resize (images.size()); 
   
-  for (size_t i = 0; i < images.size(); i++) {
-    // CREATEINFO for imageviews from swapchain images
-    CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
+//   for (size_t i = 0; i < images.size(); i++) {
+//     // CREATEINFO for imageviews from swapchain images
+//     CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
     
-    if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
-       printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
-    }
+//     if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
+//        printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
+//     }
 
-  }
+//   }
 
-  printf ("BAI %s\n", __FUNCTION__); 
-  return true;   
-}
+//   printf ("BAI %s\n", __FUNCTION__); 
+//   return true;   
+// }
 
 
 

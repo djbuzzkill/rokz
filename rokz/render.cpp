@@ -4,15 +4,16 @@
 #include "render.h"
 #include "command.h"
 
-// --------------------------------------------------------------------
-// nue
-// --------------------------------------------------------------------
-VkResult rokz::cx::AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device& device) {
+
+
+using namespace rokz;
+
+VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device) {
 
   vkWaitForFences(device.handle, 1, &render_sync.in_flight_fen, VK_TRUE, UINT64_MAX);
     
   VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
-                                                swapchain.handle,
+                                                swapchain,
                                                 UINT64_MAX,
                                                 render_sync.image_available_sem,
                                                 VK_NULL_HANDLE,
@@ -20,12 +21,32 @@ VkResult rokz::cx::AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, u
 
   vkResetFences (device.handle, 1, &render_sync.in_flight_fen);
   return acquire_res; 
+
 }
+
+
+// --------------------------------------------------------------------
+// nue
+// --------------------------------------------------------------------
+// VkResult cx::AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device& device) {
+
+//   vkWaitForFences(device.handle, 1, &render_sync.in_flight_fen, VK_TRUE, UINT64_MAX);
+    
+//   VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
+//                                                 swapchain.handle,
+//                                                 UINT64_MAX,
+//                                                 render_sync.image_available_sem,
+//                                                 VK_NULL_HANDLE,
+//                                                 &image_index);
+
+//   vkResetFences (device.handle, 1, &render_sync.in_flight_fen);
+//   return acquire_res; 
+// }
 
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-VkPresentInfoKHR& rokz::cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
+VkPresentInfoKHR& cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
                                      const std::vector<VkSwapchainKHR>& swapchains,
                                      const std::vector<VkSemaphore>& signal_sems) { 
   //printf ("SIZE --> signal_sems[%zu]\n", signal_sems.size()); 
@@ -44,7 +65,7 @@ VkPresentInfoKHR& rokz::cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_i
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rokz::cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
+bool cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
   //rokz::cx::FrameGroup& frame_group = glob.frame_group;
  return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
 }
@@ -52,7 +73,7 @@ bool rokz::cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) {
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool rokz::cx::PresentFrame (VkQueue present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
+bool cx::PresentFrame (VkQueue present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
 
   std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
   std::vector<VkSwapchainKHR>  swapchains = { swapchain.handle };
@@ -68,7 +89,7 @@ bool rokz::cx::PresentFrame (VkQueue present_que, const rokz::Swapchain& swapcha
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VkRenderingAttachmentInfo& rokz::cx::AttachmentInfo (VkRenderingAttachmentInfo& ai,
+VkRenderingAttachmentInfo& cx::AttachmentInfo (VkRenderingAttachmentInfo& ai,
 
                                                  VkImageView                imageview ,
                                                  VkImageLayout              image_layout,
@@ -99,7 +120,7 @@ VkRenderingAttachmentInfo& rokz::cx::AttachmentInfo (VkRenderingAttachmentInfo& 
 // ---------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------
-VkRenderingInfo& rokz::cx::RenderingInfo (VkRenderingInfo& ri,
+VkRenderingInfo& cx::RenderingInfo (VkRenderingInfo& ri,
                                  const VkRect2D&                               render_area,
                                  uint32_t                                      layer_count,
                                  uint32_t                                      view_mask,
@@ -129,7 +150,7 @@ VkRenderingInfo& rokz::cx::RenderingInfo (VkRenderingInfo& ri,
 // ---------------------------------------------------------------------
 //  
 // ---------------------------------------------------------------------
-int rokz::cx::FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer,
+int cx::FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                               uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
 
   
@@ -162,6 +183,7 @@ int rokz::cx::FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command
   return 0;
 }
 
+
 // ---------------------------------------------------------------------
 //  
 // ---------------------------------------------------------------------
@@ -188,7 +210,7 @@ int rokz::cx::FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command
 // ---------------------------------------------------------------------
 // KHR_dynamic_rendering
 // ---------------------------------------------------------------------
-int rokz::cx::FrameDrawEnd (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
+int cx::FrameDrawEnd (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
 
   vkCmdEndRendering (command_buffer);
   //
@@ -196,7 +218,6 @@ int rokz::cx::FrameDrawEnd (SwapchainGroup& scg, VkCommandBuffer command_buffer,
     printf ("[FAILED] record command buffer\n");
     return __LINE__; 
   }
-
 
   rokz::Swapchain& swapchain = scg.swapchain;
 
@@ -237,15 +258,62 @@ int rokz::cx::FrameDrawEnd (SwapchainGroup& scg, VkCommandBuffer command_buffer,
 
 
 
+void rokz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                       const VkImageView&        msaa_color_imageview ,
+                                       const VkImageView&        target_imageview) {
+  //printf ("%s\n", __FUNCTION__); 
+  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0], msaa_color_imageview,
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_RESOLVE_MODE_AVERAGE_BIT, target_imageview,
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_CLEAR,
+                      VK_ATTACHMENT_STORE_OP_STORE, ri.clear_colors[0]);
+}
 
 
+bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                      const VkImageView& msaa_color_imageview,
+                                      const VkImageView& msaa_depth_imageview,
+                                      const VkExtent2D&  image_extent) {
+    // const rokz::ImageView& msaa_color_imageview = glob.msaa_color_imageview;
+  // const rokz::ImageView& msaa_depth_imageview = glob.depth_imageview;
+  // const VkExtent2D& image_extent              = glob.swapchain_group.swapchain.ci.imageExtent;
+  ri.clear_colors.resize (1);
+  ri.color_attachment_infos.resize (1);
 
+  ri.clear_colors[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  //rig.clear_colors[1].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  ri.clear_depth.depthStencil = {1.0f, 0};
 
+  rokz::cx::AttachmentInfo (ri.color_attachment_infos[0], msaa_color_imageview,
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_RESOLVE_MODE_AVERAGE_BIT,
+                      nullptr, // dont know yet
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_ATTACHMENT_LOAD_OP_CLEAR,
+                      VK_ATTACHMENT_STORE_OP_STORE,
+                      ri.clear_colors[0]);
 
+  rokz::cx::AttachmentInfo (ri.depth_attachment_info,
+                      msaa_depth_imageview,
+                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                      VK_RESOLVE_MODE_NONE,
+                      nullptr,
+                      VK_IMAGE_LAYOUT_UNDEFINED,
+                      VK_ATTACHMENT_LOAD_OP_CLEAR,
+                      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                      ri.clear_depth);
+
+  
+  ri.render_area = { VkOffset2D {0, 0}, image_extent };
+
+  cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
+  return true;
+
+}
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
                                 const rokz::ImageView&    msaa_color_imageview ,
                                 const rokz::ImageView&    msaa_depth_imageview ,
                                 const VkExtent2D&         image_extent) {
@@ -261,24 +329,24 @@ bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
   ri.clear_depth.depthStencil = {1.0f, 0};
 
   cx::AttachmentInfo (ri.color_attachment_infos[0],
-                            msaa_color_imageview.handle,
-                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                            VK_RESOLVE_MODE_AVERAGE_BIT,
-                            VK_NULL_HANDLE, // swapchain_group.imageviews[i].handle <-- this will change
-                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                            VK_ATTACHMENT_LOAD_OP_CLEAR,
-                            VK_ATTACHMENT_STORE_OP_STORE,
-                            ri.clear_colors[0]);
+                      msaa_color_imageview.handle,
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_RESOLVE_MODE_AVERAGE_BIT,
+                      VK_NULL_HANDLE, // swapchain_group.imageviews[i].handle <-- this will change
+                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                      VK_ATTACHMENT_LOAD_OP_CLEAR,
+                      VK_ATTACHMENT_STORE_OP_STORE,
+                      ri.clear_colors[0]);
 
   cx::AttachmentInfo (ri.depth_attachment_info,
-                            msaa_depth_imageview.handle,
-                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                            VK_RESOLVE_MODE_NONE,
-                            nullptr,
-                            VK_IMAGE_LAYOUT_UNDEFINED,
-                            VK_ATTACHMENT_LOAD_OP_CLEAR,
-                            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                            ri.clear_depth);
+                      msaa_depth_imageview.handle,
+                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                      VK_RESOLVE_MODE_NONE,
+                      nullptr,
+                      VK_IMAGE_LAYOUT_UNDEFINED,
+                      VK_ATTACHMENT_LOAD_OP_CLEAR,
+                      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                      ri.clear_depth);
 
   
   ri.render_area = { VkOffset2D {0, 0}, image_extent };
@@ -290,7 +358,7 @@ bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
 // -------------------------------------------------------------------------------------------
 // basically populates the AttachmentInfo
 // -------------------------------------------------------------------------------------------
-void rokz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
                                        const rokz::ImageView&    msaa_color_imageview ,
                                        const rokz::ImageView&    target_imageview) {
   //printf ("%s\n", __FUNCTION__); 

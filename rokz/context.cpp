@@ -470,11 +470,27 @@ VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR
 // -------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------
-bool rokz::cx::CreateSwapchain (Swapchain& swapchain, const Device& device) {
+// bool rokz::cx::CreateSwapchain (Swapchain& swapchain, const Device& device) {
+
+//   printf (" %s ", __FUNCTION__);
+
+//   if (vkCreateSwapchainKHR (device.handle, &swapchain.ci, nullptr, &swapchain.handle) != VK_SUCCESS) {
+//     printf (" --> LEAVING[FALSE] %s Create Swapchain\n", __FUNCTION__);
+//     return false; 
+//   }
+
+//   printf (" --> [SUCCESS]\n");
+//   return true;
+// }
+
+// ------------------------------------------------------------------------------------------
+//                  
+// ------------------------------------------------------------------------------------------
+bool rokz::cx::CreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const Device& device) {
 
   printf (" %s ", __FUNCTION__);
 
-  if (vkCreateSwapchainKHR (device.handle, &swapchain.ci, nullptr, &swapchain.handle) != VK_SUCCESS) {
+  if (vkCreateSwapchainKHR (device.handle, &ci, nullptr, &swapchain) != VK_SUCCESS) {
     printf (" --> LEAVING[FALSE] %s Create Swapchain\n", __FUNCTION__);
     return false; 
   }
@@ -482,7 +498,6 @@ bool rokz::cx::CreateSwapchain (Swapchain& swapchain, const Device& device) {
   printf (" --> [SUCCESS]\n");
   return true;
 }
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -703,62 +718,63 @@ void rokz::cx::GetDeviceQueue (VkQueue* que, uint32_t fam_ind, const VkDevice& d
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rokz::RecreateSwapchain(Swapchain&                             swapchain,
-                             std::vector<Image>&                    swapchain_images,
 
-                             std::vector<Framebuffer>&              framebuffers,
-                             std::vector<ImageView>&                imageviews,
+// bool rokz::RecreateSwapchain(Swapchain&                             swapchain,
+//                              std::vector<Image>&                    swapchain_images,
 
-                             // std::vector<VkFramebuffer>&              framebuffers,
-                             // std::vector<VkFramebufferCreateInfo>&    create_infos,
+//                              std::vector<Framebuffer>&              framebuffers,
+//                              std::vector<ImageView>&                imageviews,
 
-                             RenderPass&                              render_pass,
-                             //VkImageView& depth_imageview,
+//                              // std::vector<VkFramebuffer>&              framebuffers,
+//                              // std::vector<VkFramebufferCreateInfo>&    create_infos,
 
-                             Image&           depth_image, 
-                             ImageView&       depth_imageview,
+//                              RenderPass&                              render_pass,
+//                              //VkImageView& depth_imageview,
+
+//                              Image&           depth_image, 
+//                              ImageView&       depth_imageview,
                      
-                             Image&           multisamp_color_image, 
-                             ImageView&       multisamp_color_imageview,
+//                              Image&           multisamp_color_image, 
+//                              ImageView&       multisamp_color_imageview,
 
-                             //VkSurfaceKHR&     surface,
-                             //VkPhysicalDevice& physdev,
-                             //const SwapchainSupportInfo& swapchain_support_info,
-                             const Device&     device,
-                             const VmaAllocator& allocator,
-                             GLFWwindow *  glfwin) {
+//                              //VkSurfaceKHR&     surface,
+//                              //VkPhysicalDevice& physdev,
+//                              //const SwapchainSupportInfo& swapchain_support_info,
+//                              const Device&     device,
+//                              const VmaAllocator& allocator,
+//                              GLFWwindow *  glfwin) {
 
-  printf ("%s\n", __FUNCTION__);
+//   printf ("%s\n", __FUNCTION__);
 
-  int width = 0, height = 0;
-  glfwGetFramebufferSize(glfwin, &width, &height);
+//   int width = 0, height = 0;
+//   glfwGetFramebufferSize(glfwin, &width, &height);
 
-  while (width == 0 || height == 0) {
-    glfwGetFramebufferSize(glfwin, &width, &height);
-    glfwWaitEvents();
-  }
+//   while (width == 0 || height == 0) {
+//     glfwGetFramebufferSize(glfwin, &width, &height);
+//     glfwWaitEvents();
+//   }
   
-  vkDeviceWaitIdle (device.handle);
+//   vkDeviceWaitIdle (device.handle);
 
-  CleanupSwapchain (framebuffers, imageviews,
-                    depth_image, depth_imageview,
-                    multisamp_color_image,
-                    multisamp_color_imageview,
-                    swapchain, device);
+//   CleanupSwapchain (framebuffers, imageviews,
+//                     depth_image, depth_imageview,
+//                     multisamp_color_image,
+//                     multisamp_color_imageview,
+//                     swapchain, device);
 
-  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
-  bool swapchain_res    = rokz::cx::CreateSwapchain (swapchain, device);
-  bool imageviews_res   = rokz::cx::CreateImageViews (imageviews, swapchain_images, device);
-  bool framebuffers_res = rokz::CreateFramebuffers (framebuffers,
-                                              imageviews,
-                                              render_pass,
-                                              swapchain.ci.imageExtent,
-                                              multisamp_color_imageview.handle,
-                                              depth_imageview.handle,
-                                              device);
+//   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info, 
+//   bool swapchain_res    = rokz::cx::CreateSwapchain (swapchain, device);
+//   bool imageviews_res   = rokz::cx::CreateImageViews (imageviews, swapchain_images, device);
+//   bool framebuffers_res = rokz::CreateFramebuffers (framebuffers,
+//                                               imageviews,
+//                                               render_pass,
+//                                               swapchain.ci.imageExtent,
+//                                               multisamp_color_imageview.handle,
+//                                               depth_imageview.handle,
+//                                               device);
 
-  return (swapchain_res && imageviews_res && framebuffers_res); 
-}
+//   return (swapchain_res && imageviews_res && framebuffers_res); 
+// }
 
 
 
@@ -1192,39 +1208,40 @@ rokz::PhysicalDevice& rokz::ConfigureDevice (rokz::PhysicalDevice& physical_devi
 // -------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------
-bool rokz::InitializeSwapchain (rokz::SwapchainGroup& scg,
-                          const rokz::SwapchainSupportInfo& swapchain_support_info,
-                          const VkSurfaceKHR& surface,
-                          const VkExtent2D&   extent, 
-                          const rokz::PhysicalDevice& physdev,
-                          const rokz::Device& device) {
+// bool rokz::InitializeSwapchain (rokz::SwapchainGroup& scg,
+//                           const rokz::SwapchainSupportInfo& swapchain_support_info,
+//                           const VkSurfaceKHR& surface,
+//                           const VkExtent2D&   extent, 
+//                           const rokz::PhysicalDevice& physdev,
+//                           const rokz::Device& device) {
 
-  scg.swapchain.family_indices.clear ();
-  if (physdev.family_indices.graphics != physdev.family_indices.present) {
-    scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value());
-    scg.swapchain.family_indices.push_back (physdev.family_indices.present.value ());
-  }
-  else {
-    scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value ());
-  }
+//   scg.swapchain.family_indices.clear ();
+//   if (physdev.family_indices.graphics != physdev.family_indices.present) {
+//     scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value());
+//     scg.swapchain.family_indices.push_back (physdev.family_indices.present.value ());
+//   }
+//   else {
+//     scg.swapchain.family_indices.push_back (physdev.family_indices.graphics.value ());
+//   }
   
-  rokz::cx::CreateInfo_default (scg.swapchain.ci,  
-                                surface,
-                                scg.swapchain.family_indices,
-                                extent, 
-                                swapchain_support_info);
+//   rokz::cx::CreateInfo_default (scg.swapchain.ci,  
+//                                 surface,
+//                                 scg.swapchain.family_indices,
+//                                 extent, 
+//                                 swapchain_support_info);
 
-  rokz::cx::CreateSwapchain (scg.swapchain, device); 
+//   rokz::cx::CreateSwapchain (scg.swapchain, device); 
   
-  rokz::cx::GetSwapChainImages (scg.images, scg.swapchain, device.handle); 
-  rokz::cx::CreateImageViews       (scg.imageviews, scg.images, device); //  (std::vector<VkImageView>& swapchain_imageviews);
+//   rokz::cx::GetSwapChainImages (scg.images, scg.swapchain, device.handle); 
+//   rokz::cx::CreateImageViews       (scg.imageviews, scg.images, device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
-  for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
-    // manual transition b/c KHR_dynamic_rendering
-    rokz::cx::TransitionImageLayout (scg.images[iimg].handle, scg.swapchain.ci.imageFormat,
-                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                 device.queues.graphics, device.command_pool.handle, device.handle);
-  }
-  // end InitializeSwapchain
-  return true;
-}
+//   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
+//     // manual transition b/c KHR_dynamic_rendering
+//     rokz::cx::TransitionImageLayout (scg.images[iimg].handle, scg.swapchain.ci.imageFormat,
+//                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+//                                  device.queues.graphics, device.command_pool.handle, device.handle);
+//   }
+//   // end InitializeSwapchain
+//   return true;
+// }
+
