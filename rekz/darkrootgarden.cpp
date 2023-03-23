@@ -90,7 +90,7 @@ void CleanupDarkroot (Glob& glob) {
   rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
                           glob.msaacolorimage, glob.msaacolorimageview,
                           glob.depthimage, glob.depthimageview,
-                          glob.swapchain_group.swapchain->handle, 
+                          glob.swapchain_group.swapchain, 
                           glob.device);
 
   // the the  poly stuff is done in Cleanup, grids is done here

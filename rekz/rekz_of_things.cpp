@@ -47,84 +47,22 @@ void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
                              rc::Image::Ref&     depth_image,
                              rc::ImageView::Ref& depth_imageview,
 
-                             VkSwapchainKHR&     swapchain,
+                             rc::Swapchain::Ref& swapchain,
                              const Device&       device) {
 
-  // for (auto fb : framebuffers) {
-  //   vkDestroyFramebuffer (device.handle, fb.handle, nullptr); 
-  // }
-  for (auto& sc_imageview : sc_image_views) {
-    vkDestroyImageView(device.handle, sc_imageview->handle, nullptr);
-    sc_imageview->handle = 0;
-  }
-
-
+  for (auto& sc_imageview : sc_image_views) 
+    sc_imageview.reset ();
+  
   msaa_color_imageview.reset ();
   msaa_color_image.reset ();
-  // cx::Destroy (msaa_color_imageview, device.handle);
-  // cx::Destroy (msaa_color_image, device.allocator.handle);
+
   depth_imageview.reset ();
   depth_image.reset ();
 
-
-  vkDestroySwapchainKHR(device.handle, swapchain, nullptr);
-  swapchain = 0;
-  // cx::Destroy (depth_imageview, device.handle);
-  // cx::Destroy (depth_image, device.allocator.handle);
+  swapchain.reset ();
 
 }
 
-bool rekz::RecreateSwapchain (VkSwapchainKHR& swapchain, const rokz::Display& display,
-                              Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
-                              rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
-                              rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
-                              const Device& device) {
-
-  printf ("%s\n", __FUNCTION__);
-
-  int width = 0, height = 0;
-  glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
-
-  while (width == 0 || height == 0) {
-    glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
-    glfwWaitEvents();
-  }
-  
-  const VkExtent2D newext { (uint32)width, (uint32) height };
-
-
-
-  vkDeviceWaitIdle (device.handle);
-  
-  CleanupSwapchain (imageviews, depth_image, depth_imageview,
-                    msaa_color_image, msaa_color_imageview,
-                    swapchain, device);
-
-  VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,
-
-  VkSwapchainCreateInfoKHR ci {};
-
-  
-  bool swapchain_res    = cx::CreateSwapchain (swapchain, ci, device);
-  bool imageviews_res   = rc::CreateImageViews( imageviews, swapchain_images, ci.imageFormat, aspect, device);
-  //
-  assert (false); // not yet tested
-
-  VkSampleCountFlagBits msaa_samples; 
-  VkFormat depthformat; //  = depth_image.ci.format;
-  VkFormat colorformat = ci.imageFormat; 
-  
-  // unless this changed --> msaa_color_image.ci.samples
-  rc::CreateMSAAColorTarget (msaa_color_image, msaa_color_imageview, msaa_samples,
-                             colorformat, ci.imageExtent, device);
-  //
-
-  rc::CreateDepthBufferTarget (depth_image, depth_imageview,  msaa_samples,
-                                 depthformat, ci.imageExtent, device);
-
-  return (swapchain_res && imageviews_res); 
-}
 
 // --------------------------------------------------------------------------------------------
 //                        
@@ -151,7 +89,7 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
   
   CleanupSwapchain (imageviews, depth_image, depth_imageview,
                     msaa_color_image, msaa_color_imageview,
-                    swapchain->handle, device);
+                    swapchain, device);
 
   VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,

@@ -263,9 +263,12 @@ int run_marz (const std::vector<std::string>& args) {
                                        glob.depth_format, scg.swapchain.ci.imageExtent,
                                        glob.device); // <-- this does all the additional  attachmentes
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
-                                                           glob.depth_image, glob.depth_imageview,
-                                                           glob.msaa_color_image, glob.msaa_color_imageview); 
+  assert (false);
+  // glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+  //                                                          glob.depth_image, glob.depth_imageview,
+  //                                                          glob.msaa_color_image, glob.msaa_color_imageview); 
+
+
   //
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob); 
