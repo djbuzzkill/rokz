@@ -1,18 +1,19 @@
 
-#include "draw_mars.h"
-
-
+#include "drawmarz.h"
+#include "marzdata.h"
 using namespace rokz;
 // ------------------------------------------------------------------------------------------
 //                        
 // ------------------------------------------------------------------------------------------
-DrawSequence::Ref rekz::CreateDrawMarsLandscape ()  {
+DrawSequence::Ref rekz::CreateDrawMarsLandscape (marz::Data& dat)  {
 
 
-  struct DrawMars : public DrawSequence {
+  struct drawmarz : public DrawSequence {
 
-    DrawMars () {}
-    virtual ~DrawMars () {}
+    marz::Data& dat;
+    
+    drawmarz (marz::Data& d) : dat (d) {}
+    virtual ~drawmarz () {}
 
     virtual int Prep (uint32_t current_frame, const RenderEnv& env, const rokz::Device& device) {
 
@@ -29,7 +30,7 @@ DrawSequence::Ref rekz::CreateDrawMarsLandscape ()  {
   }; 
 
 
-  return std::make_shared<DrawMars> ();
+  return std::make_shared<drawmarz> (dat);
   
 }
 

@@ -7,9 +7,9 @@
 
 using namespace rokz;
 
-const char  k_height_name_format[] = "RED-DEM_%ux%u.bin";
-const char  k_color_name_format[]  = "RED-DRG_%ux%u.bin";
-const char  k_coord_name_format[]  = "RED-IGM_%ux%u.bin";
+const char  k_height_name_format[] = "marz-RED-DEM_%ux%u.bin";
+const char  k_color_name_format[]  = "marz-RED-DRG_%ux%u.bin";
+const char  k_coord_name_format[]  = "marz-RED-IGM_%ux%u.bin";
 
 const auto kMaxNameLen = 64;
 
@@ -27,11 +27,7 @@ namespace tileregion {
   uint32 lindx (uint32 x, uint32 z) {
     return z * XDim + x; 
   } 
-
 }
-
-
-
 
 std::string name_format (const char* name_format, uint32 x, uint32 z) {
   std::array<char, kMaxNameLen> buf;
@@ -52,6 +48,9 @@ std::string color_name (uint32 x, uint32 z) {
 }
 
 
+// ------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------
 struct height_handlr : public cx::mappedimage_cb  {
 
   const std::string&  fqname; 
@@ -67,7 +66,7 @@ struct height_handlr : public cx::mappedimage_cb  {
     rokz::From_file (fheights, fqname, true); 
 
     if (fheights.size() <= maxsize) {
-      memcpy (mappedp, &fheights[0], 69);
+      memcpy (mappedp, &fheights[0], fheights.size());
       return 0;
     }
     
@@ -78,6 +77,9 @@ struct height_handlr : public cx::mappedimage_cb  {
 };
 
 
+// ------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------
 struct color_handler : public rekz::DevILOpenFileCB {
 
   rc::Image::Ref&     image;
@@ -127,7 +129,7 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
 
       int res = __LINE__;
       
-      {// color_name (ix, iz);
+      { // COLOR
         res = rekz::OpenImageFile (basepath/color_name (ix, iz),
                              std::make_shared<color_handler>(dat.colormaps[lindx (ix, iz)],
                                                              dat.colorviews[lindx (ix, iz)], device));
@@ -139,8 +141,7 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
       }
 
       
-      {
-        
+      { // HEIGHT 
         const size_t     sizeofheightdata = sizeof(float) * marz::tile::x_dim *  marz::tile::z_dim; 
         const VkFormat   heightformat   = VK_FORMAT_R32_SFLOAT;
         const VkExtent2D imgext         = { marz::tile::x_dim, marz::tile::z_dim } ;
@@ -154,9 +155,9 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
 
         res = __LINE__;
         res = cx::TransferToDeviceImage (dat.heightmaps[lindx(ix, iz)]->handle,
-                                   sizeofheightdata,
-                                   heightformat, 
-                                   imgext, std::make_shared<height_handlr>(fqname), device);
+                                         sizeofheightdata,
+                                         heightformat, 
+                                         imgext, std::make_shared<height_handlr>(fqname), device);
         
         if (res != 0) {
           HERE("Image transfer failed "); 
@@ -172,33 +173,25 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
 
 
 
-    struct handlegeom : public cx::mappedbuffer_cb {
+  struct handlegeom : public cx::mappedbuffer_cb {
+    handlegeom () {}
+    virtual int on_mapped  (void* mappedp , size_t maxsize) {
+      // ??? is this it
+      rekz::landscape::PatchVert verts[4] = {
+        { glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec2(0,0) }, 
+        { glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec2(1, 0) }, 
+        { glm::vec3(1, 0, 1), glm::vec3(0, 1, 0), glm::vec2(1, 1) }, 
+        { glm::vec3(0, 0, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1) }, 
+      }; 
+      memcpy (mappedp, verts, maxsize); 
+      return 0; 
+    }} handleg;
 
-      handlegeom () {}
-      virtual int on_mapped  (void* mappedp , size_t maxsize) {
-
-        byte* bptr =  (byte*) mappedp; 
-
-        rekz::landscape::PatchVert verts[4] = {
-          { glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec2(0,0) }, 
-          { glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec2(1, 0) }, 
-          { glm::vec3(1, 0, 1), glm::vec3(0, 1, 0), glm::vec2(1, 1) }, 
-          { glm::vec3(0, 0, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1) }, 
-        }; 
-        memcpy (mappedp, verts, maxsize); 
-        return 0; 
-      }
-
-    };
-
-    handlegeom ghandle;
-    const size_t reqsize = 4 * sizeof (rekz::landscape::PatchVert);
-    dat.devicebuffer = rc::CreateDeviceBuffer (reqsize, cx::kDeviceGeometryUsage, device); 
-    cx::TransferToDeviceBuffer (dat.devicebuffer->handle, reqsize, &ghandle, device); 
+  const size_t reqsize = 4 * sizeof (rekz::landscape::PatchVert);
+  dat.devicebuffer = rc::CreateDeviceBuffer (reqsize, cx::kDeviceGeometryUsage, device); 
+  cx::TransferToDeviceBuffer (dat.devicebuffer->handle, reqsize, &handleg, device); 
     
-    
-    // what rly needs  to b in here 
-    return true;
+  return true;
 }
 
 // --------------------------------------------------------------------------------------------

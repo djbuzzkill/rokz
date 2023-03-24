@@ -16,7 +16,7 @@ set (REKZ_HEADER_FILES
   landscape_pipeline.h
   mars_files.h
   marzdata.h
-  draw_mars.h
+  drawmarz.h
   image_loader.h
   image_tool.h
 )
@@ -26,7 +26,7 @@ set (REKZ_SOURCE_FILES
   darkrootgarden.cpp
   dark_obj_pipeline.cpp
   darkthings.cpp
-  draw_mars.cpp
+  drawmarz.cpp
   drawwireframe.cpp
   drawpolygon.cpp
   darkpolydata.cpp
