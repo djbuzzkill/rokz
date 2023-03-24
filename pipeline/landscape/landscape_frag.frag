@@ -6,8 +6,7 @@
 //        .frag - a fragment shader
 //        .comp - a compute shader
 
-// LANDSCAPE FRAGMENT PROGRAM
-
+// ---------- LANDSCAPE FRAGMENT PROGRAM -----------
 
 // -----------------------------------------------------------------------------------------------
 // push constants
@@ -17,6 +16,9 @@ layout (push_constant) uniform PatchPushConstant {
   vec4 position;
   vec4 scale;
   uint res_id;
+  uint _unused3;
+  uint _unused4;
+  uint _unused5;
   
 } pc;
 

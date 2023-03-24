@@ -9,21 +9,24 @@
 //        .comp - a compute shader
 //
 
-// LANDSCAPE TESSELLATION CONTROL PROGRAM
+// ------- LANDSCAPE TESSELLATION CONTROL PROGRAM --------
+
+
 layout(vertices = 4) out;
-
-
 // -----------------------------------------------------------------------------------------------
 // push constants
 // -----------------------------------------------------------------------------------------------
-layout (push_constant) uniform PatchPushConstants {
+
+layout (push_constant) uniform PatchPushConstant {
 
   vec4 position;
   vec4 scale;
   uint res_id;
+  uint _unused3;
+  uint _unused4;
+  uint _unused5;
   
 } pc;
-
 
 
 // -----------------------------------------------------------------------------------------------

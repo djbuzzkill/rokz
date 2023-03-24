@@ -22,16 +22,20 @@ namespace rekz {
     extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
 
-    struct PatchPushConstant {
-      glm::vec4 position;
-      glm::vec4 scale;
-      uint32 res_id;
-    };
 
     const VkShaderStageFlags kPCStages = VK_SHADER_STAGE_VERTEX_BIT
                                        | VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
                                        | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT
                                        | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    struct PatchPushConstant {
+      glm::vec4 position;
+      glm::vec4 scale;
+      uint32 resource_id;
+      uint32 _unused3_id;
+      uint32 _unused4_id;
+      uint32 _unused5_id;
+    };
   }
   // ----------------------------------------------------------------------------------------
   //                     

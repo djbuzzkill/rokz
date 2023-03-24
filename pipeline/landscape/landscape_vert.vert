@@ -5,10 +5,23 @@
 //        .geom - a geometry shader
 //        .frag - a fragment shader
 //        .comp - a compute shader
-// LANDSCAPE VERTEX PROGRAM
 
+// --------- LANDSCAPE VERTEX PROGRAM -----------
 
+layout (push_constant) uniform PatchPushConstant {
 
+  vec4 position;
+  vec4 scale;
+  uint res_id;
+  uint _unused3;
+  uint _unused4;
+  uint _unused5;
+  
+} pc;
+
+// -----------------------------------------------------------------------------------------------
+//  
+// -----------------------------------------------------------------------------------------------
 
 
 // input vertex 
