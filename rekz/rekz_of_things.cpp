@@ -33,8 +33,6 @@ glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
   return v; 
 }
 
-
-
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
@@ -91,14 +89,10 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
                     msaa_color_image, msaa_color_imageview,
                     swapchain, device);
 
-  VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,
-
-
   rokz::SwapchainSupportInfo supp;
-
   rokz::cx::QuerySwapchainSupport (supp, display.surface, device.physical.handle);
 
+  //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,
   VkSwapchainCreateInfoKHR ci {};
   rokz::cx::CreateInfo_default (ci,
                                 display.surface,
@@ -106,11 +100,12 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
                                 newext,
                                 supp);
   
+  VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
   bool swapchain_res    = cx::CreateSwapchain (swapchain->handle, ci, device);
   bool imageviews_res   = rc::CreateImageViews( imageviews, swapchain_images, ci.imageFormat, aspect, device);
+
   //
   assert (false); // not yet tested
-
   VkSampleCountFlagBits msaa_samples; 
   VkFormat depthformat; //  = depth_image.ci.format;
   VkFormat colorformat = ci.imageFormat; 
@@ -125,7 +120,6 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
 
   return (swapchain_res && imageviews_res); 
 }
-
 
 // -----------------------------------------------------------------------------------------
 //

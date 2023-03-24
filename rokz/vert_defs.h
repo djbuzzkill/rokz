@@ -46,7 +46,8 @@ namespace rokz {
     glm::vec3 nrm; 
     glm::vec2 txc; 
   };
-  typedef      Vertex_pos_nrm_col_txc                 PNTx_Vert;
+
+  typedef      Vertex_pos_nrm_txc                     PNTx_Vert;
   extern const VkVertexInputBindingDescription        kPNTx_InputBindingDesc;
   extern const Vec<VkVertexInputAttributeDescription> kPNTx_InputAttributeDesc; 
 

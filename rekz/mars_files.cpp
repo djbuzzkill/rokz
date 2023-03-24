@@ -17,8 +17,6 @@
 
 // using namespace rokz;
 
-
-
 // "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_f32x6900x17177.bin";
 std::string kDEM_heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
 

@@ -67,7 +67,6 @@ namespace rekz {
 
                               const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
                               const Device&              device);
-
   
 }
 

@@ -72,6 +72,24 @@ namespace rokz {
       return CreateInfo_2D (ci, format, kColorTargetUsage, num_samples, wd, ht); 
     }
                                                  
+
+
+    
+    struct mappedimage_cb {
+      virtual int on_mapped  (void* mappedmemory, size_t maxsize, const VkExtent2D& ext2d) = 0;
+
+      typedef std::shared_ptr<mappedimage_cb> Ref;
+    };
+
+    int TransferToDeviceImage (VkImage& dstb, size_t sizemem, VkFormat targetformat, 
+                               const VkExtent2D& ext2d, mappedimage_cb*, const rokz::Device& device);
+
+    inline int TransferToDeviceImage (VkImage& dstb, size_t sizemem, VkFormat targetformat,
+                                      const VkExtent2D& ext2d, mappedimage_cb::Ref cb, const rokz::Device& device) {
+      return TransferToDeviceImage (dstb, sizemem, targetformat, ext2d, cb.get (), device); 
+    }
+
+
     // 
     // VMA -------------------------------------------------------------------------->
     bool                CreateImage   (Image& image, VmaAllocator const& allocator);
@@ -79,6 +97,10 @@ namespace rokz {
     void                Destroy       (VkImage& image, VmaAllocation allocation, VmaAllocator allocator);
     // <---------------------------------------------------------------------------VMA
   } // cx
+
+
+
+
 }
 
 #endif

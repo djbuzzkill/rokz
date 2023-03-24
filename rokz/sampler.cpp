@@ -38,7 +38,6 @@ void rokz::cx::Destroy (rokz::Sampler& sampler, const VkDevice& device) {
 //
 // ----------------------------------------------------------------------------------------
 VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
-
   printf ("%s SamplerCreateInfo \n", __FUNCTION__); 
 
   ci =  {}; 
@@ -49,6 +48,7 @@ VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhys
 
   ci.magFilter               = VK_FILTER_LINEAR;
   ci.minFilter               = VK_FILTER_LINEAR;
+  
   ci.addressModeU            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.addressModeV            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.addressModeW            = VK_SAMPLER_ADDRESS_MODE_REPEAT;

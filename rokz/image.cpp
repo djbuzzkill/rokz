@@ -1,9 +1,12 @@
 
 
 #include "image.h"
+#include "rokz/buffer.h"
+#include "rokz/rc_image.h"
 #include "utility.h"
 #include <vulkan/vulkan_core.h>
-
+#include "allocation.h"
+#include "command.h"
 
 
 // ---------------------------------------------------------------------
@@ -196,9 +199,9 @@ void rokz::cx::Destroy (Image& image, VmaAllocator allocator) {
 }
 
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 // VMA 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 VkImageCreateInfo& rokz::cx::CreateInfo_2D (VkImageCreateInfo&    ci,
                                         VkFormat              format,
                                         VkImageUsageFlags     usage_flags, 
@@ -225,6 +228,52 @@ VkImageCreateInfo& rokz::cx::CreateInfo_2D (VkImageCreateInfo&    ci,
   return ci;
 }
 
+
+
+// ---------------------------------------------------------------------------------------------
+// 
+// ---------------------------------------------------------------------------------------------
+int rokz::cx::TransferToDeviceImage (VkImage& dimg, size_t imagesize, VkFormat targetformat,
+                                     const VkExtent2D& ext2d, mappedimage_cb* cb, 
+                                     const rokz::Device& device) {
+
+  void* mappedp = nullptr; 
+
+  rokz::Buffer stage_buff; 
+  rokz::cx::CreateInfo_buffer_stage (stage_buff.ci, imagesize);
+  rokz::cx::AllocCreateInfo_stage (stage_buff.alloc_ci);
+  rokz::cx::CreateBuffer (stage_buff, device.allocator.handle); 
+
+
+  void* mapped = nullptr; 
+  if (!rokz::cx::MapMemory (&mapped, stage_buff.allocation, device.allocator.handle)) { 
+    HERE ("FAILED MAP MEMORY");
+    return __LINE__;
+  }
+
+  int res = __LINE__;
+  if (cb) res = cb->on_mapped (mappedp, imagesize, ext2d); 
+
+  rokz::cx::UnmapMemory (stage_buff.allocation, device.allocator.handle);
+
+  if (res == 0) {
+    rokz::cx::TransitionImageLayout (dimg, targetformat, VK_IMAGE_LAYOUT_UNDEFINED,
+                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                     device.queues.graphics, device.command_pool.handle, device.handle);
+
+    rokz::cx::CopyBufferToImage (dimg, stage_buff.handle, ext2d.width, ext2d.height,
+                                 device.queues.graphics, device.command_pool.handle, device.handle);
+
+    rokz::cx::TransitionImageLayout (dimg, targetformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                     device.queues.graphics, device.command_pool.handle, device.handle);
+
+  }
+  rokz::cx::Destroy (stage_buff, device.allocator); 
+  
+  return res;
+  
+}
 
 
 
