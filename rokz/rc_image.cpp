@@ -42,6 +42,27 @@ rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht,
 }
 
 
+// -----------------------------------------------------------------------------------------------
+rc::Image::Ref rokz::rc::CreateImage_2D_color_sampling (uint32 wd, uint32 ht, VkFormat format, 
+                                                        VkSampleCountFlagBits sampleflags,
+                                                        const Device& device) {
+  VkImageCreateInfo ci {};
+  cx::CreateInfo_2D_color_sampling  (ci, format, sampleflags, wd, ht);
+
+  rc::Image::Ref image = std::make_shared<rc::Image> (device) ;
+
+  rokz::cx::AllocCreateInfo_device (image->alloc_ci);
+
+  if( VK_SUCCESS != vmaCreateImage (device.allocator.handle, &ci, &image->alloc_ci,
+                                    &image->handle, &image->allocation, &image->alloc_info)) {
+    printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
+    rc::Image::Ref (nullptr);
+  }
+  
+  return image;
+}
+
+
 
 // ------------------------------------------------------------------------------------------------
 //                                 

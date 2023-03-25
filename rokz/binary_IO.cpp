@@ -46,7 +46,6 @@ namespace rokz {
       ptrdiff_t GetPos () {
         return offs; 
       }
-
       //
       size_t Write (const void* src, size_t len) {
 
@@ -78,15 +77,13 @@ namespace rokz {
     
     };
   
-    WriteStream::Ref ref (std::make_shared<write_mem_stream_impl>(mem, len)); 
-    return ref;
+    return std::make_shared<write_mem_stream_impl>(mem, len); 
   }
 
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------
   ReadStream::Ref CreateReadMemStream  (const void* mem, size_t len) {
-  
     //
     struct read_mem_stream_impl : public read_stream {
       //
@@ -102,7 +99,6 @@ namespace rokz {
       }
 
       void SetPos (ptrdiff_t offset, SeekMode mode) {
-
         switch (mode) {
           // except if >  max_size
         case SeekMode::Abs:
@@ -122,18 +118,15 @@ namespace rokz {
             offs = max_size + offset;
 
           break;
-        }      
-     
-      }
+        }}
 
+      
       ptrdiff_t GetPos () {
         return offs;
-
       }
 
       //
       size_t Read (void* out, size_t len) {
-
         unsigned char*  ucout = reinterpret_cast<unsigned char*>(out);
 
         size_t read_len = len; 
@@ -143,7 +136,6 @@ namespace rokz {
         std::copy (mem+offs, mem+offs+read_len, ucout); 
 
         offs += read_len;
-      
         return read_len; 
       }
 

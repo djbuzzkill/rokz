@@ -2,16 +2,17 @@
 #include "marzdata.h"
 #include "rekz/image_loader.h"
 #include "landscape_pipeline.h"
+#include "rokz/image.h"
+#include "rokz/texture.h"
 #include <vulkan/vulkan_core.h>
 
 
+
+
+auto NO_PROB = 0;
+
+
 using namespace rokz;
-
-const char  k_height_name_format[] = "marz-RED-DEM_%ux%u.bin";
-const char  k_color_name_format[]  = "marz-RED-DRG_%ux%u.bin";
-const char  k_coord_name_format[]  = "marz-RED-IGM_%ux%u.bin";
-
-const auto kMaxNameLen = 64;
 
 namespace tileregion { 
 
@@ -29,24 +30,12 @@ namespace tileregion {
   } 
 }
 
-std::string name_format (const char* name_format, uint32 x, uint32 z) {
-  std::array<char, kMaxNameLen> buf;
+
+std::string marz::name_format (const char* name_format, uint32 x, uint32 z) {
+  std::array<char, marz::kMaxNameLen> buf;
   sprintf (&buf[0], name_format, x, z); 
   return &buf[0];
 }
-
-std::string height_name (uint32 x, uint32 z) {
-  return name_format (k_height_name_format, x, z); 
-}
-
-std::string coord_name (uint32 x, uint32 z) {
-  return name_format (k_coord_name_format, x, z); 
-}
-
-std::string color_name (uint32 x, uint32 z) {
-  return name_format (k_color_name_format, x, z); 
-}
-
 
 // ------------------------------------------------------------------------------------------
 //
@@ -69,7 +58,9 @@ struct height_handlr : public cx::mappedimage_cb  {
       memcpy (mappedp, &fheights[0], fheights.size());
       return 0;
     }
-    
+
+
+      
     HERE ("FAILED height handler");
     return __LINE__;
   }
@@ -80,31 +71,30 @@ struct height_handlr : public cx::mappedimage_cb  {
 // ------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------
-struct color_handler : public rekz::DevILOpenFileCB {
+struct color_handler_f32 : public rokz::cx::mappedimage_cb { 
 
   rc::Image::Ref&     image;
-  rc::ImageView::Ref& view;
-  const rokz::Device& device;
-  const VkFormat      colorformat = VK_FORMAT_R8G8B8A8_SRGB;
+  const std::string&  fqname; 
 
-  
-  color_handler (rc::Image::Ref& im, rc::ImageView::Ref& iv, const rokz::Device& dev) : image (im), view (iv), device (dev) {
+  const VkFormat      colorformat = VK_FORMAT_R32_SFLOAT; 
+  //
+    
+  color_handler_f32 (rc::Image::Ref& im, const std::string& srcname) : image (im), fqname (srcname) {
   }
   
-  virtual int Exec (const unsigned char* dat, const rekz::DevILImageProps& props) {
-    image = rokz::LoadTexture_color_sampling (colorformat,
-                                              VkExtent2D { (uint32_t) props.width, (uint32_t) props.height },
-                                              dat, device.allocator.handle, device.queues.graphics, 
-                                              device.command_pool, device);
-    if (image) {
-      view = rc::CreateImageView (image->handle, colorformat, VK_IMAGE_ASPECT_COLOR_BIT, device);
+  virtual int on_mapped  (void* mappedp, size_t maxsize, const VkExtent2D& ext2d) {
+
+    bytearray filebytes; 
+    rokz::From_file (filebytes, fqname, true );
+
+    if (filebytes.size() <= maxsize) {
+      memcpy (mappedp, &filebytes[0], filebytes.size());
       return 0;
     }
-  
-    HERE ("FAILED LoadTexture_color_sampling");
+    
+    HERE ("FAILED");
     return __LINE__;
   }};
-
 
 // ------------------------------------------------------------------------------------------
 //
@@ -130,13 +120,30 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
       int res = __LINE__;
       
       { // COLOR
-        res = rekz::OpenImageFile (basepath/color_name (ix, iz),
-                             std::make_shared<color_handler>(dat.colormaps[lindx (ix, iz)],
-                                                             dat.colorviews[lindx (ix, iz)], device));
-        if (res != 0) {
-          HERE("Load color image failed");
+
+        const size_t     sizeofcolordata = sizeof(float) * marz::tile::x_dim *  marz::tile::z_dim; 
+        const VkFormat   colorformat   = VK_FORMAT_R32_SFLOAT;
+        const VkExtent2D imgext         = { marz::tile::x_dim, marz::tile::z_dim } ;
+
+        dat.colormaps[lindx(ix, iz)] =
+          rc::CreateImage_2D_color_sampling (marz::tile::x_dim, marz::tile::z_dim,
+                                             colorformat, VK_SAMPLE_COUNT_1_BIT, device);
+        
+        const std::string fqname = basepath/color_name(ix, iz);
+
+        if (NO_PROB != cx::TransferToDeviceImage (dat.heightmaps[lindx(ix, iz)]->handle,
+                                                  sizeofcolordata,
+                                                  colorformat, 
+                                                  imgext,
+                                                  std::make_shared<color_handler_f32>(dat.colormaps[lindx(ix, iz)], fqname),
+                                                  device)) {
           return false;
         }
+
+        dat.colorviews[lindx(ix, iz)] = rc::CreateImageView (dat.colormaps[lindx(ix, iz)]->handle,
+                                                             colorformat,
+                                                             VK_IMAGE_ASPECT_COLOR_BIT, device);
+          
         
       }
 
@@ -147,32 +154,32 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
         const VkExtent2D imgext         = { marz::tile::x_dim, marz::tile::z_dim } ;
 
         dat.heightmaps[lindx(ix, iz)] =
-          rc::CreateImage_2D_color_sampling (marz::tile::x_dim,
-                                             marz::tile::z_dim,
-                                             VK_SAMPLE_COUNT_1_BIT, device);
+          rc::CreateImage_2D_color_sampling (marz::tile::x_dim, marz::tile::z_dim,
+                                             heightformat, VK_SAMPLE_COUNT_1_BIT, device);
         
         const std::string fqname = basepath/height_name(ix, iz);
 
         res = __LINE__;
-        res = cx::TransferToDeviceImage (dat.heightmaps[lindx(ix, iz)]->handle,
-                                         sizeofheightdata,
-                                         heightformat, 
-                                         imgext, std::make_shared<height_handlr>(fqname), device);
-        
-        if (res != 0) {
-          HERE("Image transfer failed "); 
+        if (NO_PROB != cx::TransferToDeviceImage (dat.heightmaps[lindx(ix, iz)]->handle,
+                                                  sizeofheightdata,
+                                                  heightformat, 
+                                                  imgext, std::make_shared<height_handlr>(fqname), device)) {
+          // transfer failed?
           return false;
         }
-        
+
         dat.heightviews[lindx(ix, iz)] = rc::CreateImageView (dat.heightmaps[lindx(ix, iz)]->handle,
                                                               heightformat,
                                                               VK_IMAGE_ASPECT_COLOR_BIT, device);
+
+        
+          
       }
       
-    }}
+    }} // END TILE LOOP 
 
-
-
+  
+  
   struct handlegeom : public cx::mappedbuffer_cb {
     handlegeom () {}
     virtual int on_mapped  (void* mappedp , size_t maxsize) {

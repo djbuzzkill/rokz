@@ -20,20 +20,17 @@ namespace rokz {
       : width (xdim), height (ydim), dat (xdim * ydim) {
     }
 
-    typedef Ty  PixelType;
+    typedef Ty  pixel_type;
 
     uint32      width;
     uint32      height;
     Vec<Ty>     dat;
 
-    size_t numpixels () const {
-      return  width * height;
-    }
-    size_t sizebytes () const {
-      return numpixels () * sizeof(Ty);
-    }
+    size_t numpix () const {
+      return dat.size (); }
 
-
+    size_t numbytes () const {
+      return sizeof(pixel_type) * numpix (); }
     
     void resize (uint32 w, uint32 h) {
       width = w;
@@ -41,6 +38,7 @@ namespace rokz {
       dat.resize (w * h);
     }
 
+    
     size_t index2 (size_t x, size_t y) const {
       return width * y + x; 
     }
@@ -68,8 +66,6 @@ namespace rokz {
     Ty* p () {
       return &dat[0]; 
     }
-
-    
   };
 
 
@@ -108,7 +104,7 @@ namespace rokz {
       dsti.resize (dim.x, dim.y);
 
     uint32 total_pixs = dim.x * dim.y;
-    if (dsti.numpixels () < total_pixs) {
+    if (dsti.numpix () < total_pixs) {
       printf (" --> failed size check  dim <%u, %u>, resize(%s)\n",
               dim.x, dim.y,
               (resize ? "true" : "false"));

@@ -6,6 +6,7 @@
 #include "rekz.h"
 
 #include "mars_files.h"
+#include "marzdata.h"
 #include "image_loader.h"
 #include "image_tool.h"
 #include "rokz/binary_IO.h"
@@ -29,9 +30,12 @@ const uint32 k_tile_dim = 1024;
 const uint32 k_total_image_pixels = kWIDTH * kHEIGHT;
 const uint32 k_total_tile_pixels = k_tile_dim * k_tile_dim;
 
+
+
+std::string output_path = "/home/djbuzzkill/owenslake/tmp/";
 // -------------------------------------------------------------------------------------------
 //
-// -------------------------------------------------------------------------------------------
+//// -------------------------------------------------------------------------------------------
 struct fcolor_tile_handler : public rekz::TileCB<float> { 
 
   int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
@@ -73,6 +77,37 @@ struct fcolor_tile_handler : public rekz::TileCB<float> {
   return 0;  
   }};
 
+
+
+struct fcolor_tile_bin : public rekz::TileCB<float> { 
+
+  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
+
+  ilInit  ();
+  iluInit (); 
+
+  const float kDRG_MIN = -0.016220f;
+  const float kDRG_MAX = 1.967194;
+
+  const float  DRG_DIFF_INV = 1.0 / (kDRG_MAX - kDRG_MIN);
+
+  imagebuff<float> otile (k_tile_dim, k_tile_dim); 
+
+  for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
+    if (tilei.dat[i] > -2550.0f) {
+      otile.dat[i] = (tilei.dat[i] - kDRG_MIN) * DRG_DIFF_INV;
+    }
+    else {
+      otile.dat[i] = 0.0; 
+    }}
+
+  std::string savename = output_path + marz::color_name(xtile, ytile); 
+  WriteStream::Ref ws = CreateWriteFileStream (savename);
+  ws->Write (otile.p(), otile.numbytes ()); 
+  
+  return 0;  
+  }};
+
 // -------------------------------------------------------------------------------------------
 int generate_DRG_tiles (const Vec<std::string>& args) {
   HERE("hai"); 
@@ -93,7 +128,7 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
     true
   };
 
-  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_handler>()) ; 
+  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_bin>()) ; 
 
   HERE("bai"); 
   return 0;
@@ -138,9 +173,7 @@ struct fheight_tile_handler : public rekz::TileCB<float> {
 
   char buf[64];
   sprintf (buf, "DEM_tile_%u_%u.png", xtile, ytile); 
-
-  std::string savename = "/home/djbuzzkill/owenslake/tmp/";
-  savename += buf;
+  std::string savename =    output_path + buf;
 
   printf ("saving out to..\n    %s\n ", savename.c_str()); 
   ilSave (IL_PNG, savename.c_str());  
@@ -176,18 +209,10 @@ struct fheight_tile_bin : public rekz::TileCB<float> {
       otile.dat[i] = 0.0f; 
     }}
 
-  const char height_format[] =  "marz-RED-DEM_%u_%u.bin";
-
-  char namebuf[32];
-  sprintf (namebuf, height_format, xtile, ytile); 
-
-  std::string savename = "/home/djbuzzkill/owenslake/tmp/";
-  savename += std::string(namebuf);
-  
-  size_t total_pix = k_tile_dim * k_tile_dim; 
-
+  std::string savename = output_path + marz::height_name (xtile, ytile);
   rokz::WriteStream::Ref ws = rokz::CreateWriteFileStream  (savename);
-  size_t  write_len = ws->Write (otile.p (),  total_pix * sizeof(float)); 
+  size_t  write_len = ws->Write (otile.p(),  otile.numbytes ()); 
+
   return 0;  
   }};
 

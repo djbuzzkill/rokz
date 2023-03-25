@@ -47,12 +47,22 @@ namespace rokz {
     VkImageCreateInfo& CreateInfo_2D (VkImageCreateInfo& ci, VkFormat format, VkImageUsageFlags usage_flags, 
                                       VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
 
+
+
     // for color textures
     inline VkImageCreateInfo& CreateInfo_2D_color_sampling (VkImageCreateInfo& ci,
                                                             VkSampleCountFlagBits  num_samples,
                                                             uint32_t wd, uint32_t ht) {
 
       return CreateInfo_2D (ci, VK_FORMAT_B8G8R8A8_SRGB,  kSamplingUsage, num_samples, wd, ht); 
+    }
+
+    // for color textures
+    inline VkImageCreateInfo& CreateInfo_2D_color_sampling (VkImageCreateInfo& ci, VkFormat format, 
+                                                            VkSampleCountFlagBits  num_samples,
+                                                            uint32_t wd, uint32_t ht) {
+
+      return CreateInfo_2D (ci, format,  kSamplingUsage, num_samples, wd, ht); 
     }
   
     // 

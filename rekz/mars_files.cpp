@@ -18,13 +18,13 @@
 // using namespace rokz;
 
 // "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_f32x6900x17177.bin";
-std::string kDEM_heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
+// std::string kDEM_heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
 
-// "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG_f32x6900x17177.bin";
-std::string kDRG_colorname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
+// // "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG_f32x6900x17177.bin";
+// std::string kDRG_colorname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
 
-// "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_dvec2x6900x17177.bin";
-std::string kIGM_coordname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-IGM.dat";
+// // "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_dvec2x6900x17177.bin";
+// std::string kIGM_coordname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-IGM.dat";
 
 
 
@@ -39,18 +39,18 @@ void ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ()
   std::string base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
   
   // "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_f32x6900x17177.bin";
-  std::string heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
+  //std::string heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
 
   // "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG_f32x6900x17177.bin";
-  std::string colorname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
+  //std::string colorname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
 
   // "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_dvec2x6900x17177.bin";
-  std::string coordname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-IGM.dat";
+  //std::string coordname  = "ESP_018065_1975_RED_ESP_019133_1975_RED-IGM.dat";
 
 
   rekz::imagebuff<float> heightimage ( kWIDTH, kHEIGHT );
   
-  std::string heightfile = base_path+heightname;
+  std::string heightfile = base_path + kDEM_name;
   if (size_t sizeOf_file = rokz::SizeOf_file (heightfile)) { 
 
     printf (" HeIgHt !!! ----> %s\n ", __FUNCTION__); 
@@ -100,7 +100,7 @@ void ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ()
     printf ( " --> height<min:%f | max:%f | diff : %f>\n", minel, maxel, maxel - minel);
   }
   
-  std::string colorfile = base_path+colorname; 
+  std::string colorfile = base_path + kDRG_name; 
   if (size_t sizeOf_file = rokz::SizeOf_file (colorfile)) { 
 
     printf (" CoLoR !!!  %s\n ", __FUNCTION__); 
@@ -122,7 +122,7 @@ void ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ()
              *std::max_element ( above253.begin(), above253.end ()));
   }
   
-  std::string coordfile = base_path+coordname; 
+  std::string coordfile = base_path + kIGM_name; 
   if (size_t sizeOf_file = rokz::SizeOf_file (coordfile)) { 
     printf (" CoORds !!! ----> %s\n ", __FUNCTION__); 
 
