@@ -245,12 +245,12 @@ int rokz::cx::CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& 
     return __LINE__;
   }
  
-  printf("WoooooOOOooooOoooooooOOoOoOOOoooOoOOOOOOO!!!1\n");
+  //printf("WoooooOOOooooOoooooooOOoOoOOOoooOoOOOOOOO!!!1\n");
   // ENUMERATEINSTANCEEXTENSIONPROPERTIES
   uint32_t ext_count = 0;
   vkEnumerateInstanceExtensionProperties (nullptr, &ext_count, nullptr);
 
-  printf("Number of Available Extensions[%u] -> \n", ext_count);
+  printf("Number of Available Instance Extensions[%u] -> \n", ext_count);
   std::vector<VkExtensionProperties> extensions(ext_count);
   vkEnumerateInstanceExtensionProperties(nullptr, &ext_count, &extensions[0]);
 
@@ -780,7 +780,7 @@ void rokz::Cleanup (VkPipeline&                      pipeline,
 //
 // ---------------------------------------------------------------------
 bool rokz::cx::CheckDeviceExtensionSupport (const VkPhysicalDevice& physdev) {
-  printf ("%s\n", __FUNCTION__);
+  HERE("hai");
 
   uint32_t exts_count;
   vkEnumerateDeviceExtensionProperties(physdev, nullptr, &exts_count, nullptr);
@@ -793,7 +793,7 @@ bool rokz::cx::CheckDeviceExtensionSupport (const VkPhysicalDevice& physdev) {
 
   // try {
   
-  printf ("looking for extensions:\n"); 
+  printf ("looking for device extensions:\n"); 
   // for (const auto& e : req_exts) {
   //   printf ("  .. %s\n", e.c_str ()); 
   // }
@@ -801,12 +801,16 @@ bool rokz::cx::CheckDeviceExtensionSupport (const VkPhysicalDevice& physdev) {
   for (const auto &extension : available_exts) {
     
     if (req_exts.count (extension.extensionName))
-      printf ( "> %s -> available \n", extension.extensionName); 
+      printf ( "> %s <-  available \n", extension.extensionName); 
+    else
+      printf ( " %s\n", extension.extensionName); 
 
+      
     req_exts.erase(extension.extensionName);
   }
     
   // printf ("LEAVING %s (empty:%s)\n", __FUNCTION__, req_exts.empty()? "TRUE" : "FALSE");
+  HERE("bai");
   return req_exts.empty();
 }
 

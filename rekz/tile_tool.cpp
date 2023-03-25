@@ -36,7 +36,7 @@ struct fcolor_tile_handler : public rekz::TileCB<float> {
 
   int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
 
-  ilInit ();
+  ilInit  ();
   iluInit (); 
 
   const float kDRG_MIN = -0.016220f;
@@ -52,8 +52,8 @@ struct fcolor_tile_handler : public rekz::TileCB<float> {
     }
     else {
       otile.dat[i] = glm::u8vec3 (0); 
-      }
-  }
+    }}
+
 
   bool img_res = ilTexImage (k_tile_dim, k_tile_dim, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, &otile.dat[0]); 
   if (!img_res) { 
@@ -75,12 +75,15 @@ struct fcolor_tile_handler : public rekz::TileCB<float> {
 
 // -------------------------------------------------------------------------------------------
 int generate_DRG_tiles (const Vec<std::string>& args) {
-  printf ("%s\n ", __FUNCTION__); 
+  HERE("hai"); 
+
   using namespace ESP_018065_1975_RED_ESP_019133_1975_RED; 
   std::string      base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
   // "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG_f32x6900x17177.bin";
   std::string      colorname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
   std::string      fqcolorfile = base_path + colorname; 
+
+
   imagebuff<float> colorimage (kWIDTH, kHEIGHT);
   load_from_file (colorimage, fqcolorfile); 
 
@@ -90,10 +93,9 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
     true
   };
 
-  
   rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_handler>()) ; 
 
-  printf ("bai %s\n ", __FUNCTION__); 
+  HERE("bai"); 
   return 0;
 
 }
@@ -149,6 +151,46 @@ struct fheight_tile_handler : public rekz::TileCB<float> {
   return 0;  
   }};
 
+// -----------------------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------------------
+struct fheight_tile_bin : public rekz::TileCB<float> { 
+
+  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
+  
+  float min_elem = *std::min_element (  tilei.dat.begin (), tilei.dat.end () );
+  float max_elem = *std::max_element (  tilei.dat.begin (), tilei.dat.end () );
+  printf (" tile:(%u, %u) ext:<min:%f, max:%f, diff:%f>\n ", xtile, ytile, min_elem, max_elem, max_elem - min_elem);
+
+  const float kDEM_MIN = -2550.0;
+  const float kDEM_MAX = -1400.0;
+  const float diff = kDEM_MAX - kDEM_MIN;
+  
+  imagebuff<float> otile (k_tile_dim, k_tile_dim); 
+
+  for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
+    if (tilei.dat[i] > kDEM_MIN) {
+      otile.dat[i] = (tilei.dat[i] - kDEM_MIN) / diff;
+    }
+    else {
+      otile.dat[i] = 0.0f; 
+    }}
+
+  const char height_format[] =  "marz-RED-DEM_%u_%u.bin";
+
+  char namebuf[32];
+  sprintf (namebuf, height_format, xtile, ytile); 
+
+  std::string savename = "/home/djbuzzkill/owenslake/tmp/";
+  savename += std::string(namebuf);
+  
+  size_t total_pix = k_tile_dim * k_tile_dim; 
+
+  rokz::WriteStream::Ref ws = rokz::CreateWriteFileStream  (savename);
+  size_t  write_len = ws->Write (otile.p (),  total_pix * sizeof(float)); 
+  return 0;  
+  }};
+
 // -------------------------------------------------------------------------------------------
 int generate_DEM_tiles (const Vec<std::string>& args) {
   printf ("%s\n ", __FUNCTION__); 
@@ -165,7 +207,7 @@ int generate_DEM_tiles (const Vec<std::string>& args) {
     true
   };
   
-  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_handler>()) ; 
+  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_bin>()) ; 
 
   printf ("bai %s\n ", __FUNCTION__); 
  return 0;
@@ -213,7 +255,7 @@ int tile_tool (const Vec<std::string>& args) {
 
   printf ("%s\n ", __FUNCTION__); 
 
-  generate_DRG_tiles (args);
+  //generate_DRG_tiles (args);
   generate_DEM_tiles (args);
 
   ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();

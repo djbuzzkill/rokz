@@ -22,6 +22,7 @@ namespace rokz { namespace rc {
 
     // -----------------------------------------------------------------------------------------
     struct Pipeline: public deviceob<VkPipeline, Pipeline> {
+
       Pipeline (const Device& dev) : deviceob (dev), state () {
       }
       
@@ -29,6 +30,14 @@ namespace rokz { namespace rc {
       Vec<rokz::ShaderModule>    shader_modules; 
       Vec<VkDescriptorSetLayout> dslos;
     
+    };
+
+
+    struct DynRenderPipe: public Pipeline {
+
+      DynRenderPipe (const Device& dev) : Pipeline (dev) {
+      }
+      
       // EXTENSIONS
       struct { 
         struct {
@@ -37,6 +46,7 @@ namespace rokz { namespace rc {
           VkFormat              depth_format;
         } pipeline_rendering;
       } ext;
+
     };
 
     

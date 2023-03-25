@@ -14,15 +14,14 @@ DrawSequence::Ref rekz::CreateDrawMarsLandscape (marz::Data& dat)  {
     drawmarz (marz::Data& d) : dat (d) {}
     //
     virtual ~drawmarz () { }
+
     //
     virtual int Prep (uint32_t current_frame, const RenderEnv& env, const rokz::Device& device) {
 
       
-
-
-
       return __LINE__;
     }
+
     //
     virtual int Exec (VkCommandBuffer comb, uint32_t current_frame, const RenderEnv& env) {
 

@@ -1,7 +1,6 @@
 
-
-#ifndef REKZ_DRAW_MARS_INCLUDE
-#define REKZ_DRAW_MARS_INCLUDE
+#ifndef REKZ_DRAWMARZ_INCLUDE
+#define REKZ_DRAWMARZ_INCLUDE
 
 #include "rekz.h"
 #include "marzdata.h"

@@ -3,6 +3,7 @@
 #include "grid_pipeline.h"
 #include "rekz/landscape_pipeline.h"
 #include "rokz/context.h"
+#include "drawmarz.h"
 //
 
 using namespace marz; 
@@ -299,9 +300,7 @@ int run_marz (const std::vector<std::string>& args) {
 
 
   HERE("351");
-
   marz::SetupData ;
-
   rekz::BindLandscapeResources;
 
   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
@@ -342,18 +341,9 @@ int run_marz (const std::vector<std::string>& args) {
   return 0; 
 }
 
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-
-
-
-
-
-
-
-
 
 
 #ifdef MARS_TERRAIN_ENABLE 

@@ -20,8 +20,8 @@ namespace rokz {
 
     }; 
 
-    virtual void   SetPos (ptrdiff_t offs, SeekMode mode) = 0; 
-    virtual size_t GetPos () = 0;
+    virtual void      SetPos (ptrdiff_t offs, SeekMode mode) = 0; 
+    virtual ptrdiff_t GetPos () = 0;
 
   protected:
 
@@ -71,11 +71,13 @@ namespace rokz {
   typedef read_stream  ReadStream; 
   
   WriteStream::Ref CreateWriteMemStream (void* mem, size_t len);
+  WriteStream::Ref CreateWriteFileStream  (const std::string& fname); 
+
   ReadStream::Ref  CreateReadMemStream  (const void* mem, size_t len);
   ReadStream::Ref  CreateReadFileStream (const std::string& fname); 
 
 
-
+ 
   
   
   

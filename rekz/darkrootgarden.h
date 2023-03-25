@@ -13,8 +13,8 @@ namespace darkroot {
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
-  uint32_t NumberOfComponents (VkFormat format);
-  uint32_t SizeOfComponents   (VkFormat format);
+  // uint32_t NumberOfComponents (VkFormat format);
+  // uint32_t SizeOfComponents   (VkFormat format);
 
   // --------------------------------------------------------------------
   // 

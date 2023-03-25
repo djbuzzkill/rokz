@@ -32,7 +32,6 @@
 #include "sampler.h"
 #include "window.h"
 #include "utility.h"
-#include "binary_IO.h"
 #include "defaults.h"
 #include "binary_IO.h"
 #include "vert_defs.h"

@@ -74,10 +74,10 @@ namespace rokz {
     // ----------------------------------------------------------------------------------------------
     struct destructor {
     
-      virtual ~destructor () = default;
+      virtual ~destructor () { assert ("virtual destruct"); } 
 
     protected:
-      destructor () = default;
+      destructor () {}
     }; 
   
 

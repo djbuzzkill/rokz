@@ -4,7 +4,6 @@
 
 
 #include "rekz.h"
-
 #include "rokz/display.h"
 #include "rokz/input_state.h"
 

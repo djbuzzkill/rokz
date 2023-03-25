@@ -27,7 +27,7 @@ int main (int argv, char** argc) {
     {"test_ouput"   , test_ouput },
     {"darkrootbasin", darkrootbasin },
     {"marz"     , run_marz },
-    {"tile_tool"    , tile_tool},
+    {"tilez"    , tile_tool},
     {"stonk"        , stonk },
   };
 

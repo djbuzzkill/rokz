@@ -61,6 +61,15 @@ namespace rokz {
       return &dat[index2 (x, y)]; 
     }
 
+    const Ty* p () const {
+      return &dat[0]; 
+    }
+    
+    Ty* p () {
+      return &dat[0]; 
+    }
+
+    
   };
 
 
