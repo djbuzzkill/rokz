@@ -387,7 +387,9 @@ bool rokz::LoadTexture_color_sampling (rokz::Image&             image,
   std::copy (image_data, image_data + image_size, reinterpret_cast<uint8_t*> (mapped));
   rokz::cx::UnmapMemory (stage_buff.allocation, allocator);
 
-  rokz::cx::CreateInfo_2D_color_sampling  (image.ci, VK_SAMPLE_COUNT_1_BIT, ext2d.width, ext2d.height);
+  rokz::cx::CreateInfo_2D_color_sampling  (image.ci, format, VK_SAMPLE_COUNT_1_BIT,
+                                           ext2d.width, ext2d.height);
+
   rokz::cx::AllocCreateInfo_device (image.alloc_ci);
   if (!rokz::cx::CreateImage (image, allocator)) {
     printf ("[FAILED] %s setup test texture", __FUNCTION__);
@@ -445,7 +447,7 @@ rokz::LoadTexture_color_sampling (VkFormat                 format,
   rokz::cx::UnmapMemory (stage_buff.allocation, allocator);
 
   rokz::rc::Image::Ref image =
-    rokz::rc::CreateImage_2D_color_sampling (ext2d.width, ext2d.height, VK_SAMPLE_COUNT_1_BIT, device); 
+    rokz::rc::CreateImage_2D_color_sampling (ext2d.width, ext2d.height, format, VK_SAMPLE_COUNT_1_BIT, device); 
 
   
   //VK_FORMAT_R8G8B8A8_SRGB

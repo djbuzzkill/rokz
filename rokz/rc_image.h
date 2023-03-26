@@ -27,7 +27,7 @@ namespace rokz { namespace rc {
 
     Image::Ref CreateImage (const VkImageCreateInfo& ci, const Device& device);
 
-    Image::Ref CreateImage_2D_color_sampling (uint32 , uint32, VkSampleCountFlagBits sampleflags, const Device& device); 
+    // Image::Ref CreateImage_2D_color_sampling (uint32 , uint32, VkSampleCountFlagBits sampleflags, const Device& device); 
     
     Image::Ref CreateImage_2D_color_sampling (uint32 w, uint32 h, VkFormat format, 
                                               VkSampleCountFlagBits sampleflags, const Device& device); 

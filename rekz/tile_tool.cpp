@@ -32,7 +32,7 @@ const uint32 k_total_tile_pixels = k_tile_dim * k_tile_dim;
 
 
 
-std::string output_path = "/home/djbuzzkill/owenslake/tmp/";
+//std::string output_path = "/home/djbuzzkill/owenslake/tmp/";
 // -------------------------------------------------------------------------------------------
 //
 //// -------------------------------------------------------------------------------------------
@@ -101,7 +101,9 @@ struct fcolor_tile_bin : public rekz::TileCB<float> {
       otile.dat[i] = 0.0; 
     }}
 
-  std::string savename = output_path + marz::color_name(xtile, ytile); 
+
+  
+  std::string savename = marz::tile::basepath/marz::tile::color_name(xtile, ytile); 
   WriteStream::Ref ws = CreateWriteFileStream (savename);
   ws->Write (otile.p(), otile.numbytes ()); 
   
@@ -171,10 +173,8 @@ struct fheight_tile_handler : public rekz::TileCB<float> {
     printf ("img error : %s\n", iluErrorString (ilGetError()));
   }
 
-  char buf[64];
-  sprintf (buf, "DEM_tile_%u_%u.png", xtile, ytile); 
-  std::string savename =    output_path + buf;
-
+  std::string savename = marz::tile::basepath/marz::tile::color_name(xtile, ytile);
+  
   printf ("saving out to..\n    %s\n ", savename.c_str()); 
   ilSave (IL_PNG, savename.c_str());  
 
@@ -209,7 +209,7 @@ struct fheight_tile_bin : public rekz::TileCB<float> {
       otile.dat[i] = 0.0f; 
     }}
 
-  std::string savename = output_path + marz::height_name (xtile, ytile);
+  std::string savename = marz::tile::basepath/marz::tile::height_name (xtile, ytile);
   rokz::WriteStream::Ref ws = rokz::CreateWriteFileStream  (savename);
   size_t  write_len = ws->Write (otile.p(),  otile.numbytes ()); 
 
@@ -280,7 +280,7 @@ int tile_tool (const Vec<std::string>& args) {
 
   printf ("%s\n ", __FUNCTION__); 
 
-  //generate_DRG_tiles (args);
+  generate_DRG_tiles (args);
   generate_DEM_tiles (args);
 
   ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();

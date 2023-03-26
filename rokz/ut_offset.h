@@ -6,8 +6,7 @@
 #include "shared_types.h"
 
 
-namespace rokz { 
-  namespace ut { 
+namespace rokz { namespace ut { 
 
     // ---------------------------------------------------------------------------------------
     template<int N> inline size_t

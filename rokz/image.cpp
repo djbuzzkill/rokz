@@ -36,9 +36,7 @@ VkMemoryAllocateInfo& rokz::cx::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkM
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
   alloc_info.allocationSize = mem_reqs.size;
-  ut::FindMemoryType (alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                        prop_flags, physdev);
-
+  ut::FindMemoryType (alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, prop_flags, physdev);
   return alloc_info; 
 }
 #endif
@@ -47,7 +45,6 @@ VkMemoryAllocateInfo& rokz::cx::AllocInfo (VkMemoryAllocateInfo& alloc_info, VkM
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-
 bool rokz::cx::AllocateImageMemory (rokz::Image& image, const VkDevice& device) {
   printf ("%s\n", __FUNCTION__);  
 

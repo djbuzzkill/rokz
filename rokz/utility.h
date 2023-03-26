@@ -10,9 +10,7 @@
 
 #define HERE(x) printf(" [%s|line:%i] --> %s \n",__FUNCTION__,__LINE__,(x));
 
-namespace rokz {
-
-  namespace ut { 
+namespace rokz { namespace ut { 
 
     // ----------------------------------------------------------------------------------------------
     //                                                
@@ -32,8 +30,7 @@ namespace rokz {
     // ----------------------------------------------------------------------------------------------
     //                                                
     // ----------------------------------------------------------------------------------------------
-    template<typename Ty> 
-    inline bool inb_in (Ty val , Ty minval , Ty maxval) {
+    template<typename Ty> inline bool inb_in (Ty val , Ty minval , Ty maxval) {
       return (val >= minval && val <= maxval);
     }
     // 
@@ -74,8 +71,9 @@ namespace rokz {
     bool                  HasStencilComponent  (VkFormat format);
     VkSampleCountFlagBits MaxUsableSampleCount (VkPhysicalDevice physdev); 
     // --------------------------------------------------------------
+
     inline VkSampleCountFlagBits MaxUsableSampleCount  (const PhysicalDevice& physdev) {
-      const VkPhysicalDeviceProperties& phys_dev_props =     physdev.properties;
+      const VkPhysicalDeviceProperties& phys_dev_props = physdev.properties;
       VkSampleCountFlags counts = phys_dev_props.limits.framebufferColorSampleCounts & phys_dev_props.limits.framebufferDepthSampleCounts;
       if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
       if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }

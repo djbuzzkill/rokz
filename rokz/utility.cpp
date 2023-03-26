@@ -79,10 +79,10 @@ bool rokz::ut::FindMemoryType (uint32_t& type_index, uint32_t type_filter, VkMem
 //
 // -----------------------------------------------------------------------
 bool rokz::ut::FindSupportedFormat (VkFormat&                    out,
-                                const std::vector<VkFormat>& candidates,
-                                VkImageTiling                tiling,
-                                VkFormatFeatureFlags         features, 
-                                const VkPhysicalDevice&      physdev) {
+                                    const std::vector<VkFormat>& candidates,
+                                    VkImageTiling                tiling,
+                                    VkFormatFeatureFlags         features, 
+                                    const VkPhysicalDevice&      physdev) {
 
   for (VkFormat format : candidates) {
     VkFormatProperties props;
@@ -110,11 +110,12 @@ bool rokz::ut::FindDepthFormat (VkFormat& outfmt,  const VkPhysicalDevice& physd
   std::vector<VkFormat> candidates = 
     {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
   
-  return FindSupportedFormat (outfmt,
-                              candidates,
-                              VK_IMAGE_TILING_OPTIMAL,
-                              VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-                              physdev) ; 
+  return FindSupportedFormat (
+     outfmt,
+     candidates,
+     VK_IMAGE_TILING_OPTIMAL,
+     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+     physdev) ; 
 }
 
 // ---------------------------------------------------------------------

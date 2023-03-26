@@ -50,18 +50,16 @@ namespace rokz {
 
 
     // for color textures
-    inline VkImageCreateInfo& CreateInfo_2D_color_sampling (VkImageCreateInfo& ci,
-                                                            VkSampleCountFlagBits  num_samples,
-                                                            uint32_t wd, uint32_t ht) {
-
-      return CreateInfo_2D (ci, VK_FORMAT_B8G8R8A8_SRGB,  kSamplingUsage, num_samples, wd, ht); 
-    }
+    // inline VkImageCreateInfo& CreateInfo_2D_color_sampling (VkImageCreateInfo& ci,
+    //                                                         VkSampleCountFlagBits  num_samples,
+    //                                                         uint32_t wd, uint32_t ht) {
+    //   return CreateInfo_2D (ci, VK_FORMAT_B8G8R8A8_SRGB,  kSamplingUsage, num_samples, wd, ht); 
+    // }
 
     // for color textures
     inline VkImageCreateInfo& CreateInfo_2D_color_sampling (VkImageCreateInfo& ci, VkFormat format, 
                                                             VkSampleCountFlagBits  num_samples,
                                                             uint32_t wd, uint32_t ht) {
-
       return CreateInfo_2D (ci, format,  kSamplingUsage, num_samples, wd, ht); 
     }
   
@@ -86,7 +84,7 @@ namespace rokz {
 
     
     struct mappedimage_cb {
-      virtual int on_mapped  (void* mappedmemory, size_t maxsize, const VkExtent2D& ext2d) = 0;
+      virtual int on_mapped  (void* mappedp, size_t maxsize, const VkExtent2D& ext2d) = 0;
 
       typedef std::shared_ptr<mappedimage_cb> Ref;
     };
