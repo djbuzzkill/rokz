@@ -37,7 +37,7 @@ int main (int argv, char** argc) {
     res = exemap[ args[1] ](args);
   }
   else {
-    res = run_marz (args);
+    res = darkrootbasin (args);
   }
   
   printf ("lolz bai %s\n", __FUNCTION__); 

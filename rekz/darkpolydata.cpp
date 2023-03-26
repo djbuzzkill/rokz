@@ -30,15 +30,15 @@ struct obj_image_handler : public rekz::DevILOpenFileCB {
     : index (ind), polyd (poly), device (dev) {
   }
 
-  
+  const VkFormat imageformat = VK_FORMAT_B8G8R8A8_SRGB;
   virtual int Exec (const unsigned char* dat, const rekz::DevILImageProps& props) {
 
-    polyd.textures[index] = rokz::LoadTexture_color_sampling (VK_FORMAT_R8G8B8A8_SRGB,
+    polyd.textures[index] = rokz::LoadTexture_color_sampling (imageformat,
                                                               VkExtent2D { (uint32_t) props.width, (uint32_t) props.height },
                                                               dat, device.allocator.handle, device.queues.graphics, 
                                                               device.command_pool, device);
     if (polyd.textures[index]) {
-      polyd.imageviews[index] = rc::CreateImageView (polyd.textures[index]->handle, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, device);
+      polyd.imageviews[index] = rc::CreateImageView (polyd.textures[index]->handle, imageformat, VK_IMAGE_ASPECT_COLOR_BIT, device);
       return 0;
     }
   
@@ -66,11 +66,10 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
 
     res =  rekz::OpenImageFile (test_file, std::make_shared<obj_image_handler> (i, polyd, device));
 
-    if (res != 0)
-      {
-        HERE ("problem with OpenImageFile ");
-        return __LINE__; 
-      }
+    if (res != 0) {
+      HERE ("problem with OpenImageFile ");
+      return __LINE__; 
+    }
     
   }
 

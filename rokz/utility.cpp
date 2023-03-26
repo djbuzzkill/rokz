@@ -157,6 +157,32 @@ float rokz::ut::AspectRatio (const VkExtent2D& ext) {
 
 }
 
+void ut::PrintPhysicalDeviceLimits (const VkPhysicalDeviceLimits& limits) {
+
+  printf ("maxPushConstantsSize:%u\n", limits.maxPushConstantsSize);
+  printf ("strictLines:%u\n", limits.strictLines);
+  printf ("maxViewports:%u\n", limits.maxViewports);
+  printf ("maxTexelOffset:%u\n", limits.maxTexelOffset); 
+  printf ("lineWidthRange:<min:%f, max:%f>\n", limits.lineWidthRange[0], limits.lineWidthRange[1] ); 
+  printf ("pointSizeRange:<min:%f, max:%f>\n", limits.pointSizeRange[0], limits.pointSizeRange[1]);
+  printf ("maxClipDistances:%u\n", limits.maxClipDistances);
+  printf ("maxCullDistances:%u\n", limits.maxCullDistances);
+  printf ("maxSamplerLodBias:%f\n", limits.maxSamplerLodBias); 
+  printf ("maxSamplerAnisotropy:%f\n", limits.maxSamplerAnisotropy); 
+  printf ("maxSampleMaskWords:%u\n", limits.maxSampleMaskWords   );  
+  printf ("maxColorAttachments:%u\n", limits.maxColorAttachments );  
+  printf ("maxFramebufferWidth:%u\n", limits.maxFramebufferWidth ); 
+  printf ("maxImageArrayLayers:%u\n", limits.maxImageArrayLayers ); 
+  printf ("maxImageDimension1D:%u\n", limits.maxImageDimension1D );
+  printf ("maxImageDimension2D:%u\n", limits.maxImageDimension2D ); 
+  printf ("maxImageDimension3D:%u\n", limits.maxImageDimension3D );  
+  printf ("mipmapPrecisionBits:%u\n", limits.mipmapPrecisionBits );  
+  printf ("nonCoherentAtomSize:%zu\n", limits.nonCoherentAtomSize); 
+  printf ("maxDescriptorSetSampledImages:%u\n", limits.maxDescriptorSetSampledImages); 
+  printf ("maxPerStageDescriptorSamplers:%u\n", limits.maxPerStageDescriptorSamplers);
+  printf ("maxDescriptorSetUniformBuffers:%u\n", limits.maxDescriptorSetUniformBuffers); 
+  printf ("maxViewportDimensions:<%u, %u>\n", limits.maxViewportDimensions[0], limits.maxViewportDimensions[1] ); 
+}
 
 // -------------------------------------------------------------------------------------------
 //                                             

@@ -1,5 +1,6 @@
 
 #include "context.h"
+#include "utility.h"
 
 #include "window.h"
 #include "buffer.h"
@@ -864,6 +865,10 @@ rokz::QueueFamilyIndices& rokz::cx::FindQueueFamilies (rokz::QueueFamilyIndices&
   return inds;
 }
 
+
+
+
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -914,6 +919,11 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind,
   
   vkGetPhysicalDeviceProperties(physdev, &devprops);
 
+  
+  ut::PrintPhysicalDeviceLimits (devprops.limits);
+
+
+
   // FORCE ANISTOTROPY
   //VkPhysicalDeviceFeatures devfeatures {};
   //
@@ -948,7 +958,6 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind,
 // ---------------------------------------------------------------------
 
 //  rokz::SelectPhysicalDevice (glob.physical_device, glob.surface, glob.instance);
-
 bool rokz::cx::SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR& surf, const VkInstance& inst) {
 
   using namespace rokz;
@@ -976,6 +985,7 @@ bool rokz::cx::SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR
       physdev.handle = physdevs[idev];
       physdev.family_indices =  curqueinds; 
       printf ("found PHYSICAL DEVICE\n");
+
       return true; 
     }
     else {

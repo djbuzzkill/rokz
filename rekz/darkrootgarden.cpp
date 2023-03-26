@@ -13,6 +13,11 @@
 
 #include <glm/fwd.hpp>
 #include <glm/matrix.hpp>
+#include <shaderc/shaderc.hpp>
+#include <shaderc/shaderc.h>
+
+
+
 #include <vulkan/vulkan_core.h>
 // 
 #include "dark_obj_pipeline.h"
@@ -268,7 +273,9 @@ int darkrootbasin (const std::vector<std::string>& args) {
   printf ( " Mv = v is the correct order \n"); 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
-
+  shaderc::Compiler compiler; 
+    
+  
   Glob  glob; // *globmem; // something representing the app state
   rc::SwapchainGroup& scg = glob.swapchain_group;
   
@@ -291,6 +298,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
+    
   rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
 
   VkPhysicalDeviceFeatures2 features2 {};  
@@ -307,10 +315,10 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                            kTestExtent, glob.device.physical, glob.device);
-
   // define first
   //rekz::kGlobalDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
+
   // rekz::obz::kDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::obz::kDescriptorBindings, glob.device); 
 
@@ -333,7 +341,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false; 
   }
                                
-
   //
   rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
                                      glob.msaacolorimageview, 
@@ -369,6 +376,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   size_t vertoffs = 0;
   size_t indoffs = 0;
   glob.gridbuff = rekz::SetupGridData (vertoffs, indoffs, 11, 11, 20.0, 20.0, glob.device); 
+  glob.drawgrid = rekz::CreateDrawGrid (glob.gridbuff, vertoffs, indoffs);
   //
   // GLOBAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   rokz::SetupGlobalUniforms (glob.global_rc_uniform_bu, kMaxFramesInFlight, glob.device); 
@@ -389,6 +397,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   if (!rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_rc_uniform_bu, glob.device)) {
     printf ("[FAILED] --> BindGridDescriptorResources \n"); 
   }
+
   //
   // object descriptor set 
   rekz::SetupObjectUniforms (glob.poly_objects_bu, kMaxFramesInFlight, glob.device);
@@ -423,8 +432,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //
   // create draw list
   glob.drawpoly = rekz::CreatePolygonDraw (glob.polyd, glob.poly_objects_bu, glob.poly_objects_de);
-  //
-  glob.drawgrid = rekz::CreateDrawGrid (glob.gridbuff, vertoffs, indoffs);
     //rekz::CreateDrawGrid (glob.gridata); 
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);

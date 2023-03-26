@@ -6,6 +6,7 @@
 #include "rokz/rokz.h"
 #include "rokz/vert_defs.h"
 #include "meshery.h"
+#include "shaderc/shaderc.hpp"
 #include <vulkan/vulkan_core.h>
 
 

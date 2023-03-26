@@ -147,7 +147,7 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
     // ??? is this it
     const size_t reqsize = sizeof (verts);
 
-    const rekz::landscape::PatchVert verts[4] = {
+    const lscape::Vert verts[4] = {
         { glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec2(0,0) }, 
         { glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec2(1, 0) }, 
         { glm::vec3(1, 0, 1), glm::vec3(0, 1, 0), glm::vec2(1, 1) }, 

@@ -101,6 +101,7 @@ target_link_libraries (rokz
   zmq
   glfw
   vulkan
+  private shaderc
   dl
   pthread
   X11

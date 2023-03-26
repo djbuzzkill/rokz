@@ -10,6 +10,7 @@
 #include "rokz/global_descriptor.h"
 //
 
+using namespace rokz;
 using namespace marz; 
 
 namespace { 
@@ -227,10 +228,11 @@ int run_marz (const std::vector<std::string>& args) {
 
   Glob glob; //
   rc::SwapchainGroup&  scg   = glob.swapchain_group;
-  rokz::FrameSyncGroup&  fsg   = glob.framesyncgroup; 
+  FrameSyncGroup&  fsg   = glob.framesyncgroup; 
+
   
-  std::filesystem::path pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
-  std::filesystem::path data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
+  filesyspath pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
+  filesyspath data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
   //Default (glob); 
   
   glfwInit();
@@ -275,7 +277,7 @@ int run_marz (const std::vector<std::string>& args) {
   // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rokz::kGlobalDescriptorBindings, glob.device); 
 
-  rokz::DefineDescriptorSetLayout (glob.landscape_dslo, rekz::landscape::kDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.landscape_dslo, lscape::kDescriptorBindings, glob.device); 
   //rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
   // SetupMarsWindow (glob.window, &glob.input_state); 
 
@@ -291,7 +293,7 @@ int run_marz (const std::vector<std::string>& args) {
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
 
-  if (!rekz::InitLandscapePipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
+  if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
                                     glob.msaa_samples, scg.image_format, glob.depth_format,
                                     pipe_path, scg.extent, glob.device)) {
     printf ("[FAILED] --> InitLandscapeTiler \n"); 
@@ -307,9 +309,9 @@ int run_marz (const std::vector<std::string>& args) {
   // 
   marz::SetupData (glob.scape.data, glob.device); 
   glob.scape.draw = marz::CreateDrawMarsLandscape (glob.scape.data); 
-
+  // LANDSCAPE DESC 
   if (!rokz::MakeDescriptorPool ( glob.landscape_de.pool, kMaxFramesInFlight,
-                                  rekz::landscape::kDescriptorBindings, glob.device)) {
+                                  lscape::kDescriptorBindings, glob.device)) {
     HERE("");
     return false;
     
@@ -322,20 +324,32 @@ int run_marz (const std::vector<std::string>& args) {
     return false;
   }
 
-  rekz::BindLandscapeResources (glob.landscape_de.descrsets,
-                                glob.scape.data.colorsampler,
-                                glob.scape.data.colorviews,
-                                glob.scape.data.heightsampler,
-                                glob.scape.data.heightviews,
-                                glob.scape.data.normalsampler,
-                                glob.scape.data.normalviews,
-                                glob.landscape_dslo,
-                                glob.device); 
+  lscape::BindDescriptorResources (glob.landscape_de.descrsets,
+                                glob.scape.data.colorsampler, glob.scape.data.colorviews,
+                                glob.scape.data.heightsampler, glob.scape.data.heightviews,
+                                glob.scape.data.normalsampler, glob.scape.data.normalviews,
+                                glob.landscape_dslo, glob.device); 
+  //
+  rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 
+  // GLOBAL DESC
+  if (!rokz::MakeDescriptorPool ( glob.global_de.pool, kMaxFramesInFlight,
+                                  rekz::kGlobalDescriptorBindings, glob.device)) {
+    HERE("");
+    return false;
+    
+  }
                              
-                             
-                                 
-                                 
+  if (!rokz::MakeDescriptorSets (glob.global_de.descrsets, glob.global_de.alloc_info,
+                                 kMaxFramesInFlight, glob.global_dslo.handle,
+                                 glob.global_de.pool, glob.device)) {
+    HERE("");
+  }
+
+  if (!rokz::BindGlobalDescriptorResources (glob.global_de.descrsets, glob.global_bu, glob.device)) {
+    printf ("[FAILED] --> BindGridDescriptorResources \n"); 
+  }
+
   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
 //   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);

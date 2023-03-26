@@ -71,6 +71,7 @@ namespace rokz { namespace ut {
     bool                  HasStencilComponent  (VkFormat format);
     VkSampleCountFlagBits MaxUsableSampleCount (VkPhysicalDevice physdev); 
     // --------------------------------------------------------------
+    void PrintPhysicalDeviceLimits (const VkPhysicalDeviceLimits& limits); 
 
     inline VkSampleCountFlagBits MaxUsableSampleCount  (const PhysicalDevice& physdev) {
       const VkPhysicalDeviceProperties& phys_dev_props = physdev.properties;
