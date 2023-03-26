@@ -59,18 +59,18 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------
   // set 0= Global  descriptors ,  set 1= landscape descriptors
   // ----------------------------------------------------------------------------------------
-  bool BindLandscapeResources (VkDescriptorSet            ds,
-                              const Sampler&             colorsamp,
-                              const Vec<VkImageView>&    colorviews,
+  bool BindLandscapeResources (Vec<VkDescriptorSet>&           dss,
+                               const rc::Sampler::Ref&         colorsamp,
+                               const Vec<rc::ImageView::Ref>&  colorviews,
 
-                              const Sampler&             heightsamp, 
-                              const Vec<VkImageView>&    heightviews,
+                               const rc::Sampler::Ref&         heightsamp, 
+                               const Vec<rc::ImageView::Ref>&  heightviews,
 
-                              const Sampler&             normalsamp, 
-                              const Vec<VkImageView>&    normalviews,
+                               const rc::Sampler::Ref&         normalsamp, 
+                               const Vec<rc::ImageView::Ref>&  normalviews,
 
-                              const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
-                              const Device&              device);
+                               const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
+                               const Device&              device);
   
 }
 

@@ -5,7 +5,7 @@ using namespace rokz;
 // ------------------------------------------------------------------------------------------
 //                        
 // ------------------------------------------------------------------------------------------
-DrawSequence::Ref rekz::CreateDrawMarsLandscape (marz::Data& dat)  {
+DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
 
   struct drawmarz : public DrawSequence {
 
@@ -17,6 +17,8 @@ DrawSequence::Ref rekz::CreateDrawMarsLandscape (marz::Data& dat)  {
 
     //
     virtual int Prep (uint32_t current_frame, const RenderEnv& env, const rokz::Device& device) {
+
+
 
       
       return __LINE__;

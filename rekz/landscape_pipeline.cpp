@@ -187,17 +187,104 @@ bool rekz::SetupLandscapeResources (Buffer& patches_vb, Buffer& patches_ib,
 // ----------------------------------------------------------------------------------------
 // set 0= Global  descriptors ,  set 1= landscape descriptors
 // ----------------------------------------------------------------------------------------
-bool rekz::BindLandscapeResources (VkDescriptorSet            ds,
-                                  const Sampler&             colorsamp,
-                                  const Vec<VkImageView>&    colorviews,
-                                  const Sampler&             heightsamp, 
-                                  const Vec<VkImageView>&    heightviews,
-                                  const Sampler&             normalsamp, 
-                                  const Vec<VkImageView>&    normalviews,
-                                  const DescriptorSetLayout& dslayout, 
-                                  const Device&              device) {
+bool rekz::BindLandscapeResources (Vec<VkDescriptorSet>&          dss,
+                                   const rc::Sampler::Ref&         colorsamp,
+                                   const Vec<rc::ImageView::Ref>&  colorviews,
+
+                                   const rc::Sampler::Ref&         heightsamp, 
+                                   const Vec<rc::ImageView::Ref>&  heightviews,
+
+                                   const rc::Sampler::Ref&         normalsamp, 
+                                   const Vec<rc::ImageView::Ref>&  normalviews,
+
+                                   const DescriptorSetLayout& dslayout, 
+                                   const Device&              device) {
+
+  assert (colorviews.size () < landscape::kMaxPatchCount);
+  assert (heightviews.size () < landscape::kMaxPatchCount);
+  assert (normalviews.size () < landscape::kMaxPatchCount);
+  //
+  for (uint32_t i = 0; i < dss.size (); i++) {
+    
+    // Vec<VkDescriptorBufferInfo> obparams (obz::kMaxCount, VkDescriptorBufferInfo {});
+    // for (size_t iobj = 0; iobj < obparams.size (); ++iobj) { 
+    //   obparams[iobj].buffer   = objbuffs[i]->handle;    //
+    //   obparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
+    //   obparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
+    // }
+
+    Vec<VkDescriptorImageInfo> colorinfos (landscape::kMaxPatchCount);
+    for (size_t iview = 0; iview < landscape::kMaxPatchCount; ++iview) { 
+      if (iview < colorviews.size ()) { 
+        colorinfos[iview] = {};
+        colorinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+        colorinfos[iview].imageView   = colorviews[iview]->handle;
+        colorinfos[iview].sampler     = colorsamp->handle;
+      }
+      else { // err'thing must b written
+        colorinfos[iview] = {};
+        colorinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+        colorinfos[iview].imageView   = colorviews[0]->handle;
+        colorinfos[iview].sampler     = colorsamp->handle;
+        }
+    }
+
+    Vec<VkDescriptorImageInfo> heightinfos (landscape::kMaxPatchCount);
+    for (size_t iview = 0; iview < landscape::kMaxPatchCount; ++iview) {
+      if (iview < heightviews.size ()) { 
+      heightinfos[iview] = {};
+      heightinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      heightinfos[iview].imageView   = heightviews[iview]->handle; 
+      heightinfos[iview].sampler     = heightsamp->handle; 
+      }
+      else {
+        heightinfos[iview] = {};
+        heightinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        heightinfos[iview].imageView   = heightviews[0]->handle; 
+        heightinfos[iview].sampler     = heightsamp->handle; 
+      }
+
+      Vec<VkDescriptorImageInfo> normalinfos (landscape::kMaxPatchCount);
+      // for (size_t iview = 0; iview < landscape::kMaxPatchCount; ++iview) {
+      //   if (iview < normalviews.size ()) {
+      //   }
+      //   else {
+      //   }
+    }
+    //
+
+    const uint32 height_binding_index = 0; // <-- make sure shader matches
+    const uint32 color_binding_index  = 2;  // <-- make sure shader matches
+    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+
+    // COLOR
+    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].pNext            = nullptr;
+    descriptor_writes[0].dstSet           = dss[i];
+    descriptor_writes[0].dstBinding       = color_binding_index; // does it match in shader? 
+    descriptor_writes[0].dstArrayElement  = 0;
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = colorinfos.size(); // <
+    descriptor_writes[0].pBufferInfo      = nullptr;
+    descriptor_writes[0].pImageInfo       = &colorinfos[0]; ; 
+    descriptor_writes[0].pTexelBufferView = nullptr; 
+
+    // height
+    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].dstSet           = dss[i];
+    descriptor_writes[1].dstBinding       = height_binding_index;      // <-- change shader too
+    descriptor_writes[1].dstArrayElement  = 0;
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[1].descriptorCount  = heightinfos.size(); 
+    descriptor_writes[1].pBufferInfo      = nullptr;
+    descriptor_writes[1].pImageInfo       = &heightinfos[0]; 
+    descriptor_writes[1].pTexelBufferView = nullptr; 
 
 
-  
+    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  }
+
   return false;
 }

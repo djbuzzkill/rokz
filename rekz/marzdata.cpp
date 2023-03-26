@@ -7,11 +7,6 @@
 #include <vulkan/vulkan_core.h>
 
 
-
-
-auto NO_PROB = 0;
-
-
 using namespace rokz;
 
   
@@ -38,6 +33,7 @@ struct height_handlr : public cx::mappedimage_cb  {
   virtual int on_mapped (void* mappedp, size_t maxsize, const VkExtent2D& ext2d) {
     
     rokz::bytearray fheights; 
+
     rokz::From_file (fheights, fqname, true); 
 
     if (fheights.size() <= maxsize) {
@@ -60,14 +56,16 @@ struct f32color_handler : public rokz::cx::mappedimage_cb {
   const std::string&  fqname; 
     
   f32color_handler (const std::string& srcname) : fqname (srcname) {
-    printf ("%s -> %s", __FUNCTION__, fqname.c_str ());
+    printf ("%s -> %s\n", __FUNCTION__, fqname.c_str ());
   }
   
   virtual int on_mapped  (void* mappedp, size_t maxsize, const VkExtent2D& ext2d) {
 
     bytearray filebytes; 
     rokz::From_file (filebytes, fqname, true );
-
+    
+    printf ("  filebytes:%zu, maxsize:%zu\n", filebytes.size (), maxsize );
+    
     if (filebytes.size() <= maxsize) {
       memcpy (mappedp, &filebytes[0], filebytes.size());
       return 0;
@@ -86,8 +84,13 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
 
   //VkFormat image_format;
   const uint32 total_tiles = roi::XDim * roi::ZDim; 
+
   dat.colormaps.resize  (total_tiles);
   dat.colorviews.resize (total_tiles);
+
+  dat.heightmaps.resize  (total_tiles);
+  dat.heightviews.resize (total_tiles);
+
   dat.colorsampler  = rc::CreateSampler_default (device); 
   dat.heightsampler = rc::CreateSampler_default (device);
   
@@ -95,13 +98,16 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
 
   for (uint32 iz = roi::Z_BEG; iz <= roi::Z_LAST; ++iz) {
     for (uint32 ix = roi::X_BEG; ix <= roi::X_LAST; ++ix) {
-      auto xz= roi::linear_index(ix, iz);
+
+      auto xz = roi::linear_index(ix - roi::X_BEG, iz - roi::Z_BEG);
+      printf ( "x:%u, z:%u  -> xz:%u\n", ix - roi::X_BEG, iz - roi::Z_BEG, xz); 
       // --------------- COLOR ------------------
       dat.colormaps[xz] = 
         rc::CreateImage_2D_color_sampling (tile::x_dim, tile::z_dim, tile::colorformat,
                                            VK_SAMPLE_COUNT_1_BIT, device);
       const std::string fqcname = tile::basepath/color_name(ix, iz);
-      if (GOT_PROB (cx::TransferToDeviceImage (dat.heightmaps[xz]->handle,
+
+      if (GOT_PROB (cx::TransferToDeviceImage (dat.colormaps[xz]->handle,
                                                tile::sizeofcolor, tile::colorformat, imgext, 
                                                std::make_shared<f32color_handler>(fqcname),
                                                device))) {

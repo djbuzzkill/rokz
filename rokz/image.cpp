@@ -241,18 +241,20 @@ int rokz::cx::TransferToDeviceImage (VkImage& dimg, size_t imagesize, VkFormat t
   rokz::cx::AllocCreateInfo_stage (stage_buff.alloc_ci);
   rokz::cx::CreateBuffer (stage_buff, device.allocator.handle); 
 
-
-  void* mapped = nullptr; 
-  if (!rokz::cx::MapMemory (&mapped, stage_buff.allocation, device.allocator.handle)) { 
+  assert (device.allocator.handle);
+  
+  if (!rokz::cx::MapMemory (&mappedp, stage_buff.allocation, device.allocator.handle)) { 
     HERE ("FAILED MAP MEMORY");
     return __LINE__;
   }
 
   int res = __LINE__;
+
   if (cb) res = cb->on_mapped (mappedp, imagesize, ext2d); 
 
   rokz::cx::UnmapMemory (stage_buff.allocation, device.allocator.handle);
 
+  
   if (res == 0) {
     rokz::cx::TransitionImageLayout (dimg, targetformat, VK_IMAGE_LAYOUT_UNDEFINED,
                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -266,8 +268,12 @@ int rokz::cx::TransferToDeviceImage (VkImage& dimg, size_t imagesize, VkFormat t
                                      device.queues.graphics, device.command_pool.handle, device.handle);
 
   }
+
   rokz::cx::Destroy (stage_buff, device.allocator); 
-  
+
+  if (GOT_PROB (res)) 
+    HERE("LEAVING TRANSER BUT U HAV PROBZ"); 
+    
   return res;
   
 }

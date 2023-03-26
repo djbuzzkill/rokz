@@ -1,11 +1,11 @@
 
-#ifndef REKZ_DRAWMARZ_INCLUDE
-#define REKZ_DRAWMARZ_INCLUDE
+#ifndef MARZ_DRAWMARZ_INCLUDE
+#define MARZ_DRAWMARZ_INCLUDE
 
 #include "rekz.h"
 #include "marzdata.h"
 
-namespace rekz {
+namespace marz {
 
   using namespace rokz;
 

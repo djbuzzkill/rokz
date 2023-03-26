@@ -7,12 +7,13 @@
 namespace marz {
 
   using namespace rokz;
-
+  // --------------------------------------------------------------------------
   const auto kMaxNameLen = 64;
-  const char k_height_name_format[] = "marz-RED-DEM_%ux%u.bin";
-  const char k_color_name_format[]  = "marz-RED-DRG_%ux%u.bin";
-  const char k_coord_name_format[]  = "marz-RED-IGM_%ux%u.bin";
+  const char k_height_name_format[] = "marz-RED-DEM_x%uz%u.bin";
+  const char k_color_name_format[]  = "marz-RED-DRG_x%uz%u.bin";
+  const char k_coord_name_format[]  = "marz-RED-IGM_x%uz%u.bin";
 
+  // --------------------------------------------------------------------------
   namespace tile { 
 
     extern std::filesystem::path basepath;
@@ -45,7 +46,8 @@ namespace marz {
       return name_format (k_color_name_format, x, z); 
     }
   }
-  //
+
+  // --------------------------------------------------------------------------
   namespace roi { // based on tiles
 
     const uint32 X_BEG  = 4;
@@ -61,21 +63,7 @@ namespace marz {
       return z * XDim + x; 
     } 
   }
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
 
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
-  struct TextureBundle {
-    rc::Image::Ref&     map;
-    rc::ImageView::Ref& view;
-    rc::Sampler::Ref&   sampler;
-  };
-
-  // ----------------------------------------------------------------------------------------------
-  // 
   // ----------------------------------------------------------------------------------------------
   struct Data {
 

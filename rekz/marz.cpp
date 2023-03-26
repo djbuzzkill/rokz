@@ -2,8 +2,12 @@
 #include "marz.h"
 #include "grid_pipeline.h"
 #include "rekz/landscape_pipeline.h"
+#include "rekz/rekz.h"
+#include "rokz/attachment.h"
 #include "rokz/context.h"
 #include "drawmarz.h"
+#include "rokz/descriptor.h"
+#include "rokz/global_descriptor.h"
 //
 
 using namespace marz; 
@@ -265,17 +269,14 @@ int run_marz (const std::vector<std::string>& args) {
                                                            glob.depth_image, glob.depth_imageview,
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
 
-
   //
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob); 
   // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rokz::kGlobalDescriptorBindings, glob.device); 
 
-
   rokz::DefineDescriptorSetLayout (glob.landscape_dslo, rekz::landscape::kDescriptorBindings, glob.device); 
   //rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
-
   // SetupMarsWindow (glob.window, &glob.input_state); 
 
   // grid only uses globals
@@ -286,7 +287,6 @@ int run_marz (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
-
 
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
@@ -299,10 +299,43 @@ int run_marz (const std::vector<std::string>& args) {
   }      
 
 
-  HERE("351");
-  marz::SetupData ;
-  rekz::BindLandscapeResources;
+  size_t gridvertoffs;
+  size_t gridindoffs;
+  glob.grid.buff = rekz::SetupGridData (gridvertoffs, gridindoffs, 11, 11, 20.0f, 20.0f, glob.device); 
+  glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, gridvertoffs, gridindoffs);  
+  
+  // 
+  marz::SetupData (glob.scape.data, glob.device); 
+  glob.scape.draw = marz::CreateDrawMarsLandscape (glob.scape.data); 
 
+  if (!rokz::MakeDescriptorPool ( glob.landscape_de.pool, kMaxFramesInFlight,
+                                  rekz::landscape::kDescriptorBindings, glob.device)) {
+    HERE("");
+    return false;
+    
+  }
+                             
+  if (!rokz::MakeDescriptorSets (glob.landscape_de.descrsets, glob.landscape_de.alloc_info,
+                                 kMaxFramesInFlight, glob.landscape_dslo.handle,
+                                 glob.landscape_de.pool, glob.device)) {
+    HERE("");
+    return false;
+  }
+
+  rekz::BindLandscapeResources (glob.landscape_de.descrsets,
+                                glob.scape.data.colorsampler,
+                                glob.scape.data.colorviews,
+                                glob.scape.data.heightsampler,
+                                glob.scape.data.heightviews,
+                                glob.scape.data.normalsampler,
+                                glob.scape.data.normalviews,
+                                glob.landscape_dslo,
+                                glob.device); 
+
+                             
+                             
+                                 
+                                 
   //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
 //   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);

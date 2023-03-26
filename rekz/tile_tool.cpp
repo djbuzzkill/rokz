@@ -101,7 +101,7 @@ struct fcolor_tile_bin : public rekz::TileCB<float> {
       otile.dat[i] = 0.0; 
     }}
 
-
+  printf (" output ->  %s\n", marz::tile::color_name(xtile, ytile).c_str ());
   
   std::string savename = marz::tile::basepath/marz::tile::color_name(xtile, ytile); 
   WriteStream::Ref ws = CreateWriteFileStream (savename);
@@ -283,7 +283,7 @@ int tile_tool (const Vec<std::string>& args) {
   generate_DRG_tiles (args);
   generate_DEM_tiles (args);
 
-  ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
+  //  ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
 
   return 0; 
   
