@@ -52,10 +52,9 @@ bool setup_object_shader_modules (Pipeline& pipeline, const std::filesystem::pat
 
   CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
 
-
   //
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"objz/polyobj_frag.spv"; 
+  std::filesystem::path frag_file_path     = fspath/"objz/polyobj_frag.spv"; 
   std::filesystem::path frag_file_path_src = fspath/"objz/polyobj_frag.frag"; 
 
  

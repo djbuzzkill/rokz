@@ -42,9 +42,6 @@ layout (push_constant) uniform GridPushConstants {
 // out to next stage
 layout(location = 0) out vec4 o_frag; 
 
-
-
-
 void main() {
 
   gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);

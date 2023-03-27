@@ -27,7 +27,7 @@ struct height_handlr : public cx::mappedimage_cb  {
   const std::string&  fqname; 
   //
   height_handlr (const std::string& filen): fqname (filen)  {
-    printf ("%s -> %s", __FUNCTION__, fqname.c_str ());
+    printf ("%s -> %s\n", __FUNCTION__, fqname.c_str ());
   }
   //
   virtual int on_mapped (void* mappedp, size_t maxsize, const VkExtent2D& ext2d) {

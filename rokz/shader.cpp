@@ -43,7 +43,8 @@ struct H_INCLUDER : public shaderc::CompileOptions::IncluderInterface {
   //
 public:
 
-  H_INCLUDER () {  HERE("HAI"); } 
+  H_INCLUDER () {
+  } 
 
   std::shared_ptr<shaderc_include_result> include_result;
   std::string include_source;
@@ -82,7 +83,6 @@ public:
 
 // -------------------------------------------------------------------------------------------
 bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& fname) {
-  HERE("hai");
 
   assert (VK_shader_name_map.count (shadertype));
   assert (VK_SHADER_2_shaderc_map.count (shadertype)); 
@@ -96,12 +96,14 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
   const  char*        infname    = fname.c_str();
   //VK_shader_name_map.at (shadertype).c_str ();
 
+  filepath fqpath =  fname;
+
+  printf ("[%s] -> ", fqpath.filename ().c_str ());
+  
   shaderc_shader_kind shaderkind = VK_SHADER_2_shaderc_map.at (shadertype); 
   
-#ifndef TEST_PRECOMPILER_SHADER
-  
   shaderc::CompileOptions ppopts;
-  ppopts.SetTargetSpirv (shaderc_spirv_version_1_6); 
+  ppopts.SetTargetSpirv (shaderc_spirv_version_1_4); 
   ppopts.AddMacroDefinition ("MAX_OBJ_COUNT", "128");
   ppopts.SetIncluder (std::make_unique<H_INCLUDER> ()); 
   
@@ -110,12 +112,11 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
 
   switch (ppres.GetCompilationStatus()) { 
   case shaderc_compilation_status_success:  {
-    printf ("PREPROC SUCCESS !!!!!!!!!:\n");
+    printf ("PREPROC -> ");
     //const std::string&  errstr = ppres.GetErrorMessage (); 
     //std::string ppsourc (ppres.begin (), ppres.end ()) ;
-    srcstr = ppres.begin ();
-
-    printf (" sourcestr :%s \n", srcstr.c_str());
+    //srcstr = ppres.begin ();
+    //printf (" sourcestr :%s \n", srcstr.c_str());
     //printf ( " : preprocessed source: \n%s\n", ppsourc.c_str ()); 
   } break;
     
@@ -124,26 +125,25 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
     printf ("PREPROC ERROR: %s\n", err.c_str());
     printf ("compilation status: %i\n", ppres.GetCompilationStatus()); 
     printf ("error(s): %zu, warning(s): %zu.................\n", ppres.GetNumErrors (), ppres.GetNumWarnings());
-    
+    return false;
   } break;
   default :
     printf ("default\n" );
     break;    
   }
 
-#endif
   
-  
-  HERE("136");
   shaderc::CompileOptions opts;
   opts.SetTargetSpirv (shaderc_spirv_version_1_6); 
 
+  printf ("COMPILE -> ");
   shaderc::SpvCompilationResult compres =
     compiler.CompileGlslToSpv (srcstr, shaderkind, infname, ppopts);
 
   switch (compres.GetCompilationStatus ()) {
   case shaderc_compilation_status_success: {
     out.assign (compres.begin (), compres.end ());
+    printf ("SUCCESS\n");
     return true;
   }
 
@@ -155,6 +155,21 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
   return false;
 }
 
+bool rokz::CompileThisShader_vertf (spvcode& out, const std::string& fname) {
+  return CompileThisShader_file (out, VK_SHADER_STAGE_VERTEX_BIT, fname);
+}
+  
+bool rokz:: CompileThisShader_fragf (spvcode& out, const std::string& fname) {
+  return CompileThisShader_file (out, VK_SHADER_STAGE_FRAGMENT_BIT, fname);
+}
+
+bool rokz:: CompileThisShader_tesef (spvcode& out, const std::string& fname) {
+  return CompileThisShader_file (out, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, fname);
+}
+
+bool rokz:: CompileThisShader_tescf (spvcode& out, const std::string& fname) {
+  return CompileThisShader_file (out, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, fname);
+}
 // -------------------------------------------------------------------------------------------
 //                            
 // -------------------------------------------------------------------------------------------
@@ -170,6 +185,8 @@ VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateIn
 
   return ci; 
 }
+
+
 
 //-------------------------------------------------------------------------------------
 //                

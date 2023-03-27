@@ -3,6 +3,7 @@
 #include "rokz/descriptor.h"
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
+#include "rokz/shader.h"
 
 using namespace rokz;
 // ----------------------------------------------------------------------------------------
@@ -62,20 +63,32 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem:
 
   shader_modules.resize  (2);
   pss_create_infos.resize(2);
+
+
+
   // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"gridz/gridz_vert.spv" ;
-  rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
-  if (!rokz::CreateShaderModule (shader_modules[0], device.handle))
+  std::filesystem::path vert_file_path_src  = fspath/"gridz/gridz_vert.vert" ;
+
+  if (!rokz::CompileThisShader_vertf (shader_modules[0].spv, vert_file_path_src)) 
     return false; 
-  
+  // rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
+  // if (!rokz::CreateShaderModule (shader_modules[0], device.handle))
+  //   return false; 
+  CreateInfo (shader_modules[0].ci, shader_modules[0].spv); 
+  if (!CreateShaderModule_spv (shader_modules[0], device.handle))
+    return false; 
+  //CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
   // for pipeline state ci
   rokz::CreateInfo (pss_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); 
   
-
   // FRAG SHADER
-  std::filesystem::path frag_file_path = fspath/"gridz/gridz_frag.spv" ;
-  rokz::CreateInfo (shader_modules[1].ci, rokz::From_file (shader_modules[1].bin, frag_file_path.string())); 
-  if (!rokz::CreateShaderModule (shader_modules[1], device.handle))
+  std::filesystem::path frag_file_path_src = fspath/"gridz/gridz_frag.frag" ;
+
+  if (!rokz::CompileThisShader_fragf (shader_modules[1].spv, frag_file_path_src)) 
+    return false; 
+
+  CreateInfo (shader_modules[1].ci, shader_modules[1].spv); 
+  if (!rokz::CreateShaderModule_spv (shader_modules[1], device.handle))
     return false; 
 
   // for pipeline state ci

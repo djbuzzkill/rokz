@@ -463,6 +463,20 @@ namespace rokz {
   }; 
 
 
+  //  Vec<ShaderStageDef> stagedefs = {
+// ShaderStageDef { "main", vert_name_src, VK_SHADER_STAGE_VERTEX_BIT }
+// ShaderStageDef { "main", tesc_name_src, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT }
+// ShaderStageDef { "main", tese_name_src, VK_SHADER_STAGE_TESSELLATION_EV }
+// ShaderStageDef { "main", frag_name_src, VK_SHADER_STAGE_FRAGMENT_BIT }
+//  };
+
+  struct ShaderStageDef {
+
+    std::string           entrypoint;
+    filepath              fqsource;
+    VkShaderStageFlagBits stage; 
+
+  };
 
 } // namespace rokz
 

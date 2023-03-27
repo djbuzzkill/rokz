@@ -40,69 +40,109 @@ const Vec<VkVertexInputAttributeDescription>&
 // ----------------------------------------------------------------------------------------
 // 
 // ----------------------------------------------------------------------------------------
-bool setup_landscape_shader_modules (Pipeline&            pipeline, 
+bool setup_landscape_shader_modules (Pipeline&         pipeline, 
                                      const filepath&   fspath,
-                                     const Device&        device) {
+                                     const Device&     device) {
   //
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
   Vec<ShaderModule>&                    shader_modules            = pipeline.shader_modules;
 
+
+  //ShaderStateDef { vert_name_src, VK_SHADER_STAGE_VERTEX_BIT }
+
+  std::string vert_name_src = fspath/"landscape/landscape_vert.vert";
+  std::string tesc_name_src = fspath/"landscape/landscape_tesc.tesc" ;
+  std::string tese_name_src = fspath/"landscape/landscape_tese.tese" ;
+  std::string frag_name_src = fspath/"landscape/landscape_frag.frag"; 
+
+   Vec<ShaderStageDef> stagedefs = {
+     { "main", vert_name_src, VK_SHADER_STAGE_VERTEX_BIT },
+     { "main", tesc_name_src, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT },
+     { "main", tese_name_src, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT },
+     { "main", frag_name_src, VK_SHADER_STAGE_FRAGMENT_BIT },
+   };
+
+   using compile_shader_type  = bool(*)(spvcode& out, const std::string& fname);
+
+
+   compile_shader_type compile_fns[] = {
+     CompileThisShader_vertf,
+     CompileThisShader_tescf,
+     CompileThisShader_tesef,
+     CompileThisShader_fragf, 
+   }; 
+   
+
   shader_modules.resize  (4);
   shader_stage_create_infos.resize(4);
+
+  for (size_t istage = 0; istage < stagedefs.size (); ++istage) {
+     if (!compile_fns[istage] (shader_modules[istage].spv, stagedefs[istage].fqsource )) 
+       return false; 
+
+     CreateInfo (shader_modules[istage].ci, shader_modules[istage].spv);
+     if (!CreateShaderModule_spv (shader_modules[istage], device.handle)) 
+       return false;
+
+     CreateInfo (shader_stage_create_infos[istage], stagedefs[istage].stage,
+                 stagedefs[istage].entrypoint, shader_modules[istage].handle); //   
+
+   }
+
+
+
+
+   // CreateShaderModule (shader_modules, vert_name_src, VK_SHADER_STAGE_VERTEX_BIT);
+  
   //
   // VERT SHADER
-  std::string vert_name = "landscape/landscape_vert.spv";
-  filepath vert_file_path  = fspath/vert_name;
-  CreateInfo (shader_modules[0].ci, From_file (shader_modules[0].bin, vert_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[0], device.handle)) {
-    printf (" this didnt work out -> %s\n", vert_name.c_str ()); 
-    return false;
-  }
 
-  CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT,
-              shader_modules[0].entry_point, shader_modules[0].handle); //   
-  HERE("vert");
-  // TESS CTRL SHADER
-  std::string tesc_name = "landscape/landscape_tesc.spv" ;
-  filepath tesc_file_path  = fspath/tesc_name;
-  CreateInfo (shader_modules[1].ci, From_file (shader_modules[1].bin, tesc_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[1], device.handle)) {
-    printf (" this didnt work out -> %s\n", tesc_name.c_str ()); 
-    return false;
-  }
-  CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-              shader_modules[1].entry_point, shader_modules[1].handle); //   
+  // if (!rokz::CompileThisShader_vertf (shader_modules[0].spv, vert_name_src)) 
+  //   return false; 
 
-  HERE("tesc");
+  // CreateInfo (shader_modules[0].ci, shader_modules[0].spv);
+  // if (!CreateShaderModule_spv (shader_modules[0], device.handle)) 
+  //   return false;
 
-  // TESS CTRL SHADER
-  std::string tese_name = "landscape/landscape_tese.spv" ;
-  filepath tese_file_path  = fspath/tese_name;
-  CreateInfo (shader_modules[2].ci, From_file (shader_modules[2].bin, tese_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[2], device.handle)) {
-    printf (" this didnt work out -> %s\n", tese_name.c_str ()); 
-    return false;
-  }
+  // CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT,
+  //             shader_modules[0].entry_point, shader_modules[0].handle); //   
 
-  CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-              shader_modules[2].entry_point, shader_modules[2].handle); //   
 
-  // FRAG SHADER
-  std::string frag_name = "landscape/landscape_frag.spv"; 
-  filepath frag_file_path = fspath/frag_name;
-  //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str());
-  CreateInfo (shader_modules[3].ci, From_file (shader_modules[3].bin, frag_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[3], device.handle)) {
-    printf (" this didnt work out -> %s\n", frag_name.c_str ()); 
-    return false;
-  }
+  // // TESS CTRL SHADER
+  // if (!rokz::CompileThisShader_tescf (shader_modules[1].spv, tesc_name_src)) 
+  //   return false; 
   
-  CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT,
-              shader_modules[3].entry_point,  shader_modules[3].handle); 
+  // CreateInfo (shader_modules[1].ci, shader_modules[1].spv); 
+  // if (!CreateShaderModule_spv (shader_modules[1], device.handle)) 
+  //   return false;
 
-  HERE("frag");
+  // CreateInfo (shader_stage_create_infos[1], VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+  //             shader_modules[1].entry_point, shader_modules[1].handle); //   
+
+
+  // // TESS CTRL SHADER
+  // if (!rokz::CompileThisShader_tesef (shader_modules[2].spv, tese_name_src)) 
+  //   return false; 
+  
+  // CreateInfo (shader_modules[2].ci, shader_modules[2].spv); 
+  // if (!CreateShaderModule_spv (shader_modules[2], device.handle))
+  //   return false;
+
+  // CreateInfo (shader_stage_create_infos[2], VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+  //             shader_modules[2].entry_point, shader_modules[2].handle); //   
+
+
+  // // FRAG SHADER
+  // if (!rokz::CompileThisShader_fragf (shader_modules[3].spv, frag_name_src)) 
+  //   return false; 
+
+  // CreateInfo (shader_modules[3].ci, shader_modules[3].spv); 
+  // if (!CreateShaderModule (shader_modules[3], device.handle)) 
+  //   return false;
+  
+  // CreateInfo (shader_stage_create_infos[3], VK_SHADER_STAGE_FRAGMENT_BIT, 
+  //             shader_modules[3].entry_point,  shader_modules[3].handle); 
   //VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME
-  
   //
   return true; 
 }
