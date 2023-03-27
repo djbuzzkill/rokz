@@ -68,7 +68,7 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
 
     if (res != 0) {
       HERE ("problem with OpenImageFile ");
-      return __LINE__; 
+      return false;
     }
     
   }
@@ -76,7 +76,7 @@ bool setup_object_texture_and_sampler (rekz::PolygonData& polyd, const std::stri
   polyd.sampler = rc::CreateSampler_default (device); 
 
   printf ("[SUCCESS] %s all things created\n", __FUNCTION__);
-  return 0; 
+  return true; 
 }
 
 

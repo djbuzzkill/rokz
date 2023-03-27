@@ -6,8 +6,11 @@
 #include "utility.h"
 #include "defaults.h"
 #include "pipeline.h"
+#include <X11/X.h>
+#include <memory>
 #include <shaderc/env.h>
 #include <shaderc/shaderc.h>
+#include <shaderc/status.h>
 #include <vulkan/vulkan_core.h>
 
 #include <shaderc/shaderc.hpp>
@@ -35,6 +38,48 @@ const std::map<VkShaderStageFlagBits, std::string> VK_shader_name_map = {
   { VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, "tess_evaluation_shader" }, 
 };
 
+
+struct H_INCLUDER : public shaderc::CompileOptions::IncluderInterface {
+  //
+public:
+
+  H_INCLUDER () {  HERE("HAI"); } 
+
+  std::shared_ptr<shaderc_include_result> include_result;
+  std::string include_source;
+  
+  // Handles shaderc_include_resolver_fn callbacks.
+  virtual shaderc_include_result* GetInclude(const char*          requested_source,
+                                             shaderc_include_type type,
+                                             const char*          requesting_source,
+                                             size_t               include_depth) {
+    filepath including_path = requesting_source;
+    filepath parentpath     = including_path.parent_path ();
+    filepath fqinclude      = parentpath/requested_source; 
+    //printf("fqrequested %s\n", fqinclude.c_str());
+    From_file (include_source, fqinclude); 
+    include_result = std::make_shared<shaderc_include_result> ();
+    include_result->content = include_source.c_str();
+    include_result->content_length = include_source.size ();
+    include_result->source_name = requested_source;
+    include_result->source_name_length = strlen (requested_source);
+    include_result->user_data = nullptr;
+    // shaderc_include_type {
+    //   shaderc_include_type_relative,  // E.g. #include "source"
+    //   shaderc_include_type_standard   // E.g. #include <source>
+    return include_result.get ();
+  }
+
+  // Handles shaderc_include_result_release_fn callbacks.
+  virtual void ReleaseInclude(shaderc_include_result* data) {
+    include_result.reset ();
+  }
+
+  virtual ~H_INCLUDER()  {
+  }
+};
+
+
 // -------------------------------------------------------------------------------------------
 bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& fname) {
   HERE("hai");
@@ -48,27 +93,65 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
   std::string srcstr;
   rokz::From_file (srcstr, fname, true); 
   
-  const  char*        infname    = VK_shader_name_map.at (shadertype).c_str ();
+  const  char*        infname    = fname.c_str();
+  //VK_shader_name_map.at (shadertype).c_str ();
+
   shaderc_shader_kind shaderkind = VK_SHADER_2_shaderc_map.at (shadertype); 
   
-  shaderc::CompileOptions opts;
-  //opts.SetTargetSpirv (shaderc_spirv_version_1_6); 
-  //opts.SetOptimizationLevel ( shaderc_optimization_level_performance); 
-
-  // shaderc::PreprocessedSourceCompilationResult ppres =
-  //   compiler.PreprocessGlsl (infname, shaderkind, srcstr.c_str(), opts); 
-  //  std::string ppsourc (ppres.begin (), ppres.end ()) ;
-  //printf ( " : preprocessed source: \n%s\n", ppsourc.c_str ()); 
+#ifndef TEST_PRECOMPILER_SHADER
   
-  shaderc::SpvCompilationResult compres = compiler.CompileGlslToSpv (srcstr, shaderkind, infname, opts);
-  if (compres.GetCompilationStatus () == shaderc_compilation_status_success) {
+  shaderc::CompileOptions ppopts;
+  ppopts.SetTargetSpirv (shaderc_spirv_version_1_6); 
+  ppopts.AddMacroDefinition ("MAX_OBJ_COUNT", "128");
+  ppopts.SetIncluder (std::make_unique<H_INCLUDER> ()); 
+  
+  shaderc::PreprocessedSourceCompilationResult ppres =
+    compiler.PreprocessGlsl ( srcstr.c_str(), shaderkind, infname, ppopts); 
+
+  switch (ppres.GetCompilationStatus()) { 
+  case shaderc_compilation_status_success:  {
+    printf ("PREPROC SUCCESS !!!!!!!!!:\n");
+    //const std::string&  errstr = ppres.GetErrorMessage (); 
+    //std::string ppsourc (ppres.begin (), ppres.end ()) ;
+    srcstr = ppres.begin ();
+
+    printf (" sourcestr :%s \n", srcstr.c_str());
+    //printf ( " : preprocessed source: \n%s\n", ppsourc.c_str ()); 
+  } break;
+    
+  case shaderc_compilation_status_compilation_error: {
+    const std::string &err = ppres.GetErrorMessage (); 
+    printf ("PREPROC ERROR: %s\n", err.c_str());
+    printf ("compilation status: %i\n", ppres.GetCompilationStatus()); 
+    printf ("error(s): %zu, warning(s): %zu.................\n", ppres.GetNumErrors (), ppres.GetNumWarnings());
+    
+  } break;
+  default :
+    printf ("default\n" );
+    break;    
+  }
+
+#endif
+  
+  
+  HERE("136");
+  shaderc::CompileOptions opts;
+  opts.SetTargetSpirv (shaderc_spirv_version_1_6); 
+
+  shaderc::SpvCompilationResult compres =
+    compiler.CompileGlslToSpv (srcstr, shaderkind, infname, ppopts);
+
+  switch (compres.GetCompilationStatus ()) {
+  case shaderc_compilation_status_success: {
     out.assign (compres.begin (), compres.end ());
     return true;
   }
 
-  const std::string& errstr = compres.GetErrorMessage ();
-  printf ( "ERROR :%s\n", errstr.c_str());
-
+  default: { 
+    const std::string& errstr = compres.GetErrorMessage ();
+    printf ( "COMPILE ERROR :%s\n", errstr.c_str());
+  }}
+  
   return false;
 }
 

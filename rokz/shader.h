@@ -5,6 +5,7 @@
 #include "common.h"
 #include "rokz_types.h"
 #include "file.h"
+#include <vulkan/vulkan_core.h>
 
 namespace rokz {
 
@@ -29,7 +30,26 @@ namespace rokz {
 
 
   bool CompileThisShader_source (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& src);
+
   bool CompileThisShader_file   (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& fname);
+
+  inline bool CompileThisShader_vertf (spvcode& out, const std::string& fname) {
+    return CompileThisShader_file (out, VK_SHADER_STAGE_VERTEX_BIT, fname);
+  }
+  
+  inline bool CompileThisShader_fragf (spvcode& out, const std::string& fname) {
+    return CompileThisShader_file (out, VK_SHADER_STAGE_FRAGMENT_BIT, fname);
+  }
+
+  inline bool CompileThisShader_tesef (spvcode& out, const std::string& fname) {
+    return CompileThisShader_file (out, VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, fname);
+  }
+
+  inline bool CompileThisShader_tescf (spvcode& out, const std::string& fname) {
+    return CompileThisShader_file (out, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT, fname);
+  }
+
+
 
 }
 
