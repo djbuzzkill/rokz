@@ -1,8 +1,5 @@
 
-#include "darkrootgarden.h"
 #include "rekz/dark_types.h"
-
-#include "dark_obj_pipeline.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -35,16 +32,14 @@ struct PolygonDraw : public rokz::DrawSequence {
       //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
       glm::vec3 va, vb;
       rekz::unit_angle_xz (va, 5.0 * env.globals.sim_time ); 
-      rekz::unit_angle_xz (vb, 5.0 * env.globals.sim_time + darkroot::kPi); 
+      rekz::unit_angle_xz (vb, 5.0 * env.globals.sim_time + rekz::kPi); 
 
       //glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, -2.0, 0.0));
       glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, 0.0, 0.0));
       glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (2.0, 4.0, 0.0));
       //for (size_t i = 0; i < kSceneObjCount; ++i) {
       obj[0].modelmat = glm::rotate(model0, polyd.objrot[0].y, glm::vec3(0.0f, -1.0f, 0.0f));
-
       obj[1].modelmat = glm::rotate(model1, env.globals.sim_time * glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
     }
   
     return 0;

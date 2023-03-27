@@ -12,7 +12,7 @@ layout(location = 0) in vec3 frag_color;
 layout(location = 1) in vec3 frag_norm;
 layout(location = 2) in vec2 txcrd2;
 
-layout (push_constant) uniform PushConstants {
+layout (push_constant) uniform PushConstant {
 
   ivec4 resourceIDs; 
 
@@ -28,8 +28,4 @@ void main() {
   out_color = texture (tex_sampler[pc.resourceIDs.x], txcrd2);
 
 }
-
-
-
-
 

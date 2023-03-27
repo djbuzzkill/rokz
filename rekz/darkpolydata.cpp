@@ -1,5 +1,4 @@
 
-#include "darkrootgarden.h"
 #include "rekz/dark_types.h"
 
 #include "image_loader.h"
@@ -12,12 +11,9 @@
 
 
 using namespace darkroot;
-
-
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-
 struct obj_image_handler : public rekz::DevILOpenFileCB {
 
   uint32              index ; 
@@ -143,6 +139,16 @@ bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root
 //
 // ------------------------------------------------------------------------------------------------
 rekz::PolygonData& rekz::SetupPolygonData (rekz::PolygonData& pd, uint32_t num_frames, const std::string& data_root, const rokz::Device& device) {
+
+  pd.indexoffs  = 0;
+  pd.vertexoffs = 0;
+
+  for (auto& r : pd.objrot) 
+    r = glm::vec3(0.0);
+
+  for (auto& p : pd.objpos) 
+    p = glm::vec3(0.0);
+
 
   setup_obj_resources (pd, data_root, device) ; 
   return  pd;

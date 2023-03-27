@@ -8,37 +8,10 @@
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
-
-//#include "shared_types.h"
-
 namespace rokz {
 
   //-------------------------------------------------------------------------------------
   // not sure what to do with these yet
-  //-------------------------------------------------------------------------------------
-  // struct VkObj {
-  //   //what needs VkDevice for cleanup?
-  // protected :
-
-  //   VkObj (VkDevice& dev) : device (dev) {
-  //   }
-
-  //   VkDevice& device;
-  // }; 
-
-  // struct VMARes {
-  //   // what needs allocator for cleanup?
-  // protected :
-    
-  //   VMARes (VmaAllocator& a) : allocator (a) {
-  //   }
-  
-  //   VmaAllocator& allocator; 
-  // }; 
-
-  
-  //-------------------------------------------------------------------------------------
-  //                
   //-------------------------------------------------------------------------------------
   struct QueueFamilyIndices {
 
@@ -144,17 +117,12 @@ namespace rokz {
 
   struct ShaderModule {
 
-    ShaderModule (const std::string& entry) : handle (VK_NULL_HANDLE), ci (), bin (), entry_point (entry) {
-    }
-
-    ShaderModule () : ShaderModule ("main") {
+    ShaderModule (): handle (VK_NULL_HANDLE), ci () {
     }
 
     VkShaderModule                 handle; 
     VkShaderModuleCreateInfo       ci;
-    rokz::bytearray                bin;
     spvcode                        spv;
-    std::string                    entry_point;
   };
 
   // -----------------------------------------------------------------------------------------------
@@ -215,10 +183,8 @@ namespace rokz {
   struct DescriptorSetLayout { 
     VkDescriptorSetLayout                     handle;    
     VkDescriptorSetLayoutCreateInfo           ci;
-
     // dslo doesnt have to keep its own bindings
     // std::vector<VkDescriptorSetLayoutBinding> bindings; 
-    
   }; 
 
   // ------------------------------------------------------------------------
@@ -312,6 +278,13 @@ namespace rokz {
     VkPipelineLayoutCreateInfo  ci;
   };
 
+  // ------------------------------------------------------------------------------------------
+  struct ShaderStageDef {
+    std::string           entrypoint;
+    filepath              fqsource;
+    VkShaderStageFlagBits stage; 
+  };
+
   // ------------------------------------------------------------------------
   //
   // ------------------------------------------------------------------------
@@ -325,10 +298,11 @@ namespace rokz {
 
     PipelineState                    state;
     Vec<rokz::ShaderModule>  shader_modules; 
+    Vec<ShaderStageDef>     shader_stage_defs;
 
+    
     // 
     Vec<VkDescriptorSetLayout> dslos;
-    
     // EXTENSIONS
     struct { 
       struct {
@@ -408,12 +382,6 @@ namespace rokz {
     VkRect2D                       render_area; 
   };
 
-  // // --------------------------------------------------------
-  // struct CommandPool {
-  //   VkCommandPool           handle;
-  //   VkCommandPoolCreateInfo ci; 
-  // };
-
   // --------------------------------------------------------
   struct CommandBufferGroup {
 
@@ -430,7 +398,6 @@ namespace rokz {
     // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
   }; 
 
-  
   // --------------------------------------------------------
   struct FrameSyncCreateInfo {
 
@@ -444,7 +411,8 @@ namespace rokz {
   // --------------------------------------------------------
   struct FrameSync {
     // This should actually be called FrameSync
-    FrameSync () : image_available_sem (), render_finished_sem (), in_flight_fen () {    }
+    FrameSync () : image_available_sem (), render_finished_sem (), in_flight_fen () {
+    }
     
     VkSemaphore image_available_sem;
     VkSemaphore render_finished_sem;
@@ -453,7 +421,7 @@ namespace rokz {
     FrameSyncCreateInfo ci;
 
   };
-  // --------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
   struct FrameSyncGroup {
     //
     VkCommandBufferAllocateInfo  command_buffer_alloc_info;
@@ -462,21 +430,6 @@ namespace rokz {
     Vec<FrameSync> syncs;
   }; 
 
-
-  //  Vec<ShaderStageDef> stagedefs = {
-// ShaderStageDef { "main", vert_name_src, VK_SHADER_STAGE_VERTEX_BIT }
-// ShaderStageDef { "main", tesc_name_src, VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT }
-// ShaderStageDef { "main", tese_name_src, VK_SHADER_STAGE_TESSELLATION_EV }
-// ShaderStageDef { "main", frag_name_src, VK_SHADER_STAGE_FRAGMENT_BIT }
-//  };
-
-  struct ShaderStageDef {
-
-    std::string           entrypoint;
-    filepath              fqsource;
-    VkShaderStageFlagBits stage; 
-
-  };
 
 } // namespace rokz
 

@@ -4,6 +4,8 @@
 
 
 #include "rekz.h"
+#include "polyobdata.h"
+
 #include "rokz/display.h"
 #include "rokz/input_state.h"
 

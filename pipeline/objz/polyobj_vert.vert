@@ -11,7 +11,7 @@
 // #extension GL_ARB_shading_language_include : require
 // #extension GL_EXT_nonuniform_qualifier : enable
 
-
+#include  "polyobj.h"
 //
 // IN PER VERTEX
 //
@@ -50,7 +50,7 @@ layout(binding = 0, set = 1) uniform ObjectParams {
 
   mat4 model;
   
-} params[64];
+} params[max_count];
 
 
 void main() {

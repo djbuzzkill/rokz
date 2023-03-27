@@ -281,7 +281,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   filepath dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline"; //
   filepath data_path = "/home/djbuzzkill/owenslake/rokz/data";     // 
 
-  
   glfwInit();
   // CREATE INSTANCE AND DEVICE
   //bool rekz::InitializeInstance (rokz::Instance& instance) {

@@ -1,5 +1,6 @@
 //
 #include "pipeline.h"
+#include "shader.h"
 #include "utility.h"
 // ---------------------------------------------------------------------
 //
@@ -599,3 +600,26 @@ rokz::ViewportState& rokz::SetupViewportState (rokz::ViewportState & vps, const 
 }
 
 
+bool rokz::SetupPipelinShaderStages (std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_cis,
+                               Vec<rokz::ShaderModule>& shader_modules, 
+                               const Vec<ShaderStageDef>& stagedefs, const rokz::Device& device) {
+  HERE("61"); 
+
+  shader_modules.resize (stagedefs.size());
+  shader_stage_cis.resize (stagedefs.size());
+  
+  for (size_t istage = 0; istage < stagedefs.size(); ++istage) { 
+    // FRAG SHADER
+    if (!rokz::CompileThisShader_file (shader_modules[istage].spv, stagedefs[istage].stage, stagedefs[istage].fqsource)) 
+      return false; 
+
+    CreateInfo (shader_modules[istage].ci, shader_modules[istage].spv); 
+    if (!rokz::CreateShaderModule_spv (shader_modules[istage], device.handle))
+      return false; 
+
+    // for pipeline state ci
+    rokz::CreateInfo (shader_stage_cis[istage], stagedefs[istage].stage, stagedefs[istage].entrypoint, shader_modules[istage].handle); 
+  }
+
+  return true;
+}

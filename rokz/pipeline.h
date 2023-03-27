@@ -159,6 +159,9 @@ namespace rokz {
    const VkExtent2D&                                     vpext
    );
 
+  bool SetupPipelinShaderStages (std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_cis,
+                                 Vec<rokz::ShaderModule>& shader_modules, 
+                                 const Vec<ShaderStageDef>& stagedefs, const rokz::Device& device);
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------

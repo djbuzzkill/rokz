@@ -4,6 +4,7 @@
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
 #include "rokz/shader.h"
+#include <vulkan/vulkan_core.h>
 
 using namespace rokz;
 // ----------------------------------------------------------------------------------------
@@ -54,48 +55,19 @@ const Vec<VkVertexInputAttributeDescription> rekz::grid::kVertInputAttributeDesc
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
-bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const std::filesystem::path& fspath, const rokz::Device& device) {
+
+bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const filepath& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
 
-  std::vector<VkPipelineShaderStageCreateInfo>& pss_create_infos = pipeline.state.ci.shader_stages; 
-  std::vector<rokz::ShaderModule>&              shader_modules   = pipeline.shader_modules;
+  pipeline.shader_stage_defs  = {
+    { "main", fspath/"gridz/gridz_vert.vert", VK_SHADER_STAGE_VERTEX_BIT } , 
+    { "main", fspath/"gridz/gridz_frag.frag", VK_SHADER_STAGE_FRAGMENT_BIT } , 
+  };
 
-  shader_modules.resize  (2);
-  pss_create_infos.resize(2);
-
-
-
-  // VERT SHADER 
-  std::filesystem::path vert_file_path_src  = fspath/"gridz/gridz_vert.vert" ;
-
-  if (!rokz::CompileThisShader_vertf (shader_modules[0].spv, vert_file_path_src)) 
-    return false; 
-  // rokz::CreateInfo (shader_modules[0].ci, rokz::From_file (shader_modules[0].bin, vert_file_path.string())); 
-  // if (!rokz::CreateShaderModule (shader_modules[0], device.handle))
-  //   return false; 
-  CreateInfo (shader_modules[0].ci, shader_modules[0].spv); 
-  if (!CreateShaderModule_spv (shader_modules[0], device.handle))
-    return false; 
-  //CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
-  // for pipeline state ci
-  rokz::CreateInfo (pss_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); 
-  
-  // FRAG SHADER
-  std::filesystem::path frag_file_path_src = fspath/"gridz/gridz_frag.frag" ;
-
-  if (!rokz::CompileThisShader_fragf (shader_modules[1].spv, frag_file_path_src)) 
-    return false; 
-
-  CreateInfo (shader_modules[1].ci, shader_modules[1].spv); 
-  if (!rokz::CreateShaderModule_spv (shader_modules[1], device.handle))
-    return false; 
-
-  // for pipeline state ci
-  rokz::CreateInfo (pss_create_infos[1], VK_SHADER_STAGE_FRAGMENT_BIT, shader_modules[1].entry_point, shader_modules[1].handle); 
-  //
-  return true; 
-
+  // //
+  return SetupPipelinShaderStages (pipeline.state.ci.shader_stages,
+                                   pipeline.shader_modules, pipeline.shader_stage_defs, device); 
 }
 
 
@@ -139,7 +111,10 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
   
   //
   // Shader Modules
-  setup_grid_shader_modules (pipeline, fspath, device); 
+  if (!setup_grid_shader_modules (pipeline, fspath, device)) {
+    HERE("FAILED");
+    return false; 
+  }
 
   //
   // dynamic  extensions
