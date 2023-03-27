@@ -919,10 +919,8 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind,
   
   vkGetPhysicalDeviceProperties(physdev, &devprops);
 
-  
+
   ut::PrintPhysicalDeviceLimits (devprops.limits);
-
-
 
   // FORCE ANISTOTROPY
   //VkPhysicalDeviceFeatures devfeatures {};

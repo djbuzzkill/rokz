@@ -13,11 +13,9 @@
 
 #include <glm/fwd.hpp>
 #include <glm/matrix.hpp>
+
 #include <shaderc/shaderc.hpp>
-#include <shaderc/shaderc.h>
-
-
-
+#include <shaderc/status.h>
 #include <vulkan/vulkan_core.h>
 // 
 #include "dark_obj_pipeline.h"
@@ -269,25 +267,22 @@ struct RootLoop {
 // main()
 // ------------------------------------------------------------------------------------------
 int darkrootbasin (const std::vector<std::string>& args) {
-    
+ 
   printf ( " Mv = v is the correct order \n"); 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
-  shaderc::Compiler compiler; 
-    
-  
+
   Glob  glob; // *globmem; // something representing the app state
   rc::SwapchainGroup& scg = glob.swapchain_group;
   
   glob.mouse_prev.x = 0;
   glob.mouse_prev.y = 0;
 
-  std::filesystem::path dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline"; //
-  std::filesystem::path data_path = "/home/djbuzzkill/owenslake/rokz/data";     // 
+  filepath dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline"; //
+  filepath data_path = "/home/djbuzzkill/owenslake/rokz/data";     // 
 
   
   glfwInit();
-  
   // CREATE INSTANCE AND DEVICE
   //bool rekz::InitializeInstance (rokz::Instance& instance) {
 

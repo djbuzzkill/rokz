@@ -36,15 +36,26 @@ bool setup_object_shader_modules (Pipeline& pipeline, const std::filesystem::pat
 
   shader_modules.resize  (2);
   shader_stage_create_infos.resize(2);
+
+
   //
   // VERT SHADER 
-  std::filesystem::path vert_file_path  = fspath/"objz/polyobj_vert.spv" ;
+  std::filesystem::path vert_file_path_spv = fspath/"objz/polyobj_vert.spv" ;
+  std::filesystem::path vert_file_path_src = fspath/"objz/polyobj_vert.vert" ;
   //printf ( "LINE [%i] --> %s \n", __LINE__, vert_file_path.string().c_str()); 
-  
-  CreateInfo (shader_modules[0].ci, From_file (shader_modules[0].bin, vert_file_path.string())); 
-  if (!CreateShaderModule (shader_modules[0], device.handle))
+
+  if (!rokz::CompileThisShader_file (shader_modules[0].spv, VK_SHADER_STAGE_VERTEX_BIT, vert_file_path_src)) {
+    HERE(" AAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHH");
     return false; 
-  
+  }
+
+  CreateInfo (shader_modules[0].ci, shader_modules[0].spv); 
+  if (!CreateShaderModule_spv (shader_modules[0], device.handle))
+    return false; 
+
+  // CreateInfo (shader_modules[0].ci, From_file (shader_modules[0].bin, vert_file_path_spv.string())); 
+  // if (!CreateShaderModule (shader_modules[0], device.handle))
+  //   return false; 
   CreateInfo (shader_stage_create_infos[0], VK_SHADER_STAGE_VERTEX_BIT, shader_modules[0].entry_point, shader_modules[0].handle); //   
   //
   // FRAG SHADER
@@ -240,7 +251,10 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
   PipelineState_default (pipeline.state, msaa_samples, obz::kVertexInputAttributeDesc,
                          obz::kVertexInputBindingDesc, viewport_extent); 
   // ^ !! shader modules is part of pipelinestate 
-  setup_object_shader_modules (pipeline, fspath, device);
+
+  if (!setup_object_shader_modules (pipeline, fspath, device)) {
+    return false;
+  }
 
   // proto more orthogonal version
   pipeline.ext.pipeline_rendering.color_formats.resize (1);

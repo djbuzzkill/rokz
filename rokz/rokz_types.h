@@ -140,6 +140,8 @@ namespace rokz {
   // -----------------------------------------------------------------------------------------------
   //
   // -----------------------------------------------------------------------------------------------
+  typedef std::vector<uint32> spvcode;
+
   struct ShaderModule {
 
     ShaderModule (const std::string& entry) : handle (VK_NULL_HANDLE), ci (), bin (), entry_point (entry) {
@@ -150,7 +152,8 @@ namespace rokz {
 
     VkShaderModule                 handle; 
     VkShaderModuleCreateInfo       ci;
-    rokz::bytearray                bin; 
+    rokz::bytearray                bin;
+    spvcode                        spv;
     std::string                    entry_point;
   };
 

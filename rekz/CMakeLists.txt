@@ -1,5 +1,6 @@
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 3.17.2)
 
 project (rekz)
 #set ("CMAKE_CXX_FLAGS=-g -O0")
@@ -55,9 +56,11 @@ add_executable (
 target_link_libraries (
   rekz
 
-  IL
-  ILU
+# PRIVATE shaderc_combined shaderc SPIRV-Tools SPIRV-Tools-opt SPIRV
 
+PUBLIC 
+
+  IL ILU
   zmq
   rokz
   glfw
@@ -71,5 +74,11 @@ target_link_libraries (
 
 )
 
+
+target_include_directories (
+  rekz
+  
+  PUBLIC /usr/include/shaderc
+)
 
 

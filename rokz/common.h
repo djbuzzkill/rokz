@@ -21,6 +21,9 @@
 #include <glm/ext/scalar_constants.hpp>
 
 
+// dynamic  compile
+#include <shaderc/shaderc.hpp>
+
 
 
 //#include <vulkan/vulkan.hpp>  // not yet

@@ -1,4 +1,5 @@
-cmake_minimum_required (VERSION 3.1)
+
+cmake_minimum_required(VERSION 3.17.2)
 
 project (vulkania)
 

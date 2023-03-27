@@ -8,9 +8,10 @@
 
 namespace rokz {
 
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------------------------
+  //                       
+  // -------------------------------------------------------------------------------------------
 
   bool                             CreateShaderModules (std::vector<ShaderModule>&                    shader_modules,
                                                         std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos, 
@@ -19,10 +20,16 @@ namespace rokz {
   //  VkShaderModule&    CreateShaderModule (VkShaderModule& shader_module, const bytearray& code, const VkDevice& dev); 
   //  bool               CreateShaderModules(std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
   VkPipelineShaderStageCreateInfo& CreateInfo          (VkPipelineShaderStageCreateInfo& ci, VkShaderStageFlagBits stage_flags, const std::string& entry_point, const VkShaderModule& module); 
-  VkShaderModuleCreateInfo&        CreateInfo          (VkShaderModuleCreateInfo& ci, const rokz::bytearray& bin); 
+  VkShaderModuleCreateInfo&        CreateInfo          (VkShaderModuleCreateInfo& ci, const rokz::bytearray& bin);
+  VkShaderModuleCreateInfo&        CreateInfo          (VkShaderModuleCreateInfo& ci, const rokz::spvcode& spv);
+  
   bool                             CreateShaderModule  (VkShaderModule& shmod, const VkShaderModuleCreateInfo& ci, const VkDevice& device); 
   bool                             CreateShaderModule  (ShaderModule& shm, const VkDevice& dev);
+  bool                             CreateShaderModule_spv (ShaderModule& sm, const VkDevice& device);
 
+
+  bool CompileThisShader_source (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& src);
+  bool CompileThisShader_file   (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& fname);
 
 }
 

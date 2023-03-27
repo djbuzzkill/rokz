@@ -41,7 +41,7 @@ const Vec<VkVertexInputAttributeDescription>&
 // 
 // ----------------------------------------------------------------------------------------
 bool setup_landscape_shader_modules (Pipeline&            pipeline, 
-                                     const filesyspath&   fspath,
+                                     const filepath&   fspath,
                                      const Device&        device) {
   //
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
@@ -52,7 +52,7 @@ bool setup_landscape_shader_modules (Pipeline&            pipeline,
   //
   // VERT SHADER
   std::string vert_name = "landscape/landscape_vert.spv";
-  filesyspath vert_file_path  = fspath/vert_name;
+  filepath vert_file_path  = fspath/vert_name;
   CreateInfo (shader_modules[0].ci, From_file (shader_modules[0].bin, vert_file_path.string())); 
   if (!CreateShaderModule (shader_modules[0], device.handle)) {
     printf (" this didnt work out -> %s\n", vert_name.c_str ()); 
@@ -64,7 +64,7 @@ bool setup_landscape_shader_modules (Pipeline&            pipeline,
   HERE("vert");
   // TESS CTRL SHADER
   std::string tesc_name = "landscape/landscape_tesc.spv" ;
-  filesyspath tesc_file_path  = fspath/tesc_name;
+  filepath tesc_file_path  = fspath/tesc_name;
   CreateInfo (shader_modules[1].ci, From_file (shader_modules[1].bin, tesc_file_path.string())); 
   if (!CreateShaderModule (shader_modules[1], device.handle)) {
     printf (" this didnt work out -> %s\n", tesc_name.c_str ()); 
@@ -77,7 +77,7 @@ bool setup_landscape_shader_modules (Pipeline&            pipeline,
 
   // TESS CTRL SHADER
   std::string tese_name = "landscape/landscape_tese.spv" ;
-  filesyspath tese_file_path  = fspath/tese_name;
+  filepath tese_file_path  = fspath/tese_name;
   CreateInfo (shader_modules[2].ci, From_file (shader_modules[2].bin, tese_file_path.string())); 
   if (!CreateShaderModule (shader_modules[2], device.handle)) {
     printf (" this didnt work out -> %s\n", tese_name.c_str ()); 
@@ -89,7 +89,7 @@ bool setup_landscape_shader_modules (Pipeline&            pipeline,
 
   // FRAG SHADER
   std::string frag_name = "landscape/landscape_frag.spv"; 
-  filesyspath frag_file_path = fspath/frag_name;
+  filepath frag_file_path = fspath/frag_name;
   //printf ( "LINE [%i] --> %s \n", __LINE__, frag_file_path.string().c_str());
   CreateInfo (shader_modules[3].ci, From_file (shader_modules[3].bin, frag_file_path.string())); 
   if (!CreateShaderModule (shader_modules[3], device.handle)) {

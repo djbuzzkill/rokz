@@ -6,11 +6,75 @@
 #include "utility.h"
 #include "defaults.h"
 #include "pipeline.h"
+#include <shaderc/env.h>
+#include <shaderc/shaderc.h>
 #include <vulkan/vulkan_core.h>
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+#include <shaderc/shaderc.hpp>
+
+using namespace rokz;
+
+// -------------------------------------------------------------------------------------------
+//                            
+// -------------------------------------------------------------------------------------------
+const std::map<VkShaderStageFlagBits, shaderc_shader_kind> VK_SHADER_2_shaderc_map = {
+  { VK_SHADER_STAGE_VERTEX_BIT,  shaderc_vertex_shader},          
+  { VK_SHADER_STAGE_FRAGMENT_BIT, shaderc_fragment_shader},        
+  { VK_SHADER_STAGE_COMPUTE_BIT, shaderc_compute_shader},         
+  { VK_SHADER_STAGE_GEOMETRY_BIT, shaderc_geometry_shader},          
+  { VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,  shaderc_tess_control_shader},    
+  { VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, shaderc_tess_evaluation_shader}, 
+};
+
+const std::map<VkShaderStageFlagBits, std::string> VK_shader_name_map = {
+  { VK_SHADER_STAGE_VERTEX_BIT                 , "vertex_shader" },          
+  { VK_SHADER_STAGE_FRAGMENT_BIT               , "fragment_shader" },        
+  { VK_SHADER_STAGE_COMPUTE_BIT                , "compute_shader" },         
+  { VK_SHADER_STAGE_GEOMETRY_BIT               , "geometry_shader" },          
+  { VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT   , "tess_control_shader" },    
+  { VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT, "tess_evaluation_shader" }, 
+};
+
+// -------------------------------------------------------------------------------------------
+bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& fname) {
+  HERE("hai");
+
+  assert (VK_shader_name_map.count (shadertype));
+  assert (VK_SHADER_2_shaderc_map.count (shadertype)); 
+  
+  shaderc::Compiler compiler; 
+  //shaderc_compiler_t shc =  shaderc_compiler_initialize (); 
+  //fname.c_str()
+  std::string srcstr;
+  rokz::From_file (srcstr, fname, true); 
+  
+  const  char*        infname    = VK_shader_name_map.at (shadertype).c_str ();
+  shaderc_shader_kind shaderkind = VK_SHADER_2_shaderc_map.at (shadertype); 
+  
+  shaderc::CompileOptions opts;
+  //opts.SetTargetSpirv (shaderc_spirv_version_1_6); 
+  //opts.SetOptimizationLevel ( shaderc_optimization_level_performance); 
+
+  // shaderc::PreprocessedSourceCompilationResult ppres =
+  //   compiler.PreprocessGlsl (infname, shaderkind, srcstr.c_str(), opts); 
+  //  std::string ppsourc (ppres.begin (), ppres.end ()) ;
+  //printf ( " : preprocessed source: \n%s\n", ppsourc.c_str ()); 
+  
+  shaderc::SpvCompilationResult compres = compiler.CompileGlslToSpv (srcstr, shaderkind, infname, opts);
+  if (compres.GetCompilationStatus () == shaderc_compilation_status_success) {
+    out.assign (compres.begin (), compres.end ());
+    return true;
+  }
+
+  const std::string& errstr = compres.GetErrorMessage ();
+  printf ( "ERROR :%s\n", errstr.c_str());
+
+  return false;
+}
+
+// -------------------------------------------------------------------------------------------
+//                            
+// -------------------------------------------------------------------------------------------
 VkPipelineShaderStageCreateInfo& rokz::CreateInfo (VkPipelineShaderStageCreateInfo& ci, VkShaderStageFlagBits stage_flags,
                                                    const std::string& entry_point, const VkShaderModule& module)
 {
@@ -43,6 +107,21 @@ VkShaderModuleCreateInfo& rokz::CreateInfo (VkShaderModuleCreateInfo& ci, const 
 //-------------------------------------------------------------------------------------
 //                
 //-------------------------------------------------------------------------------------
+VkShaderModuleCreateInfo& rokz::CreateInfo (VkShaderModuleCreateInfo& ci, const rokz::spvcode& spv) {
+  //printf ( "%s\n", __FUNCTION__); 
+  
+  ci.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  ci.pNext    = nullptr;
+  ci.flags    = 0; // NOT VkShaderStageFlagBits
+  ci.codeSize = sizeof(uint32) * spv.size (); 
+  ci.pCode    = &spv[0];
+  //printf (" %s --> bin.size : [%zu] \n", __FUNCTION__, bin.size ()); 
+
+  return ci; 
+}
+//-------------------------------------------------------------------------------------
+//                
+//-------------------------------------------------------------------------------------
 bool rokz::CreateShaderModule (VkShaderModule& shmod, const VkShaderModuleCreateInfo& ci, const VkDevice& device) {
 
   //printf ( "%s", __FUNCTION__); 
@@ -64,6 +143,23 @@ bool rokz::CreateShaderModule (ShaderModule& sm, const VkDevice& device) {
     HERE("ERROR BAD BINARY SIZE");
     return false;
   }
+  //printf ( "%s", __FUNCTION__);
+  
+
+  if (vkCreateShaderModule(device, &sm.ci, nullptr, &sm.handle) != VK_SUCCESS) {
+    printf ("[%s]FAILED create shader module\n", __FUNCTION__);
+    return false;
+  }
+
+  return true;
+}
+
+bool rokz::CreateShaderModule_spv (ShaderModule& sm, const VkDevice& device) {
+
+  if (sm.spv.size () < 4) {
+    HERE("ERROR BAD SPV SIZE");
+    return false;
+  }
   //printf ( "%s", __FUNCTION__); 
 
   if (vkCreateShaderModule(device, &sm.ci, nullptr, &sm.handle) != VK_SUCCESS) {
@@ -73,6 +169,14 @@ bool rokz::CreateShaderModule (ShaderModule& sm, const VkDevice& device) {
 
   return true;
 }
+
+
+
+
+
+
+
+
 //-------------------------------------------------------------------------------------
 //                
 //-------------------------------------------------------------------------------------

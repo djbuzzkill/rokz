@@ -230,9 +230,8 @@ int run_marz (const std::vector<std::string>& args) {
   rc::SwapchainGroup&  scg   = glob.swapchain_group;
   FrameSyncGroup&  fsg   = glob.framesyncgroup; 
 
-  
-  filesyspath pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
-  filesyspath data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
+  filepath pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
+  filepath data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
   //Default (glob); 
   
   glfwInit();
@@ -247,7 +246,6 @@ int run_marz (const std::vector<std::string>& args) {
 
   VkPhysicalDeviceFeatures2 f2 {};
   rokz::ConfigureFeatures  (f2, glob.device.physical);
-
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
   rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
@@ -293,9 +291,10 @@ int run_marz (const std::vector<std::string>& args) {
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
 
+  
   if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
-                                    glob.msaa_samples, scg.image_format, glob.depth_format,
-                                    pipe_path, scg.extent, glob.device)) {
+                             glob.msaa_samples, scg.image_format, glob.depth_format,
+                             pipe_path, scg.extent, glob.device)) {
     printf ("[FAILED] --> InitLandscapeTiler \n"); 
     return false; 
   }      
@@ -310,8 +309,8 @@ int run_marz (const std::vector<std::string>& args) {
   marz::SetupData (glob.scape.data, glob.device); 
   glob.scape.draw = marz::CreateDrawMarsLandscape (glob.scape.data); 
   // LANDSCAPE DESC 
-  if (!rokz::MakeDescriptorPool ( glob.landscape_de.pool, kMaxFramesInFlight,
-                                  lscape::kDescriptorBindings, glob.device)) {
+  if (!rokz::MakeDescriptorPool (glob.landscape_de.pool, kMaxFramesInFlight,
+                                 lscape::kDescriptorBindings, glob.device)) {
     HERE("");
     return false;
     
@@ -333,11 +332,10 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 
   // GLOBAL DESC
-  if (!rokz::MakeDescriptorPool ( glob.global_de.pool, kMaxFramesInFlight,
-                                  rekz::kGlobalDescriptorBindings, glob.device)) {
+  if (!rokz::MakeDescriptorPool (glob.global_de.pool, kMaxFramesInFlight,
+                                 rekz::kGlobalDescriptorBindings, glob.device)) {
     HERE("");
     return false;
-    
   }
                              
   if (!rokz::MakeDescriptorSets (glob.global_de.descrsets, glob.global_de.alloc_info,

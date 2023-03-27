@@ -9,6 +9,7 @@
 #include "shaderc/shaderc.hpp"
 #include <vulkan/vulkan_core.h>
 
+#include <shaderc/shaderc.h>
 
 //#include <vulkan/vulkan_core.h>
 

@@ -1,5 +1,6 @@
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+cmake_minimum_required(VERSION 3.17.2)
+
 
 project (rokz)
 #set ("CMAKE_CXX_FLAGS=-g -O0")
@@ -98,10 +99,12 @@ add_library (rokz
 
 #
 target_link_libraries (rokz
+
+  PRIVATE shaderc_combined shaderc SPIRV-Tools SPIRV-Tools-opt SPIRV
+
   zmq
   glfw
   vulkan
-  private shaderc
   dl
   pthread
   X11
