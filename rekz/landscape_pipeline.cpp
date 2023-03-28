@@ -199,9 +199,10 @@ bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&          dss,
       heightinfos[iview].sampler     = heightsamp->handle; 
       }
       else {
+        
         heightinfos[iview] = {};
         heightinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        heightinfos[iview].imageView   = heightviews[0]->handle; 
+        heightinfos[iview].imageView   = heightviews[heightviews.size () - 1]->handle; 
         heightinfos[iview].sampler     = heightsamp->handle; 
       }
 

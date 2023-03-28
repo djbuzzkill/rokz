@@ -277,15 +277,23 @@ int generate_IGM_tiles (const Vec<std::string>& args) {
 // main()
 // ------------------------------------------------------------------------------------------
 int tile_tool (const Vec<std::string>& args) {
+  HERE("HAI");
 
-  printf ("%s\n ", __FUNCTION__); 
+  if (args.size () > 2) {
 
-  if (args.size () > 2 && args[2] == "print") {
-    ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
+    if (args[2] == "gen") {
+      generate_DRG_tiles (args);
+      generate_DEM_tiles (args);
+    }
+    else if (args[2] == "nada") {
+      HERE("nada");
+    }
+    else {
+      printf ("wat ?? %s?\n", args[2].c_str()); 
+    }
   }
   else {
-    generate_DRG_tiles (args);
-    generate_DEM_tiles (args);
+    ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
   }
 
   

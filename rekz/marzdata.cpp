@@ -150,8 +150,8 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
     const lscape::Vert verts[4] = {
         { glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec2(0,0) }, 
         { glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec2(1, 0) }, 
-        { glm::vec3(1, 0, 1), glm::vec3(0, 1, 0), glm::vec2(1, 1) }, 
-        { glm::vec3(0, 0, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1) }, 
+        { glm::vec3(1, 0, -1), glm::vec3(0, 1, 0), glm::vec2(1, 1) }, 
+        { glm::vec3(0, 0, -1), glm::vec3(0, 1, 0), glm::vec2(0, 1) }, 
       }; 
 
     virtual int on_mapped  (void* mappedp , size_t maxsize) {

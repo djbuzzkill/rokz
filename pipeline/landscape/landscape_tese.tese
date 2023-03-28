@@ -66,12 +66,12 @@ layout (set = 1, binding = 0) uniform sampler2D heightmap[128];
 // not used yet
 layout (set = 1, binding = 1) uniform sampler2D normalmap[128];                                                  
 
-layout (set = 1, binding = 3) uniform PatchParams {
-    mat4 model;
-    vec4 unused0;
-    vec4 unused1;
-} params[128];                                             
-// 
+// layout (set = 1, binding = 3) uniform PatchParams {
+//     mat4 model;
+//     vec4 unused0;
+//     vec4 unused1;
+// } params[128];                                             
+// // 
 
 
 //
@@ -106,6 +106,7 @@ void main() {
 
     pos.xyz = pos.xyz + pc.position.xyz;
     
-    gl_Position = mat.proj * mat.view * params[pc.res_id].model * pos; 
+    gl_Position = mat.proj * mat.view * pos; 
+    //gl_Position = mat.proj * mat.view * params[pc.res_id].model * pos; 
     //gl_Position = mat.proj * mat.view * mat.model * pos;  
 }				

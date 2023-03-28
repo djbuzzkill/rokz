@@ -275,8 +275,8 @@ struct MarzLoop {
         pagrid, glob.shared, glob.descriptormaps[curr_frame]
       };
         
-      // glob.scape.draw->Prep (curr_frame, scape_re, glob.device); 
-      // glob.scape.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, scape_re);
+      glob.scape.draw->Prep (curr_frame, scape_re, glob.device); 
+      glob.scape.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, scape_re);
 
       glob.grid.draw->Prep (curr_frame, grid_re, glob.device); 
       glob.grid.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
@@ -404,6 +404,7 @@ int run_marz (const std::vector<std::string>& args) {
     return false;
   }
 
+  printf ("num descriptorsets:%zu\n", glob.landscape_de.descrsets.size ());
   lscape::BindDescriptorResources (glob.landscape_de.descrsets,
                                    glob.scape.data.colorsampler, glob.scape.data.colorviews,
                                    glob.scape.data.heightsampler, glob.scape.data.heightviews,

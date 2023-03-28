@@ -39,11 +39,11 @@ layout (set = 0, binding = 0) uniform MVPTransform {
 } mat;                                             
 
 
-layout (set = 1, binding = 3) uniform PatchParams {
-    mat4 model;
-    vec4 unused0;
-    vec4 unused1;
-} params[128];                                             
+// layout (set = 1, binding = 3) uniform PatchParams {
+//     mat4 model;
+//     vec4 unused0;
+//     vec4 unused1;
+// } params[128];                                             
 
 
 
@@ -75,15 +75,17 @@ layout (location = 0) out vec2 out_txc[];
 //
 void main ()
 {
+  float tess_val = 25.0;
+  
   if (gl_InvocationID == 0) {
 
-    gl_TessLevelInner[0] = 2.2;
-    gl_TessLevelInner[1] = 2.2;
+    gl_TessLevelInner[0] = tess_val;
+    gl_TessLevelInner[1] = tess_val;
 
-    gl_TessLevelOuter[0] = 2.2;
-    gl_TessLevelOuter[1] = 2.2;
-    gl_TessLevelOuter[2] = 2.2;
-    gl_TessLevelOuter[3] = 2.2;
+    gl_TessLevelOuter[0] = tess_val;
+    gl_TessLevelOuter[1] = tess_val;
+    gl_TessLevelOuter[2] = tess_val;
+    gl_TessLevelOuter[3] = tess_val;
   }
 
   gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position; 

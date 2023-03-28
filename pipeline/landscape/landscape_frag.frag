@@ -28,11 +28,11 @@ layout (push_constant) uniform PatchPushConstant {
 layout (set = 1, binding = 2) uniform sampler2D colorsamp[128];
 
 
-layout (set = 1, binding = 3) uniform PatchParams {
-    mat4 model;
-    vec4 unused0;
-    vec4 unused1;
-} params[128];                                             
+// layout (set = 1, binding = 3) uniform PatchParams {
+//     mat4 model;
+//     vec4 unused0;
+//     vec4 unused1;
+// } params[128];                                             
 
 
 

@@ -54,12 +54,12 @@ layout (set = 0, binding = 0) uniform MVPTransform {
     mat4 proj;
 } mat;                                             
 
-layout (set = 1, binding = 3) uniform PatchParams {
-    mat4 model;
-    vec4 unused0;
-    vec4 unused1;
+// layout (set = 1, binding = 3) uniform PatchParams {
+//     mat4 model;
+//     vec4 unused0;
+//     vec4 unused1;
 
-} params[100];                                             
+// } params[100];                                             
 
 
 // -----------------------------------------------------------------------------------------------

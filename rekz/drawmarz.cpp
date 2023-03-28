@@ -52,9 +52,10 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
 
       vkCmdBindVertexBuffers(commb, 0, 1, vertex_buffers, voffsets);
 
-      const float DEM_scale_mul = 1242.0f;
-      const float x_tile_size = 128.0f;
-      const float z_tile_size = 128.0f;
+      //const float DEM_scale_mul = 1242.0f;
+      const float DEM_scale_mul = 12.0f;
+      const float x_tile_size = 18.0f;
+      const float z_tile_size = 18.0f;
       //VK_POLYGON_MODE_FILL = 0,
       //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
       for (uint32 iz = 0; iz < roi::ZDim ; ++iz) {
