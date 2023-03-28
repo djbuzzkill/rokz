@@ -281,7 +281,7 @@ namespace rokz {
   // ------------------------------------------------------------------------------------------
   struct ShaderStageDef {
     std::string           entrypoint;
-    filepath              fqsource;
+    systempath              fqsource;
     VkShaderStageFlagBits stage; 
   };
 

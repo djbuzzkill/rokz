@@ -278,8 +278,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
   glob.mouse_prev.x = 0;
   glob.mouse_prev.y = 0;
 
-  filepath dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline"; //
-  filepath data_path = "/home/djbuzzkill/owenslake/rokz/data";     // 
+  systempath dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline"; //
+  systempath data_path = "/home/djbuzzkill/owenslake/rokz/data";     // 
 
   glfwInit();
   // CREATE INSTANCE AND DEVICE
@@ -292,7 +292,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
-    
   rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
 
   VkPhysicalDeviceFeatures2 features2 {};  
@@ -315,7 +314,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   // rekz::obz::kDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::obz::kDescriptorBindings, glob.device); 
-
   // polygon pipeline uses both descriptor sets
   glob.polys_pl.dslos.push_back (glob.global_dslo.handle);
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
@@ -325,7 +323,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
-
   // grid only uses globals
   glob.grid_pl.dslos.push_back (glob.global_dslo.handle);
   if (!rekz::InitGridPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
@@ -334,7 +331,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
-                               
   //
   rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
                                      glob.msaacolorimageview, 
@@ -347,7 +343,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      glob.depth_format,          
                                      kTestExtent,
                                      glob.device); // <-- this does all the additional  attachmentes
-
   //
   glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
                                                            glob.depthimage, glob.depthimageview,
@@ -440,6 +435,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], fsg.command_buffer_alloc_info, glob.device.handle);
     rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
   } 
+
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   const double time_per_frame_sec = 1.0 / 60.0;

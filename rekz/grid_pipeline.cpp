@@ -56,7 +56,7 @@ const Vec<VkVertexInputAttributeDescription> rekz::grid::kVertInputAttributeDesc
 //
 // ----------------------------------------------------------------------------------------
 
-bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const filepath& fspath, const rokz::Device& device) {
+bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const systempath& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
 

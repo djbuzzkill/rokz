@@ -46,17 +46,17 @@ public:
   H_INCLUDER () {
   } 
 
-  std::shared_ptr<shaderc_include_result> include_result;
   std::string include_source;
+  std::shared_ptr<shaderc_include_result> include_result;
   
   // Handles shaderc_include_resolver_fn callbacks.
   virtual shaderc_include_result* GetInclude(const char*          requested_source,
                                              shaderc_include_type type,
                                              const char*          requesting_source,
                                              size_t               include_depth) {
-    filepath including_path = requesting_source;
-    filepath parentpath     = including_path.parent_path ();
-    filepath fqinclude      = parentpath/requested_source; 
+    systempath including_path = requesting_source;
+    systempath parentpath     = including_path.parent_path ();
+    systempath fqinclude      = parentpath/requested_source; 
     //printf("fqrequested %s\n", fqinclude.c_str());
     From_file (include_source, fqinclude); 
     include_result = std::make_shared<shaderc_include_result> ();
@@ -70,8 +70,7 @@ public:
     //   shaderc_include_type_standard   // E.g. #include <source>
     return include_result.get ();
   }
-
-  // Handles shaderc_include_result_release_fn callbacks.
+  
   virtual void ReleaseInclude(shaderc_include_result* data) {
     include_result.reset ();
   }
@@ -82,7 +81,7 @@ public:
 
 
 // -------------------------------------------------------------------------------------------
-bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertype, const std::string& fname) {
+bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertype, const systempath& fname) {
 
   assert (VK_shader_name_map.count (shadertype));
   assert (VK_SHADER_2_shaderc_map.count (shadertype)); 
@@ -92,41 +91,34 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
   //fname.c_str()
   std::string srcstr;
   rokz::From_file (srcstr, fname, true); 
-  
-  const  char*        infname    = fname.c_str();
-  //VK_shader_name_map.at (shadertype).c_str ();
-
-  filepath fqpath = fname;
-
-  printf ("[%s] -> ", fqpath.filename ().c_str ());
-  
+  const  char*        szfname = fname.c_str();
   shaderc_shader_kind shaderkind = VK_SHADER_2_shaderc_map.at (shadertype); 
   
   shaderc::CompileOptions ppopts;
-  ppopts.SetTargetSpirv (shaderc_spirv_version_1_4); 
+  ppopts.SetTargetSpirv (shaderc_spirv_version_1_6); 
   ppopts.AddMacroDefinition ("MAX_OBJ_COUNT", "128");
   ppopts.SetIncluder (std::make_unique<H_INCLUDER> ()); 
   
   shaderc::PreprocessedSourceCompilationResult ppres =
-    compiler.PreprocessGlsl ( srcstr.c_str(), shaderkind, infname, ppopts); 
+    compiler.PreprocessGlsl ( srcstr.c_str(), shaderkind, szfname, ppopts); 
+
+  std::string filename = fname.filename ();
+  printf ( "[%s]", filename.c_str ()); 
 
   switch (ppres.GetCompilationStatus()) { 
   case shaderc_compilation_status_success:  {
-    printf ("check -> ");
-    //const std::string&  errstr = ppres.GetErrorMessage (); 
-    //std::string ppsourc (ppres.begin (), ppres.end ()) ;
-    //srcstr = ppres.begin ();
-    //printf (" sourcestr :%s \n", srcstr.c_str());
-    //printf ( " : preprocessed source: \n%s\n", ppsourc.c_str ()); 
+    printf (" checked[x] -> ");
   } break;
     
   case shaderc_compilation_status_compilation_error: {
     const std::string &err = ppres.GetErrorMessage (); 
     printf ("GLSL PREPROC ERROR: \n%s\n", err.c_str());
     printf ("compilation status: %i\n", ppres.GetCompilationStatus()); 
-    printf ("error(s): %zu, warning(s): %zu.................\n", ppres.GetNumErrors (), ppres.GetNumWarnings());
+    printf ("-------------------- error(s): %zu, warning(s): %zu --------------------\n",
+            ppres.GetNumErrors (), ppres.GetNumWarnings());
     return false;
   } break;
+
   default :
     printf ("default\n" );
     break;    
@@ -137,7 +129,7 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
 
   printf ("compile.. ");
   shaderc::SpvCompilationResult compres =
-    compiler.CompileGlslToSpv (srcstr, shaderkind, infname, ppopts);
+    compiler.CompileGlslToSpv (srcstr, shaderkind, szfname, ppopts);
 
   switch (compres.GetCompilationStatus ()) {
   case shaderc_compilation_status_success: {
@@ -148,8 +140,9 @@ bool rokz::CompileThisShader_file (spvcode& out, VkShaderStageFlagBits shadertyp
 
   default: { 
     const std::string& errstr = compres.GetErrorMessage ();
-    printf ( "GLSL COMPILE ERROR :%s\n", errstr.c_str());
-    printf ("error(s): %zu, warning(s): %zu.................\n", compres.GetNumErrors (), compres.GetNumWarnings());
+    printf ( "GLSL COMPILE ERROR:\n%s\n", errstr.c_str());
+    printf ("--------------------- error(s): %zu, warning(s): %zu --------------------\n",
+            compres.GetNumErrors (), compres.GetNumWarnings());
   }}
   
   return false;
@@ -206,7 +199,7 @@ bool rokz::CreateShaderModule (VkShaderModule& shmod, const VkShaderModuleCreate
 // ---------------------------------------------------------------------
 bool rokz::CreateShaderModule_spv (ShaderModule& sm, const VkDevice& device) {
 
-  if (sm.spv.size () < 4) {
+  if (sm.spv.empty()) {
     HERE("ERROR BAD SPV SIZE");
     return false;
   }

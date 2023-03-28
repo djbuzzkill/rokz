@@ -7,7 +7,9 @@
 #include "rokz/context.h"
 #include "drawmarz.h"
 #include "rokz/descriptor.h"
+#include "rokz/draw_sequence.h"
 #include "rokz/global_descriptor.h"
+#include "rokz/rokz_types.h"
 //
 
 using namespace rokz;
@@ -15,7 +17,7 @@ using namespace marz;
 
 namespace { 
 
-  const VkExtent2D kDisplayDimensions {800, 600}; 
+  const VkExtent2D kDefaultDimensions {800, 600}; 
 
 }
 
@@ -50,6 +52,7 @@ bool SetupRenderAttachments (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 void CleanupMars (Glob& glob) {
 
+  assert (false); // Cleanup
   // printf ("%s \n", __FUNCTION__); 
 
   // for (auto& ub : glob.uniform_mvp) {
@@ -87,7 +90,6 @@ void CleanupMars (Glob& glob) {
   //          glob.allocator, 
   //          glob.instance.handle);
 
-  assert (false); // Cleanup
   glfwTerminate();
 
 }
@@ -121,15 +123,6 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
 //   assert (false);
 //   return false;
 // }
-
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-// bool SetupMarsUniforms (Glob& glob) {
-//   return false;
-// }
-
 
 // --------------------------------------------------------------------------------------------
 //                        
@@ -170,6 +163,9 @@ bool SetupMarsTexturesAndImageViews (Glob& glob) {
 //   return false;
 // }
 
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
 struct MarzLoop {
 
   Glob& glob;
@@ -179,7 +175,7 @@ struct MarzLoop {
   bool       result     = false;
   int        countdown  = 6000;
 
-  const float Dt; 
+  const double Dt; 
   std::chrono::system_clock::time_point then;
 
   std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
@@ -199,25 +195,123 @@ struct MarzLoop {
   //
   // -------------------------------------------------------------
   MarzLoop (Glob& g, float dt) : glob(g), Dt(dt) { 
-
     // then = std::chrono::high_resolution_clock::now(); 
-
     // time_per_frame = std::chrono::microseconds (static_cast<size_t>(Dt * 1000000.0));
-    
     // printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
-
   }
+
+  void UpdateRunState  () {
+    // const float move_rate = 0.05f;
+    //UpdateInput(glob, glob.dt);
+    if (glob.input_state.keys.count (GLFW_KEY_Q)) {
+      printf ("--> [q] pressed... quitting \n");
+      run = false;
+    }
+
+  } 
+
   // while (cond()) loop()
   // -------------------------------------------------------------
   bool cond () {
-    //    return countdown && run && !glfwWindowShouldClose(glob.display.window.glfw_window); 
-    return false;
+    return countdown && run && !glfwWindowShouldClose(glob.display.window.glfw_window); 
+        //return false;
   }
   //
   // -------------------------------------------------------------
   bool loop () {
 
-    return false;
+    glfwPollEvents(); 
+
+    auto now = std::chrono::high_resolution_clock::now();    
+    
+    UpdateRunState () ;
+    
+    rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state);
+    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state);
+    
+    //
+    rc::SwapchainGroup& scg = glob.swapchain_group; 
+    // get image index up here
+    uint32_t image_index; 
+    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
+    
+    if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
+      glob.input_state.fb_resize = false; 
+      glob.swapchain_resetter->Reset (glob.display, glob.device);
+      printf ("===> %i <=== ]\n", __LINE__);
+      return true;
+    }
+    else if (acquireres != VK_SUCCESS) {
+      printf("failed to acquire swap chain image!");
+      run = false;
+    }
+    else {
+
+      rokz::DrawSequence::PipelineAssembly
+        palscape       { glob.scape.pipe, glob.scape.plo.handle } ; 
+
+
+      rokz::DrawSequence::PipelineAssembly pagrid {
+        glob.grid.pipe, glob.grid.plo.handle
+      }; 
+
+      //UpdateDarkUniforms (glob, curr_frame, Dt); 
+      rokz::UpdateGlobals (glob.shared, glob.global_bu[curr_frame], kDefaultDimensions, Dt);
+
+      //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
+
+      // update data needed to record drawlist
+
+      // make sure the correct swapchain image is used
+      rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview->handle,
+                                        glob.swapchain_group.imageviews[image_index]->handle);
+
+      // Transitioning Layout and stuff in here
+      // BeginCommandBuffer is called here
+      rc::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
+                          image_index, glob.rendering_info_group.ri, glob.device);
+      // EXECUTE DRAW LIST RECORDING 
+
+      // for drawseq's
+      // const std::vector<VkDescriptorSet> descrsets = {
+      //   glob.global_uniform_de.descrsets[curr_frame], glob.objres_uniform_de.descrsets[curr_frame]
+      // };
+
+      // rokz::DrawSequence::RenderEnv poly_re {
+      //   papoly, glob.shared, glob.descriptormaps[curr_frame]
+      // };
+
+      rokz::DrawSequence::RenderEnv scape_re {
+        palscape, glob.shared, glob.descriptormaps[curr_frame]
+      };
+      
+      rokz::DrawSequence::RenderEnv grid_re {
+        pagrid, glob.shared, glob.descriptormaps[curr_frame]
+      };
+        
+      glob.scape.draw->Prep (curr_frame, scape_re, glob.device); 
+      glob.scape.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, scape_re);
+
+      glob.grid.draw->Prep (curr_frame, grid_re, glob.device); 
+      glob.grid.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
+
+      // we are done, submit
+      rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
+                    image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
+    }
+    
+    // how long did we take
+    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+    if (time_to_make_frame < time_per_frame) {
+      auto sleep_time = time_per_frame - time_to_make_frame;
+      std::this_thread::sleep_for(sleep_time);
+    }
+
+    curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
+    then = now; // std::chrono::high_resolution_clock::now(); 
+    countdown--; 
+
+    return true;
   }
 };
 // --------------------------------------------------------------------------------------------
@@ -230,15 +324,15 @@ int run_marz (const std::vector<std::string>& args) {
   rc::SwapchainGroup&  scg   = glob.swapchain_group;
   FrameSyncGroup&  fsg   = glob.framesyncgroup; 
 
-  filepath pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
-  filepath data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
+  systempath pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
+  systempath data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
   //Default (glob); 
   
   glfwInit();
   
   rokz::InitializeInstance (glob.instance); 
 
-  rekz::SetupDisplay (glob.display, glob.input_state, kDisplayDimensions, glob.instance); 
+  rekz::SetupDisplay (glob.display, glob.input_state, kDefaultDimensions , glob.instance); 
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
@@ -256,7 +350,7 @@ int run_marz (const std::vector<std::string>& args) {
 
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
-                           kDisplayDimensions, glob.device.physical, glob.device);
+                            kDefaultDimensions, glob.device.physical, glob.device);
 
   //
   rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
@@ -269,15 +363,12 @@ int run_marz (const std::vector<std::string>& args) {
                                                            glob.depth_image, glob.depth_imageview,
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
 
-  //
   // for BeginRendering ()
   SetupDynamicRenderingInfo (glob); 
   // define first 
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rokz::kGlobalDescriptorBindings, glob.device); 
 
   rokz::DefineDescriptorSetLayout (glob.landscape_dslo, lscape::kDescriptorBindings, glob.device); 
-  //rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::kObjDescriptorBindings, glob.device); 
-  // SetupMarsWindow (glob.window, &glob.input_state); 
 
   // grid only uses globals
   glob.grid.pipe.dslos.push_back (glob.global_dslo.handle);
@@ -287,11 +378,9 @@ int run_marz (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
-
+  //
   glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
-
-  
   if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
                              glob.msaa_samples, scg.image_format, glob.depth_format,
                              pipe_path, scg.extent, glob.device)) {
@@ -299,9 +388,9 @@ int run_marz (const std::vector<std::string>& args) {
     return false; 
   }      
 
-
   size_t gridvertoffs;
   size_t gridindoffs;
+
   glob.grid.buff = rekz::SetupGridData (gridvertoffs, gridindoffs, 11, 11, 20.0f, 20.0f, glob.device); 
   glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, gridvertoffs, gridindoffs);  
   
@@ -324,10 +413,11 @@ int run_marz (const std::vector<std::string>& args) {
   }
 
   lscape::BindDescriptorResources (glob.landscape_de.descrsets,
-                                glob.scape.data.colorsampler, glob.scape.data.colorviews,
-                                glob.scape.data.heightsampler, glob.scape.data.heightviews,
-                                glob.scape.data.normalsampler, glob.scape.data.normalviews,
-                                glob.landscape_dslo, glob.device); 
+                                   glob.scape.data.colorsampler, glob.scape.data.colorviews,
+                                   glob.scape.data.heightsampler, glob.scape.data.heightviews,
+                                   glob.scape.data.normalsampler, glob.scape.data.normalviews,
+                                   glob.landscape_dslo, glob.device); 
+
   //
   rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 
@@ -348,33 +438,24 @@ int run_marz (const std::vector<std::string>& args) {
     printf ("[FAILED] --> BindGridDescriptorResources \n"); 
   }
 
-  //SetupTerrainPipeline (glob.terrain_pipeline, glob.viewport_state, glob.render_pass, dark_path, glob.swapchain_group.swapchain);
 
-//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
-//   const double time_per_frame_sec = 1.0 / 60.0;
-//   glob.dt = time_per_frame_sec; // just do this for now
-  
-//   std::chrono::microseconds time_per_frame_us(static_cast<size_t>(time_per_frame_sec * 1000000.0));
-  
-//   std::chrono::duration<size_t, std::chrono::microseconds::period>
-//     time_per_frame(time_per_frame_us);
+  // create frame syncs
+  fsg.command_buffers.resize (kMaxFramesInFlight);
+  fsg.syncs.resize           (kMaxFramesInFlight);
+  rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.device.command_pool.handle); 
 
-//   bool       run        = true;
-//   uint32_t   curr_frame = 0; 
-//   bool       result     = false;
-//   int        countdown  = 60;
-  
-//   //printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
-//   //
-//   auto t0 = std::chrono::high_resolution_clock::now(); 
-//   auto then = t0; 
+  for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
+    // ^^ 'CreateCommandBuffers' should be called, we call it 
+    rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], fsg.command_buffer_alloc_info, glob.device.handle);
+    rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
+  } 
 
-//   printf ("[ %s | %i ]\n", __FUNCTION__, __LINE__);
+  
   const double time_per_frame_sec = 1.0 / 60.0;
   double Dt = time_per_frame_sec; // just do this for now
-
-  
-  MarzLoop marzloop (glob, Dt ); 
+  // auto t0 = std::chrono::high_resolution_clock::now(); 
+  // std::chrono::system_clock::time_point then = t0; 
+  MarzLoop marzloop (glob, Dt); 
   rokz::FrameLoop  (marzloop);
 
   vkDeviceWaitIdle(glob.device.handle);
@@ -386,10 +467,9 @@ int run_marz (const std::vector<std::string>& args) {
   return 0; 
 }
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-
+// ------------------------------------------------------------------------------------------
+//                            
+// ------------------------------------------------------------------------------------------
 
 #ifdef MARS_TERRAIN_ENABLE 
 

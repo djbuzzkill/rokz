@@ -42,7 +42,7 @@ const Vec<VkVertexInputAttributeDescription>&
 // 
 // ----------------------------------------------------------------------------------------
 bool setup_landscape_shader_modules (Pipeline&         pipeline, 
-                                     const filepath&   fspath,
+                                     const systempath& fspath,
                                      const Device&     device) {
   //
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_create_infos = pipeline.state.ci.shader_stages; 
@@ -90,7 +90,7 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
                            VkSampleCountFlagBits        msaa_samples,
                            VkFormat                     color_format,
                            VkFormat                     depth_format,
-                           const std::filesystem::path& pipe_path,
+                           const systempath&            pipe_path,
                            const VkExtent2D&            displayextent,
                            const Device&                device)
 {
