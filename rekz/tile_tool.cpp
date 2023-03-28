@@ -280,11 +280,15 @@ int tile_tool (const Vec<std::string>& args) {
 
   printf ("%s\n ", __FUNCTION__); 
 
-  generate_DRG_tiles (args);
-  generate_DEM_tiles (args);
+  if (args.size () > 2 && args[2] == "print") {
+    ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
+  }
+  else {
+    generate_DRG_tiles (args);
+    generate_DEM_tiles (args);
+  }
 
-  //  ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
-
+  
   return 0; 
   
 }

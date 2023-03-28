@@ -19,7 +19,7 @@ layout (push_constant) uniform PushConstant {
 } pc;
 
 
-layout(binding = 1, set = 1) uniform sampler2D tex_sampler[maxx_count];
+layout(binding = 1, set = 1) uniform sampler2D tex_sampler[max_count];
 
 layout(location = 0) out vec4 out_color;
 

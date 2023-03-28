@@ -8,9 +8,9 @@
 
 
 // 
-void rokz::UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const InputState& input_state) {
+void rokz::UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const InputState& input_state, float turnrate) {
 
-  const float turnrate = 0.02f;
+  //const float turnrate = 0.02f;
   
   if (input_state.mouse.inside) {
     if (!previnside) {
@@ -39,9 +39,9 @@ void rokz::UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& 
   
 }
 
-void rokz::UpdateViewPosition (glm::vec3& viewpos, const rokz::InputState& input_state) {
+void rokz::UpdateViewPosition (glm::vec3& viewpos, const rokz::InputState& input_state, float move_rate) {
 
-    const float move_rate = 0.05f;
+  //const float move_rate = 0.05f;
 
     if (input_state.keys.count (GLFW_KEY_F)) {
       // fwd

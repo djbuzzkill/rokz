@@ -176,8 +176,8 @@ struct RootLoop {
     
     UpdateRunState () ;
     
-    rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state);
-    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state);
+    rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state, 0.1);
+    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.5f);
     
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 

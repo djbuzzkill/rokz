@@ -37,7 +37,7 @@ namespace rokz {
   };
 
 
-  void UpdateViewPosition (glm::vec3& viewpos, const InputState& input_state) ; 
-  void UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const InputState& input_state) ;
+  void UpdateViewPosition (glm::vec3& viewpos, const InputState& input_state, float rate) ; 
+  void UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const InputState& input_state, float rate) ;
 }
 #endif
