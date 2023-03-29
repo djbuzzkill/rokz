@@ -238,7 +238,7 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
   ci.pNext                   = nullptr;
   ci.depthClampEnable        = VK_FALSE;
   ci.rasterizerDiscardEnable = VK_FALSE;
-  ci.polygonMode             = VK_POLYGON_MODE_FILL;
+  ci.polygonMode             = VK_POLYGON_MODE_LINE;
   ci.lineWidth               = 1.0f;
   ci.cullMode                = VK_CULL_MODE_BACK_BIT;
   ci.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;

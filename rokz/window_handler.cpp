@@ -134,11 +134,14 @@ void rokz::win_event::on_mouse_button (GLFWwindow* window, int button, int actio
     InputState& input_state = *is;
     switch (action) {
 
+              
       // GLFW_PRESS
     case GLFW_PRESS:
       if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        input_state.mouse.right_butt = 1;
       }
       else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        input_state.mouse.left_butt = 1; 
       }
       else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
       }
@@ -148,8 +151,10 @@ void rokz::win_event::on_mouse_button (GLFWwindow* window, int button, int actio
       // GLFW_RELEASE
     case GLFW_RELEASE:
       if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        input_state.mouse.right_butt = 0;
       }
       else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        input_state.mouse.left_butt = 0;
       }
       else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
       }
@@ -158,8 +163,10 @@ void rokz::win_event::on_mouse_button (GLFWwindow* window, int button, int actio
       // GLFW_REPEAT
     case GLFW_REPEAT:
       if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        input_state.mouse.right_butt++;
       }
       else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        input_state.mouse.left_butt++;
       }
       else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
       }

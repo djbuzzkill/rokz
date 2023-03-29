@@ -106,9 +106,7 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
   VkSamplerCreateInfo ci;
   cx::CreateInfo_height_sample (ci, device.physical.properties.limits.maxSamplerAnisotropy); 
   dat.heightsampler = rc::CreateSampler (ci, device);
-  
-  
-  
+
   const VkExtent2D imgext {tile::x_dim, tile::z_dim};
 
   for (uint32 iz = roi::Z_BEG; iz <= roi::Z_LAST; ++iz) {
@@ -134,7 +132,6 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
                                                 VK_IMAGE_ASPECT_COLOR_BIT, device);
       if (!dat.colorviews[xz])
         printf ("BAD colorviews[%u,%u]\n", ix, iz);
-      
       // -------------- HEIGHT --------------
       dat.heightmaps[xz] = 
         rc::CreateImage_2D_color_sampling (tile::x_dim, tile::z_dim, tile::heightformat,
@@ -156,8 +153,7 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
       }
     }} // XZLOOP 
 
-
-  //
+  // 
   struct SetupGeom : public cx::mappedbuffer_cb {
     // ??? is this it
     const size_t reqsize = sizeof (verts);

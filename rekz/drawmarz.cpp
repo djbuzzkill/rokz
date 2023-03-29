@@ -54,12 +54,10 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
       vkCmdBindVertexBuffers(commb, 0, 1, vertex_buffers, voffsets);
 
       //const float DEM_scale_mul = 1242.0f;
-      const float DEM_scale_mul  = 24.0f;
+      const float DEM_scale_mul  = 20.0f; // this just looks right
       const float x_tile_size    = 10.0f;
       const float z_tile_size    = 10.0f;
 
-
-  
       glm::vec3 groffs (0.5f * x_tile_size * roi::XDim,
                             0.0f,
                             0.5f * z_tile_size * roi::ZDim);

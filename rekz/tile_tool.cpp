@@ -218,7 +218,7 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
   std::string      fqcolorfile = base_path + colorname; 
 
   bool overlapborder = false;
-  if (args.size () > 2 && args[3] == "t") {
+  if (args.size () > 3 && args[3] == "t") {
     HERE ("overlapborder:ON");
     overlapborder = true;
   }
@@ -250,13 +250,12 @@ int generate_DEM_tiles (const Vec<std::string>& args) {
   load_from_file (colorimage, fqheightfile); 
 
   bool overlapborder = false;
-  if (args.size () > 2 && args[3] == "t") {
+  if (args.size () > 3 && args[3] == "t") {
     HERE ("overlapborder:ON");
     overlapborder = true;
   }
   else HERE ("overlapborder:OFF");
     
-  
   rekz::iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
@@ -282,7 +281,7 @@ int generate_IGM_tiles (const Vec<std::string>& args) {
   load_from_file (coordimage, fqcoordfile); 
 
   bool overlapborder = false;
-  if (args.size () > 2 && args[3] == "t") {
+  if (args.size () > 3 && args[3] == "t") {
     HERE ("overlapborder:ON");
     overlapborder = true;
   }

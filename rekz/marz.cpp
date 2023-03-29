@@ -17,7 +17,7 @@ using namespace marz;
 
 namespace { 
 
-  const VkExtent2D kDefaultDimensions {800, 600}; 
+  const VkExtent2D kDefaultDimensions {1024, 768}; 
 
 }
 
@@ -138,8 +138,8 @@ struct MarzLoop {
     
     UpdateRunState () ;
     
-    rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state, 0.05);
     rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.008f);
+    rekz::UpdateViewPosition (glob.shared.view_pos,glob.shared.view_rot,  glob.input_state, 0.05);
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
