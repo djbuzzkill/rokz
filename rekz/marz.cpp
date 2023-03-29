@@ -232,7 +232,7 @@ int run_marz (const std::vector<std::string>& args) {
   
   rokz::InitializeInstance (glob.instance); 
 
-  rekz::SetupDisplay (glob.display, glob.input_state, kDefaultDimensions , glob.instance); 
+  rekz::SetupDisplay (glob.display, "marz", glob.input_state, kDefaultDimensions , glob.instance); 
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //

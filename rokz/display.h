@@ -25,7 +25,7 @@ namespace rokz {
   //-------------------------------------------------------------------------------------
   //                
   //-------------------------------------------------------------------------------------
-  bool SetupDisplay (Display& display, InputState& input_state, const VkExtent2D& dim, const Instance& instance); 
+  bool SetupDisplay (Display& display, const std::string& title , InputState& input_state, const VkExtent2D& dim, const Instance& instance); 
 
 }
 #endif

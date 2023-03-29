@@ -5,9 +5,10 @@
 #include "window_handler.h"
 
 
-bool rokz::SetupDisplay (Display& display, InputState& input_state, const VkExtent2D& dim, const Instance& instance) { 
+bool rokz::SetupDisplay (Display& display, const std::string& title , 
+                         InputState& input_state, const VkExtent2D& dim, const Instance& instance) { 
   // create GLFW wind o 
-  CreateWindow (display.window, dim.width, dim.height, "wut"); 
+  CreateWindow (display.window, dim.width, dim.height, title); 
 
   glfwSetFramebufferSizeCallback (display.window.glfw_window, win_event::on_resize ); 
   glfwSetKeyCallback             (display.window.glfw_window, win_event::on_keypress);

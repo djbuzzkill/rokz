@@ -176,8 +176,8 @@ struct RootLoop {
     
     UpdateRunState () ;
     
-    rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state, 0.1);
     rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
+    rekz::UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
     
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 
@@ -287,7 +287,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   rokz::InitializeInstance (glob.instance); 
 
-  rokz::SetupDisplay (glob.display, glob.input_state, kTestExtent, glob.instance); 
+  rokz::SetupDisplay (glob.display, "darkroot garden", glob.input_state, kTestExtent, glob.instance); 
   //SetupDisplay (glob); 
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);

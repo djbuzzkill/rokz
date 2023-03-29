@@ -37,12 +37,12 @@ void rokz::win_event::on_mouse_enter (GLFWwindow* window, int entered) {
     if (entered) {
 
       input_state.mouse.inside = 1;
-      printf ("%s MOUSE ENTER\n", __FUNCTION__); 
+      //printf ("%s MOUSE ENTER\n", __FUNCTION__); 
       // The cursor entered the content area of the window
     }
     else {
       input_state.mouse.inside = 0;
-      printf ("%s MOUSE EXIT\n", __FUNCTION__);
+      //printf ("%s MOUSE EXIT\n", __FUNCTION__);
 
       input_state.mouse.x_pos = -1;
       input_state.mouse.y_pos = -1;
@@ -134,7 +134,6 @@ void rokz::win_event::on_mouse_button (GLFWwindow* window, int button, int actio
     InputState& input_state = *is;
     switch (action) {
 
-              
       // GLFW_PRESS
     case GLFW_PRESS:
       if (button == GLFW_MOUSE_BUTTON_RIGHT) {
