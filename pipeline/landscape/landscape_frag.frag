@@ -51,6 +51,6 @@ layout(location = 0) out vec4 out_color;
 
 void main () {
 
-  out_color = texture (colorsamp[pc.res_id], in_txcd);
-
+  out_color.xyz = texture (colorsamp[pc.res_id], in_txcd).rrr;
+  out_color.a = 1.0;
 }                                                  

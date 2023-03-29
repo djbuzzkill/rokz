@@ -3,9 +3,10 @@
 
 
 #include "input_state.h"
+#include "shared_types.h"
 
 
-
+using namespace rokz;
 
 // 
 void rokz::UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& previnside, const InputState& input_state, float turnrate) {
@@ -34,7 +35,12 @@ void rokz::UpdateViewAttitude (glm::vec3& viewrot, glm::ivec2& mouse_prev, int& 
 
     viewrot.x += -dy * turnrate;
     viewrot.y += -dx * turnrate;
-    viewrot.z = 0.0f;
+
+    if (viewrot.x > (kPi-0.0001f)) 
+      viewrot.x = kPi-0.0001;
+
+    if (viewrot.x < (-kPi+0.0001)) 
+      viewrot.x = -kPi+0.0001;
   }
   
 }

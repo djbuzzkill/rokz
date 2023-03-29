@@ -21,24 +21,6 @@ namespace {
 
 }
 
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-bool SetupGridResources (Glob& glob) {
-  return false;
-}
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-bool SetupRenderAttachments (Glob& glob) {
-
-  Vec<int> ints;
-  
-  return false; 
-
-}
-
 
 // --------------------------------------------------------------------------------------------
 //                        
@@ -90,75 +72,6 @@ void CleanupMars (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-bool SetupMarsTexturesAndImageViews (Glob& glob) {
-
-  // 
-  // SetupDarkTextureImageView (glob); 
-  "height textures";
-  "normal textures";
-  "color textures"; 
-    
-  return false;
-}
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-// bool SetupGlobalDescriptorPool (Glob& glob) {
-
-//   assert (false);
-//   return false;
-// }
-
-
-// bool SetupTerrainDescriptorLayout (rokz::DescriptorGroup& descrgroup, const rokz::Device& device) {
-
-//   assert (false);
-//   return false;
-// }
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-// void UpdateMarsUniforms (Glob& glob, uint32_t current_frame, double dt) {
- 
-// }
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-// bool RecordDynamicRender (Glob& glob, 
-//                           VkCommandBuffer        &command_buffer,
-//                           const rokz::Pipeline&        pipeline,
-//                           const VkDescriptorSet& desc_set, 
-//                           const VkBuffer&        vertex_buffer, 
-//                           const VkBuffer&        index_buffer, 
-//                           const VkExtent2D&      ext2d,
-//                           const VkFramebuffer&   framebuffer,
-//                           const rokz::RenderPass&      render_pass,
-//                           const VkDevice&        device) {
-
-//   return false;
-// }
-// // --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
-// bool RenderFrame (mars::Glob&           glob,
-//                       uint32_t&               image_index,
-//                       bool&                   resize,
-//                       rokz::RenderPass&       renderpass, 
-//                       const rokz::Pipeline&   pipeline,
-//                       const VkDescriptorSet&  descr_set, 
-//                       uint32_t                curr_frame,
-//                       double dt) {
-
-
-//   return false;
-// }
-
-// --------------------------------------------------------------------------------------------
-//                        
-// --------------------------------------------------------------------------------------------
 struct MarzLoop {
 
   Glob& glob;
@@ -166,7 +79,7 @@ struct MarzLoop {
   bool       run        = true;
   uint32_t   curr_frame = 0; 
   bool       result     = false;
-  int        countdown  = 6000;
+  int        countdown  = 6000000;
 
   const double Dt; 
   std::chrono::system_clock::time_point then;
@@ -226,8 +139,7 @@ struct MarzLoop {
     UpdateRunState () ;
     
     rekz::UpdateViewPosition (glob.shared.view_pos, glob.input_state, 0.05);
-    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.05);
-    
+    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.008f);
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
@@ -245,7 +157,6 @@ struct MarzLoop {
       run = false;
     }
     else {
-
       rokz::DrawSequence::PipelineAssembly palscape {
         glob.scape.pipe, glob.scape.plo.handle
       }; 
@@ -336,11 +247,9 @@ int run_marz (const std::vector<std::string>& args) {
   // put these somwehere
   glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
-
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
-
   //
   rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
                                      glob.depth_image, glob.depth_imageview,
@@ -387,7 +296,12 @@ int run_marz (const std::vector<std::string>& args) {
   glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, gridvertoffs, gridindoffs);  
   
   // 
-  marz::SetupData (glob.scape.data, glob.device); 
+  if (!marz::SetupData (glob.scape.data, glob.device)) {
+    HERE("FAILED marz::SetupData");
+    return false;
+  }
+  
+
   glob.scape.draw = marz::CreateDrawMarsLandscape (glob.scape.data); 
   // LANDSCAPE DESC 
   if (!rokz::MakeDescriptorPool (glob.landscape_de.pool, kMaxFramesInFlight,

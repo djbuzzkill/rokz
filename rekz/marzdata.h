@@ -50,10 +50,10 @@ namespace marz {
   // --------------------------------------------------------------------------
   namespace roi { // based on tiles
 
-    const uint32 X_BEG  = 4;
-    const uint32 X_LAST = 4;
+    const uint32 X_BEG  = 0;
+    const uint32 X_LAST = 5;
 
-    const uint32 Z_BEG  = 9;
+    const uint32 Z_BEG  = 0;
     const uint32 Z_LAST = 9;
 
     const uint32 XDim = X_LAST - X_BEG + 1; 

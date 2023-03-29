@@ -75,7 +75,7 @@ layout (location = 0) out vec2 out_txc[];
 //
 void main ()
 {
-  float tess_val = 25.0;
+  float tess_val = 44.5;
   
   if (gl_InvocationID == 0) {
 

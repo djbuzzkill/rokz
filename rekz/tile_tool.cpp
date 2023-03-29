@@ -23,6 +23,7 @@
 using namespace rokz;
 
 using namespace ESP_018065_1975_RED_ESP_019133_1975_RED; 
+
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
@@ -33,110 +34,6 @@ const uint32 k_total_tile_pixels = k_tile_dim * k_tile_dim;
 
 
 //std::string output_path = "/home/djbuzzkill/owenslake/tmp/";
-// -------------------------------------------------------------------------------------------
-//
-//// -------------------------------------------------------------------------------------------
-struct fcolor_tile_handler : public rekz::TileCB<float> { 
-
-  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
-
-  ilInit  ();
-  iluInit (); 
-
-  const float kDRG_MIN = -0.016220f;
-  
-  ILuint testim = ilGenImage ();
-  ilBindImage (testim);
-
-  imagebuff<glm::u8vec3> otile (k_tile_dim, k_tile_dim); 
-  for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
-    if (tilei.dat[i] > -2550.0f) {
-      uint8 grad = uint8 ((tilei.dat[i] - kDRG_MIN) * 128.0f);
-      otile.dat[i] = glm::u8vec3 (grad, grad, grad);
-    }
-    else {
-      otile.dat[i] = glm::u8vec3 (0); 
-    }}
-
-
-  bool img_res = ilTexImage (k_tile_dim, k_tile_dim, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, &otile.dat[0]); 
-  if (!img_res) { 
-    printf ("img error : %s\n", iluErrorString (ilGetError()));
-  }
-
-  char namebuf[64];
-  sprintf (namebuf, "DRG_tile_%u_%u.png", xtile, ytile); 
-  std::string savename = "/home/djbuzzkill/owenslake/tmp/";
-  savename += namebuf;
-
-  printf ("saving out...\n    %s\n ", savename.c_str()); 
-  ilSave (IL_PNG, savename.c_str());  
-  ilDeleteImage (testim);
-  ilShutDown ();
-
-  return 0;  
-  }};
-
-
-
-struct fcolor_tile_bin : public rekz::TileCB<float> { 
-
-  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
-
-  ilInit  ();
-  iluInit (); 
-
-  const float kDRG_MIN = -0.016220f;
-  const float kDRG_MAX = 1.967194;
-
-  const float  DRG_DIFF_INV = 1.0 / (kDRG_MAX - kDRG_MIN);
-
-  imagebuff<float> otile (k_tile_dim, k_tile_dim); 
-
-  for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
-    if (tilei.dat[i] > -2550.0f) {
-      otile.dat[i] = (tilei.dat[i] - kDRG_MIN) * DRG_DIFF_INV;
-    }
-    else {
-      otile.dat[i] = 0.0; 
-    }}
-
-  printf (" output ->  %s\n", marz::tile::color_name(xtile, ytile).c_str ());
-  
-  std::string savename = marz::tile::basepath/marz::tile::color_name(xtile, ytile); 
-  WriteStream::Ref ws = CreateWriteFileStream (savename);
-  ws->Write (otile.p(), otile.numbytes ()); 
-  
-  return 0;  
-  }};
-
-// -------------------------------------------------------------------------------------------
-int generate_DRG_tiles (const Vec<std::string>& args) {
-  HERE("hai"); 
-
-  using namespace ESP_018065_1975_RED_ESP_019133_1975_RED; 
-  std::string      base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
-  // "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG_f32x6900x17177.bin";
-  std::string      colorname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
-  std::string      fqcolorfile = base_path + colorname; 
-
-
-  imagebuff<float> colorimage (kWIDTH, kHEIGHT);
-  load_from_file (colorimage, fqcolorfile); 
-
-  rekz::iteratetileparams params {
-    {k_tile_dim, k_tile_dim},
-    {6, 10},
-    true
-  };
-
-  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_bin>()) ; 
-
-  HERE("bai"); 
-  return 0;
-
-}
-
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
@@ -184,6 +81,89 @@ struct fheight_tile_handler : public rekz::TileCB<float> {
   return 0;  
   }};
 
+
+// -------------------------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------------------------
+struct fcolor_tile_handler : public rekz::TileCB<float> { 
+
+  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
+
+  ilInit  ();
+  iluInit (); 
+
+  const float kDRG_MIN = -0.016220f;
+  
+  ILuint testim = ilGenImage ();
+  ilBindImage (testim);
+
+  imagebuff<glm::u8vec3> otile (k_tile_dim, k_tile_dim); 
+  for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
+    if (tilei.dat[i] > -2550.0f) {
+      uint8 grad = uint8 ((tilei.dat[i] - kDRG_MIN) * 128.0f);
+      otile.dat[i] = glm::u8vec3 (grad, grad, grad);
+    }
+    else {
+      otile.dat[i] = glm::u8vec3 (0); 
+    }}
+
+
+  bool img_res = ilTexImage (k_tile_dim, k_tile_dim, 1, 3, IL_RGB, IL_UNSIGNED_BYTE, &otile.dat[0]); 
+  if (!img_res) { 
+    printf ("img error : %s\n", iluErrorString (ilGetError()));
+  }
+
+  char namebuf[64];
+  sprintf (namebuf, "DRG_tile_%u_%u.png", xtile, ytile); 
+  std::string savename = "/home/djbuzzkill/owenslake/tmp/";
+  savename += namebuf;
+
+  printf ("saving out...\n    %s\n ", savename.c_str()); 
+  ilSave (IL_PNG, savename.c_str());  
+  ilDeleteImage (testim);
+  ilShutDown ();
+
+  return 0;  
+  }};
+
+
+
+// -------------------------------------------------------------------------------------------
+//
+// -------------------------------------------------------------------------------------------
+struct fcolor_tile_bin : public rekz::TileCB<float> { 
+  // bins r 4 runtme
+  int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
+
+  ilInit  ();
+  iluInit (); 
+
+  const float kDRG_MIN = -0.016220f;
+  const float kDRG_MAX = 1.967194;
+
+  const float  DRG_DIFF_INV = 1.0 / (kDRG_MAX - kDRG_MIN);
+
+  imagebuff<float> otile (k_tile_dim, k_tile_dim); 
+
+  for (uint32 i = 0; i < k_total_tile_pixels; ++i) {
+    if (tilei.dat[i] > -2550.0f) {
+      otile.dat[i] = (tilei.dat[i] - kDRG_MIN) * DRG_DIFF_INV;
+    }
+    else {
+      otile.dat[i] = 0.0; 
+    }}
+
+  printf (" output ->  %s\n", marz::tile::color_name(xtile, ytile).c_str ());
+  
+  std::string savename = marz::tile::basepath/marz::tile::color_name(xtile, ytile); 
+
+  WriteStream::Ref ws = CreateWriteFileStream (savename);
+  ws->Write (otile.p(), otile.numbytes ()); 
+  
+  return 0;  
+  }};
+
+
 // -----------------------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------------------
@@ -216,29 +196,6 @@ struct fheight_tile_bin : public rekz::TileCB<float> {
   return 0;  
   }};
 
-// -------------------------------------------------------------------------------------------
-int generate_DEM_tiles (const Vec<std::string>& args) {
-  printf ("%s\n ", __FUNCTION__); 
-  using namespace ESP_018065_1975_RED_ESP_019133_1975_RED; 
-  std::string      base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
-  std::string      heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
-  std::string      fqheightfile = base_path + heightname; 
-  imagebuff<float> colorimage (kWIDTH, kHEIGHT);
-  load_from_file (colorimage, fqheightfile); 
-
-  rekz::iteratetileparams params {
-    {k_tile_dim, k_tile_dim},
-    {6, 10},
-    true
-  };
-  
-  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_bin>()) ; 
-
-  printf ("bai %s\n ", __FUNCTION__); 
- return 0;
-}
-
-
 
 // ------------------------------------------------------------------------------------------
 // 
@@ -249,6 +206,69 @@ struct coord_tile_handler : rekz::TileCB<glm::vec2> {
 
   return 0;
   }};
+
+// -------------------------------------------------------------------------------------------
+int generate_DRG_tiles (const Vec<std::string>& args) {
+  HERE("hai"); 
+
+  using namespace ESP_018065_1975_RED_ESP_019133_1975_RED; 
+  std::string      base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
+  // "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG_f32x6900x17177.bin";
+  std::string      colorname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DRG.6900x17177.dat";
+  std::string      fqcolorfile = base_path + colorname; 
+
+  bool overlapborder = false;
+  if (args.size () > 2 && args[3] == "t") {
+    HERE ("overlapborder:ON");
+    overlapborder = true;
+  }
+  else HERE ("overlapborder:OFF");
+
+  imagebuff<float> colorimage (kWIDTH, kHEIGHT);
+  load_from_file (colorimage, fqcolorfile); 
+
+  rekz::iteratetileparams params {
+    {k_tile_dim, k_tile_dim},
+    {6, 10},
+    overlapborder
+  };
+
+  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_bin>() ) ; 
+
+  HERE("bai"); 
+  return 0;
+}
+
+// -------------------------------------------------------------------------------------------
+int generate_DEM_tiles (const Vec<std::string>& args) {
+  printf ("%s\n ", __FUNCTION__); 
+  using namespace ESP_018065_1975_RED_ESP_019133_1975_RED; 
+  std::string      base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
+  std::string      heightname = "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM.6900x17177.hgt"; 
+  std::string      fqheightfile = base_path + heightname; 
+  imagebuff<float> colorimage (kWIDTH, kHEIGHT);
+  load_from_file (colorimage, fqheightfile); 
+
+  bool overlapborder = false;
+  if (args.size () > 2 && args[3] == "t") {
+    HERE ("overlapborder:ON");
+    overlapborder = true;
+  }
+  else HERE ("overlapborder:OFF");
+    
+  
+  rekz::iteratetileparams params {
+    {k_tile_dim, k_tile_dim},
+    {6, 10},
+    overlapborder
+  };
+  
+  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_bin>()) ; 
+
+  printf ("bai %s\n ", __FUNCTION__); 
+ return 0;
+}
+
 
 // ------------------------------------------------------------------------------------------
 int generate_IGM_tiles (const Vec<std::string>& args) {
@@ -261,10 +281,17 @@ int generate_IGM_tiles (const Vec<std::string>& args) {
   imagebuff<glm::vec2> coordimage (kWIDTH, kHEIGHT);
   load_from_file (coordimage, fqcoordfile); 
 
+  bool overlapborder = false;
+  if (args.size () > 2 && args[3] == "t") {
+    HERE ("overlapborder:ON");
+    overlapborder = true;
+  }
+  else HERE ("overlapborder:OFF");
+
   rekz::iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
-    true
+    overlapborder
   };
   
   rekz::iterate_over_tiles (coordimage, params, std::make_shared<coord_tile_handler>()) ; 
@@ -284,6 +311,7 @@ int tile_tool (const Vec<std::string>& args) {
     if (args[2] == "gen") {
       generate_DRG_tiles (args);
       generate_DEM_tiles (args);
+      //generate_IGM_tiles (args);
     }
     else if (args[2] == "nada") {
       HERE("nada");
@@ -296,9 +324,7 @@ int tile_tool (const Vec<std::string>& args) {
     ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ();
   }
 
-  
   return 0; 
-  
 }
 
 

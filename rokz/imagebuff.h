@@ -74,7 +74,6 @@ namespace rokz {
   // ----------------------------------------------------------
   template<template<typename> class ImTy, typename Ty> inline imagebuff<Ty>&
   load_from_file (ImTy<Ty>& outi, const std::string& fqname) {
-
     From_file (outi.dat, fqname, false); 
     return outi;
   }

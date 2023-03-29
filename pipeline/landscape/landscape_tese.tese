@@ -73,7 +73,6 @@ layout (set = 1, binding = 1) uniform sampler2D normalmap[128];
 // } params[128];                                             
 // // 
 
-
 //
 // -----------------------------------------------------------------------------------------------
 // 
@@ -102,7 +101,7 @@ void main() {
 
     pos.x = pc.scale.x * pos.x; 
     pos.y = pc.scale.y * texture (heightmap[pc.res_id], out_txcd).r;
-    pos.z = pc.scale.y * pos.z; 
+    pos.z = pc.scale.z * pos.z; 
 
     pos.xyz = pos.xyz + pc.position.xyz;
     

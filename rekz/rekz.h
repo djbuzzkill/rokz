@@ -9,17 +9,14 @@
 #include "meshery.h"
 #include "shaderc/shaderc.hpp"
 #include <vulkan/vulkan_core.h>
-
 //#include <vulkan/vulkan_core.h>
-
 //#include "rokz/rokz_funcs.h"
-
 namespace rekz {
 
   using namespace rokz;
 
-  const float kPi = glm::pi<float> ();  
-  const float k2Pi = 2 * glm::pi<float> ();  
+  const auto kPi  = rokz::kPi;
+  const auto k2Pi = rokz::k2Pi;
   // ----------------------------------------------------------------------------------------------
   //                           
   // ----------------------------------------------------------------------------------------------
@@ -44,8 +41,6 @@ namespace rekz {
     const Mesh& Octohedron ();
   }
 
-
-  
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
@@ -54,17 +49,13 @@ namespace rekz {
                                  float xsize, float zsize,
                                  const Device& device); 
 
-
   rokz::DrawSequence::Ref CreateDrawGrid (rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs); 
-
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------
 
   glm::vec3& unit_angle_xz (glm::vec3& v, float theta);
   glm::vec3& unit_angle_yz (glm::vec3& v, float theta);
-
-
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------
@@ -82,14 +73,12 @@ namespace rekz {
                           rc::Image::Ref& msaa_color_image, rc::ImageView::Ref& msaa_color_imageview,
                           const Device& device) ;
 
-
   rokz::SwapchainResetter::Ref
   CreateSwapchainResetter (rc::Swapchain::Ref& swapchain, 
                            Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                            rc::Image::Ref& depthim, rc::ImageView::Ref& depthiv,
                            rc::Image::Ref& msaacolorim, rc::ImageView::Ref& msaacoloriv); 
 
-  
   // ----------------------------------------------------------------------------------------
   //                     
   // ----------------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 #include "pipeline.h"
 #include "shader.h"
 #include "utility.h"
+#include <vulkan/vulkan_core.h>
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -277,15 +278,6 @@ VkPipelineLayoutCreateInfo& rokz::CreateInfo (VkPipelineLayoutCreateInfo& ci,
   ci.pushConstantRangeCount = pc.size();    
   ci.pPushConstantRanges    = pc.size() ? &pc[0] : nullptr;
 
-
-  // VUID-VkGraphicsPipelineCreateInfo-layout-00756(ERROR / SPEC): msgNum: 1165064310 - Validation Error:
-  //   [ VUID-VkGraphicsPipelineCreateInfo-layout-00756 ] Object 0: handle = 0x908683000000001d,
-  //   type = VK_OBJECT_TYPE_SHADER_MODULE; Object 1: handle = 0x95a125000000001a, type = VK_OBJECT_TYPE_PIPELINE_LAYOUT;
-
-  //   | MessageID = 0x45717876 | Push constant is used in VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT of VkShaderModule 0x908683000000001d[].
-  //       But VkPipelineLayout 0x95a125000000001a[] doesn't set VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT.
-  //       The Vulkan spec states: layout must be consistent with all shaders specified in pStages (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkGraphicsPipelineCreateInfo-layout-00756)
-  
   return ci;
 }
 
@@ -599,11 +591,12 @@ rokz::ViewportState& rokz::SetupViewportState (rokz::ViewportState & vps, const 
   
 }
 
-
+// -------------------------------------------------------------------------------------------
+//                                             
+// -------------------------------------------------------------------------------------------
 bool rokz::SetupPipelinShaderStages (std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_cis,
-                               Vec<rokz::ShaderModule>& shader_modules, 
-                               const Vec<ShaderStageDef>& stagedefs, const rokz::Device& device) {
-  HERE("61"); 
+                                     Vec<rokz::ShaderModule>& shader_modules, 
+                                     const Vec<ShaderStageDef>& stagedefs, const rokz::Device& device) {
 
   shader_modules.resize (stagedefs.size());
   shader_stage_cis.resize (stagedefs.size());

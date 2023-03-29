@@ -40,10 +40,11 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
 
       vkCmdSetScissor (commb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].scissor);
 
-      std::vector<VkDescriptorSet> descrsets = {
+      Vec<VkDescriptorSet> descrsets = {
         descrmap.at ("Global"),
         descrmap.at ("lscape"),
       };
+
       vkCmdBindDescriptorSets (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.plo,
                                0, descrsets.size(), &descrsets[0], 0, nullptr);
           
@@ -53,17 +54,22 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
       vkCmdBindVertexBuffers(commb, 0, 1, vertex_buffers, voffsets);
 
       //const float DEM_scale_mul = 1242.0f;
-      const float DEM_scale_mul = 12.0f;
-      const float x_tile_size = 18.0f;
-      const float z_tile_size = 18.0f;
-      //VK_POLYGON_MODE_FILL = 0,
-      //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
+      const float DEM_scale_mul  = 24.0f;
+      const float x_tile_size    = 10.0f;
+      const float z_tile_size    = 10.0f;
+
+
+  
+      glm::vec3 groffs (0.5f * x_tile_size * roi::XDim,
+                            0.0f,
+                            0.5f * z_tile_size * roi::ZDim);
+      
       for (uint32 iz = 0; iz < roi::ZDim ; ++iz) {
         for (uint32 ix = 0; ix < roi::XDim; ++ix) {
 
           lscape::tile::PushConstant pc {};
-          pc.position  = glm::vec4 (ix * x_tile_size, 0.0, iz + z_tile_size, 1.0f); 
-          pc.scale     = glm::vec4 (x_tile_size, DEM_scale_mul, z_tile_size, 1.0f); 
+          pc.position  = glm::vec4 (ix * x_tile_size - groffs.x , 0.0          , iz * -z_tile_size + groffs.z , 1.0f); 
+          pc.scale     = glm::vec4 (x_tile_size     , DEM_scale_mul, z_tile_size, 1.0f); 
           pc.resource_id = iz * roi::XDim + ix;
           
           vkCmdPushConstants (commb, env.pa.plo, lscape::kPCStages,
@@ -79,6 +85,4 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
 
   return std::make_shared<drawmarz> (dat);
 }
-
-
 

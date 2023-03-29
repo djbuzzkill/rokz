@@ -11,6 +11,7 @@ namespace rokz {
 
   namespace cx { 
     VkSamplerCreateInfo& CreateInfo    (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props); 
+    VkSamplerCreateInfo& CreateInfo_height_sample (VkSamplerCreateInfo& ci, float max_sampler_anisotropy);
     // deprecate
     bool                 CreateSampler (Sampler& sampler, const VkDevice& device); 
     void                 Destroy       (Sampler& sampler, const VkDevice& device); 

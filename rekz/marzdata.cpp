@@ -3,6 +3,7 @@
 #include "rekz/image_loader.h"
 #include "landscape_pipeline.h"
 #include "rokz/image.h"
+#include "rokz/sampler.h"
 #include "rokz/texture.h"
 #include <vulkan/vulkan_core.h>
 
@@ -36,12 +37,15 @@ struct height_handlr : public cx::mappedimage_cb  {
 
     rokz::From_file (fheights, fqname, true); 
 
-    if (fheights.size() <= maxsize) {
+    if (fheights.size() && fheights.size() <= maxsize) {
       memcpy (mappedp, &fheights[0], fheights.size());
       return 0;
     }
+    printf ("%s FAILED | fheights.size (%zu), maxsize:%zu\n ",
+            __FUNCTION__,
+            fheights.size(),
+            maxsize); 
 
-    HERE ("FAILED height handler");
     return __LINE__;
   }
 
@@ -60,18 +64,24 @@ struct f32color_handler : public rokz::cx::mappedimage_cb {
   }
   
   virtual int on_mapped  (void* mappedp, size_t maxsize, const VkExtent2D& ext2d) {
-
+    
+    if (!std::filesystem::exists (fqname)) {
+      printf ("NOT FOUND: %s \n", fqname.c_str()); 
+      return __LINE__;
+    }
+    
     bytearray filebytes; 
     rokz::From_file (filebytes, fqname, true );
-    
-    printf ("  filebytes:%zu, maxsize:%zu\n", filebytes.size (), maxsize );
-    
-    if (filebytes.size() <= maxsize) {
+    if (filebytes.size()  && filebytes.size() <= maxsize) {
       memcpy (mappedp, &filebytes[0], filebytes.size());
       return 0;
     }
     
-    HERE ("FAILED");
+    printf ("%s FAILED  filebytes:%zu, maxsize:%zu\n",
+            __FUNCTION__,
+            filebytes.size (),
+            maxsize);
+
     return __LINE__;
   }};
 
@@ -92,7 +102,12 @@ bool marz::SetupData (marz::Data& dat, const rokz::Device& device) {
   dat.heightviews.resize (total_tiles);
 
   dat.colorsampler  = rc::CreateSampler_default (device); 
-  dat.heightsampler = rc::CreateSampler_default (device);
+
+  VkSamplerCreateInfo ci;
+  cx::CreateInfo_height_sample (ci, device.physical.properties.limits.maxSamplerAnisotropy); 
+  dat.heightsampler = rc::CreateSampler (ci, device);
+  
+  
   
   const VkExtent2D imgext {tile::x_dim, tile::z_dim};
 

@@ -35,7 +35,13 @@ namespace rokz {
         size_t num_el = sizeOf_file / sizeof(Ty);
         out.resize (num_el); 
       }
-      
+      else {
+        size_t existing_size = sizeof(Ty) * out.size (); 
+        if (sizeOf_file > existing_size) { 
+          return out; // do nothing 
+        }
+      }
+
       ReadStream::Ref rs = CreateReadFileStream (fname);
 
       if (rs) {

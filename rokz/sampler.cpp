@@ -37,6 +37,34 @@ void rokz::cx::Destroy (rokz::Sampler& sampler, const VkDevice& device) {
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
+VkSamplerCreateInfo& rokz::cx::CreateInfo_height_sample (VkSamplerCreateInfo& ci,
+                                                         float max_sampler_anisotropy) {
+  ci =  {}; 
+  ci.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+  ci.pNext                   = nullptr;
+  ci.flags                   = 0;
+
+  ci.magFilter               = VK_FILTER_LINEAR; 
+  ci.minFilter               = VK_FILTER_LINEAR; 
+  
+  ci.addressModeU            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;  
+  ci.addressModeV            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+  ci.addressModeW            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+  ci.anisotropyEnable        = VK_TRUE;
+  ci.maxAnisotropy           = max_sampler_anisotropy; ;
+  ci.borderColor             = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+  ci.unnormalizedCoordinates = VK_FALSE;
+  ci.compareEnable           = VK_FALSE;
+  ci.compareOp               = VK_COMPARE_OP_ALWAYS; 
+  ci.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR; 
+  ci.mipLodBias              = 0.0f;
+  ci.minLod                  = 0.0f;
+  ci.maxLod                  = 0.0f; 
+
+  return ci;
+}
+
 VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhysicalDeviceProperties& props) {
   printf ("%s SamplerCreateInfo \n", __FUNCTION__); 
 
@@ -48,10 +76,9 @@ VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhys
 
   ci.magFilter               = VK_FILTER_LINEAR;
   ci.minFilter               = VK_FILTER_LINEAR;
-  
-  ci.addressModeU            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  ci.addressModeV            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  ci.addressModeW            = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  ci.addressModeU            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_REPEAT
+  ci.addressModeV            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+  ci.addressModeW            = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
   ci.anisotropyEnable        = VK_TRUE;
   ci.maxAnisotropy           = props.limits.maxSamplerAnisotropy;
   ci.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
@@ -62,14 +89,6 @@ VkSamplerCreateInfo& rokz::cx::CreateInfo (VkSamplerCreateInfo& ci, const VkPhys
   ci.mipLodBias              = 0.0f;
   ci.minLod                  = 0.0f;
   ci.maxLod                  = 0.0f; 
-
-  ci.compareEnable = VK_FALSE;
-  ci.compareOp = VK_COMPARE_OP_ALWAYS;
-
-  ci.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-  ci.mipLodBias = 0.0f;
-  ci.minLod = 0.0f;
-  ci.maxLod = 0.0f;
 
   return ci;
 }
