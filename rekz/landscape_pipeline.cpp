@@ -1,5 +1,4 @@
 
-
 #include "landscape_pipeline.h"
 #include "rokz/pipeline.h"
 #include "rokz/shader.h"
@@ -15,10 +14,8 @@ const VkShaderStageFlags landscape_shader_stages = VK_SHADER_STAGE_TESSELLATION_
                                                  | VK_SHADER_STAGE_VERTEX_BIT
                                                  | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-
-
+///
 const Vec<VkDescriptorSetLayoutBinding> lscape::kDescriptorBindings = {
-
   // height
   { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // height
   // normal 
@@ -36,7 +33,6 @@ const VkVertexInputBindingDescription&
 //
 const Vec<VkVertexInputAttributeDescription>&
    lscape::kVertexInputAttributeDesc = rokz::kPNTx_InputAttributeDesc;
-
 
 // ----------------------------------------------------------------------------------------
 // 
@@ -75,11 +71,9 @@ bool setup_landscape_shader_modules (Pipeline&         pipeline,
                  stagedefs[istage].entrypoint, shader_modules[istage].handle); //   
 
    }
-
   //VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME
   return true; 
 }
-
 
 // ----------------------------------------------------------------------------------------
 // 
@@ -94,14 +88,11 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
                            const VkExtent2D&            displayextent,
                            const Device&                device)
 {
-
-  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(lscape::tile::PushConstant),
-                                lscape::kPCStages, dslos, device.handle);
+  DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(tile::PushConstant),
+                                kPCStages, dslos, device.handle);
   
-  PipelineState_tessellation (pipeline.state, msaa_samples,
-                              lscape::kControlPoints,
-                              lscape::kVertexInputAttributeDesc,
-                              lscape::kVertexInputBindingDesc, displayextent); 
+  PipelineState_tessellation (pipeline.state, msaa_samples, kControlPoints,
+                              kVertexInputAttributeDesc, kVertexInputBindingDesc, displayextent); 
 
   // ^ !! shader modules is part of pipelinestate 
   bool shmodres = setup_landscape_shader_modules (pipeline, pipe_path, device);
@@ -142,19 +133,9 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
 }
 
 // ----------------------------------------------------------------------------------------
-// 
-// ----------------------------------------------------------------------------------------
-bool lscape::SetupResources (rc::Buffer::Ref& geomb, uint32_t num_sets, const Device& device) {
-
-  // ???  what would this do difrnt from marzdata 
-  
-  return false;
-}
-
-// ----------------------------------------------------------------------------------------
 // set 0= Global  descriptors ,  set 1= landscape descriptors
 // ----------------------------------------------------------------------------------------
-bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&          dss,
+bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&           dss,
                                       const rc::Sampler::Ref&         colorsamp,
                                       const Vec<rc::ImageView::Ref>&  colorviews,
 
@@ -164,49 +145,44 @@ bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&          dss,
                                       const rc::Sampler::Ref&         normalsamp, 
                                       const Vec<rc::ImageView::Ref>&  normalviews,
 
-                                      const DescriptorSetLayout& dslayout, 
-                                      const Device&              device) {
+                                      const DescriptorSetLayout&      dslayout, 
+                                      const Device&                   device) {
 
-  assert (colorviews.size () < lscape::tile:: kMaxCount);
-  assert (heightviews.size () < lscape::tile::kMaxCount);
-  assert (normalviews.size () < lscape::tile::kMaxCount);
+  if (colorviews.size  () > lscape::tile::kMaxCount) HERE("[!!!] colorviews exceed kMaxCount");
+  if (heightviews.size () > lscape::tile::kMaxCount) HERE("[!!!] heightviews exceed kMaxCount");
+  if (normalviews.size () > lscape::tile::kMaxCount) HERE("[!!!] normalviews exceed kMaxCount");
   //
   for (uint32_t i = 0; i < dss.size (); i++) {
     //
-    Vec<VkDescriptorImageInfo> colorinfos (lscape::tile::kMaxCount);
-    for (size_t iview = 0; iview < lscape::tile::kMaxCount; ++iview) { 
+    Vec<VkDescriptorImageInfo> colorinfos (tile::kMaxCount);
+    for (size_t iview = 0; iview < tile::kMaxCount; ++iview) { 
 
       if (iview < colorviews.size ()) { 
-        colorinfos[iview] = {};
         colorinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
         colorinfos[iview].imageView   = colorviews[iview]->handle;
         colorinfos[iview].sampler     = colorsamp->handle;
       }
       else { // err'thing must b written
-        colorinfos[iview] = {};
         colorinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
         colorinfos[iview].imageView   = colorviews[0]->handle;
         colorinfos[iview].sampler     = colorsamp->handle;
         }
     }
 
-    Vec<VkDescriptorImageInfo> heightinfos (lscape::tile::kMaxCount);
-    for (size_t iview = 0; iview < lscape::tile::kMaxCount; ++iview) {
+    Vec<VkDescriptorImageInfo> heightinfos (tile::kMaxCount);
+    for (size_t iview = 0; iview < tile::kMaxCount; ++iview) {
       if (iview < heightviews.size ()) { 
-      heightinfos[iview] = {};
-      heightinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-      heightinfos[iview].imageView   = heightviews[iview]->handle; 
-      heightinfos[iview].sampler     = heightsamp->handle; 
+        heightinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        heightinfos[iview].imageView   = heightviews[iview]->handle; 
+        heightinfos[iview].sampler     = heightsamp->handle; 
       }
       else {
-        
-        heightinfos[iview] = {};
         heightinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         heightinfos[iview].imageView   = heightviews[heightviews.size () - 1]->handle; 
         heightinfos[iview].sampler     = heightsamp->handle; 
       }
 
-      Vec<VkDescriptorImageInfo> normalinfos (lscape::tile::kMaxCount);
+      Vec<VkDescriptorImageInfo> normalinfos (tile::kMaxCount);
       // for (size_t iview = 0; iview < landscape::kMaxPatchCount; ++iview) {
       //   if (iview < normalviews.size ()) {
       //   }
@@ -216,11 +192,10 @@ bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&          dss,
     //
 
     const uint32 height_binding_index = 0; // <-- make sure shader matches
-    const uint32 normal_binding_index = 1;
+    const uint32 normal_binding_index = 1; 
     const uint32 color_binding_index  = 2; // <-- make sure shader matches
 
     std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
-
     // COLOR
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;
@@ -254,7 +229,8 @@ bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&          dss,
     // descriptor_writes[1].pBufferInfo      = nullptr;
     // descriptor_writes[1].pImageInfo       = &normalinfos[0]; 
     // descriptor_writes[1].pTexelBufferView = nullptr; 
-    // // write 
+
+    // write 
     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
 
   }

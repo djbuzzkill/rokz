@@ -58,11 +58,6 @@
                        const Device&                device);
   
     // ----------------------------------------------------------------------------------------
-    // this serves no purpose
-    // ----------------------------------------------------------------------------------------
-    bool SetupResources (rc::Buffer::Ref& geombuff, uint32_t num_sets, const Device& device);
-
-    // ----------------------------------------------------------------------------------------
     // set 0= Global  descriptors ,  set 1= landscape descriptors
     // ----------------------------------------------------------------------------------------
     bool BindDescriptorResources (Vec<VkDescriptorSet>&           dss,

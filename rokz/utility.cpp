@@ -159,11 +159,13 @@ float rokz::ut::AspectRatio (const VkExtent2D& ext) {
 
 void ut::PrintPhysicalDeviceLimits (const VkPhysicalDeviceLimits& limits) {
 
+  printf ("maxTessellationGenerationLevel:%u\n", limits.maxTessellationGenerationLevel);
+  printf ("maxFragmentOutputAttachments:%u\n", limits.maxFragmentOutputAttachments);
   printf ("maxPushConstantsSize:%u\n", limits.maxPushConstantsSize);
   printf ("strictLines:%u\n", limits.strictLines);
   printf ("maxViewports:%u\n", limits.maxViewports);
   printf ("maxTexelOffset:%u\n", limits.maxTexelOffset); 
-  printf ("lineWidthRange:<min:%f, max:%f>\n", limits.lineWidthRange[0], limits.lineWidthRange[1] ); 
+  printf ("lineWidthRange:<min:%f, max:%f>\n", limits.lineWidthRange[0], limits.lineWidthRange[1]); 
   printf ("pointSizeRange:<min:%f, max:%f>\n", limits.pointSizeRange[0], limits.pointSizeRange[1]);
   printf ("maxClipDistances:%u\n", limits.maxClipDistances);
   printf ("maxCullDistances:%u\n", limits.maxCullDistances);

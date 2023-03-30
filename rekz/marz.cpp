@@ -87,15 +87,12 @@ struct MarzLoop {
   std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
 
   void update_run_state  () {
-
     // const float move_rate = 0.05f;
-
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q)) {
       printf ("--> [q] pressed... quitting \n");
       run = false;
     }
-
   } 
   
   //
@@ -223,7 +220,6 @@ int run_marz (const std::vector<std::string>& args) {
   glob.mouse_prev.x = 0;
   glob.mouse_prev.y = 0;
 
-  
   systempath pipe_path = "/home/djbuzzkill/owenslake/rokz/pipeline";
   systempath data_path = "/home/djbuzzkill/owenslake/rokz/data"; // 
   //Default (glob); 
