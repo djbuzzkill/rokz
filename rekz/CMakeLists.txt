@@ -31,6 +31,7 @@ set (REKZ_SOURCE_FILES
   drawwireframe.cpp
   drawpolygon.cpp
   darkpolydata.cpp
+  font_tool.cpp
   griddata.cpp
   grid_pipeline.cpp  
   image_loader.cpp
@@ -60,6 +61,8 @@ target_link_libraries (
 
 PUBLIC 
 
+  freetype
+
   IL ILU
   zmq
   rokz
@@ -79,6 +82,8 @@ target_include_directories (
   rekz
   
   PUBLIC /usr/include/shaderc
+
+  /usr/include/freetype2/
 )
 
 

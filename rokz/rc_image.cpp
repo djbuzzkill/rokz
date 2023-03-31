@@ -17,6 +17,8 @@ rc::Image::Ref rokz::rc::CreateImage (const VkImageCreateInfo& ci, const Device&
     printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
     return rc::Image::Ref (nullptr); 
   }
+
+
   
   return img; 
 }

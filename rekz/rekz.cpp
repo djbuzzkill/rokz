@@ -10,10 +10,12 @@ using namespace rokz;
 //
 int texture_tool (const Vec<std::string>& args); 
 int test_ouput (const Vec<std::string>& args); 
-int test_time (); 
+int test_time ();
+
 int darkrootbasin (const Vec<std::string>& args);
 int run_marz (const Vec<std::string>& args);
 int tile_tool (const Vec<std::string>& args); 
+int font_tool (const Vec<std::string>& args); 
 int stonk (const Vec<std::string>& args); 
 // -------------------------------------------------------------------------------------------
 int main (int argv, char** argc) {
@@ -26,8 +28,9 @@ int main (int argv, char** argc) {
     {"texture_tool" , texture_tool},
     {"test_ouput"   , test_ouput },
     {"darkrootbasin", darkrootbasin },
-    {"marz"     , run_marz },
-    {"tilez"    , tile_tool},
+    {"marz"         , run_marz },
+    {"tilez"        , tile_tool},
+    {"fontz"        , font_tool },
     {"stonk"        , stonk },
   };
 

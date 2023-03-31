@@ -1,3 +1,4 @@
 
 
-const uint wat = 69; 
+
+const uint max_count = 128;

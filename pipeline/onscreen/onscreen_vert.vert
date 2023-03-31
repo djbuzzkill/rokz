@@ -11,34 +11,40 @@
 // #extension GL_ARB_shading_language_include : require
 // #extension GL_EXT_nonuniform_qualifier : enable
 
-#include  "polyobj.h"
-//
+#include  "onscreen.h"
+
+// ----------------------------------------------------------------------------
 // IN PER VERTEX
-//
+// ----------------------------------------------------------------------------
 layout(location = 0) in vec3 in_pos;
-layout(location = 1) in vec3 in_nrm; 
-layout(location = 2) in vec3 in_co0; 
-layout(location = 3) in vec2 in_txc; 
+layout(location = 1) in vec2 in_txc; 
 
-//
+// ----------------------------------------------------------------------------
 // out PER VERTEX
-//
-layout(location = 0) out vec3 o_frag; 
-layout(location = 1) out vec3 o_norm; 
-layout(location = 2) out vec2 o_txcd; 
+// ----------------------------------------------------------------------------
+layout(location = 0) out vec2 o_txc; 
+layout(location = 1) flat out int char_index;
 
-//
-//  
-//
-layout (push_constant) uniform PushConstant {
+// ----------------------------------------------------------------------------
+// DESCRIPTOR                 
+// ----------------------------------------------------------------------------
+struct PushConstant {
 
-  ivec4 draw_ids; 
+  uint resource_id;
+  uint _unused_1;
+  uint _unused_2;
+  uint _unused_3;
+
+  vec4 color;
+  vec2 advance;
+  vec2 position; 
 
 } pc;
 
-//
-// DESCRIPTOR
-//
+
+// ----------------------------------------------------------------------------
+// DESCRIPTOR                 
+// ----------------------------------------------------------------------------
 layout(binding = 0, set = 0) uniform MVPTransform {
     mat4 model;
     mat4 view;
@@ -46,19 +52,15 @@ layout(binding = 0, set = 0) uniform MVPTransform {
 } mat;
 
 
-layout(binding = 0, set = 1) uniform ObjectParams {
-
-  mat4 model;
-  
-} params[max_count];
-
-
+// -----------------------------------------------------------
 void main() {
 
-  //  gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);
-  //  o_norm = (mat.model * vec4(in_nrm, 1.0)).xyz; 
-  gl_Position = mat.proj * mat.view * params[pc.draw_ids.x].model * vec4(in_pos, 1.0);
-  o_norm = (params[pc.draw_ids.x].model * vec4(in_nrm, 1.0)).xyz; 
-  o_frag = in_co0;
-  o_txcd = in_txc;
+  vec4 hpos = vec4(in_pos, 1.0);
+  hpos.x += pc.position.x + pc.advance.x * gl_InstanceIndex;
+  hpos.y += pc.position.y ;
+
+  char_index = gl_InstanceIndex; 
+  o_txc = in_txc;
+
+  gl_Position = mat.proj * hpos;
 }
