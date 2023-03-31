@@ -11,7 +11,12 @@
 layout(location = 0) in vec2 txc;
 layout(location = 1) flat in int chindex;
 
+layout(location = 0) out vec4 ofrag;
 
+
+
+
+// -------------- PUSH CONSTANT ---------------
 struct PushConstant {
 
   uint resource_id;
@@ -26,15 +31,14 @@ struct PushConstant {
 } pc;
 
 
+
+// -------------- DESCRIPTORS ---------------
 layout (binding = 0, set =1) uniform UBText {
-  uint text[64];
+  uint text[64]; // ascii, utf, etc 
 } str_elem[max_count]; 
 
 
 layout(binding = 1, set = 1) uniform sampler2DArray glyphsamp;
-
-
-layout(location = 0) out vec4 ofrag;
 
 
 void main() {

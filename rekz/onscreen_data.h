@@ -27,5 +27,10 @@ namespace rekz { namespace onscreen {
     }; 
     
 
+    
+    bool SetupData (Data& dat, const Device& device);   
+    bool Cleanup (Data& dat);   
+
+    
   }}
 #endif

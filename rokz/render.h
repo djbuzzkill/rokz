@@ -67,6 +67,10 @@ namespace rokz {
                                   const VkImageView& msaa_depth_imageview ,
                                   const VkExtent2D&  image_extent);
 
+  bool SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
+                                  const VkImageView&        msaa_color_imageview,
+                                  const VkExtent2D&         image_extent); 
+
   void UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri, 
                                    const VkImageView&  msaa_color_imageview ,
                                    const VkImageView&  target_imageview);
