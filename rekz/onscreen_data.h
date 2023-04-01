@@ -5,11 +5,11 @@
 #include "rekz.h"
 
 
-
-
-
 namespace rekz { namespace onscreen {
 
+    // ----------------------------------------------------------------------------------------
+    //
+    // ----------------------------------------------------------------------------------------
     using namespace rokz; 
 
     struct Texture {
@@ -18,19 +18,15 @@ namespace rekz { namespace onscreen {
       rc::Sampler::Ref   sampler; 
     };
 
-    
+    // ----------------------------------------------------------------------------------------
     struct Data {
-
       Texture         texture;
       rc::Buffer::Ref geom;
-      
     }; 
     
-
-    
+    // ----------------------------------------------------------------------------------------
     bool SetupData (Data& dat, const Device& device);   
-    bool Cleanup (Data& dat);   
-
+    void Cleanup   (Data& dat);   
     
   }}
 #endif

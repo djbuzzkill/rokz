@@ -83,6 +83,23 @@ rc::ImageView::Ref rc::CreateImageView (VkImage image, VkFormat format, VkImageA
   return ret;
 }
 
+// ------------------------------------------------------------------------------------------------
+//                                 
+// ------------------------------------------------------------------------------------------------
+rc::ImageView::Ref rc::CreateImageView_2D_array (VkImage image, VkFormat format,
+                                                  uint32 num_layers, const Device& device) {
+  VkImageViewCreateInfo ci {};
+  cx::CreateInfo_2D_array (ci, format, num_layers, image);  
+
+  rc::ImageView::Ref  ret = std::make_shared<rc::ImageView> (device); 
+
+  if (!rokz::cx::CreateImageView  (ret->handle, ci, device.handle)) { 
+    HERE("FAILED CreateImageView");
+    return rc::ImageView::Ref (nullptr); 
+  }
+
+  return ret;
+}
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------

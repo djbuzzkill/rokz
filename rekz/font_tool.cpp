@@ -112,19 +112,14 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
     int metric_width =  ftFace->glyph->metrics.width >> 6;
     int metric_height = ftFace->glyph->metrics.height >> 6;
 
-    printf ( " [%c] horiz<bearing x %i, bearing y %i advance %i>\n" , ch,
-             ftFace->glyph->metrics.horiBearingX >> 6,
-             ftFace->glyph->metrics.horiBearingY >> 6,
-             ftFace->glyph->metrics.horiAdvance >> 6);
-
-    printf ("[%c] <left:%i, top:%i> \n", ch, ftFace->glyph->bitmap_left, ftFace->glyph->bitmap_top); 
+    printf (" [char:%c | ascii:%i | glyph_index:%u \n" , ch, ch, glyph_index); 
 
     // printf ( " [%c] vertica<bearing x %i, bearing y %i advance %i>\n" , ch, 
     //          ftFace->glyph->metrics.vertBearingX >> 6,
     //          ftFace->glyph->metrics.vertBearingY >> 6,
     //          ftFace->glyph->metrics.vertAdvance >> 6);
 
-    printf ("[%c] metric<width:%i, height:%i>\n", ch, metric_width , metric_height);
+    //    printf ("[%c] metric<width:%i, height:%i>\n", ch, metric_width , metric_height);
 
     
                       // typedef struct  FT_Glyph_Metrics_
@@ -143,8 +138,8 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
                       // } FT_Glyph_Metrics;
 
     
-    printf ("[%c] bitmap.width [%u, %u]\n", ch, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows);
-    printf ("[%c] bitmap.pitch %u | advance %u\n", ch, ftFace->glyph->bitmap.pitch, advance);
+    // printf ("[%c] bitmap.width [%u, %u]\n", ch, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows);
+    // printf ("[%c] bitmap.pitch %u | advance %u\n", ch, ftFace->glyph->bitmap.pitch, advance);
     
     
     
@@ -160,7 +155,7 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
       }
     }
 
-    save_to_png (image, glyph_index); 
+    save_to_png (image, ch); 
     
   }
 }

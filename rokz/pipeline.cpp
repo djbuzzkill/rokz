@@ -3,11 +3,11 @@
 #include "shader.h"
 #include "utility.h"
 #include <vulkan/vulkan_core.h>
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states) {
 
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
+std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicState>& dynamic_states) {
   // DYNAMIC STATE
   dynamic_states.clear ();
   dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
@@ -18,11 +18,10 @@ std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicSt
   //dynamic_states.push_back (VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
   return dynamic_states; 
 }
- 
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
 rokz::ViewportState& rokz::ViewportState_default (rokz::ViewportState& vps, const VkRect2D& rect, float fdepth) {
 
   vps.vps.resize (1);

@@ -8,9 +8,7 @@
 #include <vulkan/vulkan_core.h>
 
 
-namespace rekz {
-
-  namespace onscreen {
+namespace rekz { namespace onscreen {
 
     using namespace rokz;
     
@@ -33,50 +31,38 @@ namespace rekz {
       glm::vec2 advance;
       glm::vec2 position;
     };
+
     // push const used in..
     const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT  
                                       | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-
-  // 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234  
+    // 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234  
     struct UBText {
       uint32 text[64];
     };  // elem[kMaxCount] 
-  
 
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
-    
-    bool InitObjPipeline (Pipeline&                         pipeline,
-                          PipelineLayout&                   plo,
-                          const Vec<VkDescriptorSetLayout>& dslos,
-                          //0
-                          const systempath&                 fspath,
-                          const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
-                          VkSampleCountFlagBits             msaa_samples,
-                          VkFormat                          color_format,
-                          VkFormat                          depth_format,
-                          const Device&                     device); 
+    bool InitPipeline (Pipeline&                         pipeline,
+                       PipelineLayout&                   plo,
+                       const Vec<VkDescriptorSetLayout>& dslos,
+                       //0
+                       const systempath&                 fspath,
+                       const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
+                       VkSampleCountFlagBits             msaa_samples,
+                       VkFormat                          color_format,
+                       const Device&                     device); 
+    // ----------------------------------------------------------------------------------------------
+    // 
+    // ----------------------------------------------------------------------------------------------
+    bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&       dss , 
+                                        const Vec<rc::Buffer::Ref>& ubtext,
+                                        const rc::ImageView::Ref    imageviews,  
+                                        const rc::Sampler::Ref      sampler, 
+                                        const DescriptorSetLayout&  dslayout, 
+                                        const Device&               device) ;
 
-  // ----------------------------------------------------------------------------------------------
-  // this function is sus, it is setting up a global buffer
-  // ----------------------------------------------------------------------------------------------
-  bool SetupObjectUniforms (Vec<rc::Buffer::Ref>& uniform_buffs, uint32_t num_sets, const Device& device);
-  // ----------------------------------------------------------------------------------------------
-  // 
-  // ----------------------------------------------------------------------------------------------
-  bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&       dss ,
-                                      const Vec<rc::Buffer::Ref>& objbuffs,
-                                      const rc::ImageView::Ref    imageviews,  
-                                      const rc::Sampler::Ref      sampler, 
-                                      const DescriptorSetLayout&  dslayout, 
-                                      const Device&               device) ;
+  }} // rekz onscreen
 
-
-  }
-  
-
-  
-}
 
 #endif

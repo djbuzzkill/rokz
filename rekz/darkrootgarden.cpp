@@ -139,9 +139,6 @@ struct RootLoop {
   std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
 
   void UpdateRunState  () {
-
-    // const float move_rate = 0.05f;
-
     //UpdateInput(glob, glob.dt);
     if (glob.input_state.keys.count (GLFW_KEY_Q)) {
       printf ("--> [q] pressed... quitting \n");
@@ -170,10 +167,10 @@ struct RootLoop {
   // -------------------------------------------------------------
   bool loop () {
 
-    glfwPollEvents(); 
-
     auto now = std::chrono::high_resolution_clock::now();    
     
+    glfwPollEvents(); 
+
     UpdateRunState () ;
     
     rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
@@ -202,14 +199,8 @@ struct RootLoop {
 
       rokz::DrawSequence::PipelineAssembly
         pagrid { glob.grid_pl, glob.grid_plo.handle }; 
-
-  
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
-      
       rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
-
-      
-      //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
 
       // update data needed to record drawlist
 

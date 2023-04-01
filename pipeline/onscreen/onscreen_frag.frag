@@ -9,12 +9,9 @@
 //        .comp - a compute shader
 
 layout(location = 0) in vec2 txc;
-layout(location = 1) flat in int chindex;
+layout(location = 1) flat in int char_index;
 
 layout(location = 0) out vec4 ofrag;
-
-
-
 
 // -------------- PUSH CONSTANT ---------------
 struct PushConstant {
@@ -30,9 +27,10 @@ struct PushConstant {
 
 } pc;
 
-
-
 // -------------- DESCRIPTORS ---------------
+
+
+
 layout (binding = 0, set =1) uniform UBText {
   uint text[64]; // ascii, utf, etc 
 } str_elem[max_count]; 
@@ -40,13 +38,10 @@ layout (binding = 0, set =1) uniform UBText {
 
 layout(binding = 1, set = 1) uniform sampler2DArray glyphsamp;
 
-
+// -------------- MAIN  ---------------
 void main() {
-
-  vec3  atxc = vec3 ( txc.xy,  str_elem[pc.resource_id].text[chindex] ); 
-  
-  ofrag.rgb = pc.color.rgb;
+  vec3 atxc = vec3 (txc.xy, str_elem[pc.resource_id].text[char_index]); 
   ofrag.a   = texture (glyphsamp, atxc).r;
-
+  ofrag.rgb = pc.color.rgb;
 }
 

@@ -20,33 +20,44 @@ namespace rokz {
 
   namespace cx {
 
+    // ---------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------
     VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkFormat format, VkImageAspectFlagBits aspect_flags, const VkImage& image);
     VkImageViewCreateInfo& CreateInfo (VkImageViewCreateInfo& ci, VkImageAspectFlagBits aspect_flags, const Image& image);
+
+    VkImageViewCreateInfo& CreateInfo_2D_array  (VkImageViewCreateInfo& ci,
+                                                 VkFormat               format,
+                                                 rokz::uint32           layercount, 
+                                                 const VkImage&         image) ; 
+
     
     bool CreateImageView (VkImageView& imageview, const VkImageViewCreateInfo& ci, const VkDevice& device); 
     //bool CreateImageViews (std::vector<ImageView>& imageviews, const std::vector<Image>& images, const Device& device); 
-
-
     bool CreateImageViews (std::vector<rc::ImageView::Ref>&   imageviews,
                            const std::vector<rc::Image::Ref>& images, VkFormat format,
                            VkImageAspectFlagBits aspectflags, const Device& device);
     
-    // ------------------------------------------------------------------
+
+
+
+    // ---------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------
+    VkImageCreateInfo& CreateInfo    (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci);
+    //  generic ci
+    VkImageCreateInfo& CreateInfo_2D (VkImageCreateInfo& ci, VkFormat format, VkImageUsageFlags usage_flags, 
+                                      VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
+
+    VkImageCreateInfo& CreateInfo_2D_array (VkImageCreateInfo&    ci,
+                                            VkFormat              format,
+                                            uint32                layercount, 
+                                            VkImageUsageFlags     usage_flags, 
+                                            uint32_t wd, uint32_t ht); 
+
+    // ---------------------------------------------------------------------------------
     bool CreateImage (Image& image, const VkDevice& device); 
     void Destroy (Image& image, const VkDevice& device);
     void Destroy (ImageView& image, const VkDevice& device);
     void Destroy (VkImageView& image, const VkDevice& device);
-    // alloc old fashioned way
-
-    // VkMemoryAllocateInfo& AllocInfo (VkMemoryAllocateInfo& alloc_info,  VkMemoryPropertyFlags prop_flags, const VkImage& image, const VkDevice& device, const VkPhysicalDevice& physdev); 
-    // bool AllocateImageMemory (Image& image,  const VkDevice& device); 
-
-    // CI for image from swapchain 
-    VkImageCreateInfo& CreateInfo (VkImageCreateInfo& ci, const VkSwapchainCreateInfoKHR& swapchain_ci);
-    // a 'generic' ci 
-    VkImageCreateInfo& CreateInfo_2D (VkImageCreateInfo& ci, VkFormat format, VkImageUsageFlags usage_flags, 
-                                      VkSampleCountFlagBits num_samples, uint32_t wd, uint32_t ht);
-
 
 
     // for color textures
@@ -98,6 +109,28 @@ namespace rokz {
     }
 
 
+
+    // ----------------------------------------------------------------------------------------
+    // mebe combine this w other Transfer fn
+    // ----------------------------------------------------------------------------------------
+    struct mappedlayer_cb {
+      typedef std::shared_ptr<mappedlayer_cb> Ref;
+      virtual int on_mapped (void* mappedp, size_t maxsize, uint32 layerindex, const VkExtent2D& ext) = 0; 
+    };
+
+    // ----------------------------------------------------------------------------------------
+    //
+    // ----------------------------------------------------------------------------------------
+    int TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizebytes,
+                              uint32 numlayers, uint32 beginlayer, const VkExtent2D& ext2d,
+                              mappedlayer_cb* cb, const rokz::Device& device); 
+
+    inline int TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizebytes,
+                                     uint32 numlayers, uint32 beginlayer, const VkExtent2D& ext2d,
+                                     mappedlayer_cb::Ref cb, const rokz::Device& device) { 
+      return TransferToImageLayer (dsti, format, sizebytes, numlayers, beginlayer,
+                                   ext2d, cb.get (), device); 
+    }
     // 
     // VMA -------------------------------------------------------------------------->
     bool                CreateImage   (Image& image, VmaAllocator const& allocator);

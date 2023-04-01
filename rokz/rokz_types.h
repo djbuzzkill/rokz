@@ -419,7 +419,6 @@ namespace rokz {
     VkFence     in_flight_fen;
 
     FrameSyncCreateInfo ci;
-
   };
   // ------------------------------------------------------------------------------------------
   struct FrameSyncGroup {
@@ -429,7 +428,6 @@ namespace rokz {
     Vec<VkCommandBuffer> command_buffers;
     Vec<FrameSync> syncs;
   }; 
-
 
 } // namespace rokz
 

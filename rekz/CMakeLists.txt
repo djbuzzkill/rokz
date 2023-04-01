@@ -17,6 +17,7 @@ set (REKZ_HEADER_FILES
   landscape_pipeline.h
   mars_files.h
   marzdata.h
+  onscreen_data.h
   drawmarz.h
   image_loader.h
   image_tool.h
@@ -39,6 +40,7 @@ set (REKZ_SOURCE_FILES
   marz.cpp
   marzdata.cpp
   mars_files.cpp
+  onscreen_data.cpp
   platonic.cpp
   rekz.cpp
   rekz_of_things.cpp

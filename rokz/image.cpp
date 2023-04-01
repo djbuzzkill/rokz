@@ -103,6 +103,8 @@ VkImageCreateInfo& rokz::cx::CreateInfo (VkImageCreateInfo& ci, const VkSwapchai
   return ci;
 }
 
+
+
 // ------------------------------------------------------------------------------------------
 //                      
 // ------------------------------------------------------------------------------------------
@@ -113,7 +115,8 @@ VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat
   ci.pNext = nullptr;
   ci.image    = image;
   ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.format   = format; 
+  ci.format   = format;
+    
   ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
   ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
   ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -126,6 +129,39 @@ VkImageViewCreateInfo& rokz::cx::CreateInfo (VkImageViewCreateInfo& ci, VkFormat
   ci.subresourceRange.layerCount = 1;
   return ci; 
 }
+
+
+// rokz::cx::
+// ------------------------------------------------------------------------------------------
+//                      
+// ------------------------------------------------------------------------------------------
+VkImageViewCreateInfo& rokz::cx::CreateInfo_2D_array (VkImageViewCreateInfo& ci,
+                                                      VkFormat              format,
+                                                      rokz::uint32           layercount, 
+                                                      const VkImage&         image) {
+
+  ci.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.pNext    = nullptr;
+  ci.image    = image;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+  ci.format   = format;
+    
+  ci.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  ci.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+  ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; 
+  ci.subresourceRange.baseMipLevel = 0;
+  ci.subresourceRange.levelCount = 1;
+  ci.subresourceRange.baseArrayLayer = 0;
+  ci.subresourceRange.layerCount = layercount;
+  return ci; 
+
+}
+
+
+
 
 // ------------------------------------------------------------------------------------------
 //                      
@@ -193,6 +229,36 @@ void rokz::cx::Destroy (VkImage& image, VmaAllocation allocation,  VmaAllocator 
 void rokz::cx::Destroy (Image& image, VmaAllocator allocator) {
 
   cx::Destroy (image.handle, image.allocation, allocator);
+}
+
+
+
+
+// ---------------------------------------------------------------------------------------------
+// VMA 
+// ---------------------------------------------------------------------------------------------
+VkImageCreateInfo& rokz::cx::CreateInfo_2D_array (VkImageCreateInfo&    ci,
+                                        VkFormat              format,
+                                        uint32                layercount, 
+                                        VkImageUsageFlags     usage_flags, 
+                                        uint32_t wd, uint32_t ht) {
+  printf ("%s VMA\n", __FUNCTION__); 
+  ci = {}; 
+  ci.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ci.pNext = nullptr;
+  ci.imageType     = VK_IMAGE_TYPE_2D;
+  ci.extent        = { wd, ht, 1 };
+  ci.mipLevels     = 1;
+  ci.arrayLayers   = layercount;
+  ci.format        = format ; // 
+  ci.tiling        = VK_IMAGE_TILING_OPTIMAL;
+  ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  ci.usage         = usage_flags;  // kSamplingUsage =>  VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST
+  ci.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;  
+  ci.samples       = VK_SAMPLE_COUNT_1_BIT; 
+  ci.flags         = 0; 
+
+  return ci;
 }
 
 
@@ -279,4 +345,59 @@ int rokz::cx::TransferToDeviceImage (VkImage& dimg, size_t imagesize, VkFormat t
 }
 
 
+
+
+
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+int rokz::cx::TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizebytes ,
+                                    uint32 numlayers, uint32 beginlayer, const VkExtent2D& ext2d,
+                                    mappedlayer_cb* cb, const Device& device) { 
+
+  void* mappedp = nullptr; 
+
+  rokz::Buffer stage_buff; 
+  rokz::cx::CreateInfo_buffer_stage (stage_buff.ci, sizebytes);
+  rokz::cx::AllocCreateInfo_stage (stage_buff.alloc_ci);
+  rokz::cx::CreateBuffer (stage_buff, device.allocator.handle); 
+
+  assert (device.allocator.handle);
+  
+  int res = __LINE__;
+
+  for (uint32 ilayer = 0; ilayer < numlayers; ++ilayer) {
+    
+    if (!rokz::cx::MapMemory (&mappedp, stage_buff.allocation, device.allocator.handle)) { 
+      HERE ("FAILED MAP MEMORY");
+      return __LINE__;
+    }
+
+    res = cb->on_mapped (mappedp, sizebytes, ilayer + beginlayer, ext2d);
+
+    rokz::cx::UnmapMemory (stage_buff.allocation, device.allocator.handle);
+
+    if (res != 0) {
+      break;
+    }
+
+    rokz::cx::TransitionImageLayout (dsti, format, VK_IMAGE_LAYOUT_UNDEFINED,
+                                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                     device.queues.graphics, device.command_pool.handle, device.handle);
+
+    rokz::cx::CopyBufferToImage (dsti, stage_buff.handle, ext2d.width, ext2d.height,
+                                 device.queues.graphics, device.command_pool.handle, device.handle);
+
+    rokz::cx::TransitionImageLayout (dsti, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                     device.queues.graphics, device.command_pool.handle, device.handle);
+  }
+
+  rokz::cx::Destroy (stage_buff, device.allocator); 
+
+  if (GOT_PROB (res)) 
+    HERE("LEAVING TRANSER BUT U HAV PROBZ"); 
+    
+  return res;
+}
 

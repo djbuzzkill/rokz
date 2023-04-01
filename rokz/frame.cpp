@@ -38,7 +38,6 @@ int rc::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
     return __LINE__; 
   }
 
-
   VkCommandBufferBeginInfo begin_info {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   begin_info.pNext = nullptr;
