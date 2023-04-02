@@ -1,6 +1,5 @@
 
 #include "darkrootgarden.h"
-#include "dark_obj_pipeline.h"
 
 
 #include "rekz/rekz.h"
@@ -20,6 +19,9 @@
 // 
 #include "dark_obj_pipeline.h"
 #include "grid_pipeline.h"
+#include "onscreen_pipe.h"
+
+
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -300,11 +302,16 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
                            kTestExtent, glob.device.physical, glob.device);
   // define first
+
   //rekz::kGlobalDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.global_dslo, rekz::kGlobalDescriptorBindings, glob.device); 
-
   // rekz::obz::kDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::obz::kDescriptorBindings, glob.device); 
+
+  rokz:: DefineDescriptorSetLayout(glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
+
+
+
   // polygon pipeline uses both descriptor sets
   glob.polys_pl.dslos.push_back (glob.global_dslo.handle);
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
@@ -322,6 +329,23 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
+
+  
+  glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
+  if (!onscreen::InitPipeline (glob.osd_pl,  glob.osd_plo,  glob.osd_pl.dslos, dark_path,
+                               kTestExtent, glob.msaa_samples, scg.image_format, glob.device)) {
+    printf ("[FAILED] --> OSD pipeline \n"); 
+    return false; 
+  }
+
+  //glob.ods_plo;
+
+  
+  glob.textdraw = onscreen::CreateDrawText (glob.textdata); 
+
+  onscreen::SetupData (glob.textdata, glob.device); 
+
+
   //
   rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
                                      glob.msaacolorimageview, 

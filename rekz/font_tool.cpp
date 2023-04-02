@@ -37,16 +37,12 @@ void save_to_png (const rokz::imagebuff<uint8>& image, uint32 glyph_index) {
   char msg[256];
   sprintf (msg, "test_char_%u.png", glyph_index);
 
-
   rokz::systempath basepath =  "/home/djbuzzkill/owenslake/tmp/testtext/";
 
   std::string fqname = basepath/msg;
-
-
   Vec<uint8> savebuf = image.dat;
-    
   // sample output 
-  ilTexImage ( image.width, image.height, 1, 1, IL_LUMINANCE, IL_UNSIGNED_BYTE, &savebuf[0] );
+  ilTexImage ( image.width, image.height, 1, 1, IL_LUMINANCE, IL_UNSIGNED_BYTE, &savebuf[0] ); // 
 
   ret_val = ilGetError ();
   if (IL_NO_ERROR != ret_val) {

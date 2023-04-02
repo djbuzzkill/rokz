@@ -5,6 +5,8 @@
 
 #include "rekz.h"
 #include "polyobdata.h"
+#include "onscreen_data.h"
+#include "onscreen_draw.h"
 
 #include "rokz/display.h"
 #include "rokz/input_state.h"
@@ -52,6 +54,7 @@ namespace darkroot {
     DrawSequence::Globals  shared;             
     DescriptorSetLayout    global_dslo;        
     DescriptorSetLayout    object_dslo;        
+    DescriptorSetLayout    osd_dslo;        
 
     // UniformBundle
     Vec<rc::Buffer::Ref>   global_rc_uniform_bu;    
@@ -72,6 +75,15 @@ namespace darkroot {
     DrawSequence::Ref      drawgrid;
     rc::Buffer::Ref        gridbuff;
 
+    // 
+    Pipeline               osd_pl;
+    PipelineLayout         osd_plo;
+    DescriptorGroup        osd_de; //
+    DrawSequence::Ref      textdraw;
+    onscreen::Data         textdata;
+
+
+    
     std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 

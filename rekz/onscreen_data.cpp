@@ -1,4 +1,5 @@
 
+
 #include "onscreen_data.h"
 #include "onscreen_pipe.h"
 #include "rokz/buffer.h"
@@ -63,7 +64,8 @@ struct glyph_layer : public cx::mappedlayer_cb {
 bool rekz::onscreen::SetupData (Data& dat, const Device& device) {
 
   VkFormat imageformat = VK_FORMAT_R8_UINT; 
-  
+
+
   // create image
   VkImageCreateInfo ci = {};
   VkExtent2D idim  = { 64, 64 };
@@ -89,12 +91,15 @@ bool rekz::onscreen::SetupData (Data& dat, const Device& device) {
   // sampler
   dat.texture.sampler = rc::CreateSampler_default (device);
 
+
   // geom
   size_t sizeof_geom = 4 * sizeof(rekz::onscreen::Vert); 
   dat.geom = rc::CreateDeviceBuffer (sizeof_geom,  cx::kDeviceGeometryUsage, device); 
 
   cx::TransferToDeviceBuffer ( dat.geom->handle,  sizeof_geom, std::make_shared<geom_handler>(), device); 
-  
+
+
+  //c/c++-clang c/c++-gcc c/c++-cppcheck 
 
   return false; 
 }
@@ -102,6 +107,7 @@ bool rekz::onscreen::SetupData (Data& dat, const Device& device) {
 
 void rekz::onscreen::Cleanup (Data& dat) {
 
+  
   dat.texture.image.reset ();
   dat.texture.view.reset ();
   dat.texture.sampler.reset ();
