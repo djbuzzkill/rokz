@@ -1,7 +1,11 @@
 
 #include "global_descriptor.h"
+#include "shared_descriptor.h"
+
 #include "utility.h"
 #include "rc_types.h"
+
+
 #include <vulkan/vulkan_core.h>
 
 //#include "grid_pipeline.h"
@@ -15,8 +19,6 @@ using namespace rokz;
 //     VkShaderStageFlags    stageFlags;
 //     const VkSampler*      pImmutableSamplers;
 // } VkDescriptorSetLayoutBinding;
-
-
 
 
 
@@ -40,7 +42,7 @@ const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
 bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, const Device& device) {
  printf ("%s", __FUNCTION__);
 
- const size_t sizeOf_GlobalState = sizeof(rokz::MVPTransform) + sizeof (rokz::GridState);
+ const size_t sizeOf_GlobalState = sizeof(descriptor::MVPTransform) + sizeof (descriptor::GridState);
    
  uniform_buffs.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
@@ -57,7 +59,7 @@ bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, c
 bool rokz::SetupGlobalUniforms (Vec<rc::Buffer::Ref>& buffs, uint32_t num_sets, const Device& device) {
  printf ("%s", __FUNCTION__);
 
- const size_t sizeOf_GlobalState = sizeof(rokz::MVPTransform) + sizeof (rokz::GridState);
+ const size_t sizeOf_GlobalState = sizeof(descriptor::MVPTransform) + sizeof (descriptor::GridState);
    
  buffs.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
@@ -152,12 +154,12 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
     VkDescriptorBufferInfo binfo_mvp {};
     binfo_mvp.buffer     = buffs[i]->handle;
     binfo_mvp.offset     = 0;
-    binfo_mvp.range      = sizeof(rokz::MVPTransform);
+    binfo_mvp.range      = sizeof(descriptor::MVPTransform);
 
     VkDescriptorBufferInfo binfo_grid {};
     binfo_grid.buffer     = buffs[i]->handle;
-    binfo_grid.offset     = sizeof(rokz::MVPTransform);
-    binfo_grid.range      = sizeof(rokz::GridState);
+    binfo_grid.offset     = sizeof(descriptor::MVPTransform);
+    binfo_grid.range      = sizeof(descriptor::GridState);
 
     const uint32_t binding_ind_mvp = 0;
     const uint32_t binding_ind_grid = 1;
@@ -193,9 +195,11 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
    return true;
 }
 
-// RC  Ver
+// ---------------------------------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------------------------------
 void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::Buffer::Ref buf, const VkExtent2D& viewext, double dt) {
-
+// UpdateGlobals is no longer fixed
   //
   //  SharedGlobals
   {
@@ -206,7 +210,7 @@ void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::B
   
   // 
   { // MVPTransform buffer
-    rokz::MVPTransform* mvp = reinterpret_cast<rokz::MVPTransform*>(rokz::rc::MappedPointer (buf));
+    descriptor::MVPTransform* mvp = reinterpret_cast<descriptor::MVPTransform*>(rokz::rc::MappedPointer (buf));
     if (mvp) {
     
       mvp->model = glm::mat4(1.0); // model is elsewhere 

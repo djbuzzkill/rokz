@@ -79,8 +79,8 @@ namespace darkroot {
     Pipeline               osd_pl;
     PipelineLayout         osd_plo;
     DescriptorGroup        osd_de; //
-    DrawSequence::Ref      textdraw;
-    onscreen::Data         textdata;
+    DrawSequence::Ref      osdraw;
+    onscreen::Data         osdata;
 
 
     

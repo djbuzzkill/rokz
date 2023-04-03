@@ -1,5 +1,5 @@
 
-#ifndef ONSCREEN_PIPELINE_INLUCDE
+#ifndef ONSCREEN_PIPELINE_INCLUDE
 #define ONSCREEN_PIPELINE_INCLUDE
 
 
@@ -38,10 +38,15 @@ namespace rekz { namespace onscreen {
 
     // 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234  
     struct UBText {
-      uint32 text[64];
+      enum { text_length = 64 };
+      uint32 text[text_length];
     };  // elem[kMaxCount] 
 
-    // ---------------------------------------------------------------------------------------
+    const Vec<size_t> UB_sizes = {
+      sizeof (descriptor::MVPTransform),
+      sizeof (std::array<UBText, 128>), 
+    }; 
+    
     // ---------------------------------------------------------------------------------------
     bool InitPipeline (Pipeline&                         pipeline,
                        PipelineLayout&                   plo,
@@ -53,14 +58,18 @@ namespace rekz { namespace onscreen {
                        VkFormat                          color_format,
                        const Device&                     device); 
     // ----------------------------------------------------------------------------------------------
-    // 
-    // ----------------------------------------------------------------------------------------------
-    bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&       dss , 
-                                        const Vec<rc::Buffer::Ref>& ubtext,
-                                        const rc::ImageView::Ref    imageviews,  
-                                        const rc::Sampler::Ref      sampler, 
-                                        const DescriptorSetLayout&  dslayout, 
-                                        const Device&               device) ;
+    bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss , 
+                                 const Vec<rc::Buffer::Ref>& ubtext,
+                                 const rc::ImageView::Ref    imageviews,  
+                                 const rc::Sampler::Ref      sampler, 
+                                 const DescriptorSetLayout&  dslayout, 
+                                 const Device&               device) ;
+
+
+    // ---------------------------------------------------------------------------------------
+    void UpdateOverlayDescriptors (rc::Buffer::Ref& buf,
+                                   const std::array<std::string, kMaxCount>& strings, 
+                                   const VkExtent2D& overlaysize, double dt);
 
   }} // rekz onscreen
 

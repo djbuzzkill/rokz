@@ -29,6 +29,8 @@ void CleanupMars (Glob& glob) {
   assert (false); // Cleanup
   // printf ("%s \n", __FUNCTION__); 
 
+  glob.grid;
+  
   // for (auto& ub : glob.uniform_mvp) {
   //   rokz::Destroy (ub, glob.allocator); 
   // }

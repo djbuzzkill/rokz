@@ -3,6 +3,7 @@
 #define REKZ_ONSCREEN_DATA_INCLUDE
 
 #include "rekz.h"
+#include "rekz/onscreen_pipe.h"
 
 
 namespace rekz { namespace onscreen {
@@ -20,8 +21,12 @@ namespace rekz { namespace onscreen {
 
     // ----------------------------------------------------------------------------------------
     struct Data {
-      Texture         texture;
-      rc::Buffer::Ref geom;
+      rc::Buffer::Ref                    geom;   // for the rectangle
+
+      Vec<rc::Buffer::Ref>               ubs;   // for the rectangle
+      
+      Texture                            texture;
+      std::array<std::string, kMaxCount> strings; 
     }; 
     
     // ----------------------------------------------------------------------------------------

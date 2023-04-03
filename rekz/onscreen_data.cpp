@@ -98,9 +98,21 @@ bool rekz::onscreen::SetupData (Data& dat, const Device& device) {
 
   cx::TransferToDeviceBuffer ( dat.geom->handle,  sizeof_geom, std::make_shared<geom_handler>(), device); 
 
+  // 
+  for (auto& str : dat.strings) {
+    str.resize (64);
+    str = "---- test text ----"; 
+  }
+
+
+
+  
+  dat.ubs.resize (2); // max frame in flight
+  const size_t total_ub_size = UB_sizes[0] + UB_sizes[1]; 
+  dat.ubs[0] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
+  dat.ubs[1] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
 
   //c/c++-clang c/c++-gcc c/c++-cppcheck 
-
   return false; 
 }
 

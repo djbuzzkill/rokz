@@ -5,16 +5,12 @@
 #include "rekz.h"
 #include "onscreen_data.h"
 #include "rokz/draw_sequence.h"
+#include <vulkan/vulkan_core.h>
 
-namespace rekz {
+namespace rekz { namespace onscreen {
 
-  namespace onscreen {
-
-    
     using namespace rokz;
-
-
-    rokz::DrawSequence::Ref CreateDrawText (const onscreen::Data&); 
+    rokz::DrawSequence::Ref CreateDrawText (const onscreen::Data&, const Vec<VkDescriptorSet>& descriptorsets); 
 
   }}
 

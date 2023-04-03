@@ -28,7 +28,7 @@ namespace rekz {
   // ?? a data is tied to a drawlist..     no
   // ?? a drawlist is tied to a pipeline.. no
 
-  DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rc::Buffer::Ref>& objres, const rokz::DescriptorGroup& descg); 
+  //  DrawSequence::Ref CreatePolygonDraw      (const PolygonData& d, const std::vector<rc::Buffer::Ref>& objres, const rokz::DescriptorGroup& descg); 
   DrawSequence::Ref CreatePolygonWireframe (const PolygonData& d); 
   DrawSequence::Ref CreateDrawWireframe    (const PolygonData& d); 
 

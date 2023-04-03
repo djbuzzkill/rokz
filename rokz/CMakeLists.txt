@@ -32,6 +32,7 @@ set (ROKZ_HEADER_FILES
   defaults.h
 
   global_descriptor.h
+  shared_descriptor.h
   window_handler.h
   input_state.h
   display.h

@@ -47,6 +47,8 @@
 #include "rc_swapchain.h"
 #include "rc_types.h"
 
+#include "shared_descriptor.h"
+
 namespace rokz { 
 
   extern const char* kVersionstr; 

@@ -14,7 +14,6 @@ namespace rokz {
 
   // ---------------------------------------------------------------------
   // 
-  // 
   // ---------------------------------------------------------------------
   enum DescriptorSetTypes {
 
@@ -58,6 +57,7 @@ namespace rokz {
       glm::vec3      view_pos;
 
     };
+
     typedef shared_globals Globals;
 
     struct render_environment {

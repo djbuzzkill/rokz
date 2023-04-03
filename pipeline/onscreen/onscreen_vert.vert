@@ -59,6 +59,8 @@ void main() {
   hpos.x += pc.position.x + pc.advance.x * gl_InstanceIndex;
   hpos.y += pc.position.y ;
 
+  // each gl_InstanceIndex is used as  string[gl_InstanceIndex]: char
+  
   char_index = gl_InstanceIndex; 
   o_txc = in_txc;
 

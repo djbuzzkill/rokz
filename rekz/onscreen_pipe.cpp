@@ -1,6 +1,9 @@
 
 
 #include "onscreen_pipe.h"
+#include "rokz/shared_descriptor.h"
+#include "rokz/ut_offset.h"
+#include <glm/ext/matrix_clip_space.hpp>
 #include <vulkan/vulkan_core.h>
 
 
@@ -92,7 +95,7 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
 // ----------------------------------------------------------------------------------------------
 // 
 // ----------------------------------------------------------------------------------------------
-bool rekz::onscreen::BindObjectDescriptorResources (Vec<VkDescriptorSet>&       dss ,
+bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss ,
                                                     const Vec<rc::Buffer::Ref>& ubtext,
                                                     const rc::ImageView::Ref    imageview,  
                                                     const rc::Sampler::Ref      sampler, 
@@ -144,4 +147,47 @@ bool rekz::onscreen::BindObjectDescriptorResources (Vec<VkDescriptorSet>&       
 
   return true;
 }
+
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
+void rekz::onscreen::UpdateOverlayDescriptors (rc::Buffer::Ref& buf,
+                                               const std::array<std::string, kMaxCount>& strings, 
+                                               const VkExtent2D& viewext, double dt) {
+
+  uint8_t* uc = (uint8_t*) rokz::rc::MappedPointer (buf);
+
+  using rokz::descriptor::MVPTransform; 
+  
+
+  // MVPTransform buffer
+  MVPTransform* mvp  = reinterpret_cast<MVPTransform*>( uc + ut::offset_at (UB_sizes, 0) );
+
+  mvp->model = glm::mat4(1); 
+  mvp->view  = glm::mat4(1); 
+
+  float lt = 0.0f;
+  float rt = viewext.width;
+  float bt = 0.0;
+  float tp = viewext.height; 
+
+  mvp->proj = glm::ortho ( lt, rt, bt, tp); 
+  mvp->proj[1][1] *= -1;
+    
+  //  updat text 
+  UBText* text = reinterpret_cast<UBText*>( uc + ut::offset_at (UB_sizes, 1) );
+
+  for (uint32 iline = 0; iline < kMaxCount; ++iline) { 
+    auto& s = strings[iline];
+    std::copy  (s.begin (), s.end (), text[iline].text); 
+    // for (uint32  charind = 0; charind < string_record[iline].size (); ++charind) {
+    //   text[iline].text[charind] = string_record[iline][charind]; 
+
+  }
+
+  
+}
+
+
+
 

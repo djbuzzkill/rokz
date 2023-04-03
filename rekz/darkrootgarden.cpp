@@ -174,10 +174,17 @@ struct RootLoop {
     glfwPollEvents(); 
 
     UpdateRunState () ;
+
+    {
+      char msg[64];
+      sprintf (msg, "osd test :%i", countdown);
+      glob.osdata.strings[0] = msg; 
+    }
+      
     
     rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
     rekz::UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
-    
+
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
@@ -196,26 +203,41 @@ struct RootLoop {
     }
     else {
 
+
       rokz::DrawSequence::PipelineAssembly
         papoly { glob.polys_pl, glob.polys_plo.handle }; 
 
       rokz::DrawSequence::PipelineAssembly
         pagrid { glob.grid_pl, glob.grid_plo.handle }; 
+
+      rokz::DrawSequence::PipelineAssembly
+        pa_osd  { glob.osd_pl, glob.osd_plo.handle }; 
+
+      // ------------------------ Updaate b4 draw ----------------------------
+      //
+      //   update uniform here, but uniforms can also b update during DrawSeq::Prep ()
+      // 
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
 
       // update data needed to record drawlist
+      onscreen::UpdateOverlayDescriptors (glob.osdata.ubs[curr_frame],
+                                          glob.osdata.strings, kTestExtent, Dt);  
 
+      
       // make sure the correct swapchain image is used
       rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
                                         glob.swapchain_group.imageviews[image_index]->handle);
 
+
+
+      
+      // ------------------------------- render pass start -------------------------------
       // Transitioning Layout and stuff in here
       // BeginCommandBuffer is called here
       rc::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
                           image_index, glob.rendering_info_group.ri, glob.device);
       // EXECUTE DRAW LIST RECORDING 
-
       // for drawseq's
       // const std::vector<VkDescriptorSet> descrsets = {
       //   glob.global_uniform_de.descrsets[curr_frame], glob.objres_uniform_de.descrsets[curr_frame]
@@ -227,14 +249,25 @@ struct RootLoop {
       rokz::DrawSequence::RenderEnv grid_re {
         pagrid, glob.shared, glob.descriptormaps[curr_frame]
       };
+      // !! there is nothing in shared_globals that is especially useful to overlay
+      rokz::DrawSequence::RenderEnv osd_re  {
+        pa_osd, glob.shared, glob.descriptormaps[curr_frame]
+      };
         
+      //
+      // scene draw 
       glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
       glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
-
-
+      //
       glob.drawgrid->Prep (curr_frame, grid_re, glob.device); 
       glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
 
+      //
+      // no more scene beyond here this is overlay now
+      glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
+      glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
+
+      
       // we are done, submit
       rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
@@ -340,10 +373,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   //glob.ods_plo;
 
-  
-  glob.textdraw = onscreen::CreateDrawText (glob.textdata); 
-
-  onscreen::SetupData (glob.textdata, glob.device); 
 
 
   //
@@ -370,9 +399,11 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //
   // setup object data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   rekz::SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_path, glob.device); 
-  // should 
-  //
-  
+
+
+  // text overlay
+  onscreen::SetupData (glob.osdata, glob.device); 
+  glob.osdraw = onscreen::CreateDrawText (glob.osdata); 
   //rekz::SetupGridData (glob.gridata, glob.device); 
   // setup object data <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   //
@@ -402,6 +433,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> BindGridDescriptorResources \n"); 
   }
 
+
   //
   // object descriptor set 
   rekz::SetupObjectUniforms (glob.poly_objects_bu, kMaxFramesInFlight, glob.device);
@@ -427,10 +459,38 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   } 
 
+  //
+  //
+  if (!rokz::MakeDescriptorPool (glob.osd_de.pool, kMaxFramesInFlight, onscreen::kDescriptorBindings, glob.device)) {
+    printf ("[FAILED|%i] --> MakeDescriptorPool \n", __LINE__ ); 
+    return false;
+  }
+  //
+  if (!rokz::MakeDescriptorSets (glob.osd_de.descrsets, glob.osd_de.alloc_info, kMaxFramesInFlight, 
+                                  glob.osd_dslo.handle, glob.osd_de.pool, glob.device)) {
+
+    printf ("[FAILED|%i] --> MakeDescriptorSets \n", __LINE__ ); 
+    return false;
+  }
+  //
+  if (!rekz::onscreen::BindDescriptorResources ( glob.osd_de.descrsets, glob.osdata.ubs,
+                                                 glob.osdata.texture.view, 
+                                                 glob.osdata.texture.sampler,
+                                                 glob.osd_dslo, glob.device)) {
+    printf ("[FAILED|%i] --> onscreen::BindDescriptorResources \n", __LINE__ ); 
+    return false;
+  }
+
   // 
   for (size_t iframe = 0; iframe < kMaxFramesInFlight; ++iframe) { 
     rokz::DrawSequence::DescriptorMap& descrmap = glob.descriptormaps[iframe];
+    // ?? 
     descrmap["Global"] = glob.global_uniform_de.descrsets[iframe];
+    // ?? is this the best place to store and pass the descr to the drawlist
+    // ?? should the drawlist store this directly
+    // ?? drawpolygon references directly
+    descrmap["osd"]    = glob.osd_de.descrsets[iframe]; // <-- should we do this here?
+    
   }
 
   //

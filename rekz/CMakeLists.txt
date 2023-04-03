@@ -12,6 +12,7 @@ set (REKZ_HEADER_FILES
   dark_types.h
   marz.h
   darkrootgarden.h
+  drawpolygon.h
   dark_obj_pipeline.h
   grid_pipeline.h
   landscape_pipeline.h

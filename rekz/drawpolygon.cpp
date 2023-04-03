@@ -1,5 +1,8 @@
 
 #include "rekz/dark_types.h"
+
+#include "drawpolygon.h"
+
 #include <vulkan/vulkan_core.h>
 
 
@@ -102,9 +105,9 @@ struct PolygonDraw : public rokz::DrawSequence {
 // -------------------------------------------------------------------------
 // 
 // -------------------------------------------------------------------------
-rokz::DrawSequence::Ref rekz::CreatePolygonDraw (const PolygonData&                  dat,
-                                                 const std::vector<rc::Buffer::Ref>& objres,
-                                                 const rokz::DescriptorGroup&        descg)
+rokz::DrawSequence::Ref rekz::polyob::CreateDrawPoly (const PolygonData&                  dat,
+                                                      const std::vector<rc::Buffer::Ref>& objres,
+                                                      const rokz::DescriptorGroup&        descg)
 {
   return std::make_shared<PolygonDraw> (dat, objres, descg);
 }
