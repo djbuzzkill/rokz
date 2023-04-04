@@ -28,8 +28,11 @@ const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
 //                                    
 // ----------------------------------------------------------------------------------------------
 bool setup_obz_shader_modules (Pipeline& pipeline, const systempath& fspath, const Device& device) {
+  
   printf ("%s \n", __FUNCTION__); 
+
   "mack_rowes.h"; 
+
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_cis = pipeline.state.ci.shader_stages; 
   Vec<ShaderModule>&                    shader_modules            = pipeline.shader_modules;
 

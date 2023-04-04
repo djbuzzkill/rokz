@@ -45,7 +45,7 @@ struct PushConstant {
 // ----------------------------------------------------------------------------
 // DESCRIPTOR                 
 // ----------------------------------------------------------------------------
-layout(binding = 0, set = 0) uniform MVPTransform {
+layout(binding = GLOBAL_MVP_OVERLAY_BINDINGI, set = 0) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;

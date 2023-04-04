@@ -155,13 +155,13 @@ struct MarzLoop {
       run = false;
     }
     else {
-      rokz::DrawSequence::PipelineAssembly palscape {
-        glob.scape.pipe, glob.scape.plo.handle
-      }; 
+      // rokz::DrawSequence::PipelineAssembly palscape {
+      //   glob.scape.pipe, glob.scape.plo.handle
+      // }; 
 
-      rokz::DrawSequence::PipelineAssembly pagrid {
-        glob.grid.pipe, glob.grid.plo.handle
-      }; 
+      // rokz::DrawSequence::PipelineAssembly pagrid {
+      //   glob.grid.pipe, glob.grid.plo.handle
+      // }; 
 
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       rokz::UpdateGlobals (glob.shared, glob.global_bu[curr_frame], kDefaultDimensions, Dt);
@@ -177,11 +177,11 @@ struct MarzLoop {
       // EXECUTE DRAW LIST RECORDING 
 
       rokz::DrawSequence::RenderEnv scape_re {
-        palscape, glob.shared, glob.descriptormaps[curr_frame]
+        glob.scape.pipe, glob.scape.plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
       
       rokz::DrawSequence::RenderEnv grid_re {
-        pagrid, glob.shared, glob.descriptormaps[curr_frame]
+        glob.grid.pipe, glob.grid.plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
         
       glob.scape.draw->Prep (curr_frame, scape_re, glob.device); 

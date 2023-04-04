@@ -44,14 +44,14 @@ struct drawgrid_buff : public rokz::DrawSequence {
     push_consts.xoffset      = 0.0f;  
     push_consts.zoffset      = 0.0f;  
 
-    vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.pipeline.handle);
+    vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 
-    vkCmdSetViewport  (comb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].viewport);
+    vkCmdSetViewport  (comb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
 
-    vkCmdSetScissor   (comb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].scissor);
+    vkCmdSetScissor   (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
     const uint32_t descr_set_count = 1; // b/c grid only needs Globals
-    vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.plo, 0, descr_set_count, &descrmap.at("Global"), 0, nullptr);
+    vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout, 0, descr_set_count, &descrmap.at("Global"), 0, nullptr);
 
     VkBuffer     vertex_buffers[] = {gd->handle};
     VkDeviceSize offsets[]        = {vertexoffset};
@@ -63,7 +63,7 @@ struct drawgrid_buff : public rokz::DrawSequence {
     const VkShaderStageFlags shader_stages =
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    vkCmdPushConstants (comb, env.pa.plo, shader_stages, 0, sizeof(grid::PushConstant), &push_consts);
+    vkCmdPushConstants (comb, env.layout, shader_stages, 0, sizeof(grid::PushConstant), &push_consts);
 
     const uint32_t vdim   = 11; // matches SetupGrid
     const uint32_t totalv = vdim * vdim;

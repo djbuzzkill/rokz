@@ -93,14 +93,15 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
 }
 
 // ----------------------------------------------------------------------------------------------
+//  this needs to incorporate global uniforms
 // 
 // ----------------------------------------------------------------------------------------------
-bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss ,
-                                                    const Vec<rc::Buffer::Ref>& ubtext,
-                                                    const rc::ImageView::Ref    imageview,  
-                                                    const rc::Sampler::Ref      sampler, 
-                                                    const DescriptorSetLayout&  dslayout, 
-                                                    const Device&               device)  {
+bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,  
+                                              const Vec<rc::Buffer::Ref>& ubtext,
+                                              const rc::ImageView::Ref    imageview,  
+                                              const rc::Sampler::Ref      sampler, 
+                                              const DescriptorSetLayout&  dslayout, 
+                                              const Device&               device)  {
 
   HERE("onscreen");
   for (uint32_t i = 0; i < dss.size (); i++) {

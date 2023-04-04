@@ -5,6 +5,9 @@
 
 #include "rekz.h"
 #include "rokz/vert_defs.h"
+#include "rokz/shared_descriptor.h"
+#include "rokz/ut_offset.h"
+
 #include <vulkan/vulkan_core.h>
 
 

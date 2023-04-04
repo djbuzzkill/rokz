@@ -33,19 +33,19 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
       //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
       const DescriptorMap& descrmap = env.descriptormap;
 
-      vkCmdBindPipeline (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.pipeline.handle);
+      vkCmdBindPipeline (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 
       // b/c these r dynamic state
-      vkCmdSetViewport(commb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].viewport);
+      vkCmdSetViewport(commb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
 
-      vkCmdSetScissor (commb, 0, 1, &env.pa.pipeline.state.viewport.vps[0].scissor);
+      vkCmdSetScissor (commb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
       Vec<VkDescriptorSet> descrsets = {
         descrmap.at ("Global"),
         descrmap.at ("lscape"),
       };
 
-      vkCmdBindDescriptorSets (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.plo,
+      vkCmdBindDescriptorSets (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout,
                                0, descrsets.size(), &descrsets[0], 0, nullptr);
           
       VkBuffer     vertex_buffers[] = { marzd.devicebuffer->handle };
@@ -70,7 +70,7 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
           pc.scale     = glm::vec4 (x_tile_size     , DEM_scale_mul, z_tile_size, 1.0f); 
           pc.resource_id = iz * roi::XDim + ix;
           
-          vkCmdPushConstants (commb, env.pa.plo, lscape::kPCStages,
+          vkCmdPushConstants (commb, env.layout, lscape::kPCStages,
                               0, sizeof (lscape::tile::PushConstant), &pc); 
           vkCmdDraw (commb, 4, 1, 0, 0);  
         }} // XZ loop

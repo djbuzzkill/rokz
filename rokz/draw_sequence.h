@@ -35,11 +35,11 @@ namespace rokz {
     // --------------------------------------------------------------------
     // part of DrawSequence
     // --------------------------------------------------------------------
-    struct pipeline_assembly  {
-      rokz::Pipeline&            pipeline;
-      VkPipelineLayout           plo;
-    }; 
-    typedef pipeline_assembly PipelineAssembly; 
+    // struct pipeline_assembly  {
+    //   rokz::Pipeline&            pipeline;
+    //   VkPipelineLayout           plo;
+    // }; 
+    // typedef pipeline_assembly PipelineAssembly; 
     // --------------------------------------------------------------------
     // part of DrawSequence
     // --------------------------------------------------------------------
@@ -61,7 +61,10 @@ namespace rokz {
     typedef shared_globals Globals;
 
     struct render_environment {
-      PipelineAssembly&  pa;
+      rokz::Pipeline&     pipeline;
+      VkPipelineLayout    layout;
+
+      //PipelineAssembly&  pa;
       Globals&           globals;
       DescriptorMap&     descriptormap;
     }; 

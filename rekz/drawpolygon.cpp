@@ -52,15 +52,15 @@ struct PolygonDraw : public rokz::DrawSequence {
   //
   // ------------------------------------------------------------------------------------------------
   virtual int Exec (VkCommandBuffer combuf, uint32_t currentframe, const RenderEnv& env) { 
-  //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
+    //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
     const DescriptorMap& descrmap = env.descriptormap;
     
-    const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron ();
-    vkCmdBindPipeline (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.pipeline.handle);
+    const rekz::platonic::Mesh& octomesh = rekz::platonic::Octohedron ();
+    vkCmdBindPipeline (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 
     // b/c these r dynamic state
-    vkCmdSetViewport(combuf, 0, 1, &env.pa.pipeline.state.viewport.vps[0].viewport);
-    vkCmdSetScissor (combuf, 0, 1, &env.pa.pipeline.state.viewport.vps[0].scissor);
+    vkCmdSetViewport(combuf, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
+    vkCmdSetScissor (combuf, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
     //VK_POLYGON_MODE_FILL = 0,
     //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
@@ -68,7 +68,7 @@ struct PolygonDraw : public rokz::DrawSequence {
     descrsets.push_back (descrmap.at ("Global"));
     descrsets.push_back (object_descr.descrsets[currentframe]); 
   
-    vkCmdBindDescriptorSets (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pa.plo,
+    vkCmdBindDescriptorSets (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout,
                              0, descrsets.size(), &descrsets[0], 0, nullptr);
 
     //VkBuffer vertex_buffers[] = {polyd.vb_device.handle};
@@ -88,13 +88,13 @@ struct PolygonDraw : public rokz::DrawSequence {
       pcs._unused_03 = i; 
 
       vkCmdPushConstants (combuf,
-                          env.pa.plo, 
+                          env.layout, 
                           rekz::obz::PCStages, //   shader_stages,
                           0,
                           sizeof(rekz::obz::PushConstant),
                           &pcs);
 
-      vkCmdDrawIndexed (combuf, darkmesh.indices.size(), 1, 0, 0, 0);
+      vkCmdDrawIndexed (combuf, octomesh.indices.size(), 1, 0, 0, 0);
     }
 
     return 0;

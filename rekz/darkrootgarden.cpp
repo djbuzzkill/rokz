@@ -2,6 +2,7 @@
 #include "darkrootgarden.h"
 
 
+#include "rekz/drawpolygon.h"
 #include "rekz/rekz.h"
 // #include "rokz/buffer.h"
 // #include "rokz/context.h"
@@ -181,7 +182,6 @@ struct RootLoop {
       glob.osdata.strings[0] = msg; 
     }
       
-    
     rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
     rekz::UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
 
@@ -203,15 +203,14 @@ struct RootLoop {
     }
     else {
 
+      // rokz::DrawSequence::PipelineAssembly
+      //   papoly { glob.polys_pl, glob.polys_plo.handle }; 
 
-      rokz::DrawSequence::PipelineAssembly
-        papoly { glob.polys_pl, glob.polys_plo.handle }; 
+      // rokz::DrawSequence::PipelineAssembly
+      //   pagrid { glob.grid_pl, glob.grid_plo.handle }; 
 
-      rokz::DrawSequence::PipelineAssembly
-        pagrid { glob.grid_pl, glob.grid_plo.handle }; 
-
-      rokz::DrawSequence::PipelineAssembly
-        pa_osd  { glob.osd_pl, glob.osd_plo.handle }; 
+      // rokz::DrawSequence::PipelineAssembly
+      //   pa_osd  { glob.osd_pl, glob.osd_plo.handle }; 
 
       // ------------------------ Updaate b4 draw ----------------------------
       //
@@ -230,8 +229,6 @@ struct RootLoop {
                                         glob.swapchain_group.imageviews[image_index]->handle);
 
 
-
-      
       // ------------------------------- render pass start -------------------------------
       // Transitioning Layout and stuff in here
       // BeginCommandBuffer is called here
@@ -243,15 +240,15 @@ struct RootLoop {
       //   glob.global_uniform_de.descrsets[curr_frame], glob.objres_uniform_de.descrsets[curr_frame]
       // };
       rokz::DrawSequence::RenderEnv poly_re {
-        papoly, glob.shared, glob.descriptormaps[curr_frame]
+        glob.polys_pl, glob.polys_plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
 
       rokz::DrawSequence::RenderEnv grid_re {
-        pagrid, glob.shared, glob.descriptormaps[curr_frame]
+        glob.grid_pl, glob.grid_plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
       // !! there is nothing in shared_globals that is especially useful to overlay
       rokz::DrawSequence::RenderEnv osd_re  {
-        pa_osd, glob.shared, glob.descriptormaps[curr_frame]
+        glob.osd_pl, glob.osd_plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
         
       //
@@ -267,7 +264,6 @@ struct RootLoop {
       glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
       glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
 
-      
       // we are done, submit
       rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
@@ -400,10 +396,10 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // setup object data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   rekz::SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_path, glob.device); 
 
-
-  // text overlay
+  // osd overlay text
   onscreen::SetupData (glob.osdata, glob.device); 
-  glob.osdraw = onscreen::CreateDrawText (glob.osdata); 
+
+  glob.osdraw = onscreen::CreateDrawText (glob.osdata, glob.osd_de.descrsets); 
   //rekz::SetupGridData (glob.gridata, glob.device); 
   // setup object data <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   //
@@ -495,7 +491,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   //
   // create draw list
-  glob.drawpoly = rekz::CreatePolygonDraw (glob.polyd, glob.poly_objects_bu, glob.poly_objects_de);
+  glob.drawpoly = rekz::polyob::CreateDrawPoly (glob.polyd, glob.poly_objects_bu, glob.poly_objects_de);
     //rekz::CreateDrawGrid (glob.gridata); 
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);

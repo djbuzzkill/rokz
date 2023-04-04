@@ -7,6 +7,7 @@
 #include "polyobdata.h"
 #include "onscreen_data.h"
 #include "onscreen_draw.h"
+#include "drawpolygon.h"
 
 #include "rokz/display.h"
 #include "rokz/input_state.h"
@@ -83,7 +84,14 @@ namespace darkroot {
     onscreen::Data         osdata;
 
 
-    
+    struct DRAWSEQSTRUC {
+      DrawSequence::RenderEnv  re;
+      DrawSequence::Ref        draw;
+    }; 
+   
+    Vec<DRAWSEQSTRUC>      drawtasks; 
+
+    // 
     std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
