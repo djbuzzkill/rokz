@@ -4,6 +4,8 @@
 
 #include "utility.h"
 #include "rc_types.h"
+#include "ut_offset.h"
+#include "uniform.h"
 
 
 #include <vulkan/vulkan_core.h>
@@ -24,8 +26,8 @@ using namespace rokz;
 
 const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
    
-  {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL_GRAPHICS , nullptr }, // <- MVPTransform
-  { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL_GRAPHICS , nullptr }, // <- GridState
+  { global_ub::MVP_Scene, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL_GRAPHICS , nullptr }, // <- MVPTransform
+  { global_ub::GridState , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL_GRAPHICS , nullptr }, // <- GridState
 
 };
 
@@ -42,7 +44,12 @@ const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
 bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, const Device& device) {
  printf ("%s", __FUNCTION__);
 
- const size_t sizeOf_GlobalState = sizeof(descriptor::MVPTransform) + sizeof (descriptor::GridState);
+
+ 
+ const size_t sizeOf_GlobalState = sizeof(global_ub::MVPTransform)
+                                 + sizeof(global_ub::MVPTransform)
+                                 + sizeof(global_ub::GridState) 
+                                 + sizeof(global_ub::TextItem);
    
  uniform_buffs.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
@@ -56,10 +63,15 @@ bool rokz::SetupGlobalUniforms (Vec<Buffer>& uniform_buffs, uint32_t num_sets, c
  return true; 
 }
 
+
+
 bool rokz::SetupGlobalUniforms (Vec<rc::Buffer::Ref>& buffs, uint32_t num_sets, const Device& device) {
  printf ("%s", __FUNCTION__);
 
- const size_t sizeOf_GlobalState = sizeof(descriptor::MVPTransform) + sizeof (descriptor::GridState);
+ const size_t sizeOf_GlobalState = sizeof(global_ub::MVPTransform)
+                                 + sizeof(global_ub::MVPTransform)
+                                 + sizeof(global_ub::GridState) 
+                                 + sizeof(global_ub::TextItem);
    
  buffs.resize (num_sets);
  for (size_t i = 0; i < num_sets; i++) {
@@ -150,25 +162,25 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
   assert (descs.size () == buffs.size ());
 
   for (uint32_t i = 0; i < descs.size (); i++) {
+
+    assert (buffs[i]->handle); 
     // wtf does this do
     VkDescriptorBufferInfo binfo_mvp {};
     binfo_mvp.buffer     = buffs[i]->handle;
-    binfo_mvp.offset     = 0;
-    binfo_mvp.range      = sizeof(descriptor::MVPTransform);
+    binfo_mvp.offset     = ut::offset_at ( global_ub::UB_sizes, global_ub::MVP_Scene); 
+    binfo_mvp.range      = sizeof(global_ub::MVPTransform);
 
+    
     VkDescriptorBufferInfo binfo_grid {};
     binfo_grid.buffer     = buffs[i]->handle;
-    binfo_grid.offset     = sizeof(descriptor::MVPTransform);
-    binfo_grid.range      = sizeof(descriptor::GridState);
-
-    const uint32_t binding_ind_mvp = 0;
-    const uint32_t binding_ind_grid = 1;
+    binfo_grid.offset     = ut::offset_at (global_ub::UB_sizes, global_ub::GridState); 
+    binfo_grid.range      = sizeof(global_ub::GridState);
     //
     std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;    
     descriptor_writes[0].dstSet           = descs[i];
-    descriptor_writes[0].dstBinding       = kGlobalDescriptorBindings[binding_ind_mvp].binding;
+    descriptor_writes[0].dstBinding       = global_ub::MVP_Scene;
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[0].descriptorCount  = 1;
@@ -179,7 +191,7 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[1].pNext            = nullptr;    
     descriptor_writes[1].dstSet           = descs[i];
-    descriptor_writes[1].dstBinding       = kGlobalDescriptorBindings[binding_ind_grid].binding; 
+    descriptor_writes[1].dstBinding       = global_ub::GridState; 
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[1].descriptorCount  = 1;
@@ -210,7 +222,7 @@ void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::B
   
   // 
   { // MVPTransform buffer
-    descriptor::MVPTransform* mvp = reinterpret_cast<descriptor::MVPTransform*>(rokz::rc::MappedPointer (buf));
+    global_ub::MVPTransform* mvp = reinterpret_cast<global_ub::MVPTransform*>(rokz::rc::MappedPointer (buf));
     if (mvp) {
     
       mvp->model = glm::mat4(1.0); // model is elsewhere 

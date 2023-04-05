@@ -39,14 +39,13 @@ layout (push_constant) uniform PushConstant {
 //
 // DESCRIPTOR
 //
-layout(binding = 0, set = 0) uniform MVPTransform {
+layout(set = 0, binding = global_mvp_scene_binding) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;
 } mat;
 
-
-layout(binding = 0, set = 1) uniform ObjectParams {
+layout(set = 0, binding = ob_params_binding) uniform ObjectParams {
 
   mat4 model;
   

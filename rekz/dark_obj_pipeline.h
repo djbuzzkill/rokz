@@ -45,11 +45,14 @@ namespace rekz {
   // 
   // ----------------------------------------------------------------------------------------------
   bool BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
-                                      const Vec<rc::Buffer::Ref>&   objbuffs,
-                                      const Vec<rc::ImageView::Ref> imageviews,  
+                                      const Vec<rc::Buffer::Ref>&   globalub,
+                                      const Vec<rc::Buffer::Ref>&   objectub,
+                                      const Vec<rc::ImageView::Ref> imageviews,  //const ImageView&           texture_imageview, 
                                       const rc::Sampler::Ref        sampler, 
-                                      const DescriptorSetLayout&    dslayout, 
-                                      const Device&                 device) ;
+                                      const DescriptorSetLayout&    dslayout, //const rokz::DescriptorPool& descpool,
+                                      const Device&                 device); 
+
+
   // ----------------------------------------------------------------------------------------------
   // 
   // ----------------------------------------------------------------------------------------------

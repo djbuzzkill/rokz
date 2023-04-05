@@ -39,6 +39,7 @@
 #include "draw_sequence.h"
 #include "swapchain_reset.h"
 #include "synchronization.h"
+#include "ut_offset.h"
 
 #include "frame.h"
 #include "rc_attachment.h"
@@ -47,6 +48,7 @@
 #include "rc_swapchain.h"
 #include "rc_types.h"
 
+#include "global_descriptor.h"
 #include "shared_descriptor.h"
 
 namespace rokz { 

@@ -31,12 +31,12 @@ struct PushConstant {
 
 
 
-layout (binding = 0, set =1) uniform UBText {
+layout (set = 0, binding = TEXT_ITEMS_BINDINGI) uniform TextItem {
   uint text[64]; // ascii, utf, etc 
 } str_elem[max_count]; 
 
 
-layout(binding = 1, set = 1) uniform sampler2DArray glyphsamp;
+layout(set = 0, binding = FONT_FACE_BINDINGI) uniform sampler2DArray glyphsamp;
 
 // -------------- MAIN  ---------------
 void main() {

@@ -1,13 +1,18 @@
 
 
-#ifndef REKZ_GLOBAL_DESCRIPTOR
-#define REKZ_GLOBAL_DESCRIPTOR
+#ifndef ROKZ_GLOBAL_DESCRIPTOR
+#define ROKZ_GLOBAL_DESCRIPTOR
 
-#include "rokz/rokz.h"
+#include "common.h"
+#include "shared_types.h"
+#include "rokz_types.h"
+#include "rc_buffer.h"
+#include "draw_sequence.h"
+#include "descriptor.h"
+
+
 
 namespace rokz {
-
-  using namespace rokz;
 
   // ----------------------------------------------------------------------------------------------
   // 

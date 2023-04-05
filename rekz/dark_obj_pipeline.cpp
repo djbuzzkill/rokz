@@ -1,11 +1,6 @@
 
 #include "dark_obj_pipeline.h"
-#include "rekz/rekz.h"
-#include "rokz/descriptor.h"
-#include "rokz/file.h"
-#include "rokz/pipeline.h"
-#include "rokz/rc_types.h"
-#include "rokz/rokz_types.h"
+#include "rokz/shared_descriptor.h"
 #include <vulkan/vulkan_core.h>
 
 // --------------------------------------------------------------------
@@ -18,10 +13,20 @@ const VkVertexInputBindingDescription&        rekz::obz::kVertexInputBindingDesc
 const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDesc = rokz::kPNCTx_InputAttributeDesc; 
 
 
+// const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
+//   { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+//   { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+// };
+
+const auto kObParamsI  = 18;
+const auto kObTextureI = 19;
+
 const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
-  { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+  { global_ub::MVP_Scene, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1                   , VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  { kObParamsI          , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  { kObTextureI         , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
+
 
 
 // ----------------------------------------------------------------------------------------------
@@ -64,21 +69,26 @@ bool rekz::SetupObjectUniforms (Vec<rc::Buffer::Ref>& objparams, uint32_t num_se
 //                                    
 // ----------------------------------------------------------------------------------------------
 bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
-                                          const Vec<rc::Buffer::Ref>&   objbuffs,
+                                          const Vec<rc::Buffer::Ref>&   globalub,
+                                          const Vec<rc::Buffer::Ref>&   objectub,
                                           const Vec<rc::ImageView::Ref> imageviews,  //const ImageView&           texture_imageview, 
                                           const rc::Sampler::Ref        sampler, 
                                           const DescriptorSetLayout&    dslayout, //const rokz::DescriptorPool& descpool,
                                           const Device&                 device) {
   
-  //printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
-   assert (dss.size () == objbuffs.size ());
+  assert (dss.size () == objectub.size ());
+  assert (dss.size () == globalub.size ());
   //
   for (uint32_t i = 0; i < dss.size (); i++) {
-    
+    // MVP Scene
+    VkDescriptorBufferInfo globalinfo = {};
+    globalinfo.buffer = globalub[i]->handle;
+    globalinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_Scene); 
+    globalinfo.range  = sizeof (global_ub::MVPTransform); 
+    // POLYGON PARAMS
     Vec<VkDescriptorBufferInfo> obparams (obz::kMaxCount, VkDescriptorBufferInfo {});
-
-    for (size_t iobj = 0; iobj < obparams.size (); ++iobj) { 
-      obparams[iobj].buffer   = objbuffs[i]->handle;    //
+    for (size_t iobj = 0; iobj < rekz::obz::kMaxCount; ++iobj) { 
+      obparams[iobj].buffer   = objectub[i]->handle;    //
       obparams[iobj].offset   = iobj * sizeof(PolygonParam); // min_uniform_buffer_offset_alignment ??
       obparams[iobj].range    = sizeof(PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
     }
@@ -100,28 +110,39 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
         }
     }
     //
-    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+    std::array<VkWriteDescriptorSet, 3> descriptor_writes {};
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;
     descriptor_writes[0].dstSet           = dss[i];
-    descriptor_writes[0].dstBinding       = 0;       // does it match in shader? 
+    descriptor_writes[0].dstBinding       = global_ub::MVP_Scene;       // does it match in shader? 
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = obparams.size(); // <
-    descriptor_writes[0].pBufferInfo      = &obparams[0]; 
+    descriptor_writes[0].descriptorCount  = 1; 
+    descriptor_writes[0].pBufferInfo      = &globalinfo; 
     descriptor_writes[0].pImageInfo       = nullptr; 
     descriptor_writes[0].pTexelBufferView = nullptr; 
-                      
+
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].pNext            = nullptr;
     descriptor_writes[1].dstSet           = dss[i];
-    descriptor_writes[1].dstBinding       = 1;      // <-- change shader too
+    descriptor_writes[1].dstBinding       = kObParamsI;       // does it match in shader?
     descriptor_writes[1].dstArrayElement  = 0;
-    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
-    descriptor_writes[1].descriptorCount  = imageinfos.size(); 
-    descriptor_writes[1].pBufferInfo      = nullptr;
-    descriptor_writes[1].pImageInfo       = &imageinfos[0]; 
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[1].descriptorCount  = obparams.size(); // <
+    descriptor_writes[1].pBufferInfo      = &obparams[0]; 
+    descriptor_writes[1].pImageInfo       = nullptr; 
     descriptor_writes[1].pTexelBufferView = nullptr; 
+                      
+    descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[2].pNext            = nullptr;    
+    descriptor_writes[2].dstSet           = dss[i];
+    descriptor_writes[2].dstBinding       = kObTextureI;      // <-- change shader too
+    descriptor_writes[2].dstArrayElement  = 0;
+    descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[2].descriptorCount  = imageinfos.size(); 
+    descriptor_writes[2].pBufferInfo      = nullptr;
+    descriptor_writes[2].pImageInfo       = &imageinfos[0]; 
+    descriptor_writes[2].pTexelBufferView = nullptr; 
 
     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
 
@@ -188,3 +209,75 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
   return true;
 }
 
+
+
+// ----------------------------------------------------------------------------------------------
+//                                    
+// ----------------------------------------------------------------------------------------------
+bool rekz_BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
+                                          const Vec<rc::Buffer::Ref>&   objbuffs,
+                                          const Vec<rc::ImageView::Ref> imageviews,  //const ImageView&           texture_imageview, 
+                                          const rc::Sampler::Ref        sampler, 
+                                          const DescriptorSetLayout&    dslayout, //const rokz::DescriptorPool& descpool,
+                                          const Device&                 device) {
+  
+  //printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
+   assert (dss.size () == objbuffs.size ());
+  //
+  for (uint32_t i = 0; i < dss.size (); i++) {
+    
+    Vec<VkDescriptorBufferInfo> obparams (rekz::obz::kMaxCount, VkDescriptorBufferInfo {});
+
+    for (size_t iobj = 0; iobj < obparams.size (); ++iobj) { 
+      obparams[iobj].buffer   = objbuffs[i]->handle;    //
+      obparams[iobj].offset   = iobj * sizeof(rekz::PolygonParam); // min_uniform_buffer_offset_alignment ??
+      obparams[iobj].range    = sizeof(rekz::PolygonParam) ;       //glob.vma_objparam_buffs[i].ci.size;
+    }
+    //VkDescriptorImageInfo image_info {};
+    Vec<VkDescriptorImageInfo> imageinfos (rekz::obz::kMaxCount);
+    for (size_t iview = 0; iview < rekz::obz::kMaxCount; ++iview) { 
+
+      if (iview < imageviews.size ()) { 
+        imageinfos[iview] = {};
+        imageinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+        imageinfos[iview].imageView   = imageviews[iview]->handle;
+        imageinfos[iview].sampler     = sampler->handle;
+      }
+      else { // err'thing must b written
+        imageinfos[iview] = {};
+        imageinfos[iview].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+        imageinfos[iview].imageView   = imageviews[0]->handle;
+        imageinfos[iview].sampler     = sampler->handle;
+        }
+    }
+    //
+    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[0].pNext            = nullptr;
+    descriptor_writes[0].dstSet           = dss[i];
+    descriptor_writes[0].dstBinding       = 0;
+    descriptor_writes[0].dstArrayElement  = 0;
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = obparams.size(); // <
+    descriptor_writes[0].pBufferInfo      = &obparams[0]; 
+    descriptor_writes[0].pImageInfo       = nullptr; 
+    descriptor_writes[0].pTexelBufferView = nullptr; 
+                      
+    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].dstSet           = dss[i];
+    descriptor_writes[1].dstBinding       = 1;      // <-- change shader too
+    descriptor_writes[1].dstArrayElement  = 0;
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[1].descriptorCount  = imageinfos.size(); 
+    descriptor_writes[1].pBufferInfo      = nullptr;
+    descriptor_writes[1].pImageInfo       = &imageinfos[0]; 
+    descriptor_writes[1].pTexelBufferView = nullptr; 
+
+    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
+
+  }
+
+  return true;
+
+}

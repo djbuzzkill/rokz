@@ -65,7 +65,7 @@ struct PolygonDraw : public rokz::DrawSequence {
     //VK_POLYGON_MODE_FILL = 0,
     //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 
     std::vector<VkDescriptorSet> descrsets;
-    descrsets.push_back (descrmap.at ("Global"));
+    //    descrsets.push_back (descrmap.at ("Global"));
     descrsets.push_back (object_descr.descrsets[currentframe]); 
   
     vkCmdBindDescriptorSets (combuf, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout,

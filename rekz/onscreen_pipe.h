@@ -40,14 +40,12 @@ namespace rekz { namespace onscreen {
                                       | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     // 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234  
-    struct UBText {
-      enum { text_length = 64 };
-      uint32 text[text_length];
-    };  // elem[kMaxCount] 
 
     const Vec<size_t> UB_sizes = {
-      sizeof (descriptor::MVPTransform),
-      sizeof (std::array<UBText, 128>), 
+      // overlay 
+      sizeof (global_ub::MVPTransform),
+      // strings
+      sizeof (std::array<global_ub::TextItem, 128>), 
     }; 
     
     // ---------------------------------------------------------------------------------------
@@ -61,13 +59,21 @@ namespace rekz { namespace onscreen {
                        VkFormat                          color_format,
                        const Device&                     device); 
     // ----------------------------------------------------------------------------------------------
-    bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss , 
-                                 const Vec<rc::Buffer::Ref>& ubtext,
-                                 const rc::ImageView::Ref    imageviews,  
-                                 const rc::Sampler::Ref      sampler, 
-                                 const DescriptorSetLayout&  dslayout, 
-                                 const Device&               device) ;
+    // bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss , 
+    //                              const Vec<rc::Buffer::Ref>& ubtext,
+    //                              const rc::ImageView::Ref    imageviews,  
+    //                              const rc::Sampler::Ref      sampler, 
+    //                              const DescriptorSetLayout&  dslayout, 
+    //                              const Device&               device) ;
 
+
+    bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
+                                  const Vec<rc::Buffer::Ref>& ubmvp, 
+                                  const Vec<rc::Buffer::Ref>& ubtext,
+                                  const rc::ImageView::Ref    imageview,  
+                                  const rc::Sampler::Ref      sampler, 
+                                  const DescriptorSetLayout&  dslayout, 
+                                  const Device&               device); 
 
     // ---------------------------------------------------------------------------------------
     void UpdateOverlayDescriptors (rc::Buffer::Ref& buf,

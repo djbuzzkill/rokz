@@ -13,15 +13,13 @@ layout(location = 1) in vec3 frag_norm;
 layout(location = 2) in vec2 txcrd2;
 
 layout (push_constant) uniform PushConstant {
-
   ivec4 resourceIDs; 
-
 } pc;
 
 
-layout(binding = 1, set = 1) uniform sampler2D tex_sampler[max_count];
+layout(set = 0, binding = ob_textures_binding) uniform sampler2D tex_sampler[max_count];
 
-layout(location = 0) out vec4 out_color;
+layout (location = 0) out vec4 out_color;
 
 void main() {
      

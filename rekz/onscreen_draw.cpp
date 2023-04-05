@@ -8,8 +8,8 @@
 
 
 using namespace rokz;
-using descriptor::MVPTransform;
-
+using global_ub::MVPTransform;
+using UBText = global_ub::TextItem;
 
 DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, const Vec<VkDescriptorSet>& descriptorsets) { 
 
@@ -38,15 +38,12 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
 
       //for (uint32 el =  0; el < kMaxCount; ++el) {
       for (uint32 el =  0; el < 1; ++el) {
-        std::copy (data.strings[el].begin (), data.strings[el].end (), ubtext[el].text); 
+        // data.strings is filled in loop
+        // data.strings is moved into  ubtext here 
+        std::copy (data.strings[el].begin (), data.strings[el].end (), ubtext[el].ch); 
       }
         
-        
-
-      
-
       // MVP, ubtext, 
-
       // ??? where does MVP get updated
       // ... overlay transforms should all go into global uniforms
       // ??? 

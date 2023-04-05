@@ -10,20 +10,29 @@
 
 using namespace rokz;
 
+using UBText = global_ub::TextItem;
 
 const VkVertexInputBindingDescription&        rekz::onscreen::kVertexInputBindingDesc   = rokz::kPTx_InputBindingDesc;
 const Vec<VkVertexInputAttributeDescription>& rekz::onscreen::kVertexInputAttributeDesc = rokz::kPTx_InputAttributeDesc; 
 
+
+
+const uint32 TEXT_ITEMS_BINDINGI = 16;
+const uint32 FONT_FACE_BINDINGI  = 17;
+
 const DescriptorSetLayoutBindings rekz::onscreen::kDescriptorBindings = {
-  { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1                        , VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::onscreen::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::onscreen::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+  // OVERLAY MVP
+  { global_ub::MVP_Overlay,  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER       , 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  // TEXT ELEMENTS
+  { TEXT_ITEMS_BINDINGI   , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  // FONT FACE
+  { FONT_FACE_BINDINGI    , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::onscreen::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
 
 
 bool setup_onscreen_shaders (Pipeline& pipeline, const systempath& fspath, const Device& device) {
 
-  HERE(" using  ");
+  HERE(" hai  ");
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_cis = pipeline.state.ci.shader_stages; 
   Vec<ShaderModule>&                    shader_modules   = pipeline.shader_modules;
 
@@ -96,16 +105,25 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
 //  this needs to incorporate global uniforms
 // 
 // ----------------------------------------------------------------------------------------------
-bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,  
+bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
+                                              const Vec<rc::Buffer::Ref>& ubmvp, 
                                               const Vec<rc::Buffer::Ref>& ubtext,
                                               const rc::ImageView::Ref    imageview,  
                                               const rc::Sampler::Ref      sampler, 
                                               const DescriptorSetLayout&  dslayout, 
                                               const Device&               device)  {
 
-  HERE("onscreen");
+
+
+  
   for (uint32_t i = 0; i < dss.size (); i++) {
     // setup uniform
+
+    VkDescriptorBufferInfo mvpinfo {};
+    mvpinfo.buffer = ubmvp[i]->handle;
+    mvpinfo.offset = global_ub::MVP_Overlay; 
+    mvpinfo.range  = sizeof(global_ub::MVPTransform);
+      
     Vec<VkDescriptorBufferInfo> textlines (onscreen::kMaxCount, VkDescriptorBufferInfo {});
     for (size_t iobj = 0; iobj < textlines.size (); ++iobj) { 
       textlines[iobj].buffer   = ubtext[i]->handle;    //
@@ -123,24 +141,37 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;
     descriptor_writes[0].dstSet           = dss[i];
-    descriptor_writes[0].dstBinding       = 0;       // does it match in shader? 
+    descriptor_writes[0].dstBinding       = global_ub::MVP_Overlay;       // does it match in shader? 
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = textlines.size(); // <
-    descriptor_writes[0].pBufferInfo      = &textlines[0]; 
+    descriptor_writes[0].descriptorCount  = 1; // <
+    descriptor_writes[0].pBufferInfo      = &mvpinfo; 
     descriptor_writes[0].pImageInfo       = nullptr; 
     descriptor_writes[0].pTexelBufferView = nullptr; 
-                      
+
+
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].pNext            = nullptr;
     descriptor_writes[1].dstSet           = dss[i];
-    descriptor_writes[1].dstBinding       = 1;      // <-- change shader too
+    descriptor_writes[1].dstBinding       = TEXT_ITEMS_BINDINGI; 
     descriptor_writes[1].dstArrayElement  = 0;
-    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_SAMPLER;
-    descriptor_writes[1].descriptorCount  = 1; 
-    descriptor_writes[1].pBufferInfo      = nullptr;
-    descriptor_writes[1].pImageInfo       = &imageinfo; 
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[1].descriptorCount  = textlines.size(); // <
+    descriptor_writes[1].pBufferInfo      = &textlines[0]; 
+    descriptor_writes[1].pImageInfo       = nullptr; 
     descriptor_writes[1].pTexelBufferView = nullptr; 
+
+    
+    descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[2].pNext            = nullptr;    
+    descriptor_writes[2].dstSet           = dss[i];
+    descriptor_writes[2].dstBinding       = FONT_FACE_BINDINGI;
+    descriptor_writes[2].dstArrayElement  = 0;
+    descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_SAMPLER;
+    descriptor_writes[2].descriptorCount  = 1; 
+    descriptor_writes[2].pBufferInfo      = nullptr;
+    descriptor_writes[2].pImageInfo       = &imageinfo; 
+    descriptor_writes[2].pTexelBufferView = nullptr; 
 
     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
 
@@ -158,7 +189,7 @@ void rekz::onscreen::UpdateOverlayDescriptors (rc::Buffer::Ref& buf,
 
   uint8_t* uc = (uint8_t*) rokz::rc::MappedPointer (buf);
 
-  using rokz::descriptor::MVPTransform; 
+  using rokz::global_ub::MVPTransform; 
   
 
   // MVPTransform buffer
@@ -180,7 +211,7 @@ void rekz::onscreen::UpdateOverlayDescriptors (rc::Buffer::Ref& buf,
 
   for (uint32 iline = 0; iline < kMaxCount; ++iline) { 
     auto& s = strings[iline];
-    std::copy  (s.begin (), s.end (), text[iline].text); 
+    std::copy  (s.begin (), s.end (), text[iline].ch); 
     // for (uint32  charind = 0; charind < string_record[iline].size (); ++charind) {
     //   text[iline].text[charind] = string_record[iline][charind]; 
 

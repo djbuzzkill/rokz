@@ -84,6 +84,13 @@ void CleanupDarkroot (Glob& glob) {
   rokz::cx::Destroy (glob.global_uniform_de.pool, glob.device); 
   //glob.poly_objects_de; // ?!?! how r descriptors handled
   rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device); 
+
+
+#ifdef DARKROOT_HIDE_OSD_PATH
+
+  rokz::cx::Destroy (glob.osd_de.pool, glob.device); 
+
+#endif
   // ?  
   // polygons will make use of object descriptors
 
@@ -190,7 +197,8 @@ struct RootLoop {
     // get image index up here
     uint32_t image_index; 
     VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
-    
+
+    // -------------------- ---------------------
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
       glob.swapchain_resetter->Reset (glob.display, glob.device);
@@ -202,16 +210,6 @@ struct RootLoop {
       run = false;
     }
     else {
-
-      // rokz::DrawSequence::PipelineAssembly
-      //   papoly { glob.polys_pl, glob.polys_plo.handle }; 
-
-      // rokz::DrawSequence::PipelineAssembly
-      //   pagrid { glob.grid_pl, glob.grid_plo.handle }; 
-
-      // rokz::DrawSequence::PipelineAssembly
-      //   pa_osd  { glob.osd_pl, glob.osd_plo.handle }; 
-
       // ------------------------ Updaate b4 draw ----------------------------
       //
       //   update uniform here, but uniforms can also b update during DrawSeq::Prep ()
@@ -220,9 +218,11 @@ struct RootLoop {
       rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
 
       // update data needed to record drawlist
+#ifdef DARKROOT_HIDE_OSD_PATH
       onscreen::UpdateOverlayDescriptors (glob.osdata.ubs[curr_frame],
                                           glob.osdata.strings, kTestExtent, Dt);  
-
+#endif
+      
       
       // make sure the correct swapchain image is used
       rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
@@ -246,11 +246,14 @@ struct RootLoop {
       rokz::DrawSequence::RenderEnv grid_re {
         glob.grid_pl, glob.grid_plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
+
+#ifdef DARKROOT_HIDE_OSD_PATH
       // !! there is nothing in shared_globals that is especially useful to overlay
       rokz::DrawSequence::RenderEnv osd_re  {
         glob.osd_pl, glob.osd_plo.handle, glob.shared, glob.descriptormaps[curr_frame]
       };
-        
+#endif
+      
       //
       // scene draw 
       glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
@@ -261,9 +264,10 @@ struct RootLoop {
 
       //
       // no more scene beyond here this is overlay now
-      glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
-      glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
-
+#ifdef DARKROOT_HIDE_OSD_PATH
+       glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
+       glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
+#endif
       // we are done, submit
       rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
@@ -337,12 +341,12 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // rekz::obz::kDescriptorBindings
   rokz::DefineDescriptorSetLayout (glob.object_dslo, rekz::obz::kDescriptorBindings, glob.device); 
 
-  rokz:: DefineDescriptorSetLayout(glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
+#ifdef DARKROOT_HIDE_OSD_PATH
+  rokz::DefineDescriptorSetLayout(glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
+#endif
 
 
-
-  // polygon pipeline uses both descriptor sets
-  glob.polys_pl.dslos.push_back (glob.global_dslo.handle);
+  // ---------------- POLYGON ---------------------
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
   if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
                               kTestExtent, glob.msaa_samples,
@@ -350,7 +354,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
-  // grid only uses globals
+  // ---------------- GRID  ---------------------
   glob.grid_pl.dslos.push_back (glob.global_dslo.handle);
   if (!rekz::InitGridPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
                                kTestExtent, glob.msaa_samples,
@@ -359,7 +363,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false; 
   }
 
-  
+
+#ifdef DARKROOT_HIDE_OSD_PATH
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
   if (!onscreen::InitPipeline (glob.osd_pl,  glob.osd_plo,  glob.osd_pl.dslos, dark_path,
                                kTestExtent, glob.msaa_samples, scg.image_format, glob.device)) {
@@ -367,9 +372,9 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false; 
   }
 
+#endif
+  
   //glob.ods_plo;
-
-
 
   //
   rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
@@ -397,13 +402,14 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rekz::SetupPolygonData (glob.polyd, kMaxFramesInFlight, data_path, glob.device); 
 
   // osd overlay text
+#ifdef DARKROOT_HIDE_OSD_PATH
+
   onscreen::SetupData (glob.osdata, glob.device); 
-
   glob.osdraw = onscreen::CreateDrawText (glob.osdata, glob.osd_de.descrsets); 
-  //rekz::SetupGridData (glob.gridata, glob.device); 
-  // setup object data <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-  //
 
+#endif
+  
+  // setup object data <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   size_t vertoffs = 0;
   size_t indoffs = 0;
   glob.gridbuff = rekz::SetupGridData (vertoffs, indoffs, 11, 11, 20.0, 20.0, glob.device); 
@@ -411,7 +417,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //
   // GLOBAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   rokz::SetupGlobalUniforms (glob.global_rc_uniform_bu, kMaxFramesInFlight, glob.device); 
-  
   if (!rokz::MakeDescriptorPool(glob.global_uniform_de.pool, kMaxFramesInFlight, rokz::kGlobalDescriptorBindings, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorPool \n"); 
     return false;
@@ -425,10 +430,12 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   }
   
-  if (!rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets, glob.global_rc_uniform_bu, glob.device)) {
+  if (!rokz::BindGlobalDescriptorResources (glob.global_uniform_de.descrsets,
+                                            glob.global_rc_uniform_bu,
+                                            glob.device)) {
     printf ("[FAILED] --> BindGridDescriptorResources \n"); 
+    return false; 
   }
-
 
   //
   // object descriptor set 
@@ -441,22 +448,27 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   // ?? who owns descriptor sets
   // POLYGONS
-  if (!rokz::MakeDescriptorSets (glob.poly_objects_de.descrsets, glob.poly_objects_de.alloc_info, kMaxFramesInFlight,
+  if (!rokz::MakeDescriptorSets (glob.poly_objects_de.descrsets,
+                                 glob.poly_objects_de.alloc_info,
+                                 kMaxFramesInFlight,
                                  glob.object_dslo.handle, glob.poly_objects_de.pool, glob.device)) {
     printf ("[FAILED|%i] --> MakeDescriptorSets \n", __LINE__ ); 
     return false;
   }
 
   // Bind*DescriptorSets is part of a pipeline definition
-  if (!rekz::BindObjectDescriptorResources (glob.poly_objects_de.descrsets, glob.poly_objects_bu,
-                                            glob.polyd.imageviews, glob.polyd.sampler, glob.object_dslo,
+  if (!rekz::BindObjectDescriptorResources (glob.poly_objects_de.descrsets,
+                                            glob.global_rc_uniform_bu, 
+                                            glob.poly_objects_bu,
+                                            glob.polyd.imageviews,
+                                            glob.polyd.sampler, glob.object_dslo,
                                             glob.device)) {
     printf ("[FAILED] --> BindObjectDescriptorSets \n"); 
     return false;
   } 
 
-  //
-  //
+#ifdef DARKROOT_HIDE_OSD_PATH
+
   if (!rokz::MakeDescriptorPool (glob.osd_de.pool, kMaxFramesInFlight, onscreen::kDescriptorBindings, glob.device)) {
     printf ("[FAILED|%i] --> MakeDescriptorPool \n", __LINE__ ); 
     return false;
@@ -468,6 +480,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
     printf ("[FAILED|%i] --> MakeDescriptorSets \n", __LINE__ ); 
     return false;
   }
+
+
   //
   if (!rekz::onscreen::BindDescriptorResources ( glob.osd_de.descrsets, glob.osdata.ubs,
                                                  glob.osdata.texture.view, 
@@ -477,6 +491,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   }
 
+#endif
+  
   // 
   for (size_t iframe = 0; iframe < kMaxFramesInFlight; ++iframe) { 
     rokz::DrawSequence::DescriptorMap& descrmap = glob.descriptormaps[iframe];
@@ -485,7 +501,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     // ?? is this the best place to store and pass the descr to the drawlist
     // ?? should the drawlist store this directly
     // ?? drawpolygon references directly
-    descrmap["osd"]    = glob.osd_de.descrsets[iframe]; // <-- should we do this here?
+    //    descrmap["osd"]    = glob.osd_de.descrsets[iframe]; // <-- should we do this here?
     
   }
 
