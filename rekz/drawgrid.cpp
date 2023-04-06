@@ -3,6 +3,7 @@
 #include "rekz/dark_types.h"
 #include "rekz/grid_pipeline.h"
 #include "rokz/draw_sequence.h"
+#include "rokz/rokz_types.h"
 
 // ---------------------------------------------------------------------------------------
 //                   
@@ -10,12 +11,13 @@
 
 struct drawgrid_buff : public rokz::DrawSequence {
 
-  rokz::rc::Buffer::Ref gd; 
+  rokz::rc::Buffer::Ref&  gd; 
+  rokz::DescriptorGroup& dg; 
   size_t vertexoffset;
   size_t indexoffset;
   
-  drawgrid_buff (rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs)
-    : gd (griddata), vertexoffset (voffs) , indexoffset (ioffs) {
+  drawgrid_buff (rokz::rc::Buffer::Ref& griddata, rokz::DescriptorGroup& descrg, size_t voffs, size_t ioffs)
+    : gd (griddata), dg (descrg), vertexoffset (voffs) , indexoffset (ioffs) {
   }
 
   virtual ~drawgrid_buff () {
@@ -32,7 +34,7 @@ struct drawgrid_buff : public rokz::DrawSequence {
 
     using namespace rekz;
 
-    const DescriptorMap& descrmap = env.descriptormap; 
+    //const DescriptorMap& descrmap = env.descriptormap; 
 
     grid::PushConstant push_consts = {};
 
@@ -50,8 +52,9 @@ struct drawgrid_buff : public rokz::DrawSequence {
 
     vkCmdSetScissor   (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
-    const uint32_t descr_set_count = 1; // b/c grid only needs Globals
-    vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout, 0, descr_set_count, &descrmap.at("Global"), 0, nullptr);
+    const uint32_t descr_set_count = 1; //
+    vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout, 0,
+                             descr_set_count, &dg.descrsets[current_frame], 0, nullptr);
 
     VkBuffer     vertex_buffers[] = {gd->handle};
     VkDeviceSize offsets[]        = {vertexoffset};
@@ -88,10 +91,10 @@ struct drawgrid_buff : public rokz::DrawSequence {
 // ---------------------------------------------------------------------------------------
 //                   
 // ---------------------------------------------------------------------------------------
-rokz::DrawSequence::Ref rekz::CreateDrawGrid (
-                 rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs) {
+rokz::DrawSequence::Ref rekz::CreateDrawGrid (rokz::rc::Buffer::Ref& griddata,
+                                              rokz::DescriptorGroup& descrg, size_t voffs, size_t ioffs) {
 
-  return std::make_shared<drawgrid_buff> (griddata, voffs, ioffs); 
+  return std::make_shared<drawgrid_buff> (griddata, descrg, voffs, ioffs); 
 }
 
 

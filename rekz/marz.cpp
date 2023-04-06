@@ -177,11 +177,11 @@ struct MarzLoop {
       // EXECUTE DRAW LIST RECORDING 
 
       rokz::DrawSequence::RenderEnv scape_re {
-        glob.scape.pipe, glob.scape.plo.handle, glob.shared, glob.descriptormaps[curr_frame]
+        glob.scape.pipe, glob.scape.plo.handle, glob.shared 
       };
       
       rokz::DrawSequence::RenderEnv grid_re {
-        glob.grid.pipe, glob.grid.plo.handle, glob.shared, glob.descriptormaps[curr_frame]
+        glob.grid.pipe, glob.grid.plo.handle, glob.shared
       };
         
       glob.scape.draw->Prep (curr_frame, scape_re, glob.device); 
@@ -262,22 +262,22 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview->handle,
                                    glob.depth_imageview->handle, scg.extent); 
 
-
+  
   // define first 
-  rokz::DefineDescriptorSetLayout (glob.global_dslo, rokz::kGlobalDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.grid_dslo, rekz::grid::kDescriptorBindings, glob.device); 
 
   rokz::DefineDescriptorSetLayout (glob.landscape_dslo, lscape::kDescriptorBindings, glob.device); 
 
   // grid only uses globals
-  glob.grid.pipe.dslos.push_back (glob.global_dslo.handle);
-  if (!rekz::InitGridPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
+  glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
+  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
                                scg.extent, glob.msaa_samples,
                                scg.image_format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
   //
-  glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
+  //glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
   if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
                              glob.msaa_samples, scg.image_format, glob.depth_format,
@@ -290,7 +290,7 @@ int run_marz (const std::vector<std::string>& args) {
   size_t gridindoffs;
 
   glob.grid.buff = rekz::SetupGridData (gridvertoffs, gridindoffs, 11, 11, 20.0f, 20.0f, glob.device); 
-  glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, gridvertoffs, gridindoffs);  
+  glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, glob.grid_de,  gridvertoffs, gridindoffs);  
   
   // 
   if (!marz::SetupData (glob.scape.data, glob.device)) {
@@ -298,8 +298,8 @@ int run_marz (const std::vector<std::string>& args) {
     return false;
   }
   
+  glob.scape.draw = marz::CreateDrawMarsLandscape (glob.scape.data, glob.landscape_de.descrsets); 
 
-  glob.scape.draw = marz::CreateDrawMarsLandscape (glob.scape.data); 
   // LANDSCAPE DESC 
   if (!rokz::MakeDescriptorPool (glob.landscape_de.pool, kMaxFramesInFlight,
                                  lscape::kDescriptorBindings, glob.device)) {
@@ -317,6 +317,7 @@ int run_marz (const std::vector<std::string>& args) {
 
   printf ("num descriptorsets:%zu\n", glob.landscape_de.descrsets.size ());
   lscape::BindDescriptorResources (glob.landscape_de.descrsets,
+                                   glob.global_bu, 
                                    glob.scape.data.colorsampler, glob.scape.data.colorviews,
                                    glob.scape.data.heightsampler, glob.scape.data.heightviews,
                                    glob.scape.data.normalsampler, glob.scape.data.normalviews,
@@ -326,29 +327,29 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 
   // GLOBAL DESC
-  if (!rokz::MakeDescriptorPool (glob.global_de.pool, kMaxFramesInFlight,
-                                 rekz::kGlobalDescriptorBindings, glob.device)) {
-    HERE("");
-    return false;
-  }
+  // if (!rokz::MakeDescriptorPool (glob.global_de.pool, kMaxFramesInFlight,
+  //                                rekz::kGlobalDescriptorBindings, glob.device)) {
+  //   HERE("");
+  //   return false;
+  // }
                              
-  if (!rokz::MakeDescriptorSets (glob.global_de.descrsets, glob.global_de.alloc_info,
-                                 kMaxFramesInFlight, glob.global_dslo.handle,
-                                 glob.global_de.pool, glob.device)) {
-    HERE("");
-  }
+  // if (!rokz::MakeDescriptorSets (glob.global_de.descrsets, glob.global_de.alloc_info,
+  //                                kMaxFramesInFlight, glob.global_dslo.handle,
+  //                                glob.global_de.pool, glob.device)) {
+  //   HERE("");
+  // }
 
-  if (!rokz::BindGlobalDescriptorResources (glob.global_de.descrsets, glob.global_bu, glob.device)) {
-    printf ("[FAILED] --> BindGridDescriptorResources \n"); 
-  }
+  // if (!rokz::BindGlobalDescriptorResources (glob.global_de.descrsets, glob.global_bu, glob.device)) {
+  //   printf ("[FAILED] --> BindGridDescriptorResources \n"); 
+  // }
 
 
   // 
-  for (size_t iframe = 0; iframe < kMaxFramesInFlight; ++iframe) { 
-    rokz::DrawSequence::DescriptorMap& descrmap = glob.descriptormaps[iframe];
-    descrmap["Global"] = glob.global_de.descrsets[iframe];
-    descrmap["lscape"] = glob.landscape_de.descrsets[iframe];
-  }
+  // for (size_t iframe = 0; iframe < kMaxFramesInFlight; ++iframe) { 
+  //   rokz::DrawSequence::DescriptorMap& descrmap = glob.descriptormaps[iframe];
+  //   descrmap["Global"] = glob.global_de.descrsets[iframe];
+  //   descrmap["lscape"] = glob.landscape_de.descrsets[iframe];
+  // }
   
   // create frame syncs
   fsg.command_buffers.resize (kMaxFramesInFlight);

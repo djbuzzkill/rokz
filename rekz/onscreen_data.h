@@ -23,14 +23,14 @@ namespace rekz { namespace onscreen {
     struct Data {
       rc::Buffer::Ref                    geom;   // for the rectangle
 
-      Vec<rc::Buffer::Ref>               ubs;   // for the rectangle
-      
+      Vec<rc::Buffer::Ref>               textub;   // for the rectangle
       Texture                            texture;
-      std::array<std::string, kMaxCount> strings; 
+
+      std::array<std::string, kMaxCount> strings; // y not just put directly into textub
     }; 
     
     // ----------------------------------------------------------------------------------------
-    bool SetupData (Data& dat, const Device& device);   
+    bool SetupData (Data& dat, size_t numframes, const Device& device);   
     void Cleanup   (Data& dat);   
     
   }}

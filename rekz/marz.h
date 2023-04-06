@@ -64,7 +64,7 @@ namespace marz {
     rc::ImageView::Ref     msaa_color_imageview; //
 
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
-    DescriptorSetLayout    global_dslo;          // global r 'shared global' descr's
+    DescriptorSetLayout    grid_dslo;          // global r 'shared global' descr's
     DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's
     // uniformbundle
     Vec<rc::Buffer::Ref>   global_bu;    // vma_shared_uniforms;
@@ -72,16 +72,16 @@ namespace marz {
     
     // descriptors sets
     DescriptorGroup        landscape_de; //
-    DescriptorGroup        global_de;
-
+    //DescriptorGroup        global_de;
+    DescriptorGroup        grid_de;
 
     transform              viewer;
 
     
     // DrawSequence stuff
-    DrawSequence::Globals                                       shared;               
-    std::array<DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
-    DrawSequence::DescriptorLayoutMap                           dslomap;
+    DrawSequence::Globals              shared;               
+    //std::array<DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
+    DrawSequence::DescriptorLayoutMap  dslomap;
     // 
     // GRID
     struct Grid { 

@@ -4,6 +4,7 @@
 #include "rokz/pipeline.h"
 #include "rokz/rokz_types.h"
 #include "rokz/shader.h"
+#include "rokz/shared_descriptor.h"
 #include <vulkan/vulkan_core.h>
 
 using namespace rokz;
@@ -41,21 +42,14 @@ const Vec<VkVertexInputAttributeDescription> rekz::grid::kVertInputAttributeDesc
 // ----------------------------------------------------------------------------------------
 // descriptors 
 // ----------------------------------------------------------------------------------------
-// const std::vector<VkDescriptorSetLayoutBinding> rekz::kGridDescriptorBindings = {
-//   // struct VkDescriptorSetLayoutBinding {
-//   //   binding:uint32_t,
-//   //   descriptorType:VkDescriptorType,      
-//   //   descriptorCount:uint32_t,
-//   //   stageFlags:VkShaderStageFlags, 
-//   //   pImmutableSamplers:const VkSampler*, 
-//   // }; 
-//   {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
-// }; 
+const Vec<VkDescriptorSetLayoutBinding> rekz::grid::kDescriptorBindings = {
+  {global_ub::MVP_SCENE_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+  {global_ub::GRIDSTATE_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+}; 
 
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
-
 bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const systempath& fspath, const rokz::Device& device) {
 
   printf ("%s \n", __FUNCTION__); 
@@ -70,17 +64,15 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const systempath& fspa
                                    pipeline.shader_modules, pipeline.shader_stage_defs, device); 
 }
 
-
-
 // ----------------------------------------------------------------------------------------------
 // 
 // ----------------------------------------------------------------------------------------------
 
-bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
+bool rekz::grid::InitPipeline (rokz::Pipeline&              pipeline,
                              rokz::PipelineLayout&        plo,
                              //0
-                             const std::vector<VkDescriptorSetLayout>&   dslos,
-                             const std::filesystem::path& fspath,
+                             const Vec<VkDescriptorSetLayout>&   dslos,
+                             const systempath&            fspath,
                              const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
                              VkSampleCountFlagBits        msaa_samples,
                              VkFormat                     color_format,
@@ -89,10 +81,6 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
   //
   // Descriptor Set
   //rokz::DefineDescriptorSetLayout (dslo,  kGridDescriptorBindings, device);
-
-  
-  
-  
   //
   // Pipeline Layout
     rokz::DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(rekz::grid::PushConstant),
@@ -152,13 +140,58 @@ bool rekz::InitGridPipeline (rokz::Pipeline&              pipeline,
 // 
 // ----------------------------------------------------------------------------------------------
 
-bool rekz::BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rc::Buffer::Ref>& global_uniforms, const rokz::Device& device) {
+bool rekz::grid::BindDescriptorResources (Vec<VkDescriptorSet>&               dss,
+                                          const std::vector<rc::Buffer::Ref>& globalubs,
+                                          const rokz::Device&                 device) {
+  // {global_ub::MVP_SCENE_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+  // {global_ub::GRIDSTATE_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+  assert (dss.size () == globalubs.size ());
 
-  printf (" FYI:%s does nothtng. ", __FUNCTION__);
+  for (uint32_t i = 0; i < dss.size (); i++) {
+    assert (dss[i]); 
+    assert (globalubs[i]); 
 
-  // grid uses data defined as part of global 
+    // MVP Scene
+    VkDescriptorBufferInfo globalinfo = {};
+    globalinfo.buffer = globalubs[i]->handle;
+    globalinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_SCENE_BINDINGI); 
+    globalinfo.range  = sizeof (global_ub::MVPTransform); 
+
+    VkDescriptorBufferInfo gridinfo = {};
+    gridinfo.buffer = globalubs[i]->handle;
+    gridinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::GRIDSTATE_BINDINGI); 
+    gridinfo.range  = sizeof (global_ub::GridState); 
+
+    std::array<VkWriteDescriptorSet, 2> descrwrites {};
+    descrwrites[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descrwrites[0].pNext            = nullptr;
+    descrwrites[0].dstSet           = dss[i];
+    descrwrites[0].dstBinding       = global_ub::MVP_SCENE_BINDINGI;       // does it match in shader? 
+    descrwrites[0].dstArrayElement  = 0;
+    descrwrites[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descrwrites[0].descriptorCount  = 1; 
+    descrwrites[0].pBufferInfo      = &globalinfo; 
+    descrwrites[0].pImageInfo       = nullptr; 
+    descrwrites[0].pTexelBufferView = nullptr; 
+
+    descrwrites[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descrwrites[1].pNext            = nullptr;
+    descrwrites[1].dstSet           = dss[i];
+    descrwrites[1].dstBinding       = global_ub::GRIDSTATE_BINDINGI;       // does it match in shader?
+    descrwrites[1].dstArrayElement  = 0;
+    descrwrites[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descrwrites[1].descriptorCount  = 1; // <
+    descrwrites[1].pBufferInfo      = &gridinfo; 
+    descrwrites[1].pImageInfo       = nullptr; 
+    descrwrites[1].pTexelBufferView = nullptr; 
+                      
+    vkUpdateDescriptorSets (device.handle, descrwrites.size(), &descrwrites[0], 0, nullptr);
+
+
+  }
+
   
-  printf (" bai\n");
+  // grid uses data defined as part of global 
   return true; 
 }
 

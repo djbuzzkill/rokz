@@ -49,7 +49,8 @@ namespace rekz {
                                  float xsize, float zsize,
                                  const Device& device); 
 
-  rokz::DrawSequence::Ref CreateDrawGrid (rokz::rc::Buffer::Ref griddata, size_t voffs, size_t ioffs); 
+  rokz::DrawSequence::Ref CreateDrawGrid (rokz::rc::Buffer::Ref& griddata,
+                                          rekz::DescriptorGroup& dg, size_t voffs, size_t ioffs); 
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------

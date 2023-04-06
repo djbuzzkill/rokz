@@ -2,6 +2,8 @@
 
 #include "onscreen_draw.h"
 #include "rekz/onscreen_pipe.h"
+#include "rokz/shared_descriptor.h"
+#include <numeric>
 #include <vulkan/vulkan_core.h>
 
 
@@ -13,25 +15,33 @@ using UBText = global_ub::TextItem;
 
 DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, const Vec<VkDescriptorSet>& descriptorsets) { 
 
-
   struct osd_draw_text : public DrawSequence  {
-    
+    //
+    //const Vec<rc::Buffer::Ref>& ubs; 
     const onscreen::Data&       data;
     const Vec<VkDescriptorSet>& dss;    
-
-    osd_draw_text (const onscreen::Data& dat, const Vec<VkDescriptorSet>& dsets) :data (dat), dss (dsets) {
-      }
-    
+    //
+    osd_draw_text (const onscreen::Data& dat, //const Vec<rc::Buffer::Ref>& uniformbuffers,
+                   const Vec<VkDescriptorSet>& dsets)
+      : data (dat), //ubs (uniformbuffers),
+        dss (dsets) {
+    }
+    //
     virtual int Prep (uint32_t currentframe, const RenderEnv& env, const rokz::Device& device) {
 
-      uint8* ub = reinterpret_cast<uint8*> (rc::MappedPointer (data.ubs[currentframe])); 
+      uint8* ub = reinterpret_cast<uint8*> (rc::MappedPointer (data.textub[currentframe])); 
       if ( !ub ) {
         HERE("failed to acquire mapped pointer");
         return __LINE__;
       }
 
-      // this shouldnt be done here, it shoud come from Global Uniforms
-      MVPTransform* mvp = (MVPTransform*) (ub + ut::offset_at (UB_sizes, 0));
+
+      size_t total_onscreen_UB_size =
+        std::accumulate (global_ub::UB_sizes.begin (), global_ub::UB_sizes.end () , 0);
+
+      
+      // // this shouldnt be done here, it shoud come from Global Uniforms
+      // MVPTransform* mvp = (MVPTransform*) (ub + ut::offset_at (UB_sizes, 0));
         
       // 
       UBText* ubtext = (UBText*) (ub + ut::offset_at (UB_sizes, 1)); 
@@ -71,8 +81,7 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
 
       int res = __LINE__;
 
-      const DescriptorMap& descrmap = env.descriptormap;
-    
+      
       const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron ();
       vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 

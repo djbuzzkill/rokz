@@ -10,14 +10,12 @@
 namespace rokz { namespace global_ub {
 
     enum BindingEnum {
-      MVP_Scene   = 0,
-      MVP_Overlay = 1, 
-      GridState   = 2,
-      TextItems   = 3,
-      BindingEnumMax = 16, 
+      MVP_SCENE_BINDINGI   = 0,
+      MVP_OVERLAY_BINDINGI = 1, 
+      GRIDSTATE_BINDINGI   = 2,
+      TEXTITEMS_BINDINGI   = 3,
+      GLOBAL_BINDING_ENUM_MAX = 16, 
     };       
-    
-
 
     // ----------------------------------------------------------------------------------------------
     //                                    

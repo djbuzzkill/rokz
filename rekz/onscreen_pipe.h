@@ -68,8 +68,8 @@ namespace rekz { namespace onscreen {
 
 
     bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
-                                  const Vec<rc::Buffer::Ref>& ubmvp, 
-                                  const Vec<rc::Buffer::Ref>& ubtext,
+                                  const Vec<rc::Buffer::Ref>& globalubs, 
+                                  const Vec<rc::Buffer::Ref>& textubs,
                                   const rc::ImageView::Ref    imageview,  
                                   const rc::Sampler::Ref      sampler, 
                                   const DescriptorSetLayout&  dslayout, 

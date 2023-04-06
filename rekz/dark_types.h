@@ -53,13 +53,13 @@ namespace darkroot {
     rc::ImageView::Ref     msaacolorimageview;  
   
     DrawSequence::Globals  shared;             
-    DescriptorSetLayout    global_dslo;        
+    DescriptorSetLayout    grid_dslo;        
     DescriptorSetLayout    object_dslo;        
     DescriptorSetLayout    osd_dslo;        
 
     // UniformBundle
     Vec<rc::Buffer::Ref>   global_rc_uniform_bu;    
-    DescriptorGroup        global_uniform_de;
+    //DescriptorGroup        global_uniform_de;
 
     // POLYGONS
     Pipeline               polys_pl;
@@ -68,7 +68,7 @@ namespace darkroot {
     PolygonData            polyd;
     DrawSequence::Ref      drawpoly;
     Vec<rc::Buffer::Ref>   poly_objects_bu; //
-    DescriptorGroup        poly_objects_de; //
+
     // 
     // GRID
     Pipeline               grid_pl;
@@ -79,10 +79,13 @@ namespace darkroot {
     // 
     Pipeline               osd_pl;
     PipelineLayout         osd_plo;
-    DescriptorGroup        osd_de; //
     DrawSequence::Ref      osdraw;
     onscreen::Data         osdata;
 
+    DescriptorGroup        poly_objects_de; //
+    DescriptorGroup        grid_de; 
+    DescriptorGroup        osd_de; //
+    
 
     struct DRAWSEQSTRUC {
       DrawSequence::RenderEnv  re;
@@ -92,7 +95,7 @@ namespace darkroot {
     Vec<DRAWSEQSTRUC>      drawtasks; 
 
     // 
-    std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
+    //std::array<rokz::DrawSequence::DescriptorMap, MaxFramesInFlight> descriptormaps;
     rokz::DrawSequence::DescriptorLayoutMap                          dslomap;
 
     SwapchainResetter::Ref  swapchain_resetter;

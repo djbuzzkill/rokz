@@ -2,6 +2,7 @@
 #include "landscape_pipeline.h"
 #include "rokz/pipeline.h"
 #include "rokz/shader.h"
+#include "rokz/shared_descriptor.h"
 #include "rokz/vert_defs.h"
 #include <vulkan/vulkan_core.h>
 
@@ -14,16 +15,16 @@ const VkShaderStageFlags landscape_shader_stages = VK_SHADER_STAGE_TESSELLATION_
                                                  | VK_SHADER_STAGE_VERTEX_BIT
                                                  | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-///
+//
 const Vec<VkDescriptorSetLayoutBinding> lscape::kDescriptorBindings = {
   // height
-  { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // height
+  { lscape::HEIGHT_IMAGE_BINDINGI, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // height
   // normal 
-  { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // normnal
+  { lscape::NORMAL_IMAGE_BINDINGI, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // normnal
   // color
-  { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // color
+  { lscape::COLOR_IMAGE_BINDINGI, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lscape::tile::kMaxCount, kPCStages, nullptr }, // color
   // PatchParams
-  { 3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , lscape::tile::kMaxCount, kPCStages, nullptr }, // color
+  { lscape::PATCH_PARAMS_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , lscape::tile::kMaxCount, kPCStages, nullptr }, // color
 };
 
 //
@@ -136,6 +137,9 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
 // set 0= Global  descriptors ,  set 1= landscape descriptors
 // ----------------------------------------------------------------------------------------
 bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&           dss,
+
+                                      const Vec<rc::Buffer::Ref>&     globalubs, 
+                                      
                                       const rc::Sampler::Ref&         colorsamp,
                                       const Vec<rc::ImageView::Ref>&  colorviews,
 
@@ -148,11 +152,18 @@ bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&           dss,
                                       const DescriptorSetLayout&      dslayout, 
                                       const Device&                   device) {
 
-  if (colorviews.size  () > lscape::tile::kMaxCount) HERE("[!!!] colorviews exceed kMaxCount");
-  if (heightviews.size () > lscape::tile::kMaxCount) HERE("[!!!] heightviews exceed kMaxCount");
-  if (normalviews.size () > lscape::tile::kMaxCount) HERE("[!!!] normalviews exceed kMaxCount");
-  //
+  // if (colorviews.size  () > lscape::tile::kMaxCount) HERE("[!!!] colorviews exceed kMaxCount");
+  // if (heightviews.size () > lscape::tile::kMaxCount) HERE("[!!!] heightviews exceed kMaxCount");
+  // if (normalviews.size () > lscape::tile::kMaxCount) HERE("[!!!] normalviews exceed kMaxCount");
+  // //
   for (uint32_t i = 0; i < dss.size (); i++) {
+
+
+    VkDescriptorBufferInfo globalinfo {};
+    globalinfo.buffer = globalubs[i]->handle; 
+    globalinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_SCENE_BINDINGI); 
+    globalinfo.range  = sizeof  (global_ub::MVPTransform);
+    
     //
     Vec<VkDescriptorImageInfo> colorinfos (tile::kMaxCount);
     for (size_t iview = 0; iview < tile::kMaxCount; ++iview) { 
@@ -195,29 +206,48 @@ bool lscape::BindDescriptorResources (Vec<VkDescriptorSet>&           dss,
     const uint32 normal_binding_index = 1; 
     const uint32 color_binding_index  = 2; // <-- make sure shader matches
 
-    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
+    std::array<VkWriteDescriptorSet, 3> descriptor_writes {};
+
+
+
+    globalinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_SCENE_BINDINGI); 
+    globalinfo.range  = sizeof  (global_ub::MVPTransform);
+
+
     // COLOR
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;
     descriptor_writes[0].dstSet           = dss[i];
-    descriptor_writes[0].dstBinding       = color_binding_index; // does it match in shader? 
+    descriptor_writes[0].dstBinding       = global_ub::MVP_SCENE_BINDINGI; // does it match in shader? 
     descriptor_writes[0].dstArrayElement  = 0;
-    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptor_writes[0].descriptorCount  = colorinfos.size(); // <
-    descriptor_writes[0].pBufferInfo      = nullptr;
-    descriptor_writes[0].pImageInfo       = &colorinfos[0]; ; 
+    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_writes[0].descriptorCount  = 1; // <
+    descriptor_writes[0].pBufferInfo      = &globalinfo;
+    descriptor_writes[0].pImageInfo       = nullptr; 
     descriptor_writes[0].pTexelBufferView = nullptr; 
-    // height
+
+
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;    
+    descriptor_writes[1].pNext            = nullptr;
     descriptor_writes[1].dstSet           = dss[i];
-    descriptor_writes[1].dstBinding       = height_binding_index;      // <-- change shader too
+    descriptor_writes[1].dstBinding       = lscape::COLOR_IMAGE_BINDINGI; // does it match in shader? 
     descriptor_writes[1].dstArrayElement  = 0;
-    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
-    descriptor_writes[1].descriptorCount  = heightinfos.size(); 
+    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptor_writes[1].descriptorCount  = colorinfos.size(); // <
     descriptor_writes[1].pBufferInfo      = nullptr;
-    descriptor_writes[1].pImageInfo       = &heightinfos[0]; 
+    descriptor_writes[1].pImageInfo       = &colorinfos[0]; ; 
     descriptor_writes[1].pTexelBufferView = nullptr; 
+    // height
+    descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_writes[2].pNext            = nullptr;    
+    descriptor_writes[2].dstSet           = dss[i];
+    descriptor_writes[2].dstBinding       = lscape::HEIGHT_IMAGE_BINDINGI;      // <-- change shader too
+    descriptor_writes[2].dstArrayElement  = 0;
+    descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
+    descriptor_writes[2].descriptorCount  = heightinfos.size(); 
+    descriptor_writes[2].pBufferInfo      = nullptr;
+    descriptor_writes[2].pImageInfo       = &heightinfos[0]; 
+    descriptor_writes[2].pTexelBufferView = nullptr; 
     // normal
     // descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     // descriptor_writes[1].pNext            = nullptr;    

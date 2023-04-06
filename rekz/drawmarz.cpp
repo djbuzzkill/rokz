@@ -2,6 +2,7 @@
 #include "drawmarz.h"
 #include "marzdata.h"
 #include "landscape_pipeline.h"
+#include "rokz/rokz_types.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -9,13 +10,14 @@ using namespace rokz;
 // ------------------------------------------------------------------------------------------
 //                        
 // ------------------------------------------------------------------------------------------
-DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
+DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDescriptorSet>& dsets)  {
 
   struct drawmarz : public DrawSequence {
 
     marz::Data& marzd;
+    const Vec<VkDescriptorSet>& dss;
     //
-    drawmarz (marz::Data& dat) : marzd (dat) {
+    drawmarz (marz::Data& dat, const Vec<VkDescriptorSet>& descrsets) : marzd (dat), dss (descrsets) {
     }
     //
     virtual ~drawmarz () {
@@ -31,7 +33,7 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
     virtual int Exec (VkCommandBuffer commb, uint32_t currentframe, const RenderEnv& env) {
 
       //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
-      const DescriptorMap& descrmap = env.descriptormap;
+      //const DescriptorMap& descrmap = env.descriptormap;
 
       vkCmdBindPipeline (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 
@@ -41,8 +43,9 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
       vkCmdSetScissor (commb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
       Vec<VkDescriptorSet> descrsets = {
-        descrmap.at ("Global"),
-        descrmap.at ("lscape"),
+        dss[currentframe], 
+        // descrmap.at ("Global"),
+        // descrmap.at ("lscape"),
       };
 
       vkCmdBindDescriptorSets (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout,
@@ -81,6 +84,6 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat)  {
   }; 
 
 
-  return std::make_shared<drawmarz> (dat);
-}
+  return std::make_shared<drawmarz> (dat, dsets);
+ }
 

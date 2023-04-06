@@ -10,7 +10,8 @@
 namespace rekz { namespace onscreen {
 
     using namespace rokz;
-    rokz::DrawSequence::Ref CreateDrawText (const onscreen::Data&, const Vec<VkDescriptorSet>& descriptorsets); 
+
+    rokz::DrawSequence::Ref CreateDrawText (const onscreen::Data& dat, const Vec<VkDescriptorSet>& descriptorsets); 
 
   }}
 

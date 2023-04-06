@@ -18,13 +18,13 @@ const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDe
 //   { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 // };
 
-const auto kObParamsI  = 18;
-const auto kObTextureI = 19;
+const auto kObParamsBindingI  = 18;
+const auto kObTextureBindingI = 19;
 
 const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
-  { global_ub::MVP_Scene, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1                   , VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { kObParamsI          , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { kObTextureI         , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+  { global_ub::MVP_SCENE_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1                   , VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  { kObParamsBindingI            , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  { kObTextureBindingI           , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
 
 
@@ -83,7 +83,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     // MVP Scene
     VkDescriptorBufferInfo globalinfo = {};
     globalinfo.buffer = globalub[i]->handle;
-    globalinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_Scene); 
+    globalinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_SCENE_BINDINGI); 
     globalinfo.range  = sizeof (global_ub::MVPTransform); 
     // POLYGON PARAMS
     Vec<VkDescriptorBufferInfo> obparams (obz::kMaxCount, VkDescriptorBufferInfo {});
@@ -114,7 +114,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].pNext            = nullptr;
     descriptor_writes[0].dstSet           = dss[i];
-    descriptor_writes[0].dstBinding       = global_ub::MVP_Scene;       // does it match in shader? 
+    descriptor_writes[0].dstBinding       = global_ub::MVP_SCENE_BINDINGI;       // does it match in shader? 
     descriptor_writes[0].dstArrayElement  = 0;
     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[0].descriptorCount  = 1; 
@@ -125,7 +125,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[1].pNext            = nullptr;
     descriptor_writes[1].dstSet           = dss[i];
-    descriptor_writes[1].dstBinding       = kObParamsI;       // does it match in shader?
+    descriptor_writes[1].dstBinding       = kObParamsBindingI;       // does it match in shader?
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[1].descriptorCount  = obparams.size(); // <
@@ -136,7 +136,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[2].pNext            = nullptr;    
     descriptor_writes[2].dstSet           = dss[i];
-    descriptor_writes[2].dstBinding       = kObTextureI;      // <-- change shader too
+    descriptor_writes[2].dstBinding       = kObTextureBindingI;      // <-- change shader too
     descriptor_writes[2].dstArrayElement  = 0;
     descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
     descriptor_writes[2].descriptorCount  = imageinfos.size(); 

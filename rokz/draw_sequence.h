@@ -30,7 +30,7 @@ namespace rokz {
 
     typedef std::shared_ptr<DrawSequence>  Ref;
 
-    typedef std::map<std::string, VkDescriptorSet>       DescriptorMap;
+    //typedef std::map<std::string, VkDescriptorSet>       DescriptorMap;
     typedef std::map<std::string, VkDescriptorSetLayout> DescriptorLayoutMap;
     // --------------------------------------------------------------------
     // part of DrawSequence
@@ -66,7 +66,7 @@ namespace rokz {
 
       //PipelineAssembly&  pa;
       Globals&           globals;
-      DescriptorMap&     descriptormap;
+      //DescriptorMap&     descriptormap;
     }; 
     typedef render_environment RenderEnv; 
 

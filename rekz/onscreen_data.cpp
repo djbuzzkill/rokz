@@ -7,6 +7,7 @@
 #include "rokz/rc_buffer.h"
 #include "rokz/rc_image.h"
 #include "rokz/rc_types.h"
+#include "rokz/shared_descriptor.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -61,7 +62,7 @@ struct glyph_layer : public cx::mappedlayer_cb {
 }; 
 
 // ----------------------------------------------------------------------------------------
-bool rekz::onscreen::SetupData (Data& dat, const Device& device) {
+bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& device) {
 
   VkFormat imageformat = VK_FORMAT_R8_UINT; 
 
@@ -98,19 +99,22 @@ bool rekz::onscreen::SetupData (Data& dat, const Device& device) {
 
   cx::TransferToDeviceBuffer ( dat.geom->handle,  sizeof_geom, std::make_shared<geom_handler>(), device); 
 
-  // 
+  // -------------- default string  ---------------
   for (auto& str : dat.strings) {
-    str.resize (64);
+    str.resize (64);  // y not just put directly into textub
     str = "---- test text ----"; 
   }
 
 
+  // -------------- default string  ---------------
+  const size_t total_ub_size =
+    UB_sizes[global_ub::TEXTITEMS_BINDINGI];
 
-  
-  dat.ubs.resize (2); // max frame in flight
-  const size_t total_ub_size = UB_sizes[0] + UB_sizes[1]; 
-  dat.ubs[0] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
-  dat.ubs[1] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
+  dat.textub.resize (nframesets); // max frame in flight
+  for (size_t iframe = 0; iframe < nframesets; ++iframe) { 
+    dat.textub[iframe] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
+  }
+
 
   //c/c++-clang c/c++-gcc c/c++-cppcheck 
   return false; 

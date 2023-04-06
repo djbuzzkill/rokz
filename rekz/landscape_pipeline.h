@@ -44,6 +44,10 @@
       static_assert (sizeof(PushConstant) <= 128, "exceeding max push constant"); 
     }    
 
+    const uint32 HEIGHT_IMAGE_BINDINGI = 32;
+    const uint32 NORMAL_IMAGE_BINDINGI = 33;
+    const uint32 COLOR_IMAGE_BINDINGI  = 34;
+    const uint32 PATCH_PARAMS_BINDINGI = 35;
     // ----------------------------------------------------------------------------------------
     //                     
     // ----------------------------------------------------------------------------------------
@@ -61,6 +65,8 @@
     // set 0= Global  descriptors ,  set 1= landscape descriptors
     // ----------------------------------------------------------------------------------------
     bool BindDescriptorResources (Vec<VkDescriptorSet>&           dss,
+                                  const Vec<rc::Buffer::Ref>&     globalubs, 
+
                                   const rc::Sampler::Ref&         colorsamp,
                                   const Vec<rc::ImageView::Ref>&  colorviews,
 

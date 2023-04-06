@@ -9,8 +9,7 @@
 namespace marz {
 
   using namespace rokz;
-
-  DrawSequence::Ref CreateDrawMarsLandscape (marz::Data&); 
+  DrawSequence::Ref CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDescriptorSet>& dsets) ; 
   
 }
 #endif

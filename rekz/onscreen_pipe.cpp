@@ -21,8 +21,6 @@ const uint32 TEXT_ITEMS_BINDINGI = 16;
 const uint32 FONT_FACE_BINDINGI  = 17;
 
 const DescriptorSetLayoutBindings rekz::onscreen::kDescriptorBindings = {
-  // OVERLAY MVP
-  { global_ub::MVP_Overlay,  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER       , 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
   // TEXT ELEMENTS
   { TEXT_ITEMS_BINDINGI   , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
   // FONT FACE
@@ -106,75 +104,72 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
 // 
 // ----------------------------------------------------------------------------------------------
 bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
-                                              const Vec<rc::Buffer::Ref>& ubmvp, 
-                                              const Vec<rc::Buffer::Ref>& ubtext,
+                                              const Vec<rc::Buffer::Ref>& globalubs,
+                                              const Vec<rc::Buffer::Ref>& textubs,
                                               const rc::ImageView::Ref    imageview,  
                                               const rc::Sampler::Ref      sampler, 
                                               const DescriptorSetLayout&  dslayout, 
-                                              const Device&               device)  {
+                                              const Device&               device) {
+  assert (globalubs.size () != 0); 
+  assert (textubs.size () != 0); 
+  // separate mvp+ostext buffers or combine
 
-
-
-  
+  //
   for (uint32_t i = 0; i < dss.size (); i++) {
     // setup uniform
-
     VkDescriptorBufferInfo mvpinfo {};
-    mvpinfo.buffer = ubmvp[i]->handle;
-    mvpinfo.offset = global_ub::MVP_Overlay; 
+    mvpinfo.buffer = globalubs[i]->handle;
+    mvpinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_OVERLAY_BINDINGI); 
     mvpinfo.range  = sizeof(global_ub::MVPTransform);
       
     Vec<VkDescriptorBufferInfo> textlines (onscreen::kMaxCount, VkDescriptorBufferInfo {});
     for (size_t iobj = 0; iobj < textlines.size (); ++iobj) { 
-      textlines[iobj].buffer   = ubtext[i]->handle;    //
-      textlines[iobj].offset   = iobj * sizeof(UBText); // min_uniform_buffer_offset_alignment ??
-      textlines[iobj].range    = sizeof(UBText);       //glob.vma_objparam_buffs[i].ci.size;
-    }  
+      textlines[iobj].buffer = textubs[i]->handle;    //
+      textlines[iobj].offset = iobj * sizeof(UBText); // min_uniform_buffer_offset_alignment ??
+      textlines[iobj].range  = sizeof(UBText);       //glob.vma_objparam_buffs[i].ci.size;
+    }
     // setup texture+sampler
     VkDescriptorImageInfo  imageinfo; //  (onscreen::kMaxCount);
     imageinfo = {};
-    imageinfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
-    imageinfo.imageView   = imageview->handle;
-    imageinfo.sampler     = sampler->handle;
+    imageinfo.imageLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+    imageinfo.imageView      = imageview->handle;
+    imageinfo.sampler        = sampler->handle;
     //
-    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
-    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].pNext            = nullptr;
-    descriptor_writes[0].dstSet           = dss[i];
-    descriptor_writes[0].dstBinding       = global_ub::MVP_Overlay;       // does it match in shader? 
-    descriptor_writes[0].dstArrayElement  = 0;
-    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = 1; // <
-    descriptor_writes[0].pBufferInfo      = &mvpinfo; 
-    descriptor_writes[0].pImageInfo       = nullptr; 
-    descriptor_writes[0].pTexelBufferView = nullptr; 
+    std::array<VkWriteDescriptorSet, 2> descrwrites {};
+    descrwrites[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descrwrites[0].pNext            = nullptr;
+    descrwrites[0].dstSet           = dss[i];
+    descrwrites[0].dstBinding       = global_ub::MVP_OVERLAY_BINDINGI;       // does it match in shader? 
+    descrwrites[0].dstArrayElement  = 0;
+    descrwrites[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descrwrites[0].descriptorCount  = 1; // <
+    descrwrites[0].pBufferInfo      = &mvpinfo; 
+    descrwrites[0].pImageInfo       = nullptr; 
+    descrwrites[0].pTexelBufferView = nullptr; 
 
-
-    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;
-    descriptor_writes[1].dstSet           = dss[i];
-    descriptor_writes[1].dstBinding       = TEXT_ITEMS_BINDINGI; 
-    descriptor_writes[1].dstArrayElement  = 0;
-    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[1].descriptorCount  = textlines.size(); // <
-    descriptor_writes[1].pBufferInfo      = &textlines[0]; 
-    descriptor_writes[1].pImageInfo       = nullptr; 
-    descriptor_writes[1].pTexelBufferView = nullptr; 
-
+    descrwrites[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descrwrites[1].pNext            = nullptr;
+    descrwrites[1].dstSet           = dss[i];
+    descrwrites[1].dstBinding       = TEXT_ITEMS_BINDINGI; 
+    descrwrites[1].dstArrayElement  = 0;
+    descrwrites[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descrwrites[1].descriptorCount  = textlines.size(); // <
+    descrwrites[1].pBufferInfo      = &textlines[0]; 
+    descrwrites[1].pImageInfo       = nullptr; 
+    descrwrites[1].pTexelBufferView = nullptr; 
     
-    descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[2].pNext            = nullptr;    
-    descriptor_writes[2].dstSet           = dss[i];
-    descriptor_writes[2].dstBinding       = FONT_FACE_BINDINGI;
-    descriptor_writes[2].dstArrayElement  = 0;
-    descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_SAMPLER;
-    descriptor_writes[2].descriptorCount  = 1; 
-    descriptor_writes[2].pBufferInfo      = nullptr;
-    descriptor_writes[2].pImageInfo       = &imageinfo; 
-    descriptor_writes[2].pTexelBufferView = nullptr; 
+    descrwrites[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descrwrites[2].pNext            = nullptr;    
+    descrwrites[2].dstSet           = dss[i];
+    descrwrites[2].dstBinding       = FONT_FACE_BINDINGI;
+    descrwrites[2].dstArrayElement  = 0;
+    descrwrites[2].descriptorType   = VK_DESCRIPTOR_TYPE_SAMPLER;
+    descrwrites[2].descriptorCount  = 1; 
+    descrwrites[2].pBufferInfo      = nullptr;
+    descrwrites[2].pImageInfo       = &imageinfo; 
+    descrwrites[2].pTexelBufferView = nullptr; 
 
-    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-
+    vkUpdateDescriptorSets (device.handle, descrwrites.size(), &descrwrites[0], 0, nullptr);
   }
 
   return true;
@@ -186,28 +181,34 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
 void rekz::onscreen::UpdateOverlayDescriptors (rc::Buffer::Ref& buf,
                                                const std::array<std::string, kMaxCount>& strings, 
                                                const VkExtent2D& viewext, double dt) {
-
+  assert (false);
+  HERE ("is this called?");
+  
   uint8_t* uc = (uint8_t*) rokz::rc::MappedPointer (buf);
 
   using rokz::global_ub::MVPTransform; 
   
-
+  //  
+  // the MVP is set in UpdateGlobalUniforms
+  // 
   // MVPTransform buffer
-  MVPTransform* mvp  = reinterpret_cast<MVPTransform*>( uc + ut::offset_at (UB_sizes, 0) );
+  // MVPTransform* mvp  =
+  //   reinterpret_cast<MVPTransform*>(uc + ut::offset_at (UB_sizes, global_ub::MVP_Overlay));
 
-  mvp->model = glm::mat4(1); 
-  mvp->view  = glm::mat4(1); 
+  // mvp->model = glm::mat4(1); 
+  // mvp->view  = glm::mat4(1); 
 
-  float lt = 0.0f;
-  float rt = viewext.width;
-  float bt = 0.0;
-  float tp = viewext.height; 
+  // float lt = 0.0f;
+  // float rt = viewext.width;
+  // float bt = 0.0;
+  // float tp = viewext.height; 
 
-  mvp->proj = glm::ortho ( lt, rt, bt, tp); 
-  mvp->proj[1][1] *= -1;
+  // mvp->proj = glm::ortho ( lt, rt, bt, tp); 
+  // mvp->proj[1][1] *= -1;
     
   //  updat text 
-  UBText* text = reinterpret_cast<UBText*>( uc + ut::offset_at (UB_sizes, 1) );
+  UBText* text =
+    reinterpret_cast<UBText*>(uc + ut::offset_at (UB_sizes, global_ub::TEXTITEMS_BINDINGI));
 
   for (uint32 iline = 0; iline < kMaxCount; ++iline) { 
     auto& s = strings[iline];

@@ -17,7 +17,7 @@ layout (push_constant) uniform PushConstant {
 } pc;
 
 
-layout(set = 0, binding = ob_textures_binding) uniform sampler2D tex_sampler[max_count];
+layout(set = 0, binding = OB_TEXTURES_BINDINGI) uniform sampler2D tex_sampler[max_count];
 
 layout (location = 0) out vec4 out_color;
 

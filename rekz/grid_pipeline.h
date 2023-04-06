@@ -6,18 +6,13 @@
 #include "rokz/vert_defs.h"
 //#include "rc_buffer.h"
 
-namespace rekz { 
-
-
-  //
-  //
-  namespace grid {
+namespace rekz { namespace grid {
 
     typedef rekz::PC_Vert Vert; 
 
     extern const VkVertexInputBindingDescription        kVertexBindingDesc;
     extern const Vec<VkVertexInputAttributeDescription> kVertInputAttributeDesc;
-    // const Vec<VkDescriptorSetLayoutBinding>          kGridDescriptorBindings = dont need
+    extern const Vec<VkDescriptorSetLayoutBinding>      kDescriptorBindings; 
     // ----------------------------------------------------------------------------------------------
     struct PushConstant {
 
@@ -34,29 +29,27 @@ namespace rekz {
     const VkShaderStageFlags kPCStages =
       VK_SHADER_STAGE_VERTEX_BIT;
 
-  }
+    // ----------------------------------------------------------------------------------------------
+    //                                    
+    // ----------------------------------------------------------------------------------------------
+    bool InitPipeline  (Pipeline&              pipeline,
+                        PipelineLayout&        plo,
+                        //0
+                        const Vec<VkDescriptorSetLayout>& dslos,
+                        const std::filesystem::path&      fspath,
+                        const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
+                        VkSampleCountFlagBits             msaa_samples,
+                        VkFormat                          color_format,
+                        VkFormat                          depth_format,
+                        const Device&          device) ; 
 
-  // ----------------------------------------------------------------------------------------------
-  //                                    
-  // ----------------------------------------------------------------------------------------------
-  bool InitGridPipeline  (Pipeline&              pipeline,
-                          PipelineLayout&        plo,
-                          //0
-                          const Vec<VkDescriptorSetLayout>& dslos,
-                          const std::filesystem::path&      fspath,
-                          const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
-                          VkSampleCountFlagBits             msaa_samples,
-                          VkFormat                          color_format,
-                          VkFormat                          depth_format,
-                          const Device&          device) ; 
+    // ----------------------------------------------------------------------------------------------
+    // connect descriptors to buffers images samplers etc
+    // ----------------------------------------------------------------------------------------------
+    bool BindDescriptorResources (std::vector<VkDescriptorSet>& dss, 
+                                  const Vec<rc::Buffer::Ref>& globalub,
+                                  const rokz::Device& device);
 
-  // ----------------------------------------------------------------------------------------------
-  // connect descriptors to buffers images samplers etc
-  // ----------------------------------------------------------------------------------------------
-  
-  bool BindGridDescriptorResources (std::vector<VkDescriptorSet>& dss, const std::vector<rc::Buffer::Ref>& globalbuffs, const rokz::Device& device);
-  
-}
-
+  }} // ns 
 
 #endif

@@ -1,6 +1,7 @@
 #version 460
 
 
+#include "lscape.h"
 //  .vert - a vertex shader
 //  .tesc - a tessellation control shader
 //  .tese - a tessellation evaluation shader
@@ -62,11 +63,11 @@ layout (set = 0, binding = 0) uniform MVPTransform {
 
 
 // set 1 
-layout (set = 1, binding = 0) uniform sampler2D heightmap[128];                                                  
+layout (set = 1, binding = HEIGHT_IMAGE_BINDINGI) uniform sampler2D heightmap[128];                                                  
 // not used yet
-layout (set = 1, binding = 1) uniform sampler2D normalmap[128];                                                  
+layout (set = 1, binding = NORMAL_IMAGE_BINDINGI) uniform sampler2D normalmap[128];                                                  
 
-// layout (set = 1, binding = 3) uniform PatchParams {
+// layout (set = 1, binding = PATCH_PARAMS_BINDINGI) uniform PatchParams {
 //     mat4 model;
 //     vec4 unused0;
 //     vec4 unused1;
