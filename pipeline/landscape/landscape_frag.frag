@@ -27,7 +27,7 @@ layout (push_constant) uniform PatchPushConstant {
 // -----------------------------------------------------------------------------------------------
 // descriptors
 // -----------------------------------------------------------------------------------------------
-layout (set = 1, binding = 2) uniform sampler2D colorsamp[128];
+layout (set = 0, binding = COLOR_IMAGE_BINDINGI) uniform sampler2D colorsamp[128];
 
 
 // layout (set = 1, binding = 3) uniform PatchParams {

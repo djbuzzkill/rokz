@@ -55,7 +55,7 @@ layout (push_constant) uniform PatchPushConstant {
 // descriptors
 // -----------------------------------------------------------------------------------------------
 // uniform constants 
-layout (set = 0, binding = 0) uniform MVPTransform {
+layout (set = 0, binding = GLOBAL_MVP_SCENE_BINDINGI) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;
@@ -63,9 +63,9 @@ layout (set = 0, binding = 0) uniform MVPTransform {
 
 
 // set 1 
-layout (set = 1, binding = HEIGHT_IMAGE_BINDINGI) uniform sampler2D heightmap[128];                                                  
+layout (set = 0, binding = HEIGHT_IMAGE_BINDINGI) uniform sampler2D heightmap[128];                                                  
 // not used yet
-layout (set = 1, binding = NORMAL_IMAGE_BINDINGI) uniform sampler2D normalmap[128];                                                  
+//layout (set = 0, binding = NORMAL_IMAGE_BINDINGI) uniform sampler2D normalmap[128];                                                  
 
 // layout (set = 1, binding = PATCH_PARAMS_BINDINGI) uniform PatchParams {
 //     mat4 model;

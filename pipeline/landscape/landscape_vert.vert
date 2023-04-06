@@ -50,7 +50,7 @@ out gl_PerVertex {
 //  Descriptors
 // -----------------------------------------------------------------------------------------------
 // uniform constants 
-layout (set = 0, binding = 0) uniform MVPTransform {
+layout (set = 0, binding = GLOBAL_MVP_SCENE_BINDINGI) uniform MVPTransform {
     mat4 model;
     mat4 view;
     mat4 proj;

@@ -32,6 +32,8 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDe
     //
     virtual int Exec (VkCommandBuffer commb, uint32_t currentframe, const RenderEnv& env) {
 
+      //HERE ("WATTTTAAAAAAAAAAAAAAAAAAAAAAA");
+
       //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
       //const DescriptorMap& descrmap = env.descriptormap;
 
@@ -73,14 +75,13 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDe
           pc.scale     = glm::vec4 (x_tile_size     , DEM_scale_mul, z_tile_size, 1.0f); 
           pc.resource_id = iz * roi::XDim + ix;
           
-          vkCmdPushConstants (commb, env.layout, lscape::kPCStages,
-                              0, sizeof (lscape::tile::PushConstant), &pc); 
+          vkCmdPushConstants (commb, env.layout,
+                              lscape::kPCStages, 0, sizeof (lscape::tile::PushConstant), &pc); 
           vkCmdDraw (commb, 4, 1, 0, 0);  
         }} // XZ loop
 
       return __LINE__;
     }
-
   }; 
 
 

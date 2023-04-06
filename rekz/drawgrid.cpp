@@ -53,8 +53,14 @@ struct drawgrid_buff : public rokz::DrawSequence {
     vkCmdSetScissor   (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
     const uint32_t descr_set_count = 1; //
+
+    VkDescriptorSet descrsets[] = {
+      dg.descrsets[current_frame]
+
+    };
+    
     vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout, 0,
-                             descr_set_count, &dg.descrsets[current_frame], 0, nullptr);
+                             descr_set_count, descrsets, 0, nullptr);
 
     VkBuffer     vertex_buffers[] = {gd->handle};
     VkDeviceSize offsets[]        = {vertexoffset};

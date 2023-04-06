@@ -29,7 +29,6 @@ void CleanupMars (Glob& glob) {
   assert (false); // Cleanup
   // printf ("%s \n", __FUNCTION__); 
 
-  glob.grid;
   
   // for (auto& ub : glob.uniform_mvp) {
   //   rokz::Destroy (ub, glob.allocator); 
@@ -155,13 +154,6 @@ struct MarzLoop {
       run = false;
     }
     else {
-      // rokz::DrawSequence::PipelineAssembly palscape {
-      //   glob.scape.pipe, glob.scape.plo.handle
-      // }; 
-
-      // rokz::DrawSequence::PipelineAssembly pagrid {
-      //   glob.grid.pipe, glob.grid.plo.handle
-      // }; 
 
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       rokz::UpdateGlobals (glob.shared, glob.global_bu[curr_frame], kDefaultDimensions, Dt);
@@ -189,6 +181,7 @@ struct MarzLoop {
 
       glob.grid.draw->Prep (curr_frame, grid_re, glob.device); 
       glob.grid.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
+
       // we are done, submit
       rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
@@ -268,8 +261,12 @@ int run_marz (const std::vector<std::string>& args) {
 
   rokz::DefineDescriptorSetLayout (glob.landscape_dslo, lscape::kDescriptorBindings, glob.device); 
 
+  //
+  rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
+
   // grid only uses globals
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
+
   if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
                                scg.extent, glob.msaa_samples,
                                scg.image_format, glob.depth_format, glob.device)) { 
@@ -286,11 +283,6 @@ int run_marz (const std::vector<std::string>& args) {
     return false; 
   }      
 
-  size_t gridvertoffs;
-  size_t gridindoffs;
-
-  glob.grid.buff = rekz::SetupGridData (gridvertoffs, gridindoffs, 11, 11, 20.0f, 20.0f, glob.device); 
-  glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, glob.grid_de,  gridvertoffs, gridindoffs);  
   
   // 
   if (!marz::SetupData (glob.scape.data, glob.device)) {
@@ -323,33 +315,30 @@ int run_marz (const std::vector<std::string>& args) {
                                    glob.scape.data.normalsampler, glob.scape.data.normalviews,
                                    glob.landscape_dslo, glob.device); 
 
-  //
-  rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 
-  // GLOBAL DESC
-  // if (!rokz::MakeDescriptorPool (glob.global_de.pool, kMaxFramesInFlight,
-  //                                rekz::kGlobalDescriptorBindings, glob.device)) {
-  //   HERE("");
-  //   return false;
-  // }
+
+  // GRID DESC
+  if (!rokz::MakeDescriptorPool (glob.grid_de.pool, kMaxFramesInFlight,
+                                 rekz::grid::kDescriptorBindings, glob.device)) {
+    HERE("");
+    return false;
+  }
                              
-  // if (!rokz::MakeDescriptorSets (glob.global_de.descrsets, glob.global_de.alloc_info,
-  //                                kMaxFramesInFlight, glob.global_dslo.handle,
-  //                                glob.global_de.pool, glob.device)) {
-  //   HERE("");
-  // }
+  if (!rokz::MakeDescriptorSets (glob.grid_de.descrsets, glob.grid_de.alloc_info,
+                                 kMaxFramesInFlight, glob.grid_dslo.handle,
+                                 glob.grid_de.pool, glob.device)) {
+    HERE("");
+  }
 
-  // if (!rokz::BindGlobalDescriptorResources (glob.global_de.descrsets, glob.global_bu, glob.device)) {
-  //   printf ("[FAILED] --> BindGridDescriptorResources \n"); 
-  // }
+  if (!rekz::grid::BindDescriptorResources (glob.grid_de.descrsets, glob.global_bu, glob.device)) {
+    printf ("[FAILED] --> BindGridDescriptorResources \n"); 
+  }
 
+  size_t gridvertoffs;
+  size_t gridindoffs;
 
-  // 
-  // for (size_t iframe = 0; iframe < kMaxFramesInFlight; ++iframe) { 
-  //   rokz::DrawSequence::DescriptorMap& descrmap = glob.descriptormaps[iframe];
-  //   descrmap["Global"] = glob.global_de.descrsets[iframe];
-  //   descrmap["lscape"] = glob.landscape_de.descrsets[iframe];
-  // }
+  glob.grid.buff = rekz::SetupGridData (gridvertoffs, gridindoffs, 11, 11, 20.0f, 20.0f, glob.device); 
+  glob.grid.draw = rekz::CreateDrawGrid (glob.grid.buff, glob.grid_de,  gridvertoffs, gridindoffs);  
   
   // create frame syncs
   fsg.command_buffers.resize (kMaxFramesInFlight);

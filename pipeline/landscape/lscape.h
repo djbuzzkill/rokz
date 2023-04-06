@@ -1,5 +1,7 @@
 
 
+
+const uint GLOBAL_MVP_SCENE_BINDINGI = 0;
 const uint HEIGHT_IMAGE_BINDINGI = 32;
 const uint NORMAL_IMAGE_BINDINGI = 33;
 const uint COLOR_IMAGE_BINDINGI  = 34;
