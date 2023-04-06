@@ -1,0 +1,6 @@
+
+
+const uint HEIGHT_IMAGE_BINDINGI = 32;
+const uint NORMAL_IMAGE_BINDINGI = 33;
+const uint COLOR_IMAGE_BINDINGI  = 34;
+const uint PATCH_PARAMS_BINDINGI = 35;
