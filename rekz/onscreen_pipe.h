@@ -17,14 +17,14 @@ namespace rekz { namespace onscreen {
     
     typedef rokz::PTx_Vert Vert;
     // ----------------------------------------------------------------------------------------------
-    const size_t                                         kMaxCount = 128; // y?
+    const size_t                                         kMaxGlyphCount = 128; 
+
     extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;   
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; 
     extern const DescriptorSetLayoutBindings             kDescriptorBindings;
 
     // ----------------------------------------------------------------------------------------------
     struct PushConstant {
-
       uint32 resource_id;
       uint32 _unused_1;
       uint32 _unused_2;
@@ -35,20 +35,13 @@ namespace rekz { namespace onscreen {
       glm::vec2 position;
     };
 
-    // push const used in..
+    // textelem[resource_id][gl_InstanceIndex]  == [line][char]
+
+    // -- push constant used in ...
     const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT  
                                       | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     // 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234  
-
-    const Vec<size_t> UB_sizes = {
-      // overlay 
-      sizeof (global_ub::MVPTransform),
-      // strings
-      sizeof (std::array<global_ub::TextItem, 128>), 
-    }; 
-    
-    // ---------------------------------------------------------------------------------------
     bool InitPipeline (Pipeline&                         pipeline,
                        PipelineLayout&                   plo,
                        const Vec<VkDescriptorSetLayout>& dslos,
@@ -58,27 +51,19 @@ namespace rekz { namespace onscreen {
                        VkSampleCountFlagBits             msaa_samples,
                        VkFormat                          color_format,
                        const Device&                     device); 
-    // ----------------------------------------------------------------------------------------------
-    // bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss , 
-    //                              const Vec<rc::Buffer::Ref>& ubtext,
-    //                              const rc::ImageView::Ref    imageviews,  
-    //                              const rc::Sampler::Ref      sampler, 
-    //                              const DescriptorSetLayout&  dslayout, 
-    //                              const Device&               device) ;
-
-
+    // -- binding for 
     bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
                                   const Vec<rc::Buffer::Ref>& globalubs, 
-                                  const Vec<rc::Buffer::Ref>& textubs,
+                                  //const Vec<rc::Buffer::Ref>& textubs,
                                   const rc::ImageView::Ref    imageview,  
                                   const rc::Sampler::Ref      sampler, 
                                   const DescriptorSetLayout&  dslayout, 
                                   const Device&               device); 
 
     // ---------------------------------------------------------------------------------------
-    void UpdateOverlayDescriptors (rc::Buffer::Ref& buf,
-                                   const std::array<std::string, kMaxCount>& strings, 
-                                   const VkExtent2D& overlaysize, double dt);
+    void UpdateOSD (rc::Buffer::Ref& buf, 
+                    const std::array<std::string, global_ub::kMaxTextElements>& strings, 
+                    const VkExtent2D& overlaysize, double dt);
 
   }} // rekz onscreen
 

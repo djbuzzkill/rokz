@@ -127,18 +127,58 @@ VkImageMemoryBarrier& transition_barrier_mask (
 }
 
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-void rokz::cx::TransitionImageLayout (VkImage              image,
-                                  VkFormat             format,
-                                  const VkImageLayout& old_layout,
-                                  const VkImageLayout& new_layout,
-                                  const VkQueue&       queue,
-                                  const VkCommandPool& command_pool,
-                                  const VkDevice&      device) {
+// ------------------------------------------------------------------------------------------
+//                       
+// ------------------------------------------------------------------------------------------
+// void rokz::cx::TransitionImageLayout (VkImage              image,
+//                                   VkFormat             format,
+//                                   const VkImageLayout& old_layout,
+//                                   const VkImageLayout& new_layout,
+//                                   const VkQueue&       queue,
+//                                   const VkCommandPool& command_pool,
+//                                   const VkDevice&      device) {
 
-  VkCommandBuffer command_buffer  = BeginCommandList (command_pool, device); 
+//   VkCommandBuffer command_buffer  = BeginCommandList (command_pool, device); 
+
+//   VkImageMemoryBarrier barrier{};
+//   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+//   barrier.pNext = nullptr;
+
+//   barrier.oldLayout = old_layout;
+//   barrier.newLayout = new_layout;
+//   barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//   barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+//   barrier.image = image;
+//   barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+//   barrier.subresourceRange.baseMipLevel = 0;
+//   barrier.subresourceRange.levelCount = 1;
+//   barrier.subresourceRange.baseArrayLayer = 0;
+//   barrier.subresourceRange.layerCount = 1;
+  
+//   VkPipelineStageFlags dst_flags, src_flags;  
+//   transition_barrier_mask (barrier, src_flags, dst_flags, format, old_layout, new_layout); 
+//   vkCmdPipelineBarrier (command_buffer, src_flags, dst_flags, 0,
+//                         0, nullptr, 0, nullptr, 1, &barrier);
+  
+//   EndCommandList (command_buffer, queue, command_pool, device);
+  
+// }
+
+// ------------------------------------------------------------------------------------------
+//                       
+// ------------------------------------------------------------------------------------------
+void rokz::cx::TransitionImageLayout (VkImage              image,
+                                      uint32               layeri, 
+                                      VkFormat             format,
+                                      const VkImageLayout& old_layout,
+                                      const VkImageLayout& new_layout,
+                                      const VkQueue&       queue,
+                                      const VkCommandPool& command_pool,
+                                      const VkDevice&      device) {
+  using namespace rokz; 
+  
+  VkCommandBuffer command_buffer  = cx::BeginCommandList (command_pool, device); 
 
   VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -149,22 +189,23 @@ void rokz::cx::TransitionImageLayout (VkImage              image,
   barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-  barrier.image = image;
-  barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  barrier.subresourceRange.baseMipLevel = 0;
-  barrier.subresourceRange.levelCount = 1;
-  barrier.subresourceRange.baseArrayLayer = 0;
-  barrier.subresourceRange.layerCount = 1;
+  const uint32 layer_count = 1;       // <---- shud we parameterize
+  
+  barrier.image                           = image;
+  barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+  barrier.subresourceRange.baseMipLevel   = 0;
+  barrier.subresourceRange.levelCount     = 1;
+  barrier.subresourceRange.baseArrayLayer = layeri;
+  barrier.subresourceRange.layerCount     = layer_count;
   
   VkPipelineStageFlags dst_flags, src_flags;  
   transition_barrier_mask (barrier, src_flags, dst_flags, format, old_layout, new_layout); 
   vkCmdPipelineBarrier (command_buffer, src_flags, dst_flags, 0,
                         0, nullptr, 0, nullptr, 1, &barrier);
   
-  EndCommandList (command_buffer, queue, command_pool, device);
+  cx::EndCommandList (command_buffer, queue, command_pool, device);
   
 }
-
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
@@ -221,13 +262,14 @@ void rokz::cx::EndCommandList (VkCommandBuffer&     command_buffer,
 //
 // --------------------------------------------------------------------
 void rokz::cx::CopyBufferToImage (VkImage&          image,
-                              const VkBuffer    buffer,
-                              uint32_t width,   uint32_t height, 
-                              const VkQueue&       queue,
-                              const VkCommandPool& command_pool,
-                              const VkDevice&      device) {
+                                  uint32            imagelayer , 
+                                  const VkBuffer    buffer,
+                                  uint32  width,   uint32  height, 
+                                  const VkQueue&       queue,
+                                  const VkCommandPool& command_pool,
+                                  const VkDevice&      device) {
 
-  printf ("%s\n", __FUNCTION__); 
+  HERE("");
 
   VkCommandBuffer  command_buffer  = BeginCommandList (command_pool, device); 
 
@@ -238,7 +280,7 @@ void rokz::cx::CopyBufferToImage (VkImage&          image,
 
   region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
   region.imageSubresource.mipLevel       = 0;
-  region.imageSubresource.baseArrayLayer = 0;
+  region.imageSubresource.baseArrayLayer = imagelayer;
   region.imageSubresource.layerCount     = 1;
   region.imageOffset                     = {0, 0, 0};
   region.imageExtent                     = { width, height, 1 };

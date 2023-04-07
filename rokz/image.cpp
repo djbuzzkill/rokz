@@ -378,6 +378,8 @@ int rokz::cx::TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizeb
     rokz::cx::UnmapMemory (stage_buff.allocation, device.allocator.handle);
 
     if (res != 0) {
+      assert (false); 
+      HERE (">> break out >>");
       break;
     }
 
@@ -395,8 +397,10 @@ int rokz::cx::TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizeb
 
   rokz::cx::Destroy (stage_buff, device.allocator); 
 
-  if (GOT_PROB (res)) 
-    HERE("LEAVING TRANSER BUT U HAV PROBZ"); 
+  if (GOT_PROB (res)) {
+    assert (false); 
+    HERE("LEAVING TRANSER BUT U HAV PROBZ");
+  }
     
   return res;
 }

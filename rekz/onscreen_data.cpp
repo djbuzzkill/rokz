@@ -8,6 +8,7 @@
 #include "rokz/rc_image.h"
 #include "rokz/rc_types.h"
 #include "rokz/shared_descriptor.h"
+#include "rokz/shared_types.h"
 #include <vulkan/vulkan_core.h>
 
 
@@ -71,7 +72,7 @@ bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& devi
   VkImageCreateInfo ci = {};
   VkExtent2D idim  = { 64, 64 };
   size_t sizeOf_layer = 64 *64 * sizeof(byte);
-  uint32 num_layers = 256;
+  uint32 num_layers = 128;
 
   uint32 layer_begin = '!'; // ascii index of glyph 33
   uint32 layer_end   = '~'; // ascii index of glyph 126
@@ -80,18 +81,26 @@ bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& devi
 
   dat.texture.image = rc::CreateImage (ci, device); 
 
+  HERE ("YUUH&^");
   // copy to -> dat.image;
   int res = cx::TransferToImageLayer (dat.texture.image->handle, imageformat, sizeOf_layer,
                                       num_layers, layer_begin, idim,
                                       std::make_shared<glyph_layer> (), device); 
 
+  HERE ("YUUH&^");
+  if (res != 0) {
+    printf  ("%s----> result returned %i\n", __FUNCTION__, res); 
+    return false;
+  }
   //create view
   dat.texture.view = rc::CreateImageView_2D_array ( dat.texture.image->handle, imageformat,
                                                     num_layers, device);
+  HERE ("YUUH&^");
 
   // sampler
   dat.texture.sampler = rc::CreateSampler_default (device);
 
+  HERE ("YUUH&^");
 
   // geom
   size_t sizeof_geom = 4 * sizeof(rekz::onscreen::Vert); 
@@ -101,20 +110,18 @@ bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& devi
 
   // -------------- default string  ---------------
   for (auto& str : dat.strings) {
-    str.resize (64);  // y not just put directly into textub
+    str.resize (global_ub::TextItem::max_length, ' ');
     str = "---- test text ----"; 
   }
 
-
   // -------------- default string  ---------------
-  const size_t total_ub_size =
-    UB_sizes[global_ub::TEXTITEMS_BINDINGI];
+  // const size_t total_ub_size =
+  //   UB_sizes[global_ub::TEXTITEMS_BINDINGI];
 
-  dat.textub.resize (nframesets); // max frame in flight
-  for (size_t iframe = 0; iframe < nframesets; ++iframe) { 
-    dat.textub[iframe] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
-  }
-
+  // dat.textub.resize (nframesets); // max frame in flight
+  // for (size_t iframe = 0; iframe < nframesets; ++iframe) { 
+  //   dat.textub[iframe] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
+  // }
 
   //c/c++-clang c/c++-gcc c/c++-cppcheck 
   return false; 

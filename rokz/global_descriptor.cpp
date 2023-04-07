@@ -24,22 +24,14 @@ using namespace rokz;
 // } VkDescriptorSetLayoutBinding;
 
 
-
 const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
    
   { global_ub::MVP_SCENE_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
   { global_ub::MVP_OVERLAY_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
   { global_ub::GRIDSTATE_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // <- GridState
   { global_ub::TEXTITEMS_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // <- GridState
-
 };
 
-// const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
-   
-//   {  0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
-//   { 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- GridState
-
-// };
 
 // ----------------------------------------------------------------------------------------------
 //                                    
@@ -87,84 +79,15 @@ bool rokz::SetupGlobalUniforms (Vec<rc::Buffer::Ref>& buffs, uint32_t num_sets, 
  printf (" --> [true] \n"); 
  return true; 
 }
-// ----------------------------------------------------------------------------------------------
-//                                    
-// ----------------------------------------------------------------------------------------------
-void rokz::CleanupGlobalUniforms (Vec<Buffer>& uniform_buffs, const Device& device) {
-
-  for (auto& ub : uniform_buffs) {
-    rokz::cx::Destroy (ub, device.allocator); 
-  }
-
-}
-
-// ----------------------------------------------------------------------------------------------
-//                                    
-// ----------------------------------------------------------------------------------------------
-// bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rokz::Buffer>& buffs, const rokz::Device& device) {
-
-//    printf ("[%i]  %s\n", __LINE__, __FUNCTION__);
-
-//    assert (descs.size () == buffs.size ());
-
-//   for (uint32_t i = 0; i < descs.size (); i++) {
-//     // wtf does this do
-//     VkDescriptorBufferInfo binfo_mvp {};
-//     binfo_mvp.buffer     = buffs[i].handle;
-//     binfo_mvp.offset     = 0;
-//     binfo_mvp.range      = sizeof(rokz::MVPTransform);
-
-//     VkDescriptorBufferInfo binfo_grid {};
-//     binfo_grid.buffer     = buffs[i].handle;
-//     binfo_grid.offset     = sizeof(rokz::MVPTransform);
-//     binfo_grid.range      = sizeof(rokz::GridState);
-
-//     const uint32_t binding_ind_mvp = 0;
-//     const uint32_t binding_ind_grid = 1;
-//     //
-//     std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
-//     descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//     descriptor_writes[0].pNext            = nullptr;    
-//     descriptor_writes[0].dstSet           = descs[i];
-//     descriptor_writes[0].dstBinding       = kGlobalDescriptorBindings[binding_ind_mvp].binding;
-//     descriptor_writes[0].dstArrayElement  = 0;
-//     descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//     descriptor_writes[0].descriptorCount  = 1;
-//     descriptor_writes[0].pBufferInfo      = &binfo_mvp;
-//     descriptor_writes[0].pImageInfo       = nullptr;
-//     descriptor_writes[0].pTexelBufferView = nullptr;
-
-//     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//     descriptor_writes[1].pNext            = nullptr;    
-//     descriptor_writes[1].dstSet           = descs[i];
-//     descriptor_writes[1].dstBinding       = kGlobalDescriptorBindings[binding_ind_grid].binding; 
-//     descriptor_writes[1].dstArrayElement  = 0;
-//     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//     descriptor_writes[1].descriptorCount  = 1;
-//     descriptor_writes[1].pBufferInfo      = &binfo_grid;
-//     descriptor_writes[1].pImageInfo       = nullptr;
-//     descriptor_writes[1].pTexelBufferView = nullptr;
-
-//     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-    
-
-//   }
-  
-//    return true;
-// }
 
 // ----------------------------------------------------------------------------------------------
 //                                     RC Ver 
 // ----------------------------------------------------------------------------------------------
 bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec<rc::Buffer::Ref>& buffs, const rokz::Device& device) {
-  
-  HERE ("no call this anymore ");
-  assert (false); 
-
+  // this cqn be used with others
   assert (descs.size () == buffs.size ());
 
   for (uint32_t i = 0; i < descs.size (); i++) {
-
     assert (buffs[i]->handle); 
     // wtf does this do
     VkDescriptorBufferInfo binfo_mvps {};
@@ -183,61 +106,58 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
     binfo_grid.range      = sizeof(global_ub::GridState);
 
     VkDescriptorBufferInfo binfo_text {};
-    binfo_grid.buffer     = buffs[i]->handle;
-    binfo_grid.offset     = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
-    binfo_grid.range      = sizeof(std::array<global_ub::TextItem, global_ub::TextItem::max_length>);
+    binfo_text.buffer     = buffs[i]->handle;
+    binfo_text.offset     = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
+    binfo_text.range      = sizeof(global_ub::TextItem) * global_ub::kMaxTextElements;
 
     //
-    std::array<VkWriteDescriptorSet, 2> descriptor_writes {};
-    descriptor_writes[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].pNext            = nullptr;    
-    descriptor_writes[0].dstSet           = descs[i];
-    descriptor_writes[0].dstBinding       = global_ub::MVP_SCENE_BINDINGI;
-    descriptor_writes[0].dstArrayElement  = 0;
-    descriptor_writes[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount  = 1;
-    descriptor_writes[0].pBufferInfo      = &binfo_mvps;
-    descriptor_writes[0].pImageInfo       = nullptr;
-    descriptor_writes[0].pTexelBufferView = nullptr;
+    const size_t num_to_write = 4; 
+    std::array<VkWriteDescriptorSet, num_to_write> dws {};
+    dws[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    dws[0].pNext            = nullptr;    
+    dws[0].dstSet           = descs[i];
+    dws[0].dstBinding       = global_ub::MVP_SCENE_BINDINGI;
+    dws[0].dstArrayElement  = 0;
+    dws[0].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    dws[0].descriptorCount  = 1;
+    dws[0].pBufferInfo      = &binfo_mvps;
+    dws[0].pImageInfo       = nullptr;
+    dws[0].pTexelBufferView = nullptr;
 
-    descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].pNext            = nullptr;    
-    descriptor_writes[1].dstSet           = descs[i];
-    descriptor_writes[1].dstBinding       = global_ub::MVP_OVERLAY_BINDINGI; 
-    descriptor_writes[1].dstArrayElement  = 0;
-    descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[1].descriptorCount  = 1;
-    descriptor_writes[1].pBufferInfo      = &binfo_mvpo;
-    descriptor_writes[1].pImageInfo       = nullptr;
-    descriptor_writes[1].pTexelBufferView = nullptr;
+    dws[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    dws[1].pNext            = nullptr;    
+    dws[1].dstSet           = descs[i];
+    dws[1].dstBinding       = global_ub::MVP_OVERLAY_BINDINGI; 
+    dws[1].dstArrayElement  = 0;
+    dws[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    dws[1].descriptorCount  = 1;
+    dws[1].pBufferInfo      = &binfo_mvpo;
+    dws[1].pImageInfo       = nullptr;
+    dws[1].pTexelBufferView = nullptr;
 
+    dws[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    dws[2].pNext            = nullptr;    
+    dws[2].dstSet           = descs[i];
+    dws[2].dstBinding       = global_ub::GRIDSTATE_BINDINGI; 
+    dws[2].dstArrayElement  = 0;
+    dws[2].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    dws[2].descriptorCount  = 1;
+    dws[2].pBufferInfo      = &binfo_grid;
+    dws[2].pImageInfo       = nullptr;
+    dws[2].pTexelBufferView = nullptr;
 
-    descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[2].pNext            = nullptr;    
-    descriptor_writes[2].dstSet           = descs[i];
-    descriptor_writes[2].dstBinding       = global_ub::GRIDSTATE_BINDINGI; 
-    descriptor_writes[2].dstArrayElement  = 0;
-    descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[2].descriptorCount  = 1;
-    descriptor_writes[2].pBufferInfo      = &binfo_grid;
-    descriptor_writes[2].pImageInfo       = nullptr;
-    descriptor_writes[2].pTexelBufferView = nullptr;
+    dws[3].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    dws[3].pNext            = nullptr;    
+    dws[3].dstSet           = descs[i];
+    dws[3].dstBinding       = global_ub::TEXTITEMS_BINDINGI; 
+    dws[3].dstArrayElement  = 0;
+    dws[3].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    dws[3].descriptorCount  = 1;
+    dws[3].pBufferInfo      = &binfo_text;
+    dws[3].pImageInfo       = nullptr;
+    dws[3].pTexelBufferView = nullptr;
 
-
-    descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[2].pNext            = nullptr;    
-    descriptor_writes[2].dstSet           = descs[i];
-    descriptor_writes[2].dstBinding       = global_ub::TEXTITEMS_BINDINGI; 
-    descriptor_writes[2].dstArrayElement  = 0;
-    descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[2].descriptorCount  = 1;
-    descriptor_writes[2].pBufferInfo      = &binfo_text;
-    descriptor_writes[2].pImageInfo       = nullptr;
-    descriptor_writes[2].pTexelBufferView = nullptr;
-
-    
-    vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-    
+    vkUpdateDescriptorSets (device.handle, num_to_write, &dws[0], 0, nullptr);
 
   }
   

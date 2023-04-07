@@ -4,6 +4,7 @@
 
 #include "rekz.h"
 #include "rekz/onscreen_pipe.h"
+#include "rokz/shared_descriptor.h"
 
 
 namespace rekz { namespace onscreen {
@@ -21,12 +22,9 @@ namespace rekz { namespace onscreen {
 
     // ----------------------------------------------------------------------------------------
     struct Data {
-      rc::Buffer::Ref                    geom;   // for the rectangle
-
-      Vec<rc::Buffer::Ref>               textub;   // for the rectangle
-      Texture                            texture;
-
-      std::array<std::string, kMaxCount> strings; // y not just put directly into textub
+      rc::Buffer::Ref             geom;   // for the rectangle
+      Texture                     texture;
+      std::array<std::string, global_ub::kMaxTextElements> strings; // y not just put directly into textub
     }; 
     
     // ----------------------------------------------------------------------------------------

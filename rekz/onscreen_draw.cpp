@@ -20,68 +20,21 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
     //const Vec<rc::Buffer::Ref>& ubs; 
     const onscreen::Data&       data;
     const Vec<VkDescriptorSet>& dss;    
-    //
+    // -- construct -----------------------------------------------------
     osd_draw_text (const onscreen::Data& dat, //const Vec<rc::Buffer::Ref>& uniformbuffers,
                    const Vec<VkDescriptorSet>& dsets)
       : data (dat), //ubs (uniformbuffers),
         dss (dsets) {
     }
-    //
+    // -- prepare  -----------------------------------------------------
     virtual int Prep (uint32_t currentframe, const RenderEnv& env, const rokz::Device& device) {
 
-      uint8* ub = reinterpret_cast<uint8*> (rc::MappedPointer (data.textub[currentframe])); 
-      if ( !ub ) {
-        HERE("failed to acquire mapped pointer");
-        return __LINE__;
-      }
-
-
-      size_t total_onscreen_UB_size =
-        std::accumulate (global_ub::UB_sizes.begin (), global_ub::UB_sizes.end () , 0);
-
-      
-      // // this shouldnt be done here, it shoud come from Global Uniforms
-      // MVPTransform* mvp = (MVPTransform*) (ub + ut::offset_at (UB_sizes, 0));
-        
-      // 
-      UBText* ubtext = (UBText*) (ub + ut::offset_at (UB_sizes, 1)); 
-
-      //for (uint32 el =  0; el < kMaxCount; ++el) {
-      for (uint32 el =  0; el < 1; ++el) {
-        // data.strings is filled in loop
-        // data.strings is moved into  ubtext here 
-        std::copy (data.strings[el].begin (), data.strings[el].end (), ubtext[el].ch); 
-      }
-        
-      // MVP, ubtext, 
-      // ??? where does MVP get updated
-      // ... overlay transforms should all go into global uniforms
-      // ??? 
-
-      // --------------- from drawpolygon ----------------
-      // // update uniform buffer 
-      // if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rc::MappedPointer (objbuffs[currentframe] ))) {
-      //   //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
-      //   glm::vec3 va, vb;
-      //   rekz::unit_angle_xz (va, 5.0 * env.globals.sim_time ); 
-      //   rekz::unit_angle_xz (vb, 5.0 * env.globals.sim_time + rekz::kPi); 
-
-      //   //glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, -2.0, 0.0));
-      //   glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, 0.0, 0.0));
-      //   glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (2.0, 4.0, 0.0));
-      //   //for (size_t i = 0; i < kSceneObjCount; ++i) {
-      //   obj[0].modelmat = glm::rotate(model0, polyd.objrot[0].y, glm::vec3(0.0f, -1.0f, 0.0f));
-      //   obj[1].modelmat = glm::rotate(model1, env.globals.sim_time * glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      // }
-      return __LINE__;
+      return 0;
     }
 
-
+    // -- draw -----------------------------------------------------
     virtual int Exec (VkCommandBuffer comb, uint32_t currentframe, const RenderEnv& env) {
-
       int res = __LINE__;
-
-      
       const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron ();
       vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 

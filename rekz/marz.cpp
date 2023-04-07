@@ -14,6 +14,7 @@
 
 using namespace rokz;
 using namespace marz; 
+using namespace rekz; 
 
 namespace { 
 
@@ -166,8 +167,8 @@ struct MarzLoop {
       // Transitioning Layout and stuff in here, BeginCommandBuffer is called here
       rc::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
                           image_index, glob.rendering_info_group.ri, glob.device);
-      // EXECUTE DRAW LIST RECORDING 
 
+      // EXECUTE DRAW LIST RECORDING 
       rokz::DrawSequence::RenderEnv scape_re {
         glob.scape.pipe, glob.scape.plo.handle, glob.shared 
       };
@@ -267,7 +268,7 @@ int run_marz (const std::vector<std::string>& args) {
   // grid only uses globals
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
 
-  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
+  if (!grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
                                scg.extent, glob.msaa_samples,
                                scg.image_format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
