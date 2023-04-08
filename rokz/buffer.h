@@ -73,17 +73,6 @@ namespace rokz { namespace cx {
       return  buff.alloc_info.pMappedData;
     }
 
-    struct mappedbuffer_cb {
-      virtual int on_mapped  (void* mappedmemory, size_t maxsize) = 0;
-
-      typedef std::shared_ptr<mappedbuffer_cb> Ref;
-    };
-
-    int TransferToDeviceBuffer (VkBuffer& dstb, size_t sizemem, mappedbuffer_cb*, const rokz::Device& device);
-
-    inline int TransferToDeviceBuffer (VkBuffer& dstb, size_t sizemem, mappedbuffer_cb::Ref cb, const rokz::Device& device) {
-      return TransferToDeviceBuffer (dstb, sizemem, cb.get (), device); 
-    }
 
   }    
   

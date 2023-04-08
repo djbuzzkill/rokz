@@ -50,6 +50,8 @@
 
 #include "global_descriptor.h"
 #include "shared_descriptor.h"
+#include "transfer_buffer.h"
+#include "transfer_image.h"
 
 namespace rokz { 
 

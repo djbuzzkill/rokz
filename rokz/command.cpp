@@ -270,7 +270,6 @@ void rokz::cx::CopyBufferToImage (VkImage&          image,
                                   const VkDevice&      device) {
 
   HERE("");
-
   VkCommandBuffer  command_buffer  = BeginCommandList (command_pool, device); 
 
   VkBufferImageCopy region{};
