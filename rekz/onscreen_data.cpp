@@ -2,6 +2,7 @@
 
 #include "onscreen_data.h"
 #include "onscreen_pipe.h"
+#include "rekz/rekz.h"
 #include "rokz/buffer.h"
 #include "rokz/image.h"
 #include "rokz/rc_buffer.h"
@@ -41,21 +42,36 @@ struct glyph_layer : public cx::mappedlayer_cb {
 
   systempath basepath; 
 
-  glyph_layer (): basepath ("/home/djbuzzkill/owenslake/tmp/testtext/") {
+  glyph_layer (): basepath ("/home/djbuzzkill/owenslake/tmp/textbin/") {
   }
+
+
   
-  virtual int on_mapped (void* mappedp, size_t maxsize, uint32 layerindex, const VkExtent2D& ext) {
+  virtual int on_mapped (void* mappedp, size_t maxsize, uint32 layeri, const VkExtent2D& ext) {
 
     uint8* uc = (uint8*) mappedp;
+    rokz::systempath fqpath = basepath/rekz::fonttool::font_glyph_filename (layeri); 
     
-    if (layerindex >= '!' || layerindex < '~') {
+    if (std::filesystem::exists (fqpath)) { 
+
+      Vec<float> fpixels ; 
+      From_file (fpixels, fqpath, true); 
       
+      printf ( "loading .....  %s\n ",  fqpath.c_str ()); 
+
+      float* fpix = (float*)mappedp; 
+      
+      std::copy(fpixels.begin(), fpixels.end (), fpix); 
       
     }
     else {
-      // just black
       std::fill (uc, uc + maxsize , 0);
+      printf ( "no such file....  %s\n ",  fqpath.c_str ()); 
     }
+    //fname_format =  "%u"
+      
+    //From_file ( 
+      
     
     return 0; 
   }
@@ -65,42 +81,36 @@ struct glyph_layer : public cx::mappedlayer_cb {
 // ----------------------------------------------------------------------------------------
 bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& device) {
 
-  VkFormat imageformat = VK_FORMAT_R8_UINT; 
-
-
   // create image
   VkImageCreateInfo ci = {};
   VkExtent2D idim  = { 64, 64 };
-  size_t sizeOf_layer = 64 *64 * sizeof(byte);
+  size_t sizeOf_layer = 64 *64 * sizeof(float);
   uint32 num_layers = 128;
 
   uint32 layer_begin = '!'; // ascii index of glyph 33
   uint32 layer_end   = '~'; // ascii index of glyph 126
   
+  const VkFormat imageformat = VK_FORMAT_R32_SFLOAT; 
+  
   cx::CreateInfo_2D_array (ci, imageformat, num_layers,  kSamplingUsage, idim.width, idim.height); 
 
   dat.texture.image = rc::CreateImage (ci, device); 
 
-  HERE ("YUUH&^");
   // copy to -> dat.image;
   int res = cx::TransferToImageLayer (dat.texture.image->handle, imageformat, sizeOf_layer,
-                                      num_layers, layer_begin, idim,
+                                      num_layers, 0, idim,
                                       std::make_shared<glyph_layer> (), device); 
 
-  HERE ("YUUH&^");
   if (res != 0) {
     printf  ("%s----> result returned %i\n", __FUNCTION__, res); 
     return false;
   }
   //create view
-  dat.texture.view = rc::CreateImageView_2D_array ( dat.texture.image->handle, imageformat,
+  dat.texture.view = rc::CreateImageView_2D_array (dat.texture.image->handle, imageformat,
                                                     num_layers, device);
-  HERE ("YUUH&^");
 
   // sampler
   dat.texture.sampler = rc::CreateSampler_default (device);
-
-  HERE ("YUUH&^");
 
   // geom
   size_t sizeof_geom = 4 * sizeof(rekz::onscreen::Vert); 

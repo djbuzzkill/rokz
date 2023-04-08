@@ -61,6 +61,7 @@ struct PolygonDraw : public rokz::DrawSequence {
     // b/c these r dynamic state
     vkCmdSetViewport(combuf, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
     vkCmdSetScissor (combuf, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
+    vkCmdSetDepthTestEnable  (combuf, VK_TRUE);
 
     //VK_POLYGON_MODE_FILL = 0,
     //vkCmdSetPolygonModeEXT (command_buffer, VK_POLYGON_MODE_LINE); 

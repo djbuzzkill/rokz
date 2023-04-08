@@ -219,6 +219,7 @@ struct RootLoop {
       onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
       
       // make sure the correct swapchain image is used
+
       rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
                                         glob.swapchain_group.imageviews[image_index]->handle);
 
@@ -360,7 +361,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
   if (!onscreen::InitPipeline (glob.osd_pl,  glob.osd_plo,  glob.osd_pl.dslos, dark_path,
-                               kTestExtent, glob.msaa_samples, scg.image_format, glob.device)) {
+                               kTestExtent,
+                               glob.msaa_samples, scg.image_format,  glob.depth_format,  glob.device)) {
     printf ("[FAILED] --> OSD pipeline \n"); 
     return false; 
   }

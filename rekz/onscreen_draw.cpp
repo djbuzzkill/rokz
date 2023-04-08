@@ -40,7 +40,8 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
 
       // b/c these r dynamic state
       vkCmdSetViewport(comb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
-      vkCmdSetScissor (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
+      vkCmdSetScissor (comb,    0, 1, &env.pipeline.state.viewport.vps[0].scissor);
+      vkCmdSetDepthTestEnable (comb, VK_FALSE); 
 
       std::vector<VkDescriptorSet> descrsets = {
         dss[currentframe], 

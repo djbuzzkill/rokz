@@ -112,6 +112,7 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
 
   //
   auto& psci = pipeline.state.ci;
+
   CreateInfo (pipeline.ci,
               plo.handle,
               &pipeline.ext.pipeline_rendering.ci,                    

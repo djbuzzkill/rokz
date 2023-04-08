@@ -41,6 +41,12 @@ namespace rekz {
     const Mesh& Octohedron ();
   }
 
+
+  namespace fonttool {
+    // between 32 - 126 of printable ascii symbols
+    std::string font_glyph_filename (uint32 asciicode); 
+  
+  }
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------

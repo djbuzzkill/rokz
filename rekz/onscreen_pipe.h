@@ -49,7 +49,8 @@ namespace rekz { namespace onscreen {
                        const systempath&                 fspath,
                        const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
                        VkSampleCountFlagBits             msaa_samples,
-                       VkFormat                          color_format,
+                       VkFormat                          colorfor,
+                       VkFormat                          depthforr,
                        const Device&                     device); 
     // -- binding for 
     bool BindDescriptorResources (Vec<VkDescriptorSet>&       dss,

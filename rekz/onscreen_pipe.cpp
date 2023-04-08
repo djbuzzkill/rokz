@@ -51,7 +51,8 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
                                    const systempath&                 fspath,
                                    const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
                                    VkSampleCountFlagBits             msaa_samples,
-                                   VkFormat                          color_format,
+                                   VkFormat                          colorformat,
+                                   VkFormat                          depthformat, 
                                    const Device&                     device)
 {
   HERE("");
@@ -68,10 +69,10 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
 
   // proto more orthogonal version
   pipeline.ext.pipeline_rendering.color_formats.resize (1);
-  pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
+  pipeline.ext.pipeline_rendering.color_formats[0] = colorformat;
 
   CreateInfo  (pipeline.ext.pipeline_rendering.ci,
-                     pipeline.ext.pipeline_rendering.color_formats, VK_FORMAT_UNDEFINED); 
+               pipeline.ext.pipeline_rendering.color_formats, depthformat); 
 
   auto& psci = pipeline.state.ci;
   //
@@ -85,7 +86,7 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
               nullptr,                 // tesselation 
               &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
               &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-              nullptr, //&psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+              nullptr, // &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
               &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
               &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
 

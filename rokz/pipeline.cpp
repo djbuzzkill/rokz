@@ -12,6 +12,8 @@ std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicSt
   dynamic_states.clear ();
   dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
   dynamic_states.push_back (VK_DYNAMIC_STATE_SCISSOR);
+  dynamic_states.push_back (VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE);
+
   //dynamic_states.push_back (VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT);
 
   // ?! wtf
@@ -428,6 +430,7 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
 
 
 VkPipelineRenderingCreateInfoKHR& rokz::CreateInfo  (VkPipelineRenderingCreateInfoKHR& ci,
+
                                                      const std::vector<VkFormat>& color_formats,
                                                      VkFormat depth_format,
                                                      VkFormat stencil_format) {

@@ -43,6 +43,7 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDe
       vkCmdSetViewport(commb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
 
       vkCmdSetScissor (commb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
+      vkCmdSetDepthTestEnable (commb, VK_TRUE); 
 
       Vec<VkDescriptorSet> descrsets = {
         dss[currentframe], 

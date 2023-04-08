@@ -6,22 +6,66 @@
 
 
 #include "ft2build.h"
+#include "rokz/binary_IO.h"
+#include <numeric>
 #include FT_FREETYPE_H
 #include  FT_GLYPH_H
 
 using namespace rokz;
-
-
+// ---------------------------------------------------------------------------------------------
+// these macros r old
+// ---------------------------------------------------------------------------------------------
 #define CHAR_PIXEL_SIZE 32
 #define NUM_X_CELLS 16
 #define NUM_Y_CELLS 16
 
 
-void save_to_png (const rokz::imagebuff<uint8>& image, uint32 glyph_index) {
+// ---------------------------------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------------------------------
+const char k_font_glyph_file_format[64] =  "font_glyph_%u.bin";
+
+const rokz::systempath k_base_bin_path =  "/home/djbuzzkill/owenslake/tmp/textbin/";
+
+std::string rekz::fonttool::font_glyph_filename (uint32 asciicode ) {
+  char font_glyph_file_name [64]; 
+  sprintf (font_glyph_file_name , k_font_glyph_file_format, asciicode);
+  return font_glyph_file_name;
+}
+
+// ---------------------------------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------------------------------
+void save_to_bin (const rokz::imagebuff<uint8>& image, uint32 asciicode, const rokz::systempath binpath) {
+
+  uint8 maxv = *std::max_element (image.dat.begin () , image.dat.end () );
+  uint8 minv = *std::min_element (image.dat.begin () , image.dat.end () );
+  printf (" %s --> <minv:%u, maxv:%u>\n", __FUNCTION__, minv, maxv); 
+
+  rokz::imagebuff<float> fimg (image.width, image.height); 
+  for (uint32 ipix = 0; ipix < image.numpix () ; ++ipix) {
+    fimg.dat[ipix] = float (image.dat[ipix]) / float(255);
+  }
+
+  std::string fqname = binpath/rekz::fonttool::font_glyph_filename (asciicode) ;
+  rokz::WriteStream::Ref ws = CreateWriteFileStream (fqname.c_str ());
+  ws->Write (fimg.p (), fimg.numbytes ()); 
+
+   
+ 
+}
+
+// ---------------------------------------------------------------------------------------------
+//
+// ---------------------------------------------------------------------------------------------
+void save_to_png (const rokz::imagebuff<uint8>& image, uint32 asciicode ) {
   // void sample_output (void* data, char* outname) {
   ilInit ();
 
-  int imgID = ilGenImage ();
+  const rokz::systempath basepath =  "/home/djbuzzkill/owenslake/tmp/testtext/";
+
+
+ int imgID = ilGenImage ();
   ilBindImage (imgID);
   ilEnable (IL_ORIGIN_SET);
   ilSetInteger (IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
@@ -35,9 +79,8 @@ void save_to_png (const rokz::imagebuff<uint8>& image, uint32 glyph_index) {
   }
 
   char msg[256];
-  sprintf (msg, "test_char_%u.png", glyph_index);
+  sprintf (msg, "test_char_%u.png", asciicode);
 
-  rokz::systempath basepath =  "/home/djbuzzkill/owenslake/tmp/testtext/";
 
   std::string fqname = basepath/msg;
   Vec<uint8> savebuf = image.dat;
@@ -58,8 +101,6 @@ void save_to_png (const rokz::imagebuff<uint8>& image, uint32 glyph_index) {
 
   ilShutDown ();
 }
-
-
 
 // -------------------------------------------------------------------------------------- 
 //
@@ -95,12 +136,11 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
 
   for (char ch = '!' ; ch <=  '~'; ch++) {
 
-
     FT_UInt glyph_index = FT_Get_Char_Index (ftFace, ch);
     res = FT_Load_Glyph (ftFace, glyph_index, FT_LOAD_DEFAULT);
     res = FT_Render_Glyph (ftFace->glyph, FT_RENDER_MODE_NORMAL);
 
-
+    
     rokz::imagebuff<uint8> image  (64, 64);
 
     uint32 advance = (ftFace->glyph->advance.x >> 6);
@@ -117,23 +157,21 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
 
     //    printf ("[%c] metric<width:%i, height:%i>\n", ch, metric_width , metric_height);
 
+        // typedef struct  FT_Glyph_Metrics_
+        // {
+        //   FT_Pos  width;
+        //   FT_Pos  height;
     
-                      // typedef struct  FT_Glyph_Metrics_
-                      // {
-                      //   FT_Pos  width;
-                      //   FT_Pos  height;
-
-                      //   FT_Pos  horiBearingX;
-                      //   FT_Pos  horiBearingY;
-                      //   FT_Pos  horiAdvance;
-
-                      //   FT_Pos  vertBearingX;
-                      //   FT_Pos  vertBearingY;
-                      //   FT_Pos  vertAdvance;
-
-                      // } FT_Glyph_Metrics;
-
+        //   FT_Pos  horiBearingX;
+        //   FT_Pos  horiBearingY;
+        //   FT_Pos  horiAdvance;
     
+        //   FT_Pos  vertBearingX;
+        //   FT_Pos  vertBearingY;
+        //   FT_Pos  vertAdvance;
+
+    // } FT_Glyph_Metrics;
+
     // printf ("[%c] bitmap.width [%u, %u]\n", ch, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows);
     // printf ("[%c] bitmap.pitch %u | advance %u\n", ch, ftFace->glyph->bitmap.pitch, advance);
     
@@ -152,8 +190,9 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
     }
 
     save_to_png (image, ch); 
-    
+    save_to_bin (image, ch, k_base_bin_path); 
   }
+
 }
 
 
@@ -175,16 +214,13 @@ int font_tool (const Vec<std::string>& args) {
   }
 
   HERE("FreeType Initialized");
-  
   systempath basepath = "/usr/share/fonts/liberation/";
-
-
   systempath font_list[]  = {
     "LiberationSans-Regular.ttf"    ,
+    "LiberationSerif-Regular.ttf"   ,
     "LiberationMono-BoldItalic.ttf" ,
     "LiberationMono-Bold.ttf"       ,
     "LiberationMono-Italic.ttf"     ,
-    "LiberationMono-Regular.ttf"    ,
     "LiberationSans-BoldItalic.ttf" ,
     "LiberationSans-Bold.ttf"       ,
     "LiberationSans-Italic.ttf"     ,
@@ -192,24 +228,17 @@ int font_tool (const Vec<std::string>& args) {
     "LiberationSerif-BoldItalic.ttf",
     "LiberationSerif-Bold.ttf"      ,
     "LiberationSerif-Italic.ttf"    ,
-    "LiberationSerif-Regular.ttf"   ,
   };
-  
-
   
 
   std::filesystem::path  fqname = basepath/font_list[0];
 
-
-
   BuildFont (fqname.c_str(), nullptr, nullptr);
-
-
   
   error = FT_New_Face (library, fqname.c_str(), 0,
                      &face);
   if (error == FT_Err_Unknown_File_Format ) {
-
+    HERE("FT_Err_Unknown_File_Format");
   }
 
   HERE("FACE CREATED");
