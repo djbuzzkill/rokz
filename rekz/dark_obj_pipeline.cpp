@@ -170,7 +170,8 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(obz::PushConstant),
                                 obz::PCStages, dslos, device.handle);
   
-  PipelineState_default (pipeline.state, msaa_samples, obz::kVertexInputAttributeDesc,
+  PipelineState_default (pipeline.state, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 
+                         msaa_samples, obz::kVertexInputAttributeDesc,
                          obz::kVertexInputBindingDesc, viewport_extent); 
   // ^ !! shader modules is part of pipelinestate 
 

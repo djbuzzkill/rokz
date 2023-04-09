@@ -10,7 +10,7 @@ const uint GLOBAL_TEXTITEMS_BINDINGI   = 3;
 const uint GLOBAL_FONT_FACE_BINDINGI   = 8; 
 
 
-struct PushConstant {
+layout (push_constant) uniform PushConstant {
 
   uint resource_id;
   uint _unused_1;
@@ -20,6 +20,6 @@ struct PushConstant {
   vec4 color;
   vec4 advance;
   vec4 position; 
-
+  //mat4 mat;
 } pc;
 

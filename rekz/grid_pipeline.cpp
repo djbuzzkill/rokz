@@ -88,13 +88,14 @@ bool rekz::grid::InitPipeline (rokz::Pipeline&              pipeline,
 
   //
   // Pipeline States
-  rokz::PipelineState_default (pipeline.state, msaa_samples,  grid::kVertInputAttributeDesc,
-                               grid::kVertexBindingDesc, viewport_extent); 
+    rokz::PipelineState_default (pipeline.state, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
+                                 msaa_samples,  grid::kVertInputAttributeDesc,
+                                 grid::kVertexBindingDesc, viewport_extent); 
   // change defaults
   // pipeline.state.ci.rasterizer.polygonMode = VK_POLYGON_MODE_LINE
 
   //
-  pipeline.state.ci.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+    //pipeline.state.ci.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
   // pipeline.state.ci.input_assembly.primitiveRestartEnable = ????; 
   
   //

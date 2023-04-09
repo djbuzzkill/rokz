@@ -27,7 +27,6 @@ namespace rokz {
     return Viewport (vp, offs.x, offs.y, ext.width, ext.height, dp); 
   }
 
-
   // ---------------------------------------------------------------------
   //
   // ---------------------------------------------------------------------
@@ -151,13 +150,13 @@ namespace rokz {
    );
 
 
-  PipelineState& PipelineState_default (
-   rokz::PipelineState&                                  ps,
-   VkSampleCountFlagBits                                 msaa_samples,
-   const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
-   const VkVertexInputBindingDescription&                vert_bindiing_desc,
-   const VkExtent2D&                                     vpext
-   );
+  PipelineState& PipelineState_default (rokz::PipelineState&                                  ps,
+                                        VkPrimitiveTopology                                   prim,
+                                        VkSampleCountFlagBits                                 msaa_samples,
+                                        const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
+                                        const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                        const VkExtent2D&                                     vpext
+                                        );
 
   bool SetupPipelinShaderStages (std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_cis,
                                  Vec<rokz::ShaderModule>& shader_modules, 

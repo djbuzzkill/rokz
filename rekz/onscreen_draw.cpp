@@ -3,6 +3,8 @@
 #include "onscreen_draw.h"
 #include "rekz/onscreen_pipe.h"
 #include "rokz/shared_descriptor.h"
+#include "rokz/utility.h"
+#include <glm/matrix.hpp>
 #include <numeric>
 #include <vulkan/vulkan_core.h>
 
@@ -23,9 +25,9 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
     // -- construct -----------------------------------------------------
     osd_draw_text (const onscreen::Data& dat, //const Vec<rc::Buffer::Ref>& uniformbuffers,
                    const Vec<VkDescriptorSet>& dsets)
-      : data (dat), //ubs (uniformbuffers),
-        dss (dsets) {
+      : data (dat), dss (dsets) {
     }
+
     // -- prepare  -----------------------------------------------------
     virtual int Prep (uint32_t currentframe, const RenderEnv& env, const rokz::Device& device) {
 
@@ -39,12 +41,27 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
       vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
       // b/c these r dynamic state
       vkCmdSetViewport(comb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
-      vkCmdSetScissor (comb,    0, 1, &env.pipeline.state.viewport.vps[0].scissor);
+      vkCmdSetScissor (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
-      vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_ALWAYS); 
       vkCmdSetDepthTestEnable (comb, VK_FALSE); 
+      vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_ALWAYS); 
 
-                               
+      // printf ("viewport [x:%f, y:%f, w:%f, h:%f, mind:%f, maxd:%f]\n", 
+      //         env.pipeline.state.viewport.vps[0].viewport.x,
+      //         env.pipeline.state.viewport.vps[0].viewport.y,
+      //         env.pipeline.state.viewport.vps[0].viewport.width, 
+      //         env.pipeline.state.viewport.vps[0].viewport.height,
+      //         env.pipeline.state.viewport.vps[0].viewport.minDepth, 
+      //         env.pipeline.state.viewport.vps[0].viewport.maxDepth); 
+      
+      
+      // printf ("scissor [x:%i, y:%i, w:%u, h:%u]\n", 
+      //         env.pipeline.state.viewport.vps[0].scissor.offset.x, 
+      //         env.pipeline.state.viewport.vps[0].scissor.offset.y, 
+
+      //         env.pipeline.state.viewport.vps[0].scissor.extent.width,
+      //         env.pipeline.state.viewport.vps[0].scissor.extent.height); 
+
       Vec<VkDescriptorSet> descrsets = { 
         dss[currentframe], 
       };
@@ -58,26 +75,42 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
 
       vkCmdBindVertexBuffers(comb, 0, 1, vertex_buffers, offsets);
       
+      const float lt = 0.0f; 
+      const float rt = 800.0f;
+      const float bt = 600.0f;
+      const float tp = 0.0f;
+      const float nr = 0.0f;
+      const float fr = 1000.0f;
+        
       const uint32_t num_test_objects =  1; 
       for (uint32_t i = 0; i < num_test_objects; ++i) {
-
         rekz::onscreen::PushConstant pc {}; 
         pc.resource_id = i; 
         pc._unused_1   = i;
         pc._unused_2   = i; 
         pc._unused_3   = i; 
         pc.color    = glm::vec4 (0.1, 0.2, 0.8, 1.0f);
-        pc.advance  = glm::vec4 (32.0f, 0, 0, 0);
-        pc.position = glm::vec4 (64.f, 64.f, -1.1, 1) ;
+        pc.advance  = glm::vec4 (64.0f, 0, 0, 0);
+        pc.position = glm::vec4 (0.0f, -132.0f, -1.0f, 0.0f) ;
 
-        vkCmdPushConstants (comb, env.layout,
+
+        // pc.mat = glm::orthoRH_ZO (lt, rt, bt, tp , nr, fr);
+        // pc.mat[1][1] *= -1.0; 
+        // HERE("orthoRH_ZO"); 
+        // ut::printmat (pc.mat);
+        pc.mat = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
+        HERE("orthographic_projection"); 
+        ut::printmat (pc.mat);
+
+         vkCmdPushConstants (comb, env.layout,
                             rekz::onscreen::PCStages, 0, sizeof(rekz::onscreen::PushConstant), &pc);
 
         // printf ("data.strings[i].size : %zu| %s \n",   data.strings[i].size (), data.strings[i].c_str());
-        vkCmdDraw (comb, 4, data.strings[i].size (), 0, 0); 
+        vkCmdDraw (comb, 4, data.strings[i].size (), 0, 0);
+
       }
       
-      return res;
+      return 0;
     }
 
   }; 

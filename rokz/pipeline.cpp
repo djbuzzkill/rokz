@@ -172,7 +172,7 @@ VkPipelineDepthStencilStateCreateInfo& rokz::CreateInfo (VkPipelineDepthStencilS
   ci = {};
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
   ci.pNext = nullptr;
-  ci.depthTestEnable = VK_TRUE;
+  ci.depthTestEnable = VK_FALSE;
   ci.depthWriteEnable = VK_TRUE;
   ci.depthCompareOp = VK_COMPARE_OP_LESS;  // VK_COMPARE_OP_ALWAYS
   ci.depthBoundsTestEnable = VK_FALSE;
@@ -240,7 +240,7 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
   ci.rasterizerDiscardEnable = VK_FALSE;
   ci.polygonMode             = VK_POLYGON_MODE_FILL; // 
   ci.lineWidth               = 1.0f;
-  ci.cullMode                = VK_CULL_MODE_BACK_BIT;
+  ci.cullMode                = VK_CULL_MODE_NONE ; // VK_CULL_MODE_BACK_BIT;
   ci.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
   ci.depthBiasEnable         = VK_FALSE;
   ci.depthBiasConstantFactor = 0.0f; 
@@ -248,6 +248,28 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
   ci.depthBiasSlopeFactor    = 0.0f;    
   return ci;
 }
+
+// ---------------------------------------------------------------------
+// VkPipelineTessellationStateCreateInfo
+// ---------------------------------------------------------------------
+// VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizationStateCreateInfo& ci, VkPolygonMode polymode, ) {
+//   //printf ("%s -> VkPipelineRasterizationStateCreateInfo& \n", __FUNCTION__); 
+//   // RASTERIZATION STATE .. VkPipelineRasterizationStateCreateInfo
+//   ci = {};
+//   ci.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+//   ci.pNext                   = nullptr;
+//   ci.depthClampEnable        = VK_FALSE;
+//   ci.rasterizerDiscardEnable = VK_FALSE;
+//   ci.polygonMode             = VK_POLYGON_MODE_FILL; // 
+//   ci.lineWidth               = 1.0f;
+//   ci.cullMode                = VK_CULL_MODE_BACK_BIT;
+//   ci.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
+//   ci.depthBiasEnable         = VK_FALSE;
+//   ci.depthBiasConstantFactor = 0.0f; 
+//   ci.depthBiasClamp          = 0.0f;          
+//   ci.depthBiasSlopeFactor    = 0.0f;    
+//   return ci;
+// }
 
 // ---------------------------------------------------------------------
 // VkPipelineTessellationStateCreateInfo
@@ -517,11 +539,12 @@ bool rokz::CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice devi
 //
 // ----------------------------------------------------------------------------------------
 rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&                                  ps,
+                                                  VkPrimitiveTopology                                   prim,
                                                   VkSampleCountFlagBits                                 msaa_samples,
                                                   const std::vector<VkVertexInputAttributeDescription>& vert_input_attrib_desc,
                                                   const VkVertexInputBindingDescription&                vert_bindiing_desc,
                                                   const VkExtent2D&                                     vpext) {
-
+  
   SetupViewportState (ps.viewport, vpext); 
 
   ps.colorblend_attachments.resize (1);
@@ -535,8 +558,7 @@ rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&          
   CreateInfo (psci.dynamicstate, ps.dynamics); 
   CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
   CreateInfo (psci.viewport_state, ps.viewport);
-  CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
-  //CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP); 
+  CreateInfo (psci.input_assembly, prim);  // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST | VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP); 
   CreateInfo (psci.rasterizer); 
   CreateInfo (psci.colorblendstate, ps.colorblend_attachments); 
   CreateInfo (psci.multisampling, msaa_samples); 

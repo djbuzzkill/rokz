@@ -17,19 +17,24 @@ using namespace rokz;
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
+const rekz::onscreen::Vert geom[4] = {
+  {{0.0, 1.0, 0.0}, {0.0, 0.0}},
+  {{0.0, 0.0, 0.0}, {1.0, 0.0}},
+  {{1.0, 1.0, 0.0}, {1.0, 1.0}},
+  {{1.0, 0.0, 0.0}, {0.0, 1.0}},
+}; 
+
+  // {0.0, 1.0, 0},
+  // {0.0, 0.0, 0},
+  // {1.0, 1.0, 0},
+  // {1.0, 0.0, 0},
+
+
 struct geom_handler : public cx::mappedbuffer_cb {
 
   geom_handler () { }
-
   
   virtual int on_mapped (void* mappedp, size_t maxsize)  {
-
-    const rekz::onscreen::Vert geom[4] = {
-      {{0.0, -1.0, 0}, {1.0, 0.0} },
-      {{0.0,  0.0, 0}, {0.0, 0.0} },
-      {{1.0, -1.0, 0}, {1.0, 1.0} },
-      {{1.0,  0.0, 0}, {0.0, 1.0} },
-    }; 
 
     memcpy (mappedp, geom, sizeof(rekz::onscreen::Vert) * 4); 
     
@@ -55,6 +60,7 @@ struct glyph_layer : public cx::mappedlayer_cb {
     rokz::systempath fqpath = basepath/rekz::fonttool::font_glyph_filename (layeri); 
 
     if (std::filesystem::exists (fqpath)) { 
+
       Vec<float> fpixels ; 
       From_file (fpixels, fqpath, true); 
       printf ( "loading .....numpixels :%zu  %s\n ", fpixels.size(),  fqpath.c_str ()); 

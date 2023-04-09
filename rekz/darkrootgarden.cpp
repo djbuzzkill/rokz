@@ -187,8 +187,8 @@ struct RootLoop {
       glob.osdata.strings[0] = msg; 
     }
       
-    rekz::UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
-    rekz::UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
+    UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
+    UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
 
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 
@@ -241,27 +241,21 @@ struct RootLoop {
         glob.grid_pl, glob.grid_plo.handle, glob.shared, 
       };
 
-      //#ifdef DARKROOT_HIDE_OSD_PATH
-      // !! there is nothing in shared_globals that is especially useful to overlay
       rokz::DrawSequence::RenderEnv osd_re  {
         glob.osd_pl, glob.osd_plo.handle, glob.shared, 
       };
-      //#endif
       
       //
-      // scene draw 
+      // polygons
       glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
       glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
-      //
+      // grid
       glob.drawgrid->Prep (curr_frame, grid_re, glob.device); 
       glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
-
       //
       // no more scene beyond here this is overlay now
-      //#ifdef DARKROOT_HIDE_OSD_PATH
       glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
       glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
-      //      #endif
 
       // -- we are done, submit
       rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
@@ -354,21 +348,16 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false; 
   }
 
-
   // ---------------- INIT OSD PIPELINE  ---------------------
   rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
 
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
-  if (!onscreen::InitPipeline (glob.osd_pl,  glob.osd_plo,  glob.osd_pl.dslos, dark_path,
-                               kTestExtent,
-                               glob.msaa_samples, scg.image_format,  glob.depth_format,  glob.device)) {
+  if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
+                               kTestExtent, glob.msaa_samples,
+                               scg.image_format, glob.depth_format,  glob.device)) {
     printf ("[FAILED] --> OSD pipeline \n"); 
     return false; 
   }
-
-#ifdef DARKROOT_HIDE_OSD_PATH
-
-#endif
 
   //
   rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
@@ -390,7 +379,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   // for BeginRendering ()
   rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
                                    glob.depthimageview->handle, scg.extent); 
-
 
 
   //  --------------------------- GLOBAL ---------------------------
@@ -449,9 +437,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //  draw list
   glob.drawpoly = rekz::polyob::CreateDrawPoly (glob.polyd, glob.poly_objects_bu, glob.poly_objects_de);
 
-
-  
-  //#ifdef DARKROOT_HIDE_OSD_PATH
   //  -------------------------- OSD --------------------------
   onscreen::SetupData (glob.osdata, kMaxFramesInFlight, glob.device); 
 
@@ -461,7 +446,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   }
   //
   if (!rokz::MakeDescriptorSets (glob.osd_de.descrsets, glob.osd_de.alloc_info, kMaxFramesInFlight, 
-                                  glob.osd_dslo.handle, glob.osd_de.pool, glob.device)) {
+                                 glob.osd_dslo.handle, glob.osd_de.pool, glob.device)) {
 
     printf ("[FAILED|%i] --> MakeDescriptorSets \n", __LINE__ ); 
     return false;

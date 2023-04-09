@@ -89,29 +89,16 @@ namespace rokz { namespace ut {
       if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
       return VK_SAMPLE_COUNT_1_BIT;
     }
-    // --------------------------------------------------------------
+    // -------------------------------------------------------------------------------------
     inline VkDeviceSize MinUniformBufferOffsetAlignment (const PhysicalDevice& phdev) {
       return phdev.properties.limits.minUniformBufferOffsetAlignment;
     }
 
+    // -------------------------------------------------------------------------------------
     const char* VkResult_2_string (VkResult r); 
 
-
-
-    
-
-    inline void printmat (glm::mat4& mat) { 
-      for (int iy = 0; iy < 4; ++iy) {
-        for (int ix = 0; ix < 4; ++ix) {
-
-          if  (ix == 0) 
-            printf ( "[ %f", mat[iy][ix]);
-          else
-            printf ( " %f", mat[iy][ix]);
-        }
-        printf ( " ]\n");
-      }
-    }
+    // -------------------------------------------------------------------------------------
+    void printmat (glm::mat4& mat);
 
   }} // rokz ut
 

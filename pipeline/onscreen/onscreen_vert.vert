@@ -23,8 +23,7 @@ layout(location = 1) in vec2 in_txc;
 // out PER VERTEX
 // ----------------------------------------------------------------------------
 layout(location = 0) out vec2 o_txc; 
-layout(location = 1) flat out int char_index;
-
+layout(location = 1) flat out int charindex;
 
 // ----------------------------------------------------------------------------
 // DESCRIPTOR                 
@@ -35,21 +34,32 @@ layout(binding = GLOBAL_MVP_OVERLAY_BINDINGI, set = 0) uniform MVPTransform {
     mat4 proj;
 } mat;
 
+// -------------------------------------------------------------------------
+//  outgoing
+// -------------------------------------------------------------------------
+out gl_PerVertex {
+  vec4 gl_Position; 
+}; 
+
 // -----------------------------------------------------------
 void main() {
+  //const float multf = ;
 
   vec4 hpos = vec4(in_pos, 1.0);
 
-  hpos.x = hpos.x * pc.advance.x;
-  hpos.y = hpos.y * pc.advance.x;
- 
-  hpos.xyz += pc.position.xyz; 
-  
-  hpos.x = hpos.x + pc.advance.x * gl_InstanceIndex;
-  hpos.y = hpos.y + pc.advance.y ;
-  // each gl_InstanceIndex is used as  string[gl_InstanceIndex]: char
-  char_index = gl_InstanceIndex; 
-  o_txc = in_txc;
+  hpos.xy = pc.advance.x * hpos.xy;
+  //hpos.xy = 64.0 * hpos.xy;
 
+  hpos.xyz += pc.position.xyz;   
+  //hpos.xyz += vec3(0.0, -64.0, -1.0); ;   
+
+  hpos.x = hpos.x + pc.advance.x * gl_InstanceIndex;
+  hpos.y = hpos.y + pc.advance.y ; 
+
+  // out
+  charindex   = gl_InstanceIndex; // string[charindex] : ascii code
+  o_txc       = in_txc;           // o_txc = txcs[gl_VertexIndex];
+
+  // gl_Position = pc.mat * hpos;
   gl_Position = mat.proj * hpos;
 }

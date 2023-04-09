@@ -90,12 +90,8 @@ struct PolygonDraw : public rokz::DrawSequence {
       pcs._unused_02 = i; 
       pcs._unused_03 = i; 
 
-      vkCmdPushConstants (combuf,
-                          env.layout, 
-                          rekz::obz::PCStages, //   shader_stages,
-                          0,
-                          sizeof(rekz::obz::PushConstant),
-                          &pcs);
+      vkCmdPushConstants (combuf, env.layout, 
+                          rekz::obz::PCStages, 0, sizeof(rekz::obz::PushConstant), &pcs);
 
       vkCmdDrawIndexed (combuf, octomesh.indices.size(), 1, 0, 0, 0);
     }

@@ -9,6 +9,7 @@
 
 
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <numeric>
 #include <vulkan/vulkan_core.h>
 
@@ -200,31 +201,38 @@ void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::B
     // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
     // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
     mvps->proj[1][1] *= -1;
-    //ut::printmat (mvps->proj);
+    // HERE("mvps->proj"); 
+    // ut::printmat (mvps->proj);
 
     // ---------------- OVERLAY MVP ----------------------
-    global_ub::MVPTransform* mvpo =
-      (global_ub::MVPTransform* ) (uc + ut::offset_at (global_ub::UB_sizes, global_ub::MVP_OVERLAY_BINDINGI));
+    global_ub::MVPTransform* mvpo = (global_ub::MVPTransform*)
+      (uc + ut::offset_at (global_ub::UB_sizes, global_ub::MVP_OVERLAY_BINDINGI));
 
     mvpo->model = glm::mat4(1); 
     mvpo->view  = glm::mat4(1); 
 
     float lt = 0.0f;
     float rt = viewext.width;
-    float bt = 0.0;
+
     float tp = viewext.height;
-    float nr = 0.0;
-    float fr = 8;
-    //printf ( " -> ortho [lt:%f, rt:%f, bt:%f, tp:%f]\n", lt, rt, bt, tp );
+    float bt = 0.0;
+
+    float nr = 0.0f;
+    float fr = 1000.0f;
+
+    printf ( " -> ortho [lt:%f, rt:%f, bt:%f, tp:%f, nr:%f, fr:%f]\n", lt, rt, bt, tp, nr, fr );
     //mvpo->proj = glm::orthoRH_ZO (lt, rt, bt, tp, -1.0f, 80.f);
     //mvpo->proj[1][1] *= -1;
 
     mvpo->proj = glm::orthoRH_ZO (lt, rt, bt, tp, nr, fr);
     mvpo->proj[1][1] *= -1;
-    //ut::printmat (mvpo->proj);
-    // mvpo->proj = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
-    // HERE("cookbook");
-    // ut::printmat (mvpo->proj);
+    HERE("orthoRH_ZO"); 
+    ut::printmat (mvpo->proj);
+
+    glm::mat4 cbmat; 
+    cbmat = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
+    HERE("cookbook mat");
+    ut::printmat (cbmat);
 
 
   }

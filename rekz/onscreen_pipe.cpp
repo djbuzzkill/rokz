@@ -27,7 +27,6 @@ const DescriptorSetLayoutBindings rekz::onscreen::kDescriptorBindings = {
 
 
 bool setup_onscreen_shaders (Pipeline& pipeline, const systempath& fspath, const Device& device) {
-  HERE(":p");
 
   Vec<VkPipelineShaderStageCreateInfo>& shader_stage_cis = pipeline.state.ci.shader_stages; 
   Vec<ShaderModule>&                    shader_modules   = pipeline.shader_modules;
@@ -55,12 +54,12 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
                                    VkFormat                          depthformat, 
                                    const Device&                     device)
 {
-  HERE("");
   //printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(onscreen::PushConstant),
                                 onscreen::PCStages, dslos, device.handle);
   
-  PipelineState_default (pipeline.state, msaa_samples, onscreen::kVertexInputAttributeDesc,
+  PipelineState_default (pipeline.state, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 
+                         msaa_samples, onscreen::kVertexInputAttributeDesc,
                          onscreen::kVertexInputBindingDesc, viewport_extent); 
   // ^ !! shader modules is part of pipelinestate 
   if (!setup_onscreen_shaders  (pipeline, fspath, device)) {
@@ -79,15 +78,15 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
   CreateInfo (pipeline.ci,
               plo.handle,
               &pipeline.ext.pipeline_rendering.ci,                    
-              psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
-              &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
-              &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
-              &psci.viewport_state,     //const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
+              psci.shader_stages,      // const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
+              &psci.input_assembly,    // const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
+              &psci.vertexinputstate,  // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
+              &psci.viewport_state,    // const VkPipelineViewportStateCreateInfo*           ci_viewport_state, 
               nullptr,                 // tesselation 
-              &psci.rasterizer,         //const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
-              &psci.multisampling,      //const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
-              nullptr, // &psci.depthstencilstate,       //const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
-              &psci.colorblendstate,         //const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
+              &psci.rasterizer,        // const VkPipelineRasterizationStateCreateInfo*      ci_rasterizer, 
+              &psci.multisampling,     // const VkPipelineMultisampleStateCreateInfo*        ci_multisampling,
+              &psci.depthstencilstate, // const VkPipelineDepthStencilStateCreateInfo*       ci_depthstencil, 
+              &psci.colorblendstate,   // const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
               &psci.dynamicstate);     // const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state, 
 
   if (!CreateGraphicsPipeline (pipeline, device.handle)) {     //const VkDevice                           b          device)
@@ -112,8 +111,6 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
   assert (globalubs.size () != 0); 
   //assert (textubs.size () != 0); 
   // separate mvp+ostext buffers or combine
-
-  //
   for (uint32_t i = 0; i < dss.size (); i++) {
     // setup uniform
     VkDescriptorBufferInfo mvpinfo {};

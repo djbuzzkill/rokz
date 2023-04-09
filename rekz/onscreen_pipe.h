@@ -33,6 +33,8 @@ namespace rekz { namespace onscreen {
       glm::vec4 color;
       glm::vec4 advance;
       glm::vec4 position;
+
+       glm::mat4 mat;
     };
 
     // textelem[resource_id][gl_InstanceIndex]  == [line][char]

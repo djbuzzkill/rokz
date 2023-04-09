@@ -13,6 +13,7 @@ layout(location = 1) flat in int char_index;
 
 layout(location = 0) out vec4 ofrag;
 
+
 // -------------- DESCRIPTORS ---------------
 layout (set = 0, binding = GLOBAL_TEXTITEMS_BINDINGI) uniform TextItem {
   uint text[64]; // ascii, utf, etc 
@@ -26,6 +27,7 @@ void main() {
   vec3 atxc = vec3 (txc.xy, str_elem[pc.resource_id].text[char_index]); 
   ofrag.a   = texture (glyphsamp, atxc).r;
   //ofrag.rgb = pc.color.rgb;
-  ofrag = vec4 (0.6, 0.2, 0.8, 1.0f); 
+
+  ofrag = vec4 (1.0, 0.0, char_index * 0.025, 1.0f); 
 }
 
