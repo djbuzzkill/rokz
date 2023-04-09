@@ -51,6 +51,11 @@ namespace rokz { namespace ut {
     //-------------------------------------------------------------------------------------------
     //                                 
     //-------------------------------------------------------------------------------------------
+    glm::mat4 orthographic_projection ( float left_plane, float right_plane, float bottom_plane,
+                                        float top_plane, float near_plane, float far_plane ); 
+    //-------------------------------------------------------------------------------------------
+    //                                 
+    //-------------------------------------------------------------------------------------------
     float ViewAspectRatio (uint32_t w, uint32_t h);
 
     float AspectRatio (const VkExtent2D& ext);
@@ -90,8 +95,25 @@ namespace rokz { namespace ut {
     }
 
     const char* VkResult_2_string (VkResult r); 
-  } // ut
-} // rokz
+
+
+
+    
+
+    inline void printmat (glm::mat4& mat) { 
+      for (int iy = 0; iy < 4; ++iy) {
+        for (int ix = 0; ix < 4; ++ix) {
+
+          if  (ix == 0) 
+            printf ( "[ %f", mat[iy][ix]);
+          else
+            printf ( " %f", mat[iy][ix]);
+        }
+        printf ( " ]\n");
+      }
+    }
+
+  }} // rokz ut
 
 
 #endif

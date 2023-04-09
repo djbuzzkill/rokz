@@ -51,6 +51,7 @@ struct drawgrid_buff : public rokz::DrawSequence {
     vkCmdSetViewport  (comb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
     vkCmdSetScissor   (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
     vkCmdSetDepthTestEnable (comb, VK_TRUE); 
+    vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_LESS); 
 
     
     const uint32_t descr_set_count = 1; //

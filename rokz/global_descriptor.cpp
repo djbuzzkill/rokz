@@ -8,6 +8,7 @@
 #include "uniform.h"
 
 
+#include <glm/ext/matrix_clip_space.hpp>
 #include <numeric>
 #include <vulkan/vulkan_core.h>
 
@@ -194,12 +195,12 @@ void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::B
     mvps->view = glm::inverse (viewmatrix); 
     //glm::vec3 (0.0, .5, -5.0));
     // mats.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      
     mvps->proj = glm::perspective(glm::radians(60.0f), aspf , 1.0f, 800.0f);
     // !! GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is
     // inverted. The easiest way to compensate for that is to flip the sign on the scaling factor of the Y
     // axis in the projection matrix. If you don't do this, then the image will be rendered upside down.
     mvps->proj[1][1] *= -1;
+    //ut::printmat (mvps->proj);
 
     // ---------------- OVERLAY MVP ----------------------
     global_ub::MVPTransform* mvpo =
@@ -211,9 +212,20 @@ void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::B
     float lt = 0.0f;
     float rt = viewext.width;
     float bt = 0.0;
-    float tp = viewext.height; 
+    float tp = viewext.height;
+    float nr = 0.0;
+    float fr = 8;
+    //printf ( " -> ortho [lt:%f, rt:%f, bt:%f, tp:%f]\n", lt, rt, bt, tp );
+    //mvpo->proj = glm::orthoRH_ZO (lt, rt, bt, tp, -1.0f, 80.f);
+    //mvpo->proj[1][1] *= -1;
 
-    mvpo->proj = glm::ortho (lt, rt, bt, tp); 
+    mvpo->proj = glm::orthoRH_ZO (lt, rt, bt, tp, nr, fr);
     mvpo->proj[1][1] *= -1;
+    //ut::printmat (mvpo->proj);
+    // mvpo->proj = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
+    // HERE("cookbook");
+    // ut::printmat (mvpo->proj);
+
+
   }
 }

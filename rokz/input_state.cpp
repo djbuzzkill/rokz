@@ -100,6 +100,8 @@ void rokz::UpdateViewPosition (glm::vec3& viewpos,
       viewpos.y -= move_rate;
     }    
 
+    //printf ( "<x:%f, y:%f, z:%f>\n", viewpos.x , viewpos.y, viewpos.z); 
+    
   } 
 
 

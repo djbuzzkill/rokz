@@ -13,24 +13,7 @@ layout(location = 1) flat in int char_index;
 
 layout(location = 0) out vec4 ofrag;
 
-// -------------- PUSH CONSTANT ---------------
-struct PushConstant {
-
-  uint resource_id;
-  uint _unused_1;
-  uint _unused_2;
-  uint _unused_3;
-
-  vec4 color;
-  vec2 advance;
-  vec2 position; 
-
-} pc;
-
 // -------------- DESCRIPTORS ---------------
-
-
-
 layout (set = 0, binding = GLOBAL_TEXTITEMS_BINDINGI) uniform TextItem {
   uint text[64]; // ascii, utf, etc 
 } str_elem[max_count]; 
@@ -42,6 +25,7 @@ layout(set = 0, binding = GLOBAL_FONT_FACE_BINDINGI) uniform sampler2DArray glyp
 void main() {
   vec3 atxc = vec3 (txc.xy, str_elem[pc.resource_id].text[char_index]); 
   ofrag.a   = texture (glyphsamp, atxc).r;
-  ofrag.rgb = pc.color.rgb;
+  //ofrag.rgb = pc.color.rgb;
+  ofrag = vec4 (0.6, 0.2, 0.8, 1.0f); 
 }
 

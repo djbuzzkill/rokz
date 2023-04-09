@@ -24,6 +24,9 @@ bool rc::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain,
 
 
 
+// ------------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------------
 int rc::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                               uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
 
@@ -55,7 +58,9 @@ int rc::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
 }
 
 
-
+// ------------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------------
 int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
 
   vkCmdEndRendering (command_buffer);

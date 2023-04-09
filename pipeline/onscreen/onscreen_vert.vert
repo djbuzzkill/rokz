@@ -25,22 +25,6 @@ layout(location = 1) in vec2 in_txc;
 layout(location = 0) out vec2 o_txc; 
 layout(location = 1) flat out int char_index;
 
-// ----------------------------------------------------------------------------
-// DESCRIPTOR                 
-// ----------------------------------------------------------------------------
-struct PushConstant {
-
-  uint resource_id;
-  uint _unused_1;
-  uint _unused_2;
-  uint _unused_3;
-
-  vec4 color;
-  vec2 advance;
-  vec2 position; 
-
-} pc;
-
 
 // ----------------------------------------------------------------------------
 // DESCRIPTOR                 
@@ -51,16 +35,19 @@ layout(binding = GLOBAL_MVP_OVERLAY_BINDINGI, set = 0) uniform MVPTransform {
     mat4 proj;
 } mat;
 
-
 // -----------------------------------------------------------
 void main() {
 
   vec4 hpos = vec4(in_pos, 1.0);
-  hpos.x += pc.position.x + pc.advance.x * gl_InstanceIndex;
-  hpos.y += pc.position.y ;
 
-  // each gl_InstanceIndex is used as  string[gl_InstanceIndex]: char
+  hpos.x = hpos.x * pc.advance.x;
+  hpos.y = hpos.y * pc.advance.x;
+ 
+  hpos.xyz += pc.position.xyz; 
   
+  hpos.x = hpos.x + pc.advance.x * gl_InstanceIndex;
+  hpos.y = hpos.y + pc.advance.y ;
+  // each gl_InstanceIndex is used as  string[gl_InstanceIndex]: char
   char_index = gl_InstanceIndex; 
   o_txc = in_txc;
 

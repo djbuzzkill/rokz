@@ -118,7 +118,7 @@ void BuildFont (const char* fontFile, char* texturename, char* outName) {
   res = FT_Init_FreeType (&ftLib);
   res = FT_New_Face (ftLib, fontFile, 0, &ftFace); 
 
-  res = FT_Set_Pixel_Sizes (ftFace, 0, 64); 
+  res = FT_Set_Pixel_Sizes ( ftFace, 0, 64); 
   //res = FT_Set_Char_Size (ftFace, 0, 0); 
 
   int pxlsPerChar = CHAR_PIXEL_SIZE * CHAR_PIXEL_SIZE;

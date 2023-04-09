@@ -259,7 +259,6 @@ struct RootLoop {
       //
       // no more scene beyond here this is overlay now
       //#ifdef DARKROOT_HIDE_OSD_PATH
-
       glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
       glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
       //      #endif

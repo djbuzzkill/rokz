@@ -13,7 +13,7 @@ std::vector<VkDynamicState>& rokz::DynamicState_default (std::vector<VkDynamicSt
   dynamic_states.push_back (VK_DYNAMIC_STATE_VIEWPORT);
   dynamic_states.push_back (VK_DYNAMIC_STATE_SCISSOR);
   dynamic_states.push_back (VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE);
-
+  dynamic_states.push_back (VK_DYNAMIC_STATE_DEPTH_COMPARE_OP);
   //dynamic_states.push_back (VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT);
 
   // ?! wtf
@@ -73,7 +73,7 @@ bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_b
       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
       VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
- color_blend_attachment_state.blendEnable = VK_FALSE;
+  color_blend_attachment_state.blendEnable = VK_TRUE;
   
   color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; 
   color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; 
@@ -99,7 +99,6 @@ VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStat
   color_blending_create_info.logicOp = VK_LOGIC_OP_COPY; 
   color_blending_create_info.attachmentCount = 1;
   color_blending_create_info.pAttachments = &colorblend;
-
   color_blending_create_info.blendConstants[0] = 0.0f; 
   color_blending_create_info.blendConstants[1] = 0.0f; 
   color_blending_create_info.blendConstants[2] = 0.0f; 
@@ -175,7 +174,7 @@ VkPipelineDepthStencilStateCreateInfo& rokz::CreateInfo (VkPipelineDepthStencilS
   ci.pNext = nullptr;
   ci.depthTestEnable = VK_TRUE;
   ci.depthWriteEnable = VK_TRUE;
-  ci.depthCompareOp = VK_COMPARE_OP_LESS;
+  ci.depthCompareOp = VK_COMPARE_OP_LESS;  // VK_COMPARE_OP_ALWAYS
   ci.depthBoundsTestEnable = VK_FALSE;
   ci.stencilTestEnable = VK_FALSE;
   return ci; 
@@ -537,6 +536,7 @@ rokz::PipelineState& rokz::PipelineState_default (rokz::PipelineState&          
   CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
   CreateInfo (psci.viewport_state, ps.viewport);
   CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); 
+  //CreateInfo (psci.input_assembly, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP); 
   CreateInfo (psci.rasterizer); 
   CreateInfo (psci.colorblendstate, ps.colorblend_attachments); 
   CreateInfo (psci.multisampling, msaa_samples); 

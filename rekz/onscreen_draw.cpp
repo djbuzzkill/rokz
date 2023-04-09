@@ -35,18 +35,20 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
     // -- draw -----------------------------------------------------
     virtual int Exec (VkCommandBuffer comb, uint32_t currentframe, const RenderEnv& env) {
       int res = __LINE__;
-      const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron ();
-      vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 
+      vkCmdBindPipeline (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
       // b/c these r dynamic state
       vkCmdSetViewport(comb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
       vkCmdSetScissor (comb,    0, 1, &env.pipeline.state.viewport.vps[0].scissor);
+
+      vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_ALWAYS); 
       vkCmdSetDepthTestEnable (comb, VK_FALSE); 
 
-      std::vector<VkDescriptorSet> descrsets = {
+                               
+      Vec<VkDescriptorSet> descrsets = { 
         dss[currentframe], 
       };
-  
+
       vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout, 
                                0, descrsets.size(), &descrsets[0], 0, nullptr);
 
@@ -55,31 +57,23 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
       VkDeviceSize offsets[] = { 0 };
 
       vkCmdBindVertexBuffers(comb, 0, 1, vertex_buffers, offsets);
-      //vkCmdBindIndexBuffer  (comb, polyd.devicebuffer->handle, polyd.indexoffs, VK_INDEX_TYPE_UINT16);
       
-      const glm::vec2 string_start_pos (20.0, 20.0f); 
-      const float x_advance = 32.0f; 
-      const float y_advance = 0.0f; 
-
       const uint32_t num_test_objects =  1; 
       for (uint32_t i = 0; i < num_test_objects; ++i) {
-        rekz::onscreen::PushConstant pc  {}; 
+
+        rekz::onscreen::PushConstant pc {}; 
         pc.resource_id = i; 
         pc._unused_1   = i;
         pc._unused_2   = i; 
         pc._unused_3   = i; 
+        pc.color    = glm::vec4 (0.1, 0.2, 0.8, 1.0f);
+        pc.advance  = glm::vec4 (32.0f, 0, 0, 0);
+        pc.position = glm::vec4 (64.f, 64.f, -1.1, 1) ;
 
-        pc.color    = glm::vec4 (0.1, 0.2, 0.3, 1.0f);
-        pc.advance  = glm::vec2(x_advance, y_advance); 
-        pc.position = string_start_pos; 
+        vkCmdPushConstants (comb, env.layout,
+                            rekz::onscreen::PCStages, 0, sizeof(rekz::onscreen::PushConstant), &pc);
 
-        vkCmdPushConstants (comb,
-                            env.layout, 
-                            rekz::onscreen::PCStages, //   shader_stages,
-                            0,
-                            sizeof(rekz::onscreen::PushConstant),
-                            &pc);
-
+        // printf ("data.strings[i].size : %zu| %s \n",   data.strings[i].size (), data.strings[i].c_str());
         vkCmdDraw (comb, 4, data.strings[i].size (), 0, 0); 
       }
       

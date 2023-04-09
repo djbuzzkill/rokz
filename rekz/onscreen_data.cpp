@@ -14,8 +14,9 @@
 
 
 using namespace rokz;
-
-
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
 struct geom_handler : public cx::mappedbuffer_cb {
 
   geom_handler () { }
@@ -23,11 +24,11 @@ struct geom_handler : public cx::mappedbuffer_cb {
   
   virtual int on_mapped (void* mappedp, size_t maxsize)  {
 
-    rekz::onscreen::Vert geom[4] = {
-      {{0.0, 0.0, 0.0}, {0.0, 0.0} },
-      {{1.0, 0.0, 0.0}, {1.0, 0.0} },
-      {{1.0, 1.0, 0.0}, {1.0, 1.0} },
-      {{0.0, 1.0, 0.0}, {0.0, 1.0} },
+    const rekz::onscreen::Vert geom[4] = {
+      {{0.0, -1.0, 0}, {1.0, 0.0} },
+      {{0.0,  0.0, 0}, {0.0, 0.0} },
+      {{1.0, -1.0, 0}, {1.0, 1.0} },
+      {{1.0,  0.0, 0}, {0.0, 1.0} },
     }; 
 
     memcpy (mappedp, geom, sizeof(rekz::onscreen::Vert) * 4); 
@@ -35,43 +36,35 @@ struct geom_handler : public cx::mappedbuffer_cb {
     return 0; 
   }
 }; 
+
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------
 struct glyph_layer : public cx::mappedlayer_cb {
 
   systempath basepath; 
-
+  //
   glyph_layer (): basepath ("/home/djbuzzkill/owenslake/tmp/textbin/") {
   }
 
-
-  
+  // -- handle glyph image  ---------------------------------------------------------------
   virtual int on_mapped (void* mappedp, size_t maxsize, uint32 layeri, const VkExtent2D& ext) {
 
     uint8* uc = (uint8*) mappedp;
+    float* fpix = (float*)mappedp; 
     rokz::systempath fqpath = basepath/rekz::fonttool::font_glyph_filename (layeri); 
-    
-    if (std::filesystem::exists (fqpath)) { 
 
+    if (std::filesystem::exists (fqpath)) { 
       Vec<float> fpixels ; 
       From_file (fpixels, fqpath, true); 
-      
-      printf ( "loading .....  %s\n ",  fqpath.c_str ()); 
-
-      float* fpix = (float*)mappedp; 
-      
-      std::copy(fpixels.begin(), fpixels.end (), fpix); 
-      
+      printf ( "loading .....numpixels :%zu  %s\n ", fpixels.size(),  fqpath.c_str ()); 
+      //std::copy(fpixels.begin(), fpixels.end (), fpix); 
+      std::fill (fpix, fpix + fpixels.size () , 1.0);
     }
     else {
-      std::fill (uc, uc + maxsize , 0);
       printf ( "no such file....  %s\n ",  fqpath.c_str ()); 
+      std::fill (fpix, fpix + maxsize / sizeof(float) , 0.0);
     }
-    //fname_format =  "%u"
-      
-    //From_file ( 
-      
     
     return 0; 
   }
@@ -79,12 +72,14 @@ struct glyph_layer : public cx::mappedlayer_cb {
 }; 
 
 // ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
 bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& device) {
 
   // create image
   VkImageCreateInfo ci = {};
   VkExtent2D idim  = { 64, 64 };
-  size_t sizeOf_layer = 64 *64 * sizeof(float);
+  size_t sizeOf_layer = 64 * 64 * sizeof(float);
   uint32 num_layers = 128;
 
   uint32 layer_begin = '!'; // ascii index of glyph 33
@@ -116,7 +111,7 @@ bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& devi
   size_t sizeof_geom = 4 * sizeof(rekz::onscreen::Vert); 
   dat.geom = rc::CreateDeviceBuffer (sizeof_geom,  cx::kDeviceGeometryUsage, device); 
 
-  cx::TransferToDeviceBuffer ( dat.geom->handle,  sizeof_geom, std::make_shared<geom_handler>(), device); 
+  cx::TransferToDeviceBuffer (dat.geom->handle, sizeof_geom, std::make_shared<geom_handler>(), device); 
 
   // -------------- default string  ---------------
   for (auto& str : dat.strings) {

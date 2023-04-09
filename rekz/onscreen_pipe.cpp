@@ -113,8 +113,6 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
   //assert (textubs.size () != 0); 
   // separate mvp+ostext buffers or combine
 
-  const size_t text_base =
-    ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
   //
   for (uint32_t i = 0; i < dss.size (); i++) {
     // setup uniform
@@ -124,6 +122,7 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
     mvpinfo.range  = sizeof(global_ub::MVPTransform);
       
     Vec<VkDescriptorBufferInfo> textlines (global_ub::kMaxTextElements, VkDescriptorBufferInfo {});
+    const size_t text_base = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
     for (size_t iobj = 0; iobj < global_ub::kMaxTextElements; ++iobj) { 
       textlines[iobj].buffer = globalubs[i]->handle;    //
       textlines[iobj].offset = text_base + iobj * sizeof(global_ub::TextItem); 
@@ -194,8 +193,6 @@ void rekz::onscreen::UpdateOSD (rc::Buffer::Ref& buf,
   for (uint32 iline = 0; iline < global_ub::kMaxTextElements; ++iline) { 
     auto& s = strings[iline];
     std::copy  (s.begin (), s.end (), text[iline].ch); 
-    // for (uint32  charind = 0; charind < string_record[iline].size (); ++charind) {
-    //   text[iline].text[charind] = string_record[iline][charind]; 
 
   }
 
