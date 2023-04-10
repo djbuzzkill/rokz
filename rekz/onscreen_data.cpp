@@ -18,17 +18,11 @@ using namespace rokz;
 //
 // ----------------------------------------------------------------------------------------
 const rekz::onscreen::Vert geom[4] = {
-  {{0.0, 1.0, 0.0}, {0.0, 0.0}},
-  {{0.0, 0.0, 0.0}, {1.0, 0.0}},
+  {{0.0, 1.0, 0.0}, {0.0, 1.0}},
+  {{0.0, 0.0, 0.0}, {0.0, 0.0}},
   {{1.0, 1.0, 0.0}, {1.0, 1.0}},
-  {{1.0, 0.0, 0.0}, {0.0, 1.0}},
+  {{1.0, 0.0, 0.0}, {1.0, 0.0}},
 }; 
-
-  // {0.0, 1.0, 0},
-  // {0.0, 0.0, 0},
-  // {1.0, 1.0, 0},
-  // {1.0, 0.0, 0},
-
 
 struct geom_handler : public cx::mappedbuffer_cb {
 
@@ -64,8 +58,8 @@ struct glyph_layer : public cx::mappedlayer_cb {
       Vec<float> fpixels ; 
       From_file (fpixels, fqpath, true); 
       printf ( "loading .....numpixels :%zu  %s\n ", fpixels.size(),  fqpath.c_str ()); 
-      //std::copy(fpixels.begin(), fpixels.end (), fpix); 
-      std::fill (fpix, fpix + fpixels.size () , 1.0);
+      std::copy(fpixels.begin(), fpixels.end (), fpix); 
+      //std::fill (fpix, fpix + fpixels.size () , 1.0);
     }
     else {
       printf ( "no such file....  %s\n ",  fqpath.c_str ()); 
@@ -118,37 +112,31 @@ bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& devi
   dat.geom = rc::CreateDeviceBuffer (sizeof_geom,  cx::kDeviceGeometryUsage, device); 
 
   cx::TransferToDeviceBuffer (dat.geom->handle, sizeof_geom, std::make_shared<geom_handler>(), device); 
-
   // -------------- default string  ---------------
   for (auto& str : dat.strings) {
-    str.resize (global_ub::TextItem::max_length, ' ');
-    str = "---- test text ----"; 
+    const std::string testtext = "---- test text ----"; 
+    str.resize (global_ub::text_item_length); 
+    std::copy (testtext.begin (), testtext.end (), str.begin ()); 
   }
-
-  // -------------- default string  ---------------
-  // const size_t total_ub_size =
-  //   UB_sizes[global_ub::TEXTITEMS_BINDINGI];
-
-  // dat.textub.resize (nframesets); // max frame in flight
-  // for (size_t iframe = 0; iframe < nframesets; ++iframe) { 
-  //   dat.textub[iframe] = rc::Create_uniform_mapped (total_ub_size, 1, device); 
-  // }
 
   //c/c++-clang c/c++-gcc c/c++-cppcheck 
   return false; 
 }
 
 
+
+
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+
+
 void rekz::onscreen::Cleanup (Data& dat) {
 
-  
   dat.texture.image.reset ();
   dat.texture.view.reset ();
   dat.texture.sampler.reset ();
   dat.geom.reset (); 
-
-  
-
 }
 
 

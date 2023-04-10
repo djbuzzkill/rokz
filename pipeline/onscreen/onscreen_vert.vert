@@ -34,6 +34,9 @@ layout(binding = GLOBAL_MVP_OVERLAY_BINDINGI, set = 0) uniform MVPTransform {
     mat4 proj;
 } mat;
 
+
+// layout(binding = 69, set = 0) uniform  textelement[64];
+
 // -------------------------------------------------------------------------
 //  outgoing
 // -------------------------------------------------------------------------
@@ -44,12 +47,9 @@ out gl_PerVertex {
 // -----------------------------------------------------------
 void main() {
   //const float multf = ;
-
   vec4 hpos = vec4(in_pos, 1.0);
-
-  hpos.xy = pc.advance.x * hpos.xy;
+  hpos.xy = 16.0 * hpos.xy;
   //hpos.xy = 64.0 * hpos.xy;
-
   hpos.xyz += pc.position.xyz;   
   //hpos.xyz += vec3(0.0, -64.0, -1.0); ;   
 
@@ -60,6 +60,5 @@ void main() {
   charindex   = gl_InstanceIndex; // string[charindex] : ascii code
   o_txc       = in_txc;           // o_txc = txcs[gl_VertexIndex];
 
-  // gl_Position = pc.mat * hpos;
   gl_Position = mat.proj * hpos;
 }

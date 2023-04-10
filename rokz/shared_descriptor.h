@@ -41,15 +41,18 @@ namespace rokz { namespace global_ub {
     // ----------------------------------------------------------------------------------------------
     //                                    
     // ----------------------------------------------------------------------------------------------
-    struct TextItem {
-      enum { max_length = 64 }; 
-      uint32 ch[max_length];
-    }; 
-
-    const size_t sizeof_FONT_FACE_BINDINGI = 0; 
-
-    typedef std::array<TextItem, kMaxTextElements> TextElementBlock; 
+    // struct TextItem {
+    //   enum { max_length = 64 }; 
+    //   uint32 ch[max_length];
+    // }; 
+    const size_t text_item_length = 64;
     
+    typedef std::array<uint32, text_item_length> TextItem; 
+    typedef std::array<TextItem, kMaxTextElements> TextElementBlock; 
+
+
+    
+    const size_t sizeof_FONT_FACE_BINDINGI = 0; 
     // for use with ut::offset_at
     const Vec<size_t> UB_sizes = {
       sizeof (MVPTransform), // MVP_Scene  

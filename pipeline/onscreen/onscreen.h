@@ -20,6 +20,6 @@ layout (push_constant) uniform PushConstant {
   vec4 color;
   vec4 advance;
   vec4 position; 
-  //mat4 mat;
+
 } pc;
 

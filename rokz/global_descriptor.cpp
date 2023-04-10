@@ -220,20 +220,19 @@ void rokz::UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::rc::B
     float nr = 0.0f;
     float fr = 1000.0f;
 
-    printf ( " -> ortho [lt:%f, rt:%f, bt:%f, tp:%f, nr:%f, fr:%f]\n", lt, rt, bt, tp, nr, fr );
+    //printf ( " -> ortho [lt:%f, rt:%f, bt:%f, tp:%f, nr:%f, fr:%f]\n", lt, rt, bt, tp, nr, fr );
     //mvpo->proj = glm::orthoRH_ZO (lt, rt, bt, tp, -1.0f, 80.f);
     //mvpo->proj[1][1] *= -1;
 
     mvpo->proj = glm::orthoRH_ZO (lt, rt, bt, tp, nr, fr);
     mvpo->proj[1][1] *= -1;
-    HERE("orthoRH_ZO"); 
-    ut::printmat (mvpo->proj);
+    // HERE("orthoRH_ZO"); 
+    // ut::printmat (mvpo->proj);
 
-    glm::mat4 cbmat; 
-    cbmat = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
-    HERE("cookbook mat");
-    ut::printmat (cbmat);
-
+    // glm::mat4 cbmat; 
+    // cbmat = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
+    // HERE("cookbook mat");
+    // ut::printmat (cbmat);
 
   }
 }

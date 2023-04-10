@@ -44,6 +44,7 @@ namespace rokz {
   std::vector<VkDynamicState>& DynamicState_default    (std::vector<VkDynamicState>& dynamic_states);
   bool                         ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_blend_attachment_state); 
   ViewportState&               ViewportState_default   (ViewportState& vps, const VkRect2D& rect, float depth) ; 
+  bool                         ColorBlendState_test (VkPipelineColorBlendAttachmentState& color_blend_attachment_state); 
 
   // ---------------------------------------------------------------------
   //
@@ -158,6 +159,13 @@ namespace rokz {
                                         const VkExtent2D&                                     vpext
                                         );
 
+  PipelineState& PipelineState_alpha_test (rokz::PipelineState&                                  ps,
+                                           VkPrimitiveTopology                                   prim,
+                                           VkSampleCountFlagBits                                 msaa_samples,
+                                           const std::vector<VkVertexInputAttributeDescription>& vert_input_attrb_desc,
+                                           const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                           const VkExtent2D&                                     vpext
+                                           );
   bool SetupPipelinShaderStages (std::vector<VkPipelineShaderStageCreateInfo>& shader_stage_cis,
                                  Vec<rokz::ShaderModule>& shader_modules, 
                                  const Vec<ShaderStageDef>& stagedefs, const rokz::Device& device);

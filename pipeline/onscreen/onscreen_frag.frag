@@ -22,12 +22,17 @@ layout (set = 0, binding = GLOBAL_TEXTITEMS_BINDINGI) uniform TextItem {
 
 layout(set = 0, binding = GLOBAL_FONT_FACE_BINDINGI) uniform sampler2DArray glyphsamp;
 
+
+
+
 // -------------- MAIN  ---------------
 void main() {
-  vec3 atxc = vec3 (txc.xy, str_elem[pc.resource_id].text[char_index]); 
-  ofrag.a   = texture (glyphsamp, atxc).r;
-  //ofrag.rgb = pc.color.rgb;
 
-  ofrag = vec4 (1.0, 0.0, char_index * 0.025, 1.0f); 
+  // pc.resource_id is index into string elements
+
+  vec3 atxc = vec3 (txc.xy, str_elem[pc.resource_id].text[char_index]); 
+
+  ofrag.a   = texture (glyphsamp, atxc).r;
+  ofrag.rgb = texture (glyphsamp, atxc).r * pc.color.rgb;
 }
 

@@ -183,8 +183,13 @@ struct RootLoop {
 
     {
       char msg[64];
-      sprintf (msg, "osd test :%i", countdown);
-      glob.osdata.strings[0] = msg; 
+      sprintf (msg, "1234OSD test: %i", countdown);
+
+      glob.osdata.strings[0] = msg ;
+
+
+      printf ("osdata.strings[0]: %s\n", glob.osdata.strings[0].c_str ()); 
+      
     }
       
     UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
@@ -395,7 +400,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
     return false;
   }
 
-  // // 
+  // 
   if (!rokz::MakeDescriptorSets (glob.grid_de.descrsets, glob.grid_de.alloc_info, kMaxFramesInFlight,
                                  glob.grid_dslo.handle, glob.grid_de.pool, glob.device)) {
     printf ("[FAILED] --> MakeDescriptorSets \n"); 

@@ -46,22 +46,6 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
       vkCmdSetDepthTestEnable (comb, VK_FALSE); 
       vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_ALWAYS); 
 
-      // printf ("viewport [x:%f, y:%f, w:%f, h:%f, mind:%f, maxd:%f]\n", 
-      //         env.pipeline.state.viewport.vps[0].viewport.x,
-      //         env.pipeline.state.viewport.vps[0].viewport.y,
-      //         env.pipeline.state.viewport.vps[0].viewport.width, 
-      //         env.pipeline.state.viewport.vps[0].viewport.height,
-      //         env.pipeline.state.viewport.vps[0].viewport.minDepth, 
-      //         env.pipeline.state.viewport.vps[0].viewport.maxDepth); 
-      
-      
-      // printf ("scissor [x:%i, y:%i, w:%u, h:%u]\n", 
-      //         env.pipeline.state.viewport.vps[0].scissor.offset.x, 
-      //         env.pipeline.state.viewport.vps[0].scissor.offset.y, 
-
-      //         env.pipeline.state.viewport.vps[0].scissor.extent.width,
-      //         env.pipeline.state.viewport.vps[0].scissor.extent.height); 
-
       Vec<VkDescriptorSet> descrsets = { 
         dss[currentframe], 
       };
@@ -75,12 +59,12 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
 
       vkCmdBindVertexBuffers(comb, 0, 1, vertex_buffers, offsets);
       
-      const float lt = 0.0f; 
-      const float rt = 800.0f;
-      const float bt = 600.0f;
-      const float tp = 0.0f;
-      const float nr = 0.0f;
-      const float fr = 1000.0f;
+      // const float lt = 0.0f; 
+      // const float rt = 800.0f;
+      // const float bt = 600.0f;
+      // const float tp = 0.0f;
+      // const float nr = 0.0f;
+      // const float fr = 1000.0f;
         
       const uint32_t num_test_objects =  1; 
       for (uint32_t i = 0; i < num_test_objects; ++i) {
@@ -89,25 +73,18 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
         pc._unused_1   = i;
         pc._unused_2   = i; 
         pc._unused_3   = i; 
-        pc.color    = glm::vec4 (0.1, 0.2, 0.8, 1.0f);
-        pc.advance  = glm::vec4 (64.0f, 0, 0, 0);
-        pc.position = glm::vec4 (0.0f, -132.0f, -1.0f, 0.0f) ;
+        pc.color    = glm::vec4 (0.8, 0.2, 0.7, 1.0f);
+        pc.advance  = glm::vec4 (16.0f, 0.0f, 0.0f, 0.0f);
+        pc.position = glm::vec4 (32.0f, -64.0f, -1.0f, 0.0f) ;
 
-
-        // pc.mat = glm::orthoRH_ZO (lt, rt, bt, tp , nr, fr);
-        // pc.mat[1][1] *= -1.0; 
-        // HERE("orthoRH_ZO"); 
-        // ut::printmat (pc.mat);
-        pc.mat = ut::orthographic_projection (lt, rt, bt, tp , nr, fr);   //mvpo->proj = glm::ortho (lt, rt, bt, tp); 
-        HERE("orthographic_projection"); 
-        ut::printmat (pc.mat);
-
-         vkCmdPushConstants (comb, env.layout,
+        vkCmdPushConstants (comb, env.layout,
                             rekz::onscreen::PCStages, 0, sizeof(rekz::onscreen::PushConstant), &pc);
 
+        //std::copy (data.strings[i].begin (), data.strings[i].end (), pc.str) ; 
         // printf ("data.strings[i].size : %zu| %s \n",   data.strings[i].size (), data.strings[i].c_str());
-        vkCmdDraw (comb, 4, data.strings[i].size (), 0, 0);
 
+        // printf ("sizeof string to render: %zu\n", data.strings[i].size ()); 
+        vkCmdDraw (comb, 4, data.strings[i].size (), 0, 0);
       }
       
       return 0;

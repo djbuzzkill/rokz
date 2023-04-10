@@ -88,6 +88,29 @@ bool rokz::ColorBlendState_default (VkPipelineColorBlendAttachmentState& color_b
 }
 
 // -----------------------------------------------------------------------------------------
+// color blend 
+// -----------------------------------------------------------------------------------------
+bool rokz::ColorBlendState_test  (VkPipelineColorBlendAttachmentState& color_blend_attachment_state) {
+  // COLOR BLENDING
+  color_blend_attachment_state = {};
+  
+  color_blend_attachment_state.colorWriteMask =
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+  color_blend_attachment_state.blendEnable = VK_TRUE;
+  
+  color_blend_attachment_state.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+  color_blend_attachment_state.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; 
+  color_blend_attachment_state.colorBlendOp = VK_BLEND_OP_ADD; 
+
+  color_blend_attachment_state.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA; 
+  color_blend_attachment_state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; ;
+  color_blend_attachment_state.alphaBlendOp = VK_BLEND_OP_ADD; 
+
+  return true;
+}
+// -----------------------------------------------------------------------------------------
 // colorblend blend
 // -----------------------------------------------------------------------------------------
 VkPipelineColorBlendStateCreateInfo& rokz::CreateInfo ( VkPipelineColorBlendStateCreateInfo& color_blending_create_info,
@@ -240,7 +263,7 @@ VkPipelineRasterizationStateCreateInfo & rokz::CreateInfo (VkPipelineRasterizati
   ci.rasterizerDiscardEnable = VK_FALSE;
   ci.polygonMode             = VK_POLYGON_MODE_FILL; // 
   ci.lineWidth               = 1.0f;
-  ci.cullMode                = VK_CULL_MODE_NONE ; // VK_CULL_MODE_BACK_BIT;
+  ci.cullMode                = VK_CULL_MODE_BACK_BIT;
   ci.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE; // VK_FRONT_FACE_CLOCKWISE;
   ci.depthBiasEnable         = VK_FALSE;
   ci.depthBiasConstantFactor = 0.0f; 
@@ -535,6 +558,40 @@ bool rokz::CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice devi
 
 }
 
+
+
+ 
+// ----------------------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------------------
+rokz::PipelineState& rokz::PipelineState_alpha_test (rokz::PipelineState&                                  ps,
+                                                     VkPrimitiveTopology                                   prim,
+                                                     VkSampleCountFlagBits                                 msaa_samples,
+                                                     const std::vector<VkVertexInputAttributeDescription>& vert_input_attrib_desc,
+                                                     const VkVertexInputBindingDescription&                vert_bindiing_desc,
+                                                     const VkExtent2D&                                     vpext) {
+  
+  SetupViewportState (ps.viewport, vpext); 
+
+  ps.colorblend_attachments.resize (1);
+  ColorBlendState_test (ps.colorblend_attachments[0]); 
+
+  DynamicState_default (ps.dynamics); 
+  //
+  PipelineStateCreateInfo& psci = ps.ci;
+  CreateInfo (psci.tesselation, 4); 
+  CreateInfo (psci.dynamicstate, ps.dynamics); 
+  CreateInfo (psci.vertexinputstate, vert_bindiing_desc, vert_input_attrib_desc); 
+  CreateInfo (psci.viewport_state, ps.viewport);
+  CreateInfo (psci.input_assembly, prim);  // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST | VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP); 
+  CreateInfo (psci.rasterizer); 
+  CreateInfo (psci.colorblendstate, ps.colorblend_attachments); 
+  CreateInfo (psci.multisampling, msaa_samples); 
+  CreateInfo (psci.depthstencilstate); 
+
+  return ps;
+  
+}
 // ----------------------------------------------------------------------------------------
 //
 // ----------------------------------------------------------------------------------------

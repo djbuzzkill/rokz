@@ -1,6 +1,7 @@
 
 
 #include "onscreen_pipe.h"
+#include "rokz/pipeline.h"
 #include "rokz/shared_descriptor.h"
 #include "rokz/ut_offset.h"
 #include <glm/ext/matrix_clip_space.hpp>
@@ -57,10 +58,10 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
   //printf ("[%s] --> %i \n", __FUNCTION__, __LINE__); 
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(onscreen::PushConstant),
                                 onscreen::PCStages, dslos, device.handle);
-  
-  PipelineState_default (pipeline.state, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 
-                         msaa_samples, onscreen::kVertexInputAttributeDesc,
-                         onscreen::kVertexInputBindingDesc, viewport_extent); 
+
+  PipelineState_alpha_test (pipeline.state, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 
+                            msaa_samples, onscreen::kVertexInputAttributeDesc,
+                            onscreen::kVertexInputBindingDesc, viewport_extent); 
   // ^ !! shader modules is part of pipelinestate 
   if (!setup_onscreen_shaders  (pipeline, fspath, device)) {
     return false;
@@ -189,11 +190,10 @@ void rekz::onscreen::UpdateOSD (rc::Buffer::Ref& buf,
 
   for (uint32 iline = 0; iline < global_ub::kMaxTextElements; ++iline) { 
     auto& s = strings[iline];
-    std::copy  (s.begin (), s.end (), text[iline].ch); 
+    std::copy  (s.begin (), s.end (), text[iline].begin()); 
 
   }
 
-  
 }
 
 

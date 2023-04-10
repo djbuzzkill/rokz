@@ -87,7 +87,8 @@ int rokz::cx::TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizeb
       return __LINE__;
     }
 
-    res = cb->on_mapped (mappedp, sizebytes, layeri + beginlayer, ext2d);
+    uint32 curlayer = layeri + beginlayer;
+    res = cb->on_mapped (mappedp, sizebytes, curlayer, ext2d);
 
     rokz::cx::UnmapMemory (stage_buff.allocation, device.allocator.handle);
 
@@ -97,14 +98,14 @@ int rokz::cx::TransferToImageLayer (VkImage& dsti, VkFormat format, size_t sizeb
       break;
     }
     
-    rokz::cx::TransitionImageLayout (dsti, layeri, format, VK_IMAGE_LAYOUT_UNDEFINED,
+    rokz::cx::TransitionImageLayout (dsti, curlayer, format, VK_IMAGE_LAYOUT_UNDEFINED,
                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                      device.queues.graphics, device.command_pool.handle, device.handle);
 
-    rokz::cx::CopyBufferToImage (dsti, layeri, stage_buff.handle, ext2d.width, ext2d.height,
+    rokz::cx::CopyBufferToImage (dsti, curlayer, stage_buff.handle, ext2d.width, ext2d.height,
                                  device.queues.graphics, device.command_pool.handle, device.handle);
 
-    rokz::cx::TransitionImageLayout (dsti, layeri, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    rokz::cx::TransitionImageLayout (dsti, curlayer, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                      device.queues.graphics, device.command_pool.handle, device.handle);
   }
