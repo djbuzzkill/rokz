@@ -13,7 +13,7 @@ const uint GLOBAL_FONT_FACE_BINDINGI   = 8;
 layout (push_constant) uniform PushConstant {
 
   uint resource_id;
-  uint _unused_1;
+  uint asciicode;
   uint _unused_2;
   uint _unused_3;
 

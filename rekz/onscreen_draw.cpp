@@ -58,33 +58,26 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
       VkDeviceSize offsets[] = { 0 };
 
       vkCmdBindVertexBuffers(comb, 0, 1, vertex_buffers, offsets);
-      
-      // const float lt = 0.0f; 
-      // const float rt = 800.0f;
-      // const float bt = 600.0f;
-      // const float tp = 0.0f;
-      // const float nr = 0.0f;
-      // const float fr = 1000.0f;
         
       const uint32_t num_test_objects =  1; 
       for (uint32_t i = 0; i < num_test_objects; ++i) {
-        rekz::onscreen::PushConstant pc {}; 
-        pc.resource_id = i; 
-        pc._unused_1   = i;
-        pc._unused_2   = i; 
-        pc._unused_3   = i; 
-        pc.color    = glm::vec4 (0.8, 0.2, 0.7, 1.0f);
-        pc.advance  = glm::vec4 (16.0f, 0.0f, 0.0f, 0.0f);
-        pc.position = glm::vec4 (32.0f, -64.0f, -1.0f, 0.0f) ;
 
-        vkCmdPushConstants (comb, env.layout,
-                            rekz::onscreen::PCStages, 0, sizeof(rekz::onscreen::PushConstant), &pc);
+        for (size_t ich = 0; ich < data.strings[i].size (); ++ich) { 
 
-        //std::copy (data.strings[i].begin (), data.strings[i].end (), pc.str) ; 
-        // printf ("data.strings[i].size : %zu| %s \n",   data.strings[i].size (), data.strings[i].c_str());
+          rekz::onscreen::PushConstant pc {}; 
+          pc.resource_id = ich;
+          pc.asciicode   = data.strings[i][ich];
+          pc._unused_2   = i; 
+          pc._unused_3   = i; 
+          pc.color    = glm::vec4 (0.4, 0.2, 0.8, 1.0f);
+          pc.advance  = glm::vec4 (16.0f, 0.0f, 0.0f, 0.0f);
+          pc.position = glm::vec4 (32.0f, -64.0f, -1.0f, 0.0f) ;
 
-        // printf ("sizeof string to render: %zu\n", data.strings[i].size ()); 
-        vkCmdDraw (comb, 4, data.strings[i].size (), 0, 0);
+          vkCmdPushConstants (comb, env.layout,
+                              rekz::onscreen::PCStages, 0, sizeof(rekz::onscreen::PushConstant), &pc);
+
+          vkCmdDraw (comb, 4, 1, 0, (uint32) ich);
+        }
       }
       
       return 0;

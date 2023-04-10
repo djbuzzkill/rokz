@@ -183,12 +183,9 @@ struct RootLoop {
 
     {
       char msg[64];
-      sprintf (msg, "1234OSD test: %i", countdown);
+      sprintf (msg, "OSD test: %i", countdown);
 
       glob.osdata.strings[0] = msg ;
-
-
-      printf ("osdata.strings[0]: %s\n", glob.osdata.strings[0].c_str ()); 
       
     }
       
@@ -221,7 +218,7 @@ struct RootLoop {
       rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
 
       // update data needed to record drawlist
-      onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
+      //onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
       
       // make sure the correct swapchain image is used
 

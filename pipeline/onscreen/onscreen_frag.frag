@@ -9,7 +9,7 @@
 //        .comp - a compute shader
 
 layout(location = 0) in vec2 txc;
-layout(location = 1) flat in int char_index;
+layout(location = 1) flat in uint asciicode;
 
 layout(location = 0) out vec4 ofrag;
 
@@ -30,7 +30,7 @@ void main() {
 
   // pc.resource_id is index into string elements
 
-  vec3 atxc = vec3 (txc.xy, str_elem[pc.resource_id].text[char_index]); 
+  vec3 atxc = vec3 (txc.xy, asciicode); 
 
   ofrag.a   = texture (glyphsamp, atxc).r;
   ofrag.rgb = texture (glyphsamp, atxc).r * pc.color.rgb;

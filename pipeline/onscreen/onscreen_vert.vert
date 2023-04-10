@@ -23,7 +23,7 @@ layout(location = 1) in vec2 in_txc;
 // out PER VERTEX
 // ----------------------------------------------------------------------------
 layout(location = 0) out vec2 o_txc; 
-layout(location = 1) flat out int charindex;
+layout(location = 1) flat out uint asciicode;
 
 // ----------------------------------------------------------------------------
 // DESCRIPTOR                 
@@ -53,11 +53,11 @@ void main() {
   hpos.xyz += pc.position.xyz;   
   //hpos.xyz += vec3(0.0, -64.0, -1.0); ;   
 
-  hpos.x = hpos.x + pc.advance.x * gl_InstanceIndex;
+  hpos.x = hpos.x + pc.advance.x * pc.resource_id;
   hpos.y = hpos.y + pc.advance.y ; 
 
   // out
-  charindex   = gl_InstanceIndex; // string[charindex] : ascii code
+  asciicode   = pc.asciicode; // string[charindex] : ascii code
   o_txc       = in_txc;           // o_txc = txcs[gl_VertexIndex];
 
   gl_Position = mat.proj * hpos;

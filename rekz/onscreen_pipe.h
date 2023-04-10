@@ -26,7 +26,7 @@ namespace rekz { namespace onscreen {
     // ----------------------------------------------------------------------------------------------
     struct PushConstant {
       uint32 resource_id;
-      uint32 _unused_1;
+      uint32 asciicode;
       uint32 _unused_2;
       uint32 _unused_3;
 
