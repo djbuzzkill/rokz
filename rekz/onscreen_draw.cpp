@@ -13,7 +13,7 @@
 
 using namespace rokz;
 using global_ub::MVPTransform;
-using UBText = global_ub::TextItem;
+//using UBText = global_ub::TextItem;
 
 DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, const Vec<VkDescriptorSet>& descriptorsets) { 
 
@@ -44,7 +44,7 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
       vkCmdSetScissor (comb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
       vkCmdSetDepthTestEnable (comb, VK_FALSE); 
-      vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_ALWAYS); 
+      // vkCmdSetDepthCompareOp (comb, VK_COMPARE_OP_ALWAYS); 
 
       Vec<VkDescriptorSet> descrsets = { 
         dss[currentframe], 
@@ -60,8 +60,8 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
       vkCmdBindVertexBuffers(comb, 0, 1, vertex_buffers, offsets);
         
       const uint32_t num_test_objects =  1; 
-      for (uint32_t i = 0; i < num_test_objects; ++i) {
 
+      for (uint32_t i = 0; i < num_test_objects; ++i) {
         for (size_t ich = 0; ich < data.strings[i].size (); ++ich) { 
 
           rekz::onscreen::PushConstant pc {}; 
@@ -69,11 +69,21 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
           pc.asciicode   = data.strings[i][ich];
           pc._unused_2   = i; 
           pc._unused_3   = i; 
-          pc.color    = glm::vec4 (0.4, 0.2, 0.8, 1.0f);
+          pc.color    = glm::vec4 (0.9, 0.4, 0.8, 1.0f);
           pc.advance  = glm::vec4 (16.0f, 0.0f, 0.0f, 0.0f);
-          pc.position = glm::vec4 (32.0f, -64.0f, -1.0f, 0.0f) ;
-
-          vkCmdPushConstants (comb, env.layout,
+          pc.position = glm::vec4 (32.0f, -64.0f, -1.0f, 0.0f);
+          //     Y
+          //     ^
+          //     |
+          //     |
+          //     |
+          //     |
+          //     |
+          // ----+------------> X
+          //     | 
+          //     |  [x] text n this quad, kinda awkward
+          //     |
+          vkCmdPushConstants (comb, env.layout, 
                               rekz::onscreen::PCStages, 0, sizeof(rekz::onscreen::PushConstant), &pc);
 
           vkCmdDraw (comb, 4, 1, 0, (uint32) ich);

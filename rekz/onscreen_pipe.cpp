@@ -11,7 +11,7 @@
 
 using namespace rokz;
 
-using UBText = global_ub::TextItem;
+// using UBText = global_ub::TextItem;
 
 const VkVertexInputBindingDescription&        rekz::onscreen::kVertexInputBindingDesc   = rokz::kPTx_InputBindingDesc;
 const Vec<VkVertexInputAttributeDescription>& rekz::onscreen::kVertexInputAttributeDesc = rokz::kPTx_InputAttributeDesc; 
@@ -119,14 +119,14 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
     mvpinfo.offset = ut::offset_at (global_ub::UB_sizes, global_ub::MVP_OVERLAY_BINDINGI); 
     mvpinfo.range  = sizeof(global_ub::MVPTransform);
       
-    Vec<VkDescriptorBufferInfo> textlines (global_ub::kMaxTextElements, VkDescriptorBufferInfo {});
-    const size_t text_base = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
-    for (size_t iobj = 0; iobj < global_ub::kMaxTextElements; ++iobj) { 
-      textlines[iobj].buffer = globalubs[i]->handle;    //
-      textlines[iobj].offset = text_base + iobj * sizeof(global_ub::TextItem); 
-      textlines[iobj].range = sizeof(global_ub::TextItem); 
-    }
-    // setup texture+sampler
+    // Vec<VkDescriptorBufferInfo> textlines (global_ub::kMaxTextElements, VkDescriptorBufferInfo {});
+    // const size_t text_base = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
+    // for (size_t iobj = 0; iobj < global_ub::kMaxTextElements; ++iobj) { 
+    //   textlines[iobj].buffer = globalubs[i]->handle;    //
+    //   textlines[iobj].offset = text_base + iobj * sizeof(global_ub::TextItem); 
+    //   textlines[iobj].range = sizeof(global_ub::TextItem); 
+    // }
+    // // setup texture+sampler
     VkDescriptorImageInfo  imageinfo; //  (onscreen::kMaxCount);
     imageinfo = {};
     imageinfo.imageLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
@@ -134,7 +134,7 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
     imageinfo.sampler        = sampler->handle;
     //
 
-    const size_t num_to_write = 3; 
+    const size_t num_to_write = 2; 
     std::array<VkWriteDescriptorSet, num_to_write> dws {};
     dws[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     dws[0].pNext            = nullptr;
@@ -146,56 +146,23 @@ bool rekz::onscreen::BindDescriptorResources (Vec<VkDescriptorSet>&       dss,
     dws[0].pBufferInfo      = &mvpinfo; 
     dws[0].pImageInfo       = nullptr; 
     dws[0].pTexelBufferView = nullptr; 
-
-    dws[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    dws[1].pNext            = nullptr;
-    dws[1].dstSet           = dss[i];
-    dws[1].dstBinding       = global_ub::TEXTITEMS_BINDINGI; 
-    dws[1].dstArrayElement  = 0;
-    dws[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    dws[1].descriptorCount  = global_ub::kMaxTextElements;
-    dws[1].pBufferInfo      = &textlines[0]; 
-    dws[1].pImageInfo       = nullptr; 
-    dws[1].pTexelBufferView = nullptr; 
     
-    dws[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    dws[2].pNext            = nullptr;    
-    dws[2].dstSet           = dss[i];
-    dws[2].dstBinding       = global_ub::FONT_FACE_BINDINGI;
-    dws[2].dstArrayElement  = 0;
-    dws[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    dws[2].descriptorCount  = 1; 
-    dws[2].pBufferInfo      = nullptr;
-    dws[2].pImageInfo       = &imageinfo; 
-    dws[2].pTexelBufferView = nullptr; 
+    dws[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    dws[1].pNext            = nullptr;    
+    dws[1].dstSet           = dss[i];
+    dws[1].dstBinding       = global_ub::FONT_FACE_BINDINGI;
+    dws[1].dstArrayElement  = 0;
+    dws[1].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    dws[1].descriptorCount  = 1; 
+    dws[1].pBufferInfo      = nullptr;
+    dws[1].pImageInfo       = &imageinfo; 
+    dws[1].pTexelBufferView = nullptr; 
 
     vkUpdateDescriptorSets (device.handle, num_to_write, &dws[0], 0, nullptr);
   }
 
   return true;
 }
-
-
-// ----------------------------------------------------------------------------------------------
-// 
-// ----------------------------------------------------------------------------------------------
-void rekz::onscreen::UpdateOSD (rc::Buffer::Ref& buf,
-                                const std::array<std::string, global_ub::kMaxTextElements>& strings,
-                                const VkExtent2D& viewext, double dt) {
-  
-  uint8_t* uc = (uint8_t*) rokz::rc::MappedPointer (buf);
-
-  UBText* text = // textelem[resource_id][gl_InstanceIndex] == [line][char]
-    reinterpret_cast<UBText*>(uc + ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI));
-
-  for (uint32 iline = 0; iline < global_ub::kMaxTextElements; ++iline) { 
-    auto& s = strings[iline];
-    std::copy  (s.begin (), s.end (), text[iline].begin()); 
-
-  }
-
-}
-
 
 
 

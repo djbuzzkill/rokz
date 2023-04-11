@@ -17,10 +17,10 @@ namespace rokz {
   // --------------------------------------------------------------------------------------------
   struct SwapchainResetter {
     
+    typedef std::shared_ptr<SwapchainResetter> Ref; 
+
   public:
 
-    typedef std::shared_ptr<SwapchainResetter> Ref; 
-    
     virtual bool Reset (const rokz::Display& display, const rokz::Device& device) = 0;
 
   protected:

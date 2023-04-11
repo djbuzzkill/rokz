@@ -19,12 +19,20 @@ namespace rekz { namespace onscreen {
       rc::ImageView::Ref view; 
       rc::Sampler::Ref   sampler; 
     };
-
+    
     // ----------------------------------------------------------------------------------------
     struct Data {
-      rc::Buffer::Ref             geom;   // for the rectangle
+
+      enum { kMaxTextElements  = 128}; 
+      
+      rc::Buffer::Ref             geom;   // for the rectangle, separate points per character?
       Texture                     texture;
-      std::array<std::string, global_ub::kMaxTextElements> strings; // y not just put directly into textub
+      std::array<std::string, kMaxTextElements> strings; // y not just put directly into textub
+
+      // ----- not used yet ------------
+      // replace strings.
+      std::map<std::string, global_ub::TextElement> elementmap; 
+
     }; 
     
     // ----------------------------------------------------------------------------------------

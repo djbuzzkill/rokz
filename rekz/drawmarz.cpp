@@ -31,17 +31,11 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDe
 
     //
     virtual int Exec (VkCommandBuffer commb, uint32_t currentframe, const RenderEnv& env) {
-
-      //HERE ("WATTTTAAAAAAAAAAAAAAAAAAAAAAA");
-
-      //virtual int Exec (VkCommandBuffer command_buffer, const shared_globals& globals, const pipeline_assembly& pa, const DescriptorMap& descrmap) {
-      //const DescriptorMap& descrmap = env.descriptormap;
-
+      //
       vkCmdBindPipeline (commb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.pipeline.handle);
 
       // b/c these r dynamic state
       vkCmdSetViewport(commb, 0, 1, &env.pipeline.state.viewport.vps[0].viewport);
-
       vkCmdSetScissor (commb, 0, 1, &env.pipeline.state.viewport.vps[0].scissor);
 
       vkCmdSetDepthTestEnable (commb, VK_TRUE); 
@@ -86,7 +80,6 @@ DrawSequence::Ref marz::CreateDrawMarsLandscape (marz::Data& dat, const Vec<VkDe
       return __LINE__;
     }
   }; 
-
 
   return std::make_shared<drawmarz> (dat, dsets);
  }

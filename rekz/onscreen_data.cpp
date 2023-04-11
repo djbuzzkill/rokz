@@ -2,7 +2,9 @@
 
 #include "onscreen_data.h"
 #include "onscreen_pipe.h"
-#include "rekz/rekz.h"
+#include "rekz.h"
+#include "font_tool.h"
+
 #include "rokz/buffer.h"
 #include "rokz/image.h"
 #include "rokz/rc_buffer.h"
@@ -26,10 +28,13 @@ const rekz::onscreen::Vert geom[4] = {
 
 struct geom_handler : public cx::mappedbuffer_cb {
 
-  geom_handler () { }
+  geom_handler () {
+  }
   
   virtual int on_mapped (void* mappedp, size_t maxsize)  {
-
+    //
+    // in the future this cb shuld create quat geom for each character
+    // 
     memcpy (mappedp, geom, sizeof(rekz::onscreen::Vert) * 4); 
     
     return 0; 
@@ -119,7 +124,16 @@ bool rekz::onscreen::SetupData (Data& dat, size_t nframesets, const Device& devi
     std::copy (testtext.begin (), testtext.end (), str.begin ()); 
   }
 
-  //c/c++-clang c/c++-gcc c/c++-cppcheck 
+
+  for (int i = 0; auto& el : dat.elementmap) {
+    printf ("%i, %f, %f, %s \n", i,  
+            el.second.color.x, 
+            el.second.position.x, 
+            el.second.text.c_str() ); 
+    
+  }
+  
+  // c/c++-clang c/c++-gcc c/c++-cppcheck 
   return false; 
 }
 

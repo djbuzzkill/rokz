@@ -27,8 +27,6 @@ const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
   { kObTextureBindingI           , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
 
-
-
 // ----------------------------------------------------------------------------------------------
 //                                    
 // ----------------------------------------------------------------------------------------------
@@ -276,7 +274,6 @@ bool rekz_BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     descriptor_writes[1].pTexelBufferView = nullptr; 
 
     vkUpdateDescriptorSets (device.handle, descriptor_writes.size(), &descriptor_writes[0], 0, nullptr);
-
   }
 
   return true;

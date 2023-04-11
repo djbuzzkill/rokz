@@ -29,7 +29,7 @@
 // --------------------------------------------------------------------
 const size_t kMaxFramesInFlight = darkroot::Glob::MaxFramesInFlight; 
 
-const VkExtent2D    kTestExtent  = { 800, 600 };
+const VkExtent2D    kTestExtent  = { 1024, 768 };
 //
 //
 using namespace darkroot; 
@@ -179,14 +179,12 @@ struct RootLoop {
     
     glfwPollEvents(); 
 
-    UpdateRunState () ;
+    UpdateRunState ();
 
-    {
+    { 
       char msg[64];
       sprintf (msg, "OSD test: %i", countdown);
-
-      glob.osdata.strings[0] = msg ;
-      
+      glob.osdata.strings[0] = msg;
     }
       
     UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
@@ -217,7 +215,7 @@ struct RootLoop {
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
       rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
 
-      // update data needed to record drawlist
+      // did not work as planned
       //onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
       
       // make sure the correct swapchain image is used

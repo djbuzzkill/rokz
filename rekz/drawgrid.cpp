@@ -61,8 +61,8 @@ struct drawgrid_buff : public rokz::DrawSequence {
 
     };
     
-    vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS, env.layout, 0,
-                             descr_set_count, descrsets, 0, nullptr);
+    vkCmdBindDescriptorSets (comb, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                             env.layout, 0, descr_set_count, descrsets, 0, nullptr);
 
     VkBuffer     vertex_buffers[] = {gd->handle};
     VkDeviceSize offsets[]        = {vertexoffset};
@@ -74,7 +74,8 @@ struct drawgrid_buff : public rokz::DrawSequence {
     const VkShaderStageFlags shader_stages =
       VK_SHADER_STAGE_VERTEX_BIT ; //| VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    vkCmdPushConstants (comb, env.layout, shader_stages, 0, sizeof(grid::PushConstant), &push_consts);
+    vkCmdPushConstants (comb, env.layout, shader_stages,
+                        0, sizeof(grid::PushConstant), &push_consts);
 
     const uint32_t vdim   = 11; // matches SetupGrid
     const uint32_t totalv = vdim * vdim;
@@ -91,7 +92,6 @@ struct drawgrid_buff : public rokz::DrawSequence {
     
     return 0; 
   }
-
 
 };
 

@@ -25,19 +25,16 @@ namespace rekz { namespace onscreen {
 
     // ----------------------------------------------------------------------------------------------
     struct PushConstant {
-      uint32 resource_id;
-      uint32 asciicode;
-      uint32 _unused_2;
-      uint32 _unused_3;
+
+      uint32    resource_id;
+      uint32    asciicode;
+      uint32    _unused_2;
+      uint32    _unused_3;
 
       glm::vec4 color;
       glm::vec4 advance;
       glm::vec4 position;
-
-      //uint32  str[16]; 
     };
-
-    // textelem[resource_id][gl_InstanceIndex]  == [line][char]
 
     // -- push constant used in ...
     const VkShaderStageFlags PCStages = VK_SHADER_STAGE_VERTEX_BIT  
@@ -64,11 +61,8 @@ namespace rekz { namespace onscreen {
                                   const Device&               device); 
 
     // ---------------------------------------------------------------------------------------
-    void UpdateOSD (rc::Buffer::Ref& buf, 
-                    const std::array<std::string, global_ub::kMaxTextElements>& strings, 
-                    const VkExtent2D& overlaysize, double dt);
 
-  }} // rekz onscreen
+  }} // rekz::onscreen
 
 
 #endif

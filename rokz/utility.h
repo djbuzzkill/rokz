@@ -42,26 +42,45 @@ namespace rokz { namespace ut {
       return (val > minval && val < maxval);
     }    
      
-    //
+    // ----------------------------------------------------------------------------------------------
+    //                                                
+    // ----------------------------------------------------------------------------------------------
     template<typename Ty> 
     inline bool inb_ex (Ty val, Ty minval, Ty maxval) { 
       return (val > minval && val < maxval);
     }    
 
-    //-------------------------------------------------------------------------------------------
-    //                                 
-    //-------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------
+    //
+    //-------- yaw/left/right arrow --------------
+    inline glm::vec3 unit_dir_xz (float theta) { 
+      return glm::vec3 (cos (theta), 0.0f, -sinf (theta));
+    }
+    // ------- pitch/up/down arrow ---------------
+    inline glm::vec3 unit_dir_yz (float theta) {
+      return glm::vec3 (0.0, cos (theta), -sinf (theta));
+    }
+    // ------- roll/cw/ccw ---------------
+    inline glm::vec3 unit_dir_xy (float theta) {
+      // this has not been tested
+      return glm::vec3 (cos (theta), sinf (theta), 0.0);
+    }
+
+
+    // ----------------------------------------------------------------------------------------------
+    //                                                
+    // ----------------------------------------------------------------------------------------------
     glm::mat4 orthographic_projection ( float left_plane, float right_plane, float bottom_plane,
                                         float top_plane, float near_plane, float far_plane ); 
-    //-------------------------------------------------------------------------------------------
-    //                                 
-    //-------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------
+    //                                                
+    // ----------------------------------------------------------------------------------------------
     float ViewAspectRatio (uint32_t w, uint32_t h);
 
     float AspectRatio (const VkExtent2D& ext);
-    //-------------------------------------------------------------------------------------------
-    //                                 
-    //-------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------
+    //                                                
+    // ----------------------------------------------------------------------------------------------
     //bool CheckValidationSupport (const std::vector<const char*>& validation_layers);
     bool CheckValidationSupport (const std::vector<std::string>& val_layers); 
     bool FindMemoryType         (uint32_t& type_index, uint32_t type_filter, VkMemoryPropertyFlags prop_flags,  const VkPhysicalDevice& physdev ); 

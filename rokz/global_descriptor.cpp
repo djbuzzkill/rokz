@@ -31,7 +31,7 @@ const Vec<VkDescriptorSetLayoutBinding> rokz::kGlobalDescriptorBindings = {
   { global_ub::MVP_SCENE_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
   { global_ub::MVP_OVERLAY_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // <- MVPTransform
   { global_ub::GRIDSTATE_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // <- GridState
-  { global_ub::TEXTITEMS_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // <- GridState
+  //  { global_ub::TEXTITEMS_BINDINGI  , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // <- GridState
 };
 
 
@@ -107,13 +107,13 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
     binfo_grid.offset     = ut::offset_at (global_ub::UB_sizes, global_ub::GRIDSTATE_BINDINGI); 
     binfo_grid.range      = sizeof(global_ub::GridState);
 
-    VkDescriptorBufferInfo binfo_text {};
-    binfo_text.buffer     = buffs[i]->handle;
-    binfo_text.offset     = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
-    binfo_text.range      = sizeof(global_ub::TextItem) * global_ub::kMaxTextElements;
+    // VkDescriptorBufferInfo binfo_text {};
+    // binfo_text.buffer     = buffs[i]->handle;
+    // binfo_text.offset     = ut::offset_at (global_ub::UB_sizes, global_ub::TEXTITEMS_BINDINGI); 
+    // binfo_text.range      = sizeof(global_ub::TextItem) * global_ub::kMaxTextElements;
 
     //
-    const size_t num_to_write = 4; 
+    const size_t num_to_write = 3; 
     std::array<VkWriteDescriptorSet, num_to_write> dws {};
     dws[0].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     dws[0].pNext            = nullptr;    
@@ -148,16 +148,16 @@ bool rokz::BindGlobalDescriptorResources (Vec<VkDescriptorSet>& descs, const Vec
     dws[2].pImageInfo       = nullptr;
     dws[2].pTexelBufferView = nullptr;
 
-    dws[3].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    dws[3].pNext            = nullptr;    
-    dws[3].dstSet           = descs[i];
-    dws[3].dstBinding       = global_ub::TEXTITEMS_BINDINGI; 
-    dws[3].dstArrayElement  = 0;
-    dws[3].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    dws[3].descriptorCount  = 1;
-    dws[3].pBufferInfo      = &binfo_text;
-    dws[3].pImageInfo       = nullptr;
-    dws[3].pTexelBufferView = nullptr;
+    // dws[3].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    // dws[3].pNext            = nullptr;    
+    // dws[3].dstSet           = descs[i];
+    // dws[3].dstBinding       = global_ub::TEXTITEMS_BINDINGI; 
+    // dws[3].dstArrayElement  = 0;
+    // dws[3].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    // dws[3].descriptorCount  = 1;
+    // dws[3].pBufferInfo      = &binfo_text;
+    // dws[3].pImageInfo       = nullptr;
+    // dws[3].pTexelBufferView = nullptr;
 
     vkUpdateDescriptorSets (device.handle, num_to_write, &dws[0], 0, nullptr);
 

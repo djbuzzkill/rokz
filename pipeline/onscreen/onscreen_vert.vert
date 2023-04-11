@@ -34,7 +34,6 @@ layout(binding = GLOBAL_MVP_OVERLAY_BINDINGI, set = 0) uniform MVPTransform {
     mat4 proj;
 } mat;
 
-
 // layout(binding = 69, set = 0) uniform  textelement[64];
 
 // -------------------------------------------------------------------------
@@ -48,12 +47,12 @@ out gl_PerVertex {
 void main() {
   //const float multf = ;
   vec4 hpos = vec4(in_pos, 1.0);
-  hpos.xy = 16.0 * hpos.xy;
+  hpos.xy = pc.advance.x * hpos.xy;
   //hpos.xy = 64.0 * hpos.xy;
   hpos.xyz += pc.position.xyz;   
   //hpos.xyz += vec3(0.0, -64.0, -1.0); ;   
 
-  hpos.x = hpos.x + pc.advance.x * pc.resource_id;
+  hpos.x = hpos.x + 0.80 * pc.advance.x * pc.resource_id;
   hpos.y = hpos.y + pc.advance.y ; 
 
   // out

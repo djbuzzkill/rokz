@@ -14,6 +14,7 @@ set (REKZ_HEADER_FILES
   darkrootgarden.h
   drawpolygon.h
   dark_obj_pipeline.h
+  font_tool.h
   grid_pipeline.h
   landscape_pipeline.h
   mars_files.h

@@ -81,16 +81,16 @@ namespace rokz {
 
   typedef Spherical<float>  Sphericf;
   typedef Spherical<double> Sphericd;
-    // ----------------------------------------------------------------------------------------------
-    //                                                
-    // ----------------------------------------------------------------------------------------------
-    struct destructor {
+  // ----------------------------------------------------------------------------------------------
+  //                                                
+  // ----------------------------------------------------------------------------------------------
+  struct destructor {
     
-      virtual ~destructor () { assert ("virtual destruct"); } 
+    virtual ~destructor () { assert ("virtual destruct"); } 
 
-    protected:
-      destructor () {}
-    }; 
+  protected:
+    destructor () {}
+  }; 
   
 
   struct Device;

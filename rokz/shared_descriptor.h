@@ -9,7 +9,7 @@
 
 namespace rokz { namespace global_ub {
 
-    const uint32 kMaxTextElements = 128;
+    //const uint32 kMaxTextElements = 128;
 
     enum BindingEnum {
       MVP_SCENE_BINDINGI   = 0,
@@ -46,19 +46,26 @@ namespace rokz { namespace global_ub {
     //   uint32 ch[max_length];
     // }; 
     const size_t text_item_length = 64;
-    
-    typedef std::array<uint32, text_item_length> TextItem; 
-    typedef std::array<TextItem, kMaxTextElements> TextElementBlock; 
+    struct TextElement {
 
+      TextElement (): text (global_ub::text_item_length, ' '), position (0.0), color (1.0){
+      }
+
+      std::string text;
+      glm::vec4   position; 
+      glm::vec4   color; 
+    };
+      
 
     
     const size_t sizeof_FONT_FACE_BINDINGI = 0; 
+    const size_t sizeof_TEXTITEMS_BINDINGI = 0;
     // for use with ut::offset_at
     const Vec<size_t> UB_sizes = {
       sizeof (MVPTransform), // MVP_Scene  
       sizeof (MVPTransform), // MVP_Overlay
       sizeof (GridState),    // GridState  
-      sizeof (TextElementBlock),
+      sizeof_TEXTITEMS_BINDINGI,
       sizeof_FONT_FACE_BINDINGI, 
     }; 
   }}
