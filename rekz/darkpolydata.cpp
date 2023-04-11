@@ -4,9 +4,9 @@
 #include "image_loader.h"
 #include "rekz/meshery.h"
 #include "rekz/rekz.h"
-#include "rokz/buffer.h"
-#include "rokz/rc_types.h"
-#include "rokz/ut_offset.h"
+#include "rokz/buffer.hpp"
+#include "rokz/rc_types.hpp"
+#include "rokz/ut_offset.hpp"
 #include <vulkan/vulkan_core.h>
 
 

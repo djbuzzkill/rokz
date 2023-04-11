@@ -2,8 +2,8 @@
 #ifndef ROKZ_WINDOW_H
 #define ROKZ_WINDOW_H
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 namespace rokz {
 

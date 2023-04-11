@@ -1,10 +1,10 @@
 
 #include "grid_pipeline.h"
-#include "rokz/descriptor.h"
-#include "rokz/pipeline.h"
-#include "rokz/rokz_types.h"
-#include "rokz/shader.h"
-#include "rokz/shared_descriptor.h"
+#include "rokz/descriptor.hpp"
+#include "rokz/pipeline.hpp"
+#include "rokz/rokz_types.hpp"
+#include "rokz/shader.hpp"
+#include "rokz/shared_descriptor.hpp"
 #include <vulkan/vulkan_core.h>
 
 using namespace rokz;

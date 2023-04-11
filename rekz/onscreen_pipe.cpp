@@ -1,9 +1,9 @@
 
 
 #include "onscreen_pipe.h"
-#include "rokz/pipeline.h"
-#include "rokz/shared_descriptor.h"
-#include "rokz/ut_offset.h"
+#include "rokz/pipeline.hpp"
+#include "rokz/shared_descriptor.hpp"
+#include "rokz/ut_offset.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <vulkan/vulkan_core.h>
 

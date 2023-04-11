@@ -1,7 +1,7 @@
 
 #include "rekz.h"
 #include "font_tool.h"
-#include "rokz/imagebuff.h"
+#include "rokz/imagebuff.hpp"
 
 
 using namespace rokz; 

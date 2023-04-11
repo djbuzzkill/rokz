@@ -2,8 +2,8 @@
 #ifndef ROKZ_UT_OFFSET_INCLUDE
 #define ROKZ_UT_OFFSET_INCLUDE
 
-#include "common.h"
-#include "shared_types.h"
+#include "common.hpp"
+#include "shared_types.hpp"
 
 
 namespace rokz { namespace ut { 

@@ -2,9 +2,10 @@
 
 
 
-#include "input_state.h"
-#include "shared_types.h"
- #include "utility.h"
+#include "input_state.hpp"
+#include "shared_types.hpp"
+#include "utility.hpp"
+
 #include <glm/gtc/random.hpp>
 
 

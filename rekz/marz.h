@@ -4,10 +4,10 @@
 
 #include "rekz.h"
 
-#include "rokz/display.h"
-#include "rokz/input_state.h"
-#include "rokz/global_descriptor.h"
-#include "rokz/rc_types.h"
+#include "rokz/display.hpp"
+#include "rokz/input_state.hpp"
+#include "rokz/global_descriptor.hpp"
+#include "rokz/rc_types.hpp"
 
 #include "marzdata.h"
 

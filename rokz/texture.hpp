@@ -2,9 +2,9 @@
 #ifndef ROKZ_TEXTURE_H
 #define ROKZ_TEXTURE_H
 
-#include "common.h"
-#include "rokz_types.h"
-#include "rc_image.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
+#include "rc_image.hpp"
 
 
 namespace rokz {

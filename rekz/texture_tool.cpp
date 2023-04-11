@@ -1,9 +1,9 @@
 
 //#include "rockz.h"             
-#include "rokz/rokz.h"
+#include "rokz/rokz.hpp"
 // #include <GLFW/glfw3.h>
 // #include <vulkan/vulkan_core.h>
-#include "rokz/defaults.h"
+#include "rokz/defaults.hpp"
 //#include "rokz/rokz_funcs.h"
 #include <IL/il.h>
 #include <IL/ilu.h>

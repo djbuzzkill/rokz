@@ -1,6 +1,6 @@
 
-#include "buffer.h"
-#include "allocation.h"
+#include "buffer.hpp"
+#include "allocation.hpp"
 #include <vulkan/vulkan_core.h>
 
 

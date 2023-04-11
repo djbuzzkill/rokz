@@ -1,6 +1,6 @@
 
-#include "uniform.h"
-#include "allocation.h"
+#include "uniform.hpp"
+#include "allocation.hpp"
 
 
 bool rokz::CreateUniformBuffer (rokz::Buffer& buf, size_t sizeOf_el, size_t numberOf_el, const rokz::Device& device) {

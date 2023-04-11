@@ -2,8 +2,8 @@
 #ifndef ROKZ_ATTACHMENT_INLUCDE
 #define ROKZ_ATTACHMENT_INLUCDE
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 namespace rokz {
 

@@ -4,8 +4,8 @@
 #define ROKZ_RENDER_H
 
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace rokz { 

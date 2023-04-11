@@ -9,7 +9,7 @@
 // #include "rokz/context.h"
 // #include "rokz/draw_sequence.h"
 // #include "rokz/pipeline.h"
-#include "rokz/global_descriptor.h"
+#include "rokz/global_descriptor.hpp"
 
 
 #include <glm/fwd.hpp>

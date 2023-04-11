@@ -3,9 +3,9 @@
 #define ROKZ_BINARY_IO_H
 
 
-#include "common.h"
-#include "utility.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "utility.hpp"
+#include "rokz_types.hpp"
 
 namespace rokz {
 

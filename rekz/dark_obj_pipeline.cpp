@@ -1,6 +1,6 @@
 
 #include "dark_obj_pipeline.h"
-#include "rokz/shared_descriptor.h"
+#include "rokz/shared_descriptor.hpp"
 #include <vulkan/vulkan_core.h>
 
 // --------------------------------------------------------------------

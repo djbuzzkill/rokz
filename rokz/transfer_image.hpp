@@ -2,7 +2,7 @@
 #ifndef ROKZ_TRANSFER_IMAGE_INCLUDE
 #define ROKZ_TRANSFER_IMAGE_INCLUDE
 
-#include "rokz_types.h"
+#include "rokz_types.hpp"
 
 namespace rokz { namespace cx { 
     // ----------------------------------------------------------------------------------------

@@ -2,8 +2,8 @@
 #ifndef ROKZ_COMMAND_H
 #define ROKZ_COMMAND_H
 
-#include "common.h"
-#include "buffer.h"
+#include "common.hpp"
+#include "buffer.hpp"
 
 
 namespace rokz {

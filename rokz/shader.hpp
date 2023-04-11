@@ -2,9 +2,9 @@
 #ifndef ROKZ_SHADER_H
 #define ROKZ_SHADER_H
 
-#include "common.h"
-#include "rokz_types.h"
-#include "file.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
+#include "file.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace rokz {

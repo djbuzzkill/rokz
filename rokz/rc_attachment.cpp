@@ -1,8 +1,8 @@
 
-#include "rc_attachment.h"
-#include "image.h"
-#include "allocation.h"
-#include "command.h"
+#include "rc_attachment.hpp"
+#include "image.hpp"
+#include "allocation.hpp"
+#include "command.hpp"
 #include <vulkan/vulkan_core.h>
 
 

@@ -4,7 +4,7 @@
 
 #include "rekz.h"
 #include "rekz/onscreen_pipe.h"
-#include "rokz/shared_descriptor.h"
+#include "rokz/shared_descriptor.hpp"
 
 
 namespace rekz { namespace onscreen {

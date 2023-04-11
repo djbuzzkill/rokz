@@ -1,7 +1,7 @@
 //
-#include "pipeline.h"
-#include "shader.h"
-#include "utility.h"
+#include "pipeline.hpp"
+#include "shader.hpp"
+#include "utility.hpp"
 #include <vulkan/vulkan_core.h>
 
 // ------------------------------------------------------------------------------------------

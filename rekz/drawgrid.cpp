@@ -2,8 +2,8 @@
 #include "rekz.h"
 #include "rekz/dark_types.h"
 #include "rekz/grid_pipeline.h"
-#include "rokz/draw_sequence.h"
-#include "rokz/rokz_types.h"
+#include "rokz/draw_sequence.hpp"
+#include "rokz/rokz_types.hpp"
 
 // ---------------------------------------------------------------------------------------
 //                   

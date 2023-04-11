@@ -2,8 +2,8 @@
 #ifndef ROKZ_SYNCHRONIZATION_INCLUDE
 #define ROKZ_SYNCHRONIZATION_INCLUDE
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 namespace rokz { namespace cx { 
 

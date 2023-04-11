@@ -7,7 +7,13 @@
 
 namespace rekz { namespace fonttool { 
 
+    // --
+    extern const char kGlyphAttributeFilename[];
 
+    // --
+    const size_t kGlyphAttributeArrayCount = 128;
+
+    // --
     struct glyphattributes {
       glm::ivec2 advance;
       glm::ivec2 dim; 
@@ -15,14 +21,11 @@ namespace rekz { namespace fonttool {
       glm::ivec2 vbearing;
     }; 
 
-    const size_t kGlyphAttributeArrayCount = 128;
-    extern const char kGlyphAttributeFilename[];
-    
-    // 
+    // -- 
     std::string font_glyph_filename (uint32 asciicode); 
-    void BuildFont (const char* fontFile, rokz::systempath outputpath);
+    // -- 
+    void        BuildFont (const char* fontFile, const rokz::systempath outputpath);
     
-  
-  }}
+  }} // namespace 
 
 #endif

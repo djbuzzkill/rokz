@@ -2,8 +2,8 @@
 #include "rekz.h"              // 
 //#include "rokz/attachment.h"
 #include "grid_pipeline.h"
-#include "rokz/attachment.h"
-#include "rokz/rokz_types.h"
+#include "rokz/attachment.hpp"
+#include "rokz/rokz_types.hpp"
 
 
 //#include "rokz/rokz.h"

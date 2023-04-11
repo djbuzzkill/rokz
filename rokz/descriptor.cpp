@@ -1,7 +1,7 @@
 
 
-#include "descriptor.h"
-#include "utility.h"
+#include "descriptor.hpp"
+#include "utility.hpp"
 #include <vulkan/vulkan_core.h>
 
 

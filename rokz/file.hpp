@@ -2,9 +2,9 @@
 #ifndef ROKZ_FILE_H
 #define ROKZ_FILE_H
 
-#include "common.h"
-#include "utility.h"
-#include "binary_IO.h"
+#include "common.hpp"
+#include "utility.hpp"
+#include "binary_IO.hpp"
 
 
 namespace rokz { 

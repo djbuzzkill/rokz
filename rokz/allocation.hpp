@@ -1,9 +1,10 @@
+
 #ifndef ROKZ_VMA_ALLOCATION_INCLUDE
 #define ROKZ_VMA_ALLOCATION_INCLUDE
 
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 

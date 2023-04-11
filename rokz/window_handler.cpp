@@ -1,8 +1,8 @@
 //
 //
 //#include "rekz.h"
-#include "window_handler.h"
-#include "input_state.h"
+#include "window_handler.hpp"
+#include "input_state.hpp"
 
   // typedef void (* GLFWerrorfun)(int error_code, const char* description);
   // typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);

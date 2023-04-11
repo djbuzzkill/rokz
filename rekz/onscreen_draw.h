@@ -4,7 +4,7 @@
 
 #include "rekz.h"
 #include "onscreen_data.h"
-#include "rokz/draw_sequence.h"
+#include "rokz/draw_sequence.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace rekz { namespace onscreen {

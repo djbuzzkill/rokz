@@ -3,9 +3,9 @@
 #define ROKZ_RC_ATTACHMENT_INCLUDE
 
 
-#include "common.h"
-#include "rokz_types.h"
-#include "rc_image.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
+#include "rc_image.hpp"
 
 
 

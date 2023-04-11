@@ -2,8 +2,8 @@
 #include "rekz.h"
 
 #include "grid_pipeline.h"
-#include "rokz/buffer.h"
-#include "rokz/rc_types.h"
+#include "rokz/buffer.hpp"
+#include "rokz/rc_types.hpp"
 using namespace rokz;
 
 // -------------------------------------------------------------------------------------------

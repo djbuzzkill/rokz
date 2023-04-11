@@ -2,8 +2,8 @@
 #ifndef ROKZ_IMAGEBUFF_INCLUDE 
 #define ROKZ_IMAGEBUFF_INCLUDE
 
-#include "common.h"
-#include "shared_types.h"
+#include "common.hpp"
+#include "shared_types.hpp"
 
 
 namespace rokz {

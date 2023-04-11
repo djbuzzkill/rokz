@@ -1,9 +1,9 @@
 
 // 
-#include "rokz.h"
+#include "rokz.hpp"
 
-#include "common.h"
-#include "utility.h"
+#include "common.hpp"
+#include "utility.hpp"
 #include <GLFW/glfw3.h>
 
 

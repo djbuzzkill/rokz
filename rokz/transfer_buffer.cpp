@@ -1,9 +1,9 @@
 
 
 
-#include "transfer_buffer.h"
-#include "allocation.h"
-#include "buffer.h"
+#include "transfer_buffer.hpp"
+#include "allocation.hpp"
+#include "buffer.hpp"
 
 
 // ----------------------------------------------------------------------------------------

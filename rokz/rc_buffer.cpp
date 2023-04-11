@@ -1,8 +1,8 @@
 
 
-#include "rc_buffer.h"
-#include "buffer.h"
-#include "allocation.h"
+#include "rc_buffer.hpp"
+#include "buffer.hpp"
+#include "allocation.hpp"
 
 
 using namespace rokz;

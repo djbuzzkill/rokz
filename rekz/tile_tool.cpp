@@ -9,8 +9,8 @@
 #include "marzdata.h"
 #include "image_loader.h"
 #include "image_tool.h"
-#include "rokz/binary_IO.h"
-#include "rokz/file.h"
+#include "rokz/binary_IO.hpp"
+#include "rokz/file.hpp"
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -32,12 +32,12 @@ const uint32 k_total_image_pixels = kWIDTH * kHEIGHT;
 const uint32 k_total_tile_pixels = k_tile_dim * k_tile_dim;
 
 
-
+using namespace rekz::imagetool;
 //std::string output_path = "/home/djbuzzkill/owenslake/tmp/";
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
-struct fheight_tile_handler : public rekz::TileCB<float> { 
+struct fheight_tile_handler : public TileCB<float> { 
 
   int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
   
@@ -85,7 +85,7 @@ struct fheight_tile_handler : public rekz::TileCB<float> {
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
-struct fcolor_tile_handler : public rekz::TileCB<float> { 
+struct fcolor_tile_handler : public TileCB<float> { 
 
   int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
 
@@ -131,7 +131,7 @@ struct fcolor_tile_handler : public rekz::TileCB<float> {
 // -------------------------------------------------------------------------------------------
 //
 // -------------------------------------------------------------------------------------------
-struct fcolor_tile_bin : public rekz::TileCB<float> { 
+struct fcolor_tile_bin : public TileCB<float> { 
   // bins r 4 runtme
   int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
 
@@ -167,7 +167,7 @@ struct fcolor_tile_bin : public rekz::TileCB<float> {
 // -----------------------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------------------
-struct fheight_tile_bin : public rekz::TileCB<float> { 
+struct fheight_tile_bin : public TileCB<float> { 
 
   int Exec (const imagebuff<float>& tilei, uint32 xtile, uint32 ytile) {
   
@@ -200,7 +200,7 @@ struct fheight_tile_bin : public rekz::TileCB<float> {
 // ------------------------------------------------------------------------------------------
 // 
 // ------------------------------------------------------------------------------------------
-struct coord_tile_handler : rekz::TileCB<glm::vec2> {
+struct coord_tile_handler : TileCB<glm::vec2> {
   
   int Exec (const imagebuff<glm::vec2>& tilei, uint32 xtile, uint32 ytile) {
 
@@ -227,13 +227,13 @@ int generate_DRG_tiles (const Vec<std::string>& args) {
   imagebuff<float> colorimage (kWIDTH, kHEIGHT);
   load_from_file (colorimage, fqcolorfile); 
 
-  rekz::iteratetileparams params {
+  iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
     overlapborder
   };
 
-  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_bin>() ) ; 
+  iterate_over_tiles (colorimage, params, std::make_shared<fcolor_tile_bin>() ) ; 
 
   HERE("bai"); 
   return 0;
@@ -256,13 +256,13 @@ int generate_DEM_tiles (const Vec<std::string>& args) {
   }
   else HERE ("overlapborder:OFF");
     
-  rekz::iteratetileparams params {
+  iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
     overlapborder
   };
   
-  rekz::iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_bin>()) ; 
+  iterate_over_tiles (colorimage, params, std::make_shared<fheight_tile_bin>()) ; 
 
   printf ("bai %s\n ", __FUNCTION__); 
  return 0;
@@ -287,13 +287,13 @@ int generate_IGM_tiles (const Vec<std::string>& args) {
   }
   else HERE ("overlapborder:OFF");
 
-  rekz::iteratetileparams params {
+  iteratetileparams params {
     {k_tile_dim, k_tile_dim},
     {6, 10},
     overlapborder
   };
   
-  rekz::iterate_over_tiles (coordimage, params, std::make_shared<coord_tile_handler>()) ; 
+  iterate_over_tiles (coordimage, params, std::make_shared<coord_tile_handler>()) ; 
 
   printf ("bai %s\n ", __FUNCTION__); 
  return 0;

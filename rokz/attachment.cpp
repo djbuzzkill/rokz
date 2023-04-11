@@ -1,8 +1,8 @@
 
-#include "attachment.h"
-#include "image.h"
-#include "allocation.h"
-#include "command.h"
+#include "attachment.hpp"
+#include "image.hpp"
+#include "allocation.hpp"
+#include "command.hpp"
 
 // --------------------------------------------------------------------
 //

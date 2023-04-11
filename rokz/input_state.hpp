@@ -3,7 +3,7 @@
 #define ROKZ_INPUT_STATE_INCLUDE
 
 
-#include "common.h"
+#include "common.hpp"
 
 namespace rokz { 
 

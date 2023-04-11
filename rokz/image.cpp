@@ -1,12 +1,12 @@
 
 
-#include "image.h"
-#include "buffer.h"
-#include "rc_image.h"
-#include "utility.h"
+#include "image.hpp"
+#include "buffer.hpp"
+#include "rc_image.hpp"
+#include "utility.hpp"
+#include "allocation.hpp"
+#include "command.hpp"
 #include <vulkan/vulkan_core.h>
-#include "allocation.h"
-#include "command.h"
 
 
 // ---------------------------------------------------------------------

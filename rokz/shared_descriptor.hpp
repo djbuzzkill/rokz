@@ -2,9 +2,9 @@
 #ifndef ROKZ_SHARED_DESCRIPTOR_INCLUDE
 #define ROKZ_SHARED_DESCRIPTOR_INCLUDE
 
-#include "common.h"
-#include "shared_types.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "shared_types.hpp"
+#include "rokz_types.hpp"
 
 
 namespace rokz { namespace global_ub {

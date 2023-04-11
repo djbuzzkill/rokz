@@ -1,11 +1,11 @@
 
-#include "global_descriptor.h"
-#include "shared_descriptor.h"
+#include "global_descriptor.hpp"
+#include "shared_descriptor.hpp"
 
-#include "utility.h"
-#include "rc_types.h"
-#include "ut_offset.h"
-#include "uniform.h"
+#include "utility.hpp"
+#include "rc_types.hpp"
+#include "ut_offset.hpp"
+#include "uniform.hpp"
 
 
 #include <glm/ext/matrix_clip_space.hpp>

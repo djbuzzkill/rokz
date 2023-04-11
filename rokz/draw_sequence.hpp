@@ -1,11 +1,10 @@
+
 #ifndef ROKZ_DRAW_SEQUENCE
 #define ROKZ_DRAW_SEQUENCE
 
-#include "common.h"
-//#include "rekz/rekz.h"
-#include "utility.h"
-#include "rokz_types.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "utility.hpp"
+#include "rokz_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 

@@ -2,7 +2,7 @@
 #ifndef REKZ_MESHERY_INCLUDE
 #define REKZ_MESHERY_INCLUDE
 
-#include "rokz/rokz.h"
+#include "rokz/rokz.hpp"
 
 namespace rekz {
 

@@ -3,9 +3,8 @@
 #ifndef ROKZ_UTILITY_INCLUDE
 #define ROKZ_UTILITY_INCLUDE
 
-#include "common.h"
-#include "rokz_types.h"
-//#include "binary_IO.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 
 #define HERE(x) printf(" [%s|line:%i] --> %s \n",__FUNCTION__,__LINE__,(x));

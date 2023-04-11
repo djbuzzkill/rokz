@@ -4,7 +4,7 @@
 #define REKZ_LANSCAPE_PIPELINE_INCLUDE
 
 #include "rekz.h"
-#include "rokz/vert_defs.h"
+#include "rokz/vert_defs.hpp"
 #include <vulkan/vulkan_core.h>
 
   // ----------------------------------------------------------------------------------------------

@@ -9,8 +9,8 @@
 #include "onscreen_draw.h"
 #include "drawpolygon.h"
 
-#include "rokz/display.h"
-#include "rokz/input_state.h"
+#include "rokz/display.hpp"
+#include "rokz/input_state.hpp"
 
 namespace darkroot {
 

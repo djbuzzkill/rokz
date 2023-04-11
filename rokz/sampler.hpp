@@ -2,8 +2,8 @@
 #ifndef ROKZ_SAMPLER_H
 #define ROKZ_SAMPLER_H
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 
 namespace rokz {

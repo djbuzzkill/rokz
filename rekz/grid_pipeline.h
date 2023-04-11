@@ -3,7 +3,7 @@
 #define REKZ_GRID_PIPELINE
 
 #include "rekz.h"
-#include "rokz/vert_defs.h"
+#include "rokz/vert_defs.hpp"
 //#include "rc_buffer.h"
 
 namespace rekz { namespace grid {

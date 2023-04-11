@@ -4,8 +4,8 @@
 
 
 //#include "rekz/dark_obj_pipeline.h"
-#include "rokz/rokz.h"
-#include "rokz/vert_defs.h"
+#include "rokz/rokz.hpp"
+#include "rokz/vert_defs.hpp"
 #include "meshery.h"
 #include "shaderc/shaderc.hpp"
 #include <vulkan/vulkan_core.h>

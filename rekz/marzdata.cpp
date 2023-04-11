@@ -2,9 +2,9 @@
 #include "marzdata.h"
 #include "rekz/image_loader.h"
 #include "landscape_pipeline.h"
-#include "rokz/image.h"
-#include "rokz/sampler.h"
-#include "rokz/texture.h"
+#include "rokz/image.hpp"
+#include "rokz/sampler.hpp"
+#include "rokz/texture.hpp"
 #include <vulkan/vulkan_core.h>
 
 

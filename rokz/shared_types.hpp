@@ -2,7 +2,7 @@
 #ifndef ROKZ_SHARED_TYPES
 #define ROKZ_SHARED_TYPES
 
-#include "common.h"
+#include "common.hpp"
 #include <vulkan/vulkan_core.h>
 
 

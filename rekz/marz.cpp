@@ -3,13 +3,13 @@
 #include "grid_pipeline.h"
 #include "rekz/landscape_pipeline.h"
 #include "rekz/rekz.h"
-#include "rokz/attachment.h"
-#include "rokz/context.h"
+#include "rokz/attachment.hpp"
+#include "rokz/context.hpp"
 #include "drawmarz.h"
-#include "rokz/descriptor.h"
-#include "rokz/draw_sequence.h"
-#include "rokz/global_descriptor.h"
-#include "rokz/rokz_types.h"
+#include "rokz/descriptor.hpp"
+#include "rokz/draw_sequence.hpp"
+#include "rokz/global_descriptor.hpp"
+#include "rokz/rokz_types.hpp"
 //
 
 using namespace rokz;

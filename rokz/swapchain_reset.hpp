@@ -4,9 +4,9 @@
 #define ROKZ_SWAPCHAIN_RESET
 
 
-#include "common.h"
-#include "rokz_types.h"
-#include "display.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
+#include "display.hpp"
 
 
 

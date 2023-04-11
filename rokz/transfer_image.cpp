@@ -1,10 +1,10 @@
 
-#include "transfer_image.h"
-#include "utility.h"
-#include "allocation.h"
-#include "buffer.h"
-#include "command.h"
-#include "image.h"
+#include "transfer_image.hpp"
+#include "utility.hpp"
+#include "allocation.hpp"
+#include "buffer.hpp"
+#include "command.hpp"
+#include "image.hpp"
 
 using namespace rokz;
 // ---------------------------------------------------------------------------------------------

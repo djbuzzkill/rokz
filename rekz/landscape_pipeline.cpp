@@ -1,9 +1,9 @@
 
 #include "landscape_pipeline.h"
-#include "rokz/pipeline.h"
-#include "rokz/shader.h"
-#include "rokz/shared_descriptor.h"
-#include "rokz/vert_defs.h"
+#include "rokz/pipeline.hpp"
+#include "rokz/shader.hpp"
+#include "rokz/shared_descriptor.hpp"
+#include "rokz/vert_defs.hpp"
 #include <vulkan/vulkan_core.h>
 
 using namespace rokz;

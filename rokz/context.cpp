@@ -1,18 +1,18 @@
 
-#include "context.h"
-#include "utility.h"
+#include "context.hpp"
+#include "utility.hpp"
 
-#include "window.h"
-#include "buffer.h"
-#include "image.h"
-#include "pipeline.h"
-#include "framebuffer.h"
+#include "window.hpp"
+#include "buffer.hpp"
+#include "image.hpp"
+#include "pipeline.hpp"
+#include "framebuffer.hpp"
 //#include "rokz/shared_types.h"
-#include "shader.h"
-#include "window.h"
-#include "descriptor.h"
-#include "allocation.h"
-#include "command.h"
+#include "shader.hpp"
+#include "window.hpp"
+#include "descriptor.hpp"
+#include "allocation.hpp"
+#include "command.hpp"
 #include <vulkan/vulkan_core.h>
 
 

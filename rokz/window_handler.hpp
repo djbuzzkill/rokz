@@ -1,7 +1,7 @@
 #ifndef REKZ_WINDOW_HANDLER_INCLUDE
 #define REKZ_WINDOW_HANDLER_INCLUDE
 
-#include "common.h"
+#include "common.hpp"
 
 namespace rokz {
 

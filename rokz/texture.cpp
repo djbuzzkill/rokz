@@ -1,10 +1,10 @@
 
-#include "texture.h"
-#include "image.h"
-#include "buffer.h"
-#include "command.h"
-#include "allocation.h"
-#include "rokz/rc_types.h"
+#include "texture.hpp"
+#include "image.hpp"
+#include "buffer.hpp"
+#include "command.hpp"
+#include "allocation.hpp"
+#include "rc_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 

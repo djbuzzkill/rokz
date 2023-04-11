@@ -1,6 +1,6 @@
 
-#include "renderpass.h"
-#include "utility.h"
+#include "renderpass.hpp"
+#include "utility.hpp"
 #include <vulkan/vulkan_core.h>
 
 

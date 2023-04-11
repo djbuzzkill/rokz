@@ -3,8 +3,8 @@
 #define ROKZ_RENDERPASS_H
 
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 
 

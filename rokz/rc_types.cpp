@@ -1,9 +1,9 @@
 
-#include "rc_types.h"
-#include "allocation.h"
-#include "buffer.h"
-#include "image.h"
-#include "sampler.h"
+#include "rc_types.hpp"
+#include "allocation.hpp"
+#include "buffer.hpp"
+#include "image.hpp"
+#include "sampler.hpp"
 
 using namespace rokz;
 // -----------------------------------------------------------------------------------------------

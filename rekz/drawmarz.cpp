@@ -2,7 +2,7 @@
 #include "drawmarz.h"
 #include "marzdata.h"
 #include "landscape_pipeline.h"
-#include "rokz/rokz_types.h"
+#include "rokz/rokz_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 

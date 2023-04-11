@@ -2,10 +2,10 @@
 
 #include "onscreen_draw.h"
 #include "rekz/onscreen_pipe.h"
-#include "rokz/shared_descriptor.h"
-#include "rokz/utility.h"
+#include "rokz/shared_descriptor.hpp"
+#include "rokz/utility.hpp"
+
 #include <glm/matrix.hpp>
-#include <numeric>
 #include <vulkan/vulkan_core.h>
 
 

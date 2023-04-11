@@ -1,8 +1,8 @@
 
-#include "rc_image.h"
-#include "image.h"
-#include "allocation.h"
-#include "utility.h"
+#include "rc_image.hpp"
+#include "image.hpp"
+#include "allocation.hpp"
+#include "utility.hpp"
 
 
 using namespace rokz;

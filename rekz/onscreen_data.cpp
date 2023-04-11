@@ -5,13 +5,13 @@
 #include "rekz.h"
 #include "font_tool.h"
 
-#include "rokz/buffer.h"
-#include "rokz/image.h"
-#include "rokz/rc_buffer.h"
-#include "rokz/rc_image.h"
-#include "rokz/rc_types.h"
-#include "rokz/shared_descriptor.h"
-#include "rokz/shared_types.h"
+#include "rokz/buffer.hpp"
+#include "rokz/image.hpp"
+#include "rokz/rc_buffer.hpp"
+#include "rokz/rc_image.hpp"
+#include "rokz/rc_types.hpp"
+#include "rokz/shared_descriptor.hpp"
+#include "rokz/shared_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 

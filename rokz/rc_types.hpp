@@ -3,8 +3,8 @@
 #define ROKZ_RC_TYPES_INCLUDE
 
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 namespace rokz { namespace rc {
 

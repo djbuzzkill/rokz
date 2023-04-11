@@ -1,5 +1,5 @@
 
-#include "sampler.h"
+#include "sampler.hpp"
 #include <vulkan/vulkan_core.h>
 
 

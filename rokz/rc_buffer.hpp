@@ -2,8 +2,8 @@
 #ifndef ROKZ_RC_BUFFER_INCLUDE
 #define ROKZ_RC_BUFFER_INCLUDE
 
-#include "common.h"
-#include "shared_types.h"
+#include "common.hpp"
+#include "shared_types.hpp"
 
 namespace rokz { namespace rc { 
 

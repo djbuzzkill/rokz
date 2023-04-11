@@ -3,8 +3,8 @@
 #define ROKZ_VERTEX_DEF_INCLUDE
 
 
-#include "common.h"
-#include "shared_types.h"
+#include "common.hpp"
+#include "shared_types.hpp"
 
 
 

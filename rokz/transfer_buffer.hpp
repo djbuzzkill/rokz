@@ -2,10 +2,8 @@
 #ifndef ROKZ_TRANSFER_BUFFER_INCLUDE
 #define ROKZ_TRANSFER_BUFFER_INCLUDE
 
-
-
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 
 
 namespace rokz { namespace cx {

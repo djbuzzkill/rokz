@@ -7,7 +7,7 @@
 
 
 #include "ft2build.h"
-#include "rokz/binary_IO.h"
+#include "rokz/binary_IO.hpp"
 #include <numeric>
 #include FT_FREETYPE_H
 #include  FT_GLYPH_H
@@ -105,13 +105,12 @@ void save_to_png (const rokz::imagebuff<uint8>& image, uint32 asciicode ) {
 // -------------------------------------------------------------------------------------- 
 //
 // -------------------------------------------------------------------------------------- 
-void rekz::fonttool::BuildFont (const char* fontFile, rokz::systempath outputpath) {
+void rekz::fonttool::BuildFont (const char* fontFile, const rokz::systempath outputpath) {
 
-  
   unsigned int res = 0;
 
   FT_Library ftLib;
-  FT_Face ftFace;
+  FT_Face    ftFace;
 
   res = FT_Init_FreeType (&ftLib);
   res = FT_New_Face (ftLib, fontFile, 0, &ftFace); 
@@ -122,14 +121,13 @@ void rekz::fonttool::BuildFont (const char* fontFile, rokz::systempath outputpat
   int pxlsPerChar = CHAR_PIXEL_SIZE * CHAR_PIXEL_SIZE;
   //unsigned char* pData = new unsigned char[pxlsPerChar * 256];
   //memset (pData, 0, pxlsPerChar * 256);
-
   std::array<glyphattributes, kGlyphAttributeArrayCount> glyphattrs = {}; 
-
   //
   // ------ Collect glyphs and render onto output memory.  conventions 
   //
   //FT_UInt glyph_index;
   // ! and ~, start and end of ascii printable range
+
   for (char ch = '!' ; ch <=  '~'; ch++) {
 
     FT_UInt glyph_index = FT_Get_Char_Index (ftFace, ch);

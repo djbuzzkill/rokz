@@ -3,7 +3,7 @@
 #define MARS_FILES_INCLUDE
 
 #include "rekz.h"
-#include "rokz/shared_types.h"
+#include "rokz/shared_types.hpp"
 
 //
 namespace ESP_018065_1975_RED_ESP_019133_1975_RED {

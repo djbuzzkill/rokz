@@ -2,9 +2,9 @@
 #ifndef ROKZ_FRAME_INCLUDE
 #define ROKZ_FRAME_INCLUDE
 
-#include "common.h"
-#include "shared_types.h"
-#include "rc_swapchain.h"
+#include "common.hpp"
+#include "shared_types.hpp"
+#include "rc_swapchain.hpp"
 
 namespace rokz { namespace rc {
 

@@ -3,12 +3,12 @@
 #ifndef ROKZ_GLOBAL_DESCRIPTOR
 #define ROKZ_GLOBAL_DESCRIPTOR
 
-#include "common.h"
-#include "shared_types.h"
-#include "rokz_types.h"
-#include "rc_buffer.h"
-#include "draw_sequence.h"
-#include "descriptor.h"
+#include "common.hpp"
+#include "shared_types.hpp"
+#include "rokz_types.hpp"
+#include "rc_buffer.hpp"
+#include "draw_sequence.hpp"
+#include "descriptor.hpp"
 
 
 

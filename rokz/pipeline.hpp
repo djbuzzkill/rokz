@@ -2,8 +2,8 @@
 #ifndef ROKZ_PIPELINE_H
 #define ROKZ_PIPELINE_H
 
-#include "common.h"
-#include "rokz_types.h"
+#include "common.hpp"
+#include "rokz_types.hpp"
 #include <vulkan/vulkan_core.h>
 
 

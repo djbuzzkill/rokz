@@ -1,12 +1,12 @@
 
-#include "shader.h"
+#include "shader.hpp"
 
 
 
-#include "utility.h"
-#include "defaults.h"
-#include "pipeline.h"
-#include <X11/X.h>
+#include "utility.hpp"
+#include "defaults.hpp"
+#include "pipeline.hpp"
+//#include <X11/X.h>
 #include <memory>
 #include <shaderc/env.h>
 #include <shaderc/shaderc.h>

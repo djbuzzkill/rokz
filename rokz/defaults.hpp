@@ -2,7 +2,7 @@
 #ifndef ROKZ_DEFAULTS_INCLUDE
 #define ROKZ_DEFAULTS_INCLUDE
 
-#include "common.h"
+#include "common.hpp"
 
 
 namespace rokz {

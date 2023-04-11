@@ -1,8 +1,8 @@
 
-#include "display.h"
-#include "context.h"
-#include "window.h"
-#include "window_handler.h"
+#include "display.hpp"
+#include "context.hpp"
+#include "window.hpp"
+#include "window_handler.hpp"
 
 
 bool rokz::SetupDisplay (Display& display, const std::string& title , 

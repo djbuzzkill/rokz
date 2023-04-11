@@ -2,7 +2,7 @@
 #ifndef REKZ_IMAGE_LOADER_INCLUDE
 #define REKZ_IMAGE_LOADER_INCLUDE
 
-#include "rokz/rokz.h"
+#include "rokz/rokz.hpp"
 
 namespace rekz { 
 
