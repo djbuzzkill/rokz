@@ -2,23 +2,34 @@
 #include "rekz.h"
 #include "font_tool.h"
 #include "rokz/imagebuff.hpp"
+#include <tinygltf/tiny_gltf.h>
 
 
 using namespace rokz; 
 
 
+auto super_weird (int i) -> std::tuple<bool, float> {
 
+  if ( i % 2 ) 
+    return std::make_tuple (true, 69.0f);
+  else
+    return std::make_tuple (false, 0.0f); 
+  
+}
+  
 
-
-
+// ---------  -----------
 int stonk (const Vec<std::string>& args) {
 
-  printf ( "lol --> %s\n", __FUNCTION__); 
+  tinygltf::Mesh mesh; 
+  
+   auto [a, b] = super_weird (69);
+
+   if (a) 
+     printf ( "lol --> %f\n", b); 
 
   std::fmod (6000.0441f, 31.0000000617);
-
   std::string glyphfilename = rekz::fonttool::font_glyph_filename (66);
-
   rokz::systempath basepath = "/home/djbuzzkill/owenslake/tmp/textbin/"; 
 
   if (std::filesystem::exists (basepath/glyphfilename)) {

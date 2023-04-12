@@ -39,7 +39,6 @@ namespace rokz { namespace ut {
 
     }
 
-  
     inline size_t
       offset_at (const Vec<size_t>& sizez, size_t index) {
 

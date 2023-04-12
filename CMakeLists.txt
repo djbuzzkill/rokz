@@ -16,7 +16,7 @@ add_definitions (-DCMAKE_EXPORT_COMPILE_COMMANDS=1)
 
 
 
-add_compile_options (-g -O0 -Wextra -Wshadow -Wpedantic -std=c++20) #  -Wall -Wpedantic -Werror -Wconversion
+add_compile_options (-g -O0 -Wextra -Wshadow -Wpedantic -fexceptions -std=c++20) #  -Wall -Wpedantic -Werror -Wconversion
 
 #
 link_directories (

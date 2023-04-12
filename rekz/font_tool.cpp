@@ -8,6 +8,7 @@
 
 #include "ft2build.h"
 #include "rokz/binary_IO.hpp"
+#include <cctype>
 #include <numeric>
 #include FT_FREETYPE_H
 #include  FT_GLYPH_H
@@ -30,8 +31,19 @@ const char k_font_glyph_file_format[64] =  "font_glyph_%u.bin";
 const rokz::systempath k_base_bin_path =  "/home/djbuzzkill/owenslake/tmp/textbin/";
 
 std::string rekz::fonttool::font_glyph_filename (uint32 asciicode ) {
-  char font_glyph_file_name [64]; 
+
+  char font_glyph_file_name[64] = {0} ;
+  bool is_printable = asciicode >= '!' && asciicode <= '~';
+  if (!is_printable) {
+    char msg[64]; 
+    sprintf (msg, "BAD ASCII !!! ascii[%u] is not in printing range\n", asciicode); 
+    HERE(msg);
+  }
+  // if (0 == isprint (asciicode)) {
+  //   HERE("<<NOPRINT>>");
+  // }
   sprintf (font_glyph_file_name , k_font_glyph_file_format, asciicode);
+  
   return font_glyph_file_name;
 }
 
@@ -122,6 +134,7 @@ void rekz::fonttool::BuildFont (const char* fontFile, const rokz::systempath out
   //unsigned char* pData = new unsigned char[pxlsPerChar * 256];
   //memset (pData, 0, pxlsPerChar * 256);
   std::array<glyphattributes, kGlyphAttributeArrayCount> glyphattrs = {}; 
+
   //
   // ------ Collect glyphs and render onto output memory.  conventions 
   //

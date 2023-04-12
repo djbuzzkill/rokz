@@ -21,10 +21,11 @@ namespace rekz { namespace fonttool {
       glm::ivec2 vbearing;
     }; 
 
-    // -- 
+    // -- only between (33, '!')  and (126, '~') ---
     std::string font_glyph_filename (uint32 asciicode); 
+
     // -- 
-    void        BuildFont (const char* fontFile, const rokz::systempath outputpath);
+    void BuildFont (const char* fontFile, const rokz::systempath outputpath);
     
   }} // namespace 
 

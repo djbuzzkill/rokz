@@ -8,50 +8,50 @@ project (rokz)
 
 #  
 set (ROKZ_HEADER_FILES
-  draw_sequence.h
-  
-  rokz.h
-  context.h
-  descriptor.h
-  allocation.h
-  attachment.h
-  buffer.h
-  image.h
-  imagebuff.h
-  command.h
-  pipeline.h
-  framebuffer.h
-  renderpass.h
-  render.h
-  shader.h
-  texture.h
-  uniform.h
-  sampler.h
-  window.h
-  binary_IO.h
-  defaults.h
 
-  global_descriptor.h
-  shared_descriptor.h
-  window_handler.h
-  input_state.h
-  display.h
-  vert_defs.h
-  file.h
-  frame.h
-  shared_types.h
-  synchronization.h
-  rokz_types.h
-  rc_types.h
-  rc_buffer.h
-  rc_image.h
-  rc_attachment.h
-  rc_swapchain.h
-  transfer_buffer.h
-  transfer_image.h
-  utility.h
-  ut_offset.h
-  common.h
+  allocation.hpp
+  attachment.hpp
+  binary_IO.hpp
+  buffer.hpp
+  command.hpp
+  common.hpp
+  context.hpp
+  defaults.hpp
+  draw_sequence.hpp
+  descriptor.hpp
+  image.hpp
+  imagebuff.hpp
+  pipeline.hpp
+  framebuffer.hpp
+  renderpass.hpp
+  render.hpp
+  shader.hpp
+  texture.hpp
+  uniform.hpp
+
+  global_descriptor.hpp
+  shared_descriptor.hpp
+  window_handler.hpp
+  input_state.hpp
+  display.hpp
+  vert_defs.hpp
+  file.hpp
+  frame.hpp
+  shared_types.hpp
+  synchronization.hpp
+  rokz_types.hpp
+  rc_types.hpp
+  rc_buffer.hpp
+  rc_image.hpp
+  rc_attachment.hpp
+  rc_swapchain.hpp
+  rokz.hpp
+  transfer_buffer.hpp
+  transfer_image.hpp
+  utility.hpp
+  ut_offset.hpp
+  sampler.hpp
+  window.hpp
 )
 
 #
