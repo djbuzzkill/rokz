@@ -34,11 +34,12 @@ VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync,
 VkPresentInfoKHR& cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
                                    const std::vector<VkSwapchainKHR>& swapchains,
                                    const std::vector<VkSemaphore>& signal_sems) { 
+
   //printf ("SIZE --> signal_sems[%zu]\n", signal_sems.size()); 
   pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   pi.pNext              = nullptr;
 
-  pi.waitSemaphoreCount = signal_sems.size();
+  pi.waitSemaphoreCount = signal_sems.size();  // = { render_sync.render_finished_sem };
   pi.pWaitSemaphores    = &signal_sems[0];
   pi.swapchainCount     = swapchains.size ();
   pi.pSwapchains        = &swapchains[0];
@@ -50,23 +51,15 @@ VkPresentInfoKHR& cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
 // --------------------------------------------------------------------
 //
 // --------------------------------------------------------------------
-bool cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
-  //rokz::cx::FrameGroup& frame_group = glob.frame_group;
- return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
-}
+// bool cx::PresentFrame (VkQueue present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
 
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-bool cx::PresentFrame (VkQueue present_que, const rokz::Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
+//   std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
+//   std::vector<VkSwapchainKHR>  swapchains = { swapchain.handle };
 
-  std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
-  std::vector<VkSwapchainKHR>  swapchains = { swapchain.handle };
+//  VkPresentInfoKHR pi {};
 
- VkPresentInfoKHR pi {};
-
- return PresentFrame (present_que , PresentInfo (pi, image_index, swapchains, signal_sems));
-}
+//  return PresentFrame (present_que , PresentInfo (pi, image_index, swapchains, signal_sems));
+// }
 
 // ---------------------------------------------------------------------
 // 
@@ -129,42 +122,6 @@ VkRenderingInfo& cx::RenderingInfo (VkRenderingInfo&                   ri,
 // ------------------------------------------------------------------------------------------
 //                       
 // ------------------------------------------------------------------------------------------
-int cx::FrameDrawBegin (rokz::SwapchainGroup& scg, VkCommandBuffer command_buffer,
-                              uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
-
-  
-  rokz::Swapchain& swapchain = scg.swapchain;
-  
-  // dynamic_rendering now, we have to manually transition
-  TransitionImageLayout (scg.images[image_index].handle,
-                                   swapchain.ci.imageFormat, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                                   device.queues.graphics, device.command_pool.handle, device.handle);
-
-  if (VK_SUCCESS != vkResetCommandBuffer (command_buffer, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
-    return __LINE__; 
-  }
-
-
-  VkCommandBufferBeginInfo begin_info {};
-  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.pNext = nullptr;
-  begin_info.flags = 0;                  // 
-  begin_info.pInheritanceInfo = nullptr; // 
-
-  if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
-     printf ("failed to begin recording command buffer!");
-     return __LINE__; 
-  }
-
-  vkCmdBeginRendering (command_buffer, &ri);
-  
-  return 0;
-}
-
-// ------------------------------------------------------------------------------------------
-//                       
-// ------------------------------------------------------------------------------------------
 void rokz::UpdateDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
                                        const VkImageView&        msaa_color_imageview ,
                                        const VkImageView&        target_imageview) {
@@ -219,7 +176,6 @@ bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
   cx::RenderingInfo (ri.ri, ri.render_area, 1, 0, ri.color_attachment_infos, &ri.depth_attachment_info, nullptr);
   return true;
 }
-
 
 // ------------------------------------------------------------------------------------------
 //                       

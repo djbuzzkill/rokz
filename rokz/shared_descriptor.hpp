@@ -46,6 +46,8 @@ namespace rokz { namespace global_ub {
     //   uint32 ch[max_length];
     // }; 
     const size_t text_item_length = 64;
+
+    //
     struct TextElement {
 
       TextElement (): text (global_ub::text_item_length, ' '), position (0.0), color (1.0){
@@ -56,17 +58,16 @@ namespace rokz { namespace global_ub {
       glm::vec4   color; 
     };
       
-
-    
     const size_t sizeof_FONT_FACE_BINDINGI = 0; 
     const size_t sizeof_TEXTITEMS_BINDINGI = 0;
     // for use with ut::offset_at
+
     const Vec<size_t> UB_sizes = {
-      sizeof (MVPTransform), // MVP_Scene  
-      sizeof (MVPTransform), // MVP_Overlay
-      sizeof (GridState),    // GridState  
-      sizeof_TEXTITEMS_BINDINGI,
-      sizeof_FONT_FACE_BINDINGI, 
+      sizeof (MVPTransform),     // MVP_Scene  
+      sizeof (MVPTransform),     // MVP_Overlay
+      sizeof (GridState),        // GridState  
+      sizeof_TEXTITEMS_BINDINGI, // 
+      sizeof_FONT_FACE_BINDINGI, // 
     }; 
   }}
 

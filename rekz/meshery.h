@@ -15,9 +15,14 @@ namespace rekz {
     template<typename VTy, typename IndTy>
     struct GeometryData {
 
+      
       typedef  VTy         VertexType; 
       typedef  IndTy       IndexType; 
 
+      GeometryData (const VTy* v, size_t vc, const IndTy* i, size_t ic): 
+         verts (v, v + vc), indices (i, i+ic) {
+      }
+      
       enum { VertexSize = sizeof(VTy) }; 
       enum { IndexSize  = sizeof(IndTy) }; 
   

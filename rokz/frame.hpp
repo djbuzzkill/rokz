@@ -6,8 +6,14 @@
 #include "shared_types.hpp"
 #include "rc_swapchain.hpp"
 
-namespace rokz { namespace rc {
+namespace rokz {
 
+  // -- 
+  namespace cx {
+        bool PresentFrame   (VkQueue present_que, const VkPresentInfoKHR& pi); 
+  }
+  // -- put n rc b/c rc is not mainstream yet
+  namespace rc { 
 
     //VkResult          AcquireFrame   (rc::Swapchain::Ref& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
     int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,

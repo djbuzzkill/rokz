@@ -12,8 +12,7 @@ const VkVertexInputBindingDescription rokz::kPNCTx_InputBindingDesc = {
     sizeof (PNCTx_Vert),         // stride      
     VK_VERTEX_INPUT_RATE_VERTEX // inputRate   
   }; 
-
-// ------------------------------------------------------------------------------------------
+// -- attrib desc
 const Vec<VkVertexInputAttributeDescription> rokz::kPNCTx_InputAttributeDesc = {
   
   VkVertexInputAttributeDescription { // pos
@@ -47,7 +46,7 @@ const Vec<VkVertexInputAttributeDescription> rokz::kPNCTx_InputAttributeDesc = {
 };
 
 // ------------------------------------------------------------------------------------------
-// 
+// PNTx_Vert
 // ------------------------------------------------------------------------------------------
 const VkVertexInputBindingDescription rokz::kPNTx_InputBindingDesc = {
     0,                          // binding    
@@ -81,8 +80,9 @@ const Vec<VkVertexInputAttributeDescription> rokz::kPNTx_InputAttributeDesc = {
 
 };
 
+
 // ------------------------------------------------------------------------------------------
-// 
+// PC_Vert
 // ------------------------------------------------------------------------------------------
 const VkVertexInputBindingDescription rokz::kPC_InputBindingDesc = {
     0,                          // binding    

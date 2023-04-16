@@ -8,9 +8,7 @@
 #include "rokz_types.hpp"
 #include <vulkan/vulkan_core.h>
 
-namespace rokz { 
-
-  namespace cx { 
+namespace rokz { namespace cx { 
     // ----------------------------------------------------------------------------
     // 
     // ----------------------------------------------------------------------------
@@ -19,13 +17,7 @@ namespace rokz {
     //VkResult          AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
     VkResult          AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
 
-    bool              PresentFrame (VkQueue present_que, const Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync); 
-    bool              PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi); 
-
-
-    int               FrameDrawBegin (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const VkRenderingInfo& ri, const Device& device);
-    //int               FrameDrawBegin (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const Device& device);
-    int               FrameDrawEnd   (SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device);
+    //bool              PresentFrame (VkQueue present_que, const Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync); 
 
     // ----------------------------------------------------------------------------
     // dyanmic rendering | vk 1.3

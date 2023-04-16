@@ -8,7 +8,7 @@
 using namespace rokz; 
 
 
-auto super_weird (int i) -> std::tuple<bool, float> {
+auto wtf_weird (int i) -> std::tuple<bool, float> {
 
   if ( i % 2 ) 
     return std::make_tuple (true, 69.0f);
@@ -22,8 +22,9 @@ auto super_weird (int i) -> std::tuple<bool, float> {
 int stonk (const Vec<std::string>& args) {
 
   tinygltf::Mesh mesh; 
+
   
-   auto [a, b] = super_weird (69);
+   auto [a, b] = wtf_weird (69);
 
    if (a) 
      printf ( "lol --> %f\n", b); 
@@ -53,6 +54,8 @@ int stonk (const Vec<std::string>& args) {
   
   }
   
+  printf ("ROKZ_OWENS_LAKE:%s\n", OWENS_LAKE); 
+
   // rokz::imagebuff<float> h39 (1024, 1024);
   // rokz::imagebuff<float> h49 (1024, 1024);
 

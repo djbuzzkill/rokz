@@ -36,6 +36,8 @@ void ESP_018065_1975_RED_ESP_019133_1975_RED::print_attributes ()
 
   const uint32 total_num_pixels = kWIDTH * kHEIGHT;
 
+  
+  
   std::string base_path = "/home/djbuzzkill/owenslake/data/Mars/"; 
   
   // "ESP_018065_1975_RED_ESP_019133_1975_RED-DEM_f32x6900x17177.bin";

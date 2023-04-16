@@ -9,8 +9,8 @@
 
 using namespace rokz;
 //const size_t max_frames_in_flight  = rekz::Glob::MaxFramesInFlight; 
-const VkVertexInputBindingDescription&        rekz::obz::kVertexInputBindingDesc   = rokz::kPNCTx_InputBindingDesc;
-const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDesc = rokz::kPNCTx_InputAttributeDesc; 
+const VkVertexInputBindingDescription&        rekz::obz::kVertexInputBindingDesc   = rokz::kPNTx_InputBindingDesc;
+const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDesc = rokz::kPNTx_InputAttributeDesc; 
 
 
 // const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {

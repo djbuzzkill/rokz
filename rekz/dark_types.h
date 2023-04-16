@@ -20,10 +20,10 @@ namespace darkroot {
   // ---------------------------------------------------------------------------------------
   struct Glob {
 
-    enum { MaxFramesInFlight = 2 }; 
+    enum { MaxFramesInFlight = 2
+    }; 
 
     Glob();
-
     // input 
     rokz::InputState             input_state;
     glm::ivec2                   mouse_prev; 
@@ -37,13 +37,13 @@ namespace darkroot {
     // DYNAMIC RENDERING, no use renderpass
     rokz::RenderingInfoGroup     rendering_info_group;
     // struct Display
-    rokz::Display                display;             //
-
+    rokz::Display                display; //
     // device props - framebuffer properties
     //AttachmentProps { 
     VkFormat                     depth_format;  
     VkSampleCountFlagBits        msaa_samples;
     VkFormat                     color_format;
+
     //}  
     // attachement set
     rc::Image::Ref         depthimage;          

@@ -17,10 +17,10 @@ namespace marz {
   
   enum { kMaxFramesInFlight = 2 }; 
 
-  struct transform {
-    glm::vec3 position;
-    glm::vec3 rotation_eu;
-  }; 
+  // struct transform {
+  //   glm::vec3 position;
+  //   glm::vec3 rotation_eu;
+  // }; 
 
   inline glm::mat4& ViewerMatrix (glm::mat4& outm, const glm::vec3 vpos, const glm::vec3& vrot_eu) {
 
@@ -74,7 +74,7 @@ namespace marz {
     DescriptorGroup        landscape_de; //
     DescriptorGroup        grid_de;
 
-    transform              viewer;
+    rekz::transform              viewer;
     
     // DrawSequence stuff
     DrawSequence::Globals  shared;               

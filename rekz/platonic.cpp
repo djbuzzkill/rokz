@@ -4,61 +4,126 @@
 
 using namespace rekz;
 
-namespace { 
+  // -- each face will not share normals
+const  size_t kCubeVertexCount = 24;
 
-  const platonic::Vert OctohedronVerts[] = {
-    // top 
-    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.2, 0.3, 1.0 }, {0.5, 0.5}}, 
+const geomz::Vert kCubeVerts[kCubeVertexCount] = {
+    // top 0
+    {{-1.0, 1.0, -1.0 }, { 0.0, 1.0, 0.0 }, {0.0, 1.0}}, 
+    {{-1.0, 1.0,  1.0 }, { 0.0, 1.0, 0.0 }, {0.0, 0.0}}, 
+    {{ 1.0, 1.0,  1.0 }, { 0.0, 1.0, 0.0 }, {1.0, 0.0}}, 
+    {{ 1.0, 1.0, -1.0 }, { 0.0, 1.0, 0.0 }, {1.0, 1.0}}, 
 
-    {{ 0.0, 0.0,  1.0 }, {-0.707106, 0.0,  0.707106}, {0.2, 0.3, 0.8}, {0.0, 1.0}}, 
-    {{ 1.0, 0.0,  0.0 }, { 0.707106, 0.0,  0.707106}, {0.2, 0.3, 0.8}, {1.0, 1.0}}, 
-    {{ 0.0, 0.0, -1.0 }, { 0.707106, 0.0, -0.707106}, {0.2, 0.3, 0.8}, {1.0, 0.0}}, 
-    {{-1.0, 0.0,  0.0 }, {-0.707106, 0.0, -0.707106}, {0.2, 0.3, 0.8}, {0.0, 0.0}}, 
+    // bottom 4
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
 
-    // bottom
-    {{ 0.0, 1.0, 0.0 }, { 0.0, 1.0, 0.0 }, {0.2, 0.3, 1.0 }, {0.5, 0.5 }}, 
+    // font 8
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+
+    // back 12
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+
+    // right 16
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+
+    // left 20
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+    {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
     
   }; 
 
-  const size_t kOctohedronVertexCount = sizeof(OctohedronVerts) / sizeof (platonic::Vert);
-  static_assert (kOctohedronVertexCount == 6, "");
+  const uint16 kCubeIndices_CCW[] = {
+    0, 1, 2,  2, 3, 0,
 
-  // CW
-  const uint16_t OctohedronIndices[] = {
-    0, 2, 1,  0, 3, 2,  0, 4, 3,  0, 1, 4,
-    5, 1, 2,  5, 2, 3,  5, 3, 4,  5, 4, 1
   }; 
 
-  const std::array<uint16_t, 24> OctohedronIndices16[] = {
-    0, 2, 1,  0, 3, 2,  0, 4, 3,  0, 1, 4,
-    5, 1, 2,  5, 2, 3,  5, 3, 4,  5, 4, 1
-  }; 
-
-// CCW 
-  // const uint16_t OctohedronIndices[] = {
-  //   0, 1, 2,  0, 2, 3,  0, 3, 4,  0, 4, 1,
-  //   5, 2, 1,  5, 3, 2,  5, 4, 3,  5, 1, 4
-  // }; 
-
-  const size_t kOctohedronIndicesCount = sizeof(OctohedronIndices) / sizeof (uint16_t); 
-  static_assert (kOctohedronIndicesCount == 24, "");
+  const uint16 kCubeIndicesCount = sizeof(kCubeIndices_CCW) / sizeof(uint16); 
 
 
-  struct OctoMesh : public platonic::Mesh {
+  // -------------------------------------------------------------------------------------
+  struct CubeMesh : public geomz::Mesh {
 
-    OctoMesh () {
-      verts.assign  (OctohedronVerts, OctohedronVerts + kOctohedronVertexCount); 
-      indices.assign(OctohedronIndices, OctohedronIndices + kOctohedronIndicesCount);
+    CubeMesh () : geomz::Mesh (kCubeVerts, kCubeVertexCount, kCubeIndices_CCW, kCubeIndicesCount) {
     }
   }; 
 
+  const CubeMesh kCubeMesh; 
 
-  const OctoMesh kOctoMesh;
-}
+
+// -------------------------------------------------------------------------------------
+const size_t kOctohedronVertexCount = 6;
+const geomz::Vert OctohedronVerts[kOctohedronVertexCount] = {
+  // top 
+  {{0.0, -1.0, 0.0 }, { 0.0, -1.0, 0.0 }, {0.5, 0.5}}, 
+
+  {{ 0.0, 0.0,  1.0 }, {-0.707106, 0.0,  0.707106}, {0.0, 1.0}}, 
+  {{ 1.0, 0.0,  0.0 }, { 0.707106, 0.0,  0.707106}, {1.0, 1.0}}, 
+  {{ 0.0, 0.0, -1.0 }, { 0.707106, 0.0, -0.707106}, {1.0, 0.0}}, 
+  {{-1.0, 0.0,  0.0 }, {-0.707106, 0.0, -0.707106}, {0.0, 0.0}}, 
+
+  // bottom
+  {{ 0.0, 1.0, 0.0 }, { 0.0, 1.0, 0.0 }, {0.5, 0.5 }}, 
+    
+}; 
+
+// -------------------------------------------------------------------------------------
+static_assert (kOctohedronVertexCount == 6, "");
+
+// CW
+const uint16_t OctohedronIndices[] = {
+  0, 2, 1,  0, 3, 2,  0, 4, 3,  0, 1, 4,
+  5, 1, 2,  5, 2, 3,  5, 3, 4,  5, 4, 1
+}; 
+
+const std::array<uint16_t, 24> OctohedronIndices16[] = {
+  0, 2, 1,  0, 3, 2,  0, 4, 3,  0, 1, 4,
+  5, 1, 2,  5, 2, 3,  5, 3, 4,  5, 4, 1
+}; 
+
+// CCW 
+// const uint16_t OctohedronIndices[] = {
+//   0, 1, 2,  0, 2, 3,  0, 3, 4,  0, 4, 1,
+//   5, 2, 1,  5, 3, 2,  5, 4, 3,  5, 1, 4
+// }; 
+
+const size_t kOctohedronIndicesCount = sizeof(OctohedronIndices) / sizeof (uint16_t); 
+static_assert (kOctohedronIndicesCount == 24, "");
+
+
+struct OctoMesh : public geomz::Mesh {
+
+  OctoMesh () : geomz::Mesh (OctohedronVerts, kOctohedronVertexCount,
+                             OctohedronIndices,  kOctohedronIndicesCount) {
+  }
+}; 
+
+const OctoMesh kOctoMesh;
 
 // ------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------
-const rekz::platonic::Mesh& rekz::platonic::Octohedron () {
+const rekz::geomz::Mesh& rekz::geomz::Octohedron () {
   return kOctoMesh;
 }
+
+
+
+const rekz::geomz::Mesh& rekz::geomz::Cube () {
+  return kCubeMesh;
+}
+
+

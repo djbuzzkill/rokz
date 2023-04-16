@@ -7,10 +7,17 @@
 
 
 using namespace rokz;
-
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 //
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+bool cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
+  //rokz::cx::FrameGroup& frame_group = glob.frame_group;
+ return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
+}
+
+// ------------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------------
 bool rc::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
 
   std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
@@ -20,9 +27,6 @@ bool rc::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain,
 
  return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, signal_sems));
 }
-
-
-
 
 // ------------------------------------------------------------------------------------------------
 //
@@ -69,14 +73,11 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
     printf ("[FAILED] record command buffer\n");
     return __LINE__; 
   }
-
-
   //rokz::Swapchain& swapchain = scg.swapchain;
-
   VkSubmitInfo submit_info {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  VkSemaphore wait_semaphores[]      = {framesync.image_available_sem};
-  VkSemaphore signal_semaphores[]    = {framesync.render_finished_sem }; 
+  VkSemaphore wait_semaphores[]      = { framesync.image_available_sem };
+  VkSemaphore signal_semaphores[]    = { framesync.render_finished_sem }; 
   VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
   submit_info.pWaitDstStageMask    = wait_stages;
@@ -91,14 +92,13 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
     printf("failed to submit draw command buffer!");
     return false; 
   }
-
-  //  dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
-                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                             device.queues.graphics, device.command_pool.handle, device.handle);
-
   
+  // dynamic_rendering now, we have to manually transition
+  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
+                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                             device.queues.graphics,
+                             device.command_pool.handle, device.handle);
+
   if (!rc::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
     return __LINE__;
   }

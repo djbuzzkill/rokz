@@ -45,7 +45,6 @@ Glob::Glob()
   , swapchain_support_info()
   , shared ()
 { 
-
   // queues.graphics = {};
   // queues.present = {}; 
 }

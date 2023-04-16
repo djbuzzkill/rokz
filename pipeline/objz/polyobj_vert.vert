@@ -17,24 +17,16 @@
 //
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_nrm; 
-layout(location = 2) in vec3 in_co0; 
-layout(location = 3) in vec2 in_txc; 
-
+layout(location = 2) in vec2 in_txc; 
 //
 // out PER VERTEX
 //
-layout(location = 0) out vec3 o_frag; 
-layout(location = 1) out vec3 o_norm; 
-layout(location = 2) out vec2 o_txcd; 
+layout(location = 0) out vec3 o_norm; 
+layout(location = 1) out vec2 o_txcd; 
 
 //
 //  
 //
-layout (push_constant) uniform PushConstant {
-
-  ivec4 draw_ids; 
-
-} pc;
 
 //
 // DESCRIPTOR
@@ -53,11 +45,9 @@ layout(set = 0, binding = OB_PARAMS_BINDINGI) uniform ObjectParams {
 
 
 void main() {
-
   //  gl_Position = mat.proj * mat.view * mat.model * vec4(in_pos, 1.0);
-  //  o_norm = (mat.model * vec4(in_nrm, 1.0)).xyz; 
-  gl_Position = mat.proj * mat.view * params[pc.draw_ids.x].model * vec4(in_pos, 1.0);
-  o_norm = (params[pc.draw_ids.x].model * vec4(in_nrm, 1.0)).xyz; 
-  o_frag = in_co0;
+  //  o_norm = (mat.model * vec4(in_nrm, 1.0)).xyz;
+  gl_Position = mat.proj * mat.view * params[pc.resource_id.x].model * vec4(in_pos, 1.0);
+  o_norm = (params[pc.resource_id.x].model * vec4(in_nrm, 1.0)).xyz; 
   o_txcd = in_txc;
 }

@@ -85,7 +85,7 @@ struct preparebuff : public rokz::cx::mappedbuffer_cb {
   // 
   virtual int on_mapped  (void* dstp, size_t maxsize) {
 
-    const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
+    const rekz::geomz::Mesh& darkmesh = rekz::geomz::Octohedron (); 
 
     assert (maxsize == geom::ComputeTotalSize (darkmesh));
 
@@ -114,7 +114,7 @@ struct preparebuff : public rokz::cx::mappedbuffer_cb {
 // ------------------------------------------------------------------------------------------------
 bool setup_obj_resources (rekz::PolygonData& polyd, const std::string& data_root, const rokz::Device& device) { 
 
-  const rekz::platonic::Mesh& darkmesh = rekz::platonic::Octohedron (); 
+  const rekz::geomz::Mesh& darkmesh = rekz::geomz::Octohedron (); 
 
   const VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT
                                  | VK_BUFFER_USAGE_INDEX_BUFFER_BIT

@@ -72,14 +72,14 @@ DrawSequence::Ref rekz::onscreen::CreateDrawText (const onscreen::Data& dat, con
           pc.color    = glm::vec4 (0.9, 0.4, 0.8, 1.0f);
           pc.advance  = glm::vec4 (16.0f, 0.0f, 0.0f, 0.0f);
           pc.position = glm::vec4 (32.0f, -64.0f, -1.0f, 0.0f);
-          //     Y
+          //    +Y
           //     ^
           //     |
           //     |
           //     |
           //     |
           //     |
-          // ----+------------> X
+          // ----+------------> +X
           //     | 
           //     |  [x] text n this quad, kinda awkward
           //     |
