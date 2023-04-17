@@ -411,15 +411,16 @@ namespace rokz {
   // --------------------------------------------------------
   struct FrameSync {
     // This should actually be called FrameSync
-    FrameSync () : image_available_sem (), render_finished_sem (), in_flight_fen () {
+    FrameSync () : image_available_sem (), render_finished_sem (), in_flight_fence () {
     }
     
     VkSemaphore image_available_sem;
     VkSemaphore render_finished_sem;
-    VkFence     in_flight_fen;
+    VkFence     in_flight_fence;
 
     FrameSyncCreateInfo ci;
   };
+
   // ------------------------------------------------------------------------------------------
   struct FrameSyncGroup {
     //
@@ -429,6 +430,7 @@ namespace rokz {
     Vec<FrameSync> syncs;
   }; 
 
+  
 } // namespace rokz
 
 #endif

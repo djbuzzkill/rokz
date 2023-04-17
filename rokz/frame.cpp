@@ -88,7 +88,7 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
   submit_info.commandBufferCount   = 1;
   submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
 
-  if (vkQueueSubmit (device.queues.graphics, 1, &submit_info, framesync.in_flight_fen) != VK_SUCCESS) {
+  if (vkQueueSubmit (device.queues.graphics, 1, &submit_info, framesync.in_flight_fence) != VK_SUCCESS) {
     printf("failed to submit draw command buffer!");
     return false; 
   }

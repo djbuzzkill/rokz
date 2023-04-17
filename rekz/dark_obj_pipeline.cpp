@@ -12,19 +12,11 @@ using namespace rokz;
 const VkVertexInputBindingDescription&        rekz::obz::kVertexInputBindingDesc   = rokz::kPNTx_InputBindingDesc;
 const Vec<VkVertexInputAttributeDescription>& rekz::obz::kVertexInputAttributeDesc = rokz::kPNTx_InputAttributeDesc; 
 
-
-// const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
-//   { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-//   { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
-// };
-
-const auto kObParamsBindingI  = 18;
-const auto kObTextureBindingI = 19;
-
+// 
 const DescriptorSetLayoutBindings rekz::obz::kDescriptorBindings = {
   { global_ub::MVP_SCENE_BINDINGI, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , 1                   , VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { kObParamsBindingI            , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
-  { kObTextureBindingI           , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
+  { rekz::obz::kParamsBindingI            , VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , rekz::obz::kMaxCount, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // array of structs per obj
+  { rekz::obz::kTextureBindingI           , VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, rekz::obz::kMaxCount, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // array of textures per obj
 };
 
 // ----------------------------------------------------------------------------------------------
@@ -123,7 +115,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     descriptor_writes[1].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[1].pNext            = nullptr;
     descriptor_writes[1].dstSet           = dss[i];
-    descriptor_writes[1].dstBinding       = kObParamsBindingI;       // does it match in shader?
+    descriptor_writes[1].dstBinding       = obz::kParamsBindingI;       // does it match in shader?
     descriptor_writes[1].dstArrayElement  = 0;
     descriptor_writes[1].descriptorType   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_writes[1].descriptorCount  = obparams.size(); // <
@@ -134,7 +126,7 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
     descriptor_writes[2].sType            = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[2].pNext            = nullptr;    
     descriptor_writes[2].dstSet           = dss[i];
-    descriptor_writes[2].dstBinding       = kObTextureBindingI;      // <-- change shader too
+    descriptor_writes[2].dstBinding       = obz::kTextureBindingI;      // <-- change shader too
     descriptor_writes[2].dstArrayElement  = 0;
     descriptor_writes[2].descriptorType   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; 
     descriptor_writes[2].descriptorCount  = imageinfos.size(); 

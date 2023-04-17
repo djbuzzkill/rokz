@@ -474,10 +474,18 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   for (size_t i = 0; i < Glob::MaxFramesInFlight; ++i) {
     // ^^ 'CreateCommandBuffers' should be called, we call it 
+
+    // command buffer for dispatching this frame
     rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], fsg.command_buffer_alloc_info, glob.device.handle);
+
+    // creates image_available, render_finished,and in_flight_fence
     rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);
   } 
 
+
+
+
+  
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   // RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION RENDER LOOP SECTION 
   const double time_per_frame_sec = 1.0 / 60.0;

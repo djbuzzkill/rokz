@@ -90,8 +90,8 @@ struct preparebuff : public rokz::cx::mappedbuffer_cb {
     assert (maxsize == geom::ComputeTotalSize (darkmesh));
 
     std::array<size_t, 4> asize = {
-      geom::ComputeVertexSize (darkmesh), 
-      geom::ComputeIndexSize  (darkmesh), 
+      geom::VertexSizeBytes (darkmesh), 
+      geom::IndexSizeBytes  (darkmesh), 
     };
 
     polyd.vertexoffs= ut::offset_at (asize, 0);    

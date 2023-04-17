@@ -21,8 +21,8 @@ bool rokz::cx::CreateFrameSync (FrameSync&      sync,
   create_info.fence.flags = VK_FENCE_CREATE_SIGNALED_BIT;
   create_info.fence.pNext = nullptr;
   if (vkCreateSemaphore(device, &create_info.semaphore, nullptr, &sync.image_available_sem) != VK_SUCCESS
-      || vkCreateSemaphore(device, &create_info.semaphore, nullptr, &sync.render_finished_sem) != VK_SUCCESS
-      || vkCreateFence(device, &create_info.fence, nullptr, &sync.in_flight_fen) != VK_SUCCESS)
+   || vkCreateSemaphore(device, &create_info.semaphore, nullptr, &sync.render_finished_sem) != VK_SUCCESS
+   || vkCreateFence(device, &create_info.fence, nullptr, &sync.in_flight_fence) != VK_SUCCESS)
     {
       printf ("[FAILED]--> create sync objects\n");
       return false; 
@@ -40,9 +40,8 @@ void rokz::cx:: Destroy (rokz::FrameSync& sync, const rokz::Device& device) {
     sync.image_available_sem = VK_NULL_HANDLE;
     vkDestroySemaphore(device.handle, sync.render_finished_sem, nullptr);
     sync.render_finished_sem = VK_NULL_HANDLE;
-
-    vkDestroyFence (device.handle, sync.in_flight_fen, nullptr);
-    sync.in_flight_fen = VK_NULL_HANDLE;
+    vkDestroyFence (device.handle, sync.in_flight_fence, nullptr);
+    sync.in_flight_fence = VK_NULL_HANDLE; 
 }
 
 // ---------------------------------------------------------------------------------------------

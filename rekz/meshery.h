@@ -15,7 +15,6 @@ namespace rekz {
     template<typename VTy, typename IndTy>
     struct GeometryData {
 
-      
       typedef  VTy         VertexType; 
       typedef  IndTy       IndexType; 
 
@@ -30,22 +29,21 @@ namespace rekz {
       Vec<IndTy> indices;
     }; 
 
-
-
     // ----------------------------------------------------------------------------------------------
     //                           
     // ----------------------------------------------------------------------------------------------
     template<typename VTy, typename IndTy> inline size_t
-    ComputeVertexSize (const rekz::geom::GeometryData<VTy, IndTy>& geom) {
+    VertexSizeBytes (const rekz::geom::GeometryData<VTy, IndTy>& geom) {
 
+      
+      
       return geom.verts.size () * rekz::geom::GeometryData<VTy, IndTy>::VertexSize ; 
     }
     // ----------------------------------------------------------------------------------------------
     //                           
     // ----------------------------------------------------------------------------------------------
     template<typename VTy, typename IndTy> inline size_t
-    ComputeIndexSize (const rekz::geom::GeometryData<VTy, IndTy>& geom) {
-
+    IndexSizeBytes (const rekz::geom::GeometryData<VTy, IndTy>& geom) {
       return geom.indices.size () * rekz::geom::GeometryData<VTy, IndTy>::IndexSize; 
     }
 
@@ -54,7 +52,7 @@ namespace rekz {
     // ----------------------------------------------------------------------------------------------
     template<typename VTy, typename IndTy> inline size_t
     ComputeTotalSize (const rekz::geom::GeometryData<VTy, IndTy>& geom) {
-      return ComputeIndexSize (geom) + ComputeVertexSize (geom); 
+      return IndexSizeBytes (geom) + VertexSizeBytes (geom); 
     }
     
     // ----------------------------------------------------------------------------------------------
@@ -62,8 +60,6 @@ namespace rekz {
     // ----------------------------------------------------------------------------------------------
     template<typename VTy> 
     using TriMesh = GeometryData<VTy, uint16_t>; 
-  
-
   }}
 
 

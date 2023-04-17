@@ -714,7 +714,7 @@ void Destroy (rokz::FrameSyncGroup& fsg, const rokz::Device& device) {
   for (size_t i = 0; i < fsg.syncs.size (); ++i) {
     vkDestroySemaphore(device.handle, fsg.syncs[i].image_available_sem, nullptr);
     vkDestroySemaphore(device.handle, fsg.syncs[i].render_finished_sem, nullptr);
-    vkDestroyFence (device.handle, fsg.syncs[i].in_flight_fen, nullptr);
+    vkDestroyFence (device.handle, fsg.syncs[i].in_flight_fence, nullptr);
   }
 
 
@@ -762,7 +762,7 @@ void rokz::Cleanup (VkPipeline&                      pipeline,
   for (size_t i = 0; i < fsyncs.size (); ++i) {
     vkDestroySemaphore(device.handle, fsyncs[i].image_available_sem, nullptr);
     vkDestroySemaphore(device.handle, fsyncs[i].render_finished_sem, nullptr);
-    vkDestroyFence (device.handle, fsyncs[i].in_flight_fen, nullptr);
+    vkDestroyFence (device.handle, fsyncs[i].in_flight_fence, nullptr);
   }
 
   for (auto shmod : shader_modules) {

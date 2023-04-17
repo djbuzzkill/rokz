@@ -38,9 +38,25 @@ namespace rekz {
     typedef rokz::PNTx_Vert Vert;
 
     typedef rekz::geom::TriMesh<Vert> Mesh;
+      
 
-    const Mesh& Octohedron ();
-    const Mesh& Cube (); 
+    struct PT { enum GEOM_TYPE { 
+      CUBE = 0,
+      OCTOHEDRON, 
+      //
+      NUM_GEOM_TYPES} ;
+    };
+
+    extern const std::array<geomz::Mesh, PT::NUM_GEOM_TYPES> Geomz;
+
+    inline const Mesh& Octohedron () {
+      return Geomz[PT::OCTOHEDRON]; 
+    }
+
+    inline const Mesh& Cube () {
+      return Geomz[PT::CUBE]; 
+    }
+    
   }
 
   // ---------------------------------------------------------------------------------------

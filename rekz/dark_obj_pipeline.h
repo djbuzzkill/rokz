@@ -11,7 +11,11 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   namespace obz {   
 
-    typedef rokz::PNCTx_Vert                             Vertex; 
+
+    const auto kParamsBindingI  = 18;
+    const auto kTextureBindingI = 19;
+
+    //typedef rokz::PNCTx_Vert                             Vertex; 
     // ----------------------------------------------------------------------------------------------
     const size_t                                         kMaxCount = 128; // y?
     extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;   
