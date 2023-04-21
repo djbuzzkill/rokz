@@ -45,6 +45,7 @@ set (ROKZ_HEADER_FILES
   rc_image.hpp
   rc_attachment.hpp
   rc_swapchain.hpp
+  rc_sync.hpp
   rokz.hpp
   transfer_buffer.hpp
   transfer_image.hpp
@@ -89,6 +90,7 @@ set (ROKZ_SOURCE_FILES
   rc_types.cpp
   rc_image.cpp
   rc_swapchain.cpp
+  rc_sync.cpp
   rokz.cpp
   synchronization.cpp
 
