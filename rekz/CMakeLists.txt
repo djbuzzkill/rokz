@@ -25,7 +25,7 @@ set (REKZ_HEADER_FILES
   drawmarz.h
   image_loader.h
   image_tool.h
-  nacho.hpp
+  milkshake.h
 )
 	
 set (REKZ_SOURCE_FILES
@@ -45,7 +45,7 @@ set (REKZ_SOURCE_FILES
   marz.cpp
   marzdata.cpp
   mars_files.cpp
-  nacho.cpp
+  milkshake.cpp
   onscreen_data.cpp
   onscreen_draw.cpp
   onscreen_pipe.cpp

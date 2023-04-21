@@ -3,49 +3,11 @@
 
 #include "render.hpp"
 #include "command.hpp"
+#include "render.hpp"
 
 
 
 using namespace rokz;
-// ----------------------------------------------------------------------------------------------
-//                                  
-// ----------------------------------------------------------------------------------------------
-VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync,
-                           uint32_t& image_index, const Device&  device) {
-
-  vkWaitForFences (device.handle, 1, &render_sync.in_flight_fence, VK_TRUE, UINT64_MAX);
-    
-  VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
-                                                swapchain,
-                                                UINT64_MAX,
-                                                render_sync.image_available_sem,
-                                                VK_NULL_HANDLE,
-                                                &image_index);
-
-  vkResetFences (device.handle, 1, &render_sync.in_flight_fence);
-  return acquire_res; 
-
-}
-
-// --------------------------------------------------------------------
-//
-// --------------------------------------------------------------------
-VkPresentInfoKHR& cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
-                                   const std::vector<VkSwapchainKHR>& swapchains,
-                                   const std::vector<VkSemaphore>& signal_sems) { 
-
-  //printf ("SIZE --> signal_sems[%zu]\n", signal_sems.size()); 
-  pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-  pi.pNext              = nullptr;
-
-  pi.waitSemaphoreCount = signal_sems.size();  // = { render_sync.render_finished_sem };
-  pi.pWaitSemaphores    = &signal_sems[0];
-  pi.swapchainCount     = swapchains.size ();
-  pi.pSwapchains        = &swapchains[0];
-  pi.pImageIndices      = &image_index;
-  pi.pResults           = nullptr;
-  return pi;
-}
 
 // ---------------------------------------------------------------------
 // 

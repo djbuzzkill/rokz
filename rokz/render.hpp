@@ -9,15 +9,6 @@
 #include <vulkan/vulkan_core.h>
 
 namespace rokz { namespace cx { 
-    // ----------------------------------------------------------------------------
-    // 
-    // ----------------------------------------------------------------------------
-    VkPresentInfoKHR& PresentInfo  (VkPresentInfoKHR& pi, uint32_t& image_index, const std::vector<VkSwapchainKHR>& swapchains,  const std::vector<VkSemaphore>& signal_sems); 
-
-    //VkResult          AcquireFrame (Swapchain& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
-    VkResult          AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
-
-    //bool              PresentFrame (VkQueue present_que, const Swapchain& swapchain, uint32_t& image_index, const FrameSync& render_sync); 
 
     // ----------------------------------------------------------------------------
     // dyanmic rendering | vk 1.3

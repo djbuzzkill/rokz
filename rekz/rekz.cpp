@@ -17,7 +17,7 @@ int run_marz (const Vec<std::string>& args);
 int tile_tool (const Vec<std::string>& args); 
 int font_tool (const Vec<std::string>& args); 
 int stonk (const Vec<std::string>& args); 
-int nacho_cheese (const Vec<std::string>& args); 
+int run_milkshake (const Vec<std::string>& args); 
 
 // -------------------------------------------------------------------------------------------
 int main (int argv, char** argc) {
@@ -34,7 +34,7 @@ int main (int argv, char** argc) {
     {"tilez"        , tile_tool},
     {"fontz"        , font_tool },
     {"stonk"        , stonk },
-    {"nacho"        , nacho_cheese } , 
+    {"milkshake"    , run_milkshake } , 
 
   };
 

@@ -49,13 +49,8 @@ namespace rekz {
 
     extern const std::array<geomz::Mesh, PT::NUM_GEOM_TYPES> Geomz;
 
-    inline const Mesh& Octohedron () {
-      return Geomz[PT::OCTOHEDRON]; 
-    }
-
-    inline const Mesh& Cube () {
-      return Geomz[PT::CUBE]; 
-    }
+    inline const Mesh& Octohedron () { return Geomz[PT::OCTOHEDRON]; }
+    inline const Mesh& Cube       () { return Geomz[PT::CUBE];  }
     
   }
 

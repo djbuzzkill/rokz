@@ -165,7 +165,7 @@ struct MarzLoop {
                                         glob.swapchain_group.imageviews[image_index]->handle);
 
       // Transitioning Layout and stuff in here, BeginCommandBuffer is called here
-      rc::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
+      cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
                           image_index, glob.rendering_info_group.ri, glob.device);
 
       // EXECUTE DRAW LIST RECORDING 
@@ -184,7 +184,7 @@ struct MarzLoop {
       glob.grid.draw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
 
       // we are done, submit
-      rc::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
+      cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                     image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
     }
     

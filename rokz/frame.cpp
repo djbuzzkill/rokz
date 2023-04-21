@@ -7,31 +7,31 @@
 
 
 using namespace rokz;
-// ------------------------------------------------------------------------------------------------
-//
-// ------------------------------------------------------------------------------------------------
-bool cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
-  //rokz::cx::FrameGroup& frame_group = glob.frame_group;
- return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
+// ----------------------------------------------------------------------------------------------
+// wait_on:image_avaialble, acquire swapchain image after ->  sit_on:in_flight
+// ----------------------------------------------------------------------------------------------
+VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync,
+                           uint32_t& image_index, const Device&  device) {
+
+  vkWaitForFences (device.handle, 1, &render_sync.in_flight_fence, VK_TRUE, UINT64_MAX);
+    
+  VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
+                                                swapchain,
+                                                UINT64_MAX,
+                                                render_sync.image_available_sem,
+                                                VK_NULL_HANDLE,
+                                                &image_index);
+
+  vkResetFences (device.handle, 1, &render_sync.in_flight_fence);
+  return acquire_res; 
+
 }
 
-// ------------------------------------------------------------------------------------------------
-//
-// ------------------------------------------------------------------------------------------------
-bool rc::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
-
-  std::vector<VkSemaphore>     signal_sems = { render_sync.render_finished_sem };
-  std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
-
-  VkPresentInfoKHR pi {};
-
- return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, signal_sems));
-}
 
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int rc::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
+int cx::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                               uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
 
   //rc::Swapchain::Ref& swapchain = scg.swapchain;
@@ -63,9 +63,9 @@ int rc::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
 
 
 // ------------------------------------------------------------------------------------------------
-//
+// wait_on:image_available, signal:render_finished, sit_on:in_flight
 // ------------------------------------------------------------------------------------------------
-int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
+int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
 
   vkCmdEndRendering (command_buffer);
   //
@@ -81,10 +81,13 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
   VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
   submit_info.pWaitDstStageMask    = wait_stages;
+
   submit_info.waitSemaphoreCount   = 1;
   submit_info.pWaitSemaphores      = wait_semaphores;
+
   submit_info.signalSemaphoreCount = 1; 
   submit_info.pSignalSemaphores    = signal_semaphores; 
+
   submit_info.commandBufferCount   = 1;
   submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
 
@@ -99,11 +102,49 @@ int rc::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, u
                              device.queues.graphics,
                              device.command_pool.handle, device.handle);
 
-  if (!rc::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
+  if (!cx::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
     return __LINE__;
   }
 
   return 0;
 
+}
+
+// --------------------------------------------------------------------
+// can present after -> wait_on:render_finished
+// --------------------------------------------------------------------
+VkPresentInfoKHR& cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
+                                   const std::vector<VkSwapchainKHR>& swapchains,
+                                   const std::vector<VkSemaphore>& wait_sems) { 
+
+  //printf ("SIZE --> signal_sems[%zu]\n", signal_sems.size()); 
+  pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  pi.pNext              = nullptr;
+  pi.waitSemaphoreCount = wait_sems.size();  // = { render_sync.render_finished_sem };
+  pi.pWaitSemaphores    = &wait_sems[0];
+  pi.swapchainCount     = swapchains.size ();
+  pi.pSwapchains        = &swapchains[0];
+  pi.pImageIndices      = &image_index;
+  pi.pResults           = nullptr;
+  return pi;
+}
+// ------------------------------------------------------------------------------------------------
+// wait_on:render_finished
+// ------------------------------------------------------------------------------------------------
+bool cx::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
+
+  std::vector<VkSemaphore>     wait_sems = { render_sync.render_finished_sem };
+  std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
+
+  VkPresentInfoKHR pi {};
+
+ return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, wait_sems));
+}
+// ------------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------------
+bool cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) { 
+  //rokz::cx::FrameGroup& frame_group = glob.frame_group;
+ return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
 }
 
