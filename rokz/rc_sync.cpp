@@ -27,6 +27,14 @@ rc::Semaphore::Ref CreateSemaphore (const Device& dev)  {
 }
 
 
+rc::Semaphore::~Semaphore () {
+
+  if (this->handle) { 
+    vkDestroySemaphore (device.handle, handle, nullptr);
+    handle = VK_NULL_HANDLE;
+  }
+  
+}
 
 // -----------------------------------------------------------------------------------
 //
@@ -43,4 +51,12 @@ rc::Fence::Ref CreateFence (VkFenceCreateFlagBits flags, const Device& device) {
     return rc::Fence::Ref (nullptr);
   
   return res; 
+}
+
+rc::Fence::~Fence () {
+
+  if (handle) { 
+      vkDestroyFence ( device.handle, handle, nullptr);
+      handle = VK_NULL_HANDLE;
+  }
 }

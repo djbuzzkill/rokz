@@ -19,7 +19,7 @@ namespace rokz { namespace rc {
       }
 
 
-      virtual ~Semaphore () { }
+      virtual ~Semaphore ();
 
     }; 
 
@@ -33,6 +33,8 @@ namespace rokz { namespace rc {
 
       Fence (const Device& dev) : deviceob (dev) {
       }
+
+      virtual ~Fence ();
 
       
     };
