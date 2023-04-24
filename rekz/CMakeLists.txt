@@ -10,6 +10,7 @@ set (REKZ_HEADER_FILES
   meshery.h
   rekz.h
   dark_types.h
+  dust_pipe.h
   marz.h
   darkrootgarden.h
   drawpolygon.h
@@ -27,16 +28,18 @@ set (REKZ_HEADER_FILES
   image_tool.h
   milkshake.h
 )
-	
+
+
 set (REKZ_SOURCE_FILES
   drawgrid.cpp  
   darkrootgarden.cpp
+  darkpolydata.cpp
   dark_obj_pipeline.cpp
   darkthings.cpp
   drawmarz.cpp
   drawwireframe.cpp
   drawpolygon.cpp
-  darkpolydata.cpp
+  dust_pipe.cpp
   font_tool.cpp
   griddata.cpp
   grid_pipeline.cpp  

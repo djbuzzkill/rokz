@@ -13,14 +13,8 @@ namespace rokz { namespace rc {
     // -----------------------------------------------------------------------------------
 
     struct Semaphore : public deviceob<VkSemaphore, Semaphore> {
-
-      Semaphore (const Device& dev): deviceob(dev) {
-
-      }
-
-
+      Semaphore (const Device& dev): deviceob(dev) {}
       virtual ~Semaphore ();
-
     }; 
 
     // -------------------------------------------------------------
@@ -30,17 +24,11 @@ namespace rokz { namespace rc {
     //
     // -----------------------------------------------------------------------------------
     struct Fence : public deviceob<VkFence, Fence> {
-
-      Fence (const Device& dev) : deviceob (dev) {
-      }
-
+      Fence (const Device& dev) : deviceob (dev) {}
       virtual ~Fence ();
-
-      
     };
-    
+    //
     Fence::Ref CreateFence (VkFenceCreateFlagBits flags, const Device& device);
-    
 
     
   }}

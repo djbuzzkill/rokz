@@ -9,28 +9,6 @@
 namespace rokz { namespace cx {
 
 
-    /* -- order of things ----------------------------------------------------------
-
-          +--->---+
-          |       |                            
-          |       V                            
-          |   acquire_frame: signal:image_avaialble | wait_on:in_flight
-          |       |
-          |       V
-          |   draw_begin: nada 
-          ^       |
-          |       V
-          |   draw_end: wait:image_available | signal:render_finished |
-          |             signal_on:in_flight | wait_for:COLOR_ATTACHMENT_OUTPUT
-          |       |
-          |       V
-          |  present_Frame: wait:render_finished | 
-          |       |                            
-          |       |                            
-          +---<---+
-
-    ;; ------------------------------------------------------------------------- */
-
     bool PresentFrame   (VkQueue present_que, const VkPresentInfoKHR& pi); 
 
     // ----------------------------------------------------------------------------
@@ -58,27 +36,5 @@ namespace rokz { namespace cx {
   }}
 
 
-//
-//        +-------------<-----------<--------------<------------ +           
-//        |                                                      |           
-//        V                                                      ^           
-//    acquire_frame: signal:image_avaialble | wait_on:in_flight  |           
-//        |                                                      |           
-//        V                                                      ^           
-//    draw_geom: wait:image_available  | signal:geombuffer       |           
-//        |                                                      |           
-//        V                                                      |           
-//    draw_light: wait:geombuffer | signal:lighting_finished     |           
-//        |                                                      ^           
-//        V                                                      |           
-//    draw_end: wait:lighting_finished | signal:render_finished  |
-//        |          | wait_for:COLOR_ATTACHMENT_OUTPUT          |           
-//        |                                                      |           
-//        V                                                      ^           
-//    present_Frame: wait:render_finished                        |           
-//        |                                                      |           
-//        |                                                      |           
-//        +----------->--------------->------------>------------ +           
-//
 
 #endif
