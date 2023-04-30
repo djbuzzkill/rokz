@@ -1,6 +1,9 @@
 #version 460
 
+
+// -- dorito_comp_frag.frag 
 #include "dusty.h"
+
 //        .vert - a vertex shader
 //        .tesc - a tessellation control shader
 //        .tese - a tessellation evaluation shader

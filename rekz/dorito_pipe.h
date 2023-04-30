@@ -1,7 +1,7 @@
 
 
-#ifndef DUST_PIPE_INCLUDE
-#define DUST_PIPE_INCLUDE
+#ifndef DORITO_PIPE_INCLUDE
+#define DORITO_PIPE_INCLUDE
 
 
 #include "rekz.h"
