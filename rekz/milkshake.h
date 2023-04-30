@@ -42,7 +42,7 @@ namespace milkshake {
   };
 
   // ---------------------------------------------------------------------------------------
-  struct dustsync  {
+  struct doritosync  {
     //
     // may need a new syncgroup type
     VkSemaphore sem_image_available;  // signaled when avaiable
@@ -51,19 +51,26 @@ namespace milkshake {
     VkFence     fence_in_flight;      // flag bit set when present que done
   };
 
-
   struct PerFrameSet {
     VkCommandBuffer command_buffer;  
-    dustsync        sync;
+    doritosync        sync;
   }; 
       
+  enum AttachmentTypes {
+
+    ATT_POSITION = 0, ATT_NORMAL, ATT_ALBEDO, // AT_SPECULAR,
+
+    NUM_ATTACHMENT_TYPES
+  }; 
   // ---------------------------------------------------------------------------------------
   struct Glob : public Basically {
 
 
     Glob () : Basically {} {
     }
-      
+
+
+
     // attachement set
     rc::SwapchainGroup      swapchain_group;
 
@@ -79,11 +86,10 @@ namespace milkshake {
     DescriptorGroup        grid_de;     
     DescriptorSetLayout    grid_dslo;          // global r 'shared global' descr's
 
-    DescriptorGroup        dust_de;     
-    DescriptorSetLayout    dust_dslo;          // global r 'shared global' descr's
+    DescriptorGroup        dorito_de;     
+    DescriptorSetLayout    dorito_dslo;          // global r 'shared global' descr's
 
-    
-    std::array<PerFrameSet, kMaxFramesInFlight>   framesets;
+    Arr<PerFrameSet, kMaxFramesInFlight>   framesets;
 
     //FrameSyncGroup         framesyncgroup;
     //DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's
@@ -106,10 +112,10 @@ namespace milkshake {
 
 
     
-    PipelineLayout    dust_plo;
-    Pipeline          dust_pipe;
+    PipelineLayout    dorito_plo;
+    Pipeline          dorito_pipe;
 
-    DrawSequence::Ref draw_dust;
+    DrawSequence::Ref draw_doritos;
 
   }; 
   // ---------------------------------------------------------------------------------------

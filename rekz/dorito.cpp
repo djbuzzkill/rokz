@@ -1,12 +1,12 @@
 
-#include "dust_pipe.h"
+#include "dorito.h"
 
 
 using namespace rokz;
 
 
 
-bool dust::InitPipeline (Pipeline&                    pipeline,
+bool dorito::InitPipeline (Pipeline&                  pipeline,
                          PipelineLayout&              plo,
                          Vec<VkDescriptorSetLayout>&  dslos,
                          VkSampleCountFlagBits        msaa_samples,
@@ -19,9 +19,12 @@ bool dust::InitPipeline (Pipeline&                    pipeline,
   assert (false); 
 
 
+  pipe_path/"dorito/dorito_comp_vert.vert";
+  pipe_path/"dorito/dorito_comp_frag.frag";
 
 
-
+  pipe_path/"dorito/dorito_gbuf_frag.frag";
+  pipe_path/"dorito/dorito_gbuf_vert.vert";
 
   return true;
 }
@@ -29,7 +32,7 @@ bool dust::InitPipeline (Pipeline&                    pipeline,
     // ----------------------------------------------------------------------------------------
     // set 0= Global  descriptors ,  set 1= landscape descriptors
     // ----------------------------------------------------------------------------------------
-bool dust::BindDescriptorResources (Vec<VkDescriptorSet>&      dss,
+bool dorito::BindDescriptorResources (Vec<VkDescriptorSet>&      dss,
                                     const DescriptorSetLayout& dslayout, //const rokz::DescriptorPool& descpool,
                                     const Device&              device) {
 
@@ -37,3 +40,8 @@ bool dust::BindDescriptorResources (Vec<VkDescriptorSet>&      dss,
   
   return true; 
 }
+
+
+
+
+

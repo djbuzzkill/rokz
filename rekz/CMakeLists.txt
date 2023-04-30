@@ -10,7 +10,7 @@ set (REKZ_HEADER_FILES
   meshery.h
   rekz.h
   dark_types.h
-  dust_pipe.h
+  dorito.h
   marz.h
   darkrootgarden.h
   drawpolygon.h
@@ -39,7 +39,7 @@ set (REKZ_SOURCE_FILES
   drawmarz.cpp
   drawwireframe.cpp
   drawpolygon.cpp
-  dust_pipe.cpp
+  dorito.cpp
   font_tool.cpp
   griddata.cpp
   grid_pipeline.cpp  

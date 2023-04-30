@@ -2,8 +2,10 @@
 #include "milkshake.h"
 #include "rokz/attachment.hpp"
 
-#include "dust_pipe.h"
+#include "dorito.h"
 #include "rokz/context.hpp"
+#include "rokz/rc_image.hpp"
+#include <vulkan/vulkan_core.h>
 
 
 using namespace rokz; 
@@ -16,9 +18,6 @@ const VkExtent2D kDefaultDimensions { 1024, 768 };
 void cleanup_milkshake (milkshake::Glob& glob) {
 
 }
-
-
-
 
 // --------------------------------------------------------------------------------------------
 //
@@ -38,17 +37,83 @@ struct MilkLoop {
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-bool SetupColorRenderAttachment (); 
+bool setup_color_render_attachments (milkshake::Glob& glob) {
 
+  using namespace milkshake;
+
+  const Device& device = glob.device; 
+  const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
+  const VkImageUsageFlags color_target_usage   = rokz::kColorTargetUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
+  const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
+
+  glob.msaa_samples = sample_bit_count; 
+  
+  Vec<rc::Image::Ref>&     color_targets = glob.colortargets; 
+  Vec<rc::ImageView::Ref>& color_views   = glob.colorviews; 
+
+  color_targets.resize (NUM_ATTACHMENT_TYPES);   
+  color_views  .resize (NUM_ATTACHMENT_TYPES); 
+
+  { // position
+    VkImageCreateInfo ci {}; 
+
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+  
+    color_targets[ATT_POSITION] =  rc::CreateImage (ci, device);
+    // create imageview...
+    assert (false); 
+  }
+
+  { // normal
+    VkImageCreateInfo ci {}; 
+
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+    color_targets[ATT_NORMAL] =  rc::CreateImage (ci, device);
+    // create imageview...
+    assert (false); 
+
+  }
+
+  { // albedo
+    VkImageCreateInfo ci {}; 
+
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+
+    color_targets[ATT_ALBEDO] =  rc::CreateImage (ci, device);
+    // create imageview...
+    assert (false); 
+  }
+
+  // { // specular
+            
+  // }
+  
+  { // depth 
+    VkImageCreateInfo ci {}; 
+    rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
+  
+    cx::CreateInfo_2D (ci, glob.depth_format, depth_target_usage, sample_bit_count, 
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+
+    //glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+    glob.depthimage = rc::CreateImage (ci, device); 
+
+    // create imageview...
+    assert (false); 
+  }
+
+  return true; 
+}
 
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-rokz::SwapchainResetter::Ref  CreateDustyResetter () {
-
+rokz::SwapchainResetter::Ref  CreateResetDorito () {
   assert (false); 
-
-  struct dusty_resetter : public SwapchainResetter {
+  struct dorito_resetter : public SwapchainResetter {
     
   public:
     virtual bool Reset (const rokz::Display& display, const rokz::Device& device) {
@@ -59,7 +124,7 @@ rokz::SwapchainResetter::Ref  CreateDustyResetter () {
   };
 
 
-  return std::make_shared<dusty_resetter> (); 
+  return std::make_shared<dorito_resetter> (); 
   
 }
 // --------------------------------------------------------------------------------------------
@@ -70,8 +135,8 @@ int milkshake::run (const Vec<std::string>& args) {
 
   milkshake::Glob glob; 
 
-  rc::SwapchainGroup&  scg   = glob.swapchain_group;
-  std::array<PerFrameSet, milkshake::kMaxFramesInFlight>& framsets = glob.framesets; 
+  rc::SwapchainGroup&                   scg      = glob.swapchain_group;
+  Arr<PerFrameSet, kMaxFramesInFlight>& framsets = glob.framesets; 
 
 
   glob.mouse_prev.x = 0;
@@ -86,7 +151,7 @@ int milkshake::run (const Vec<std::string>& args) {
   
   rokz::InitializeInstance (glob.instance); 
 
-  rekz::SetupDisplay (glob.display, "marz", glob.input_state, kDefaultDimensions , glob.instance); 
+  rekz::SetupDisplay (glob.display, "milkshake", glob.input_state, kDefaultDimensions , glob.instance); 
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
@@ -108,18 +173,13 @@ int milkshake::run (const Vec<std::string>& args) {
   const size_t NuberOfColorTargets = 2; 
   // SetupColorRenderAttachment ( glob.colortargets, glob.colorviews, NuberOfColorTargets,  );
   // SetupColorRenderAttachment ();
-  SetupColorRenderAttachment;   
+
+
+
+  //rc::SetupMSAARenderingAttachments
+  setup_color_render_attachments (glob); 
   
-  // rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
-  //                                    glob.depth_image, glob.depth_imageview,
-  //                                    glob.msaa_samples, scg.image_format,
-  //                                    glob.depth_format, scg.extent,
-  //                                    glob.device); // <-- this does all the additional  attachmentes
-  // //
-
-
-
-  glob.swapchain_resetter =   CreateDustyResetter () ; 
+  glob.swapchain_resetter =  CreateResetDorito () ; 
   // rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
   //                                                        glob.depth_image, glob.depth_imageview,
   //                                                        glob.msaa_color_image, glob.msaa_color_imageview); 
@@ -131,9 +191,9 @@ int milkshake::run (const Vec<std::string>& args) {
 
   
   // define first 
-  rokz::DefineDescriptorSetLayout (glob.grid_dslo, dust::kDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.grid_dslo, dorito::kDescriptorBindings, glob.device); 
 
-  rokz::DefineDescriptorSetLayout (glob.dust_dslo, dust::kDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.dorito_dslo, dorito::kDescriptorBindings, glob.device); 
 
   
   //

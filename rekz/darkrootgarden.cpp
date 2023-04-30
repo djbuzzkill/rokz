@@ -290,8 +290,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
   glob.mouse_prev.x = 0;
   glob.mouse_prev.y = 0;
 
-  systempath dark_path = "/home/djbuzzkill/owenslake/rokz/pipeline"; //
-  systempath data_path = "/home/djbuzzkill/owenslake/rokz/data";     // 
+  systempath dark_path = OWENS_LAKE"/rokz/pipeline"; //
+  systempath data_path = OWENS_LAKE"/rokz/data";     // 
 
   glfwInit();
   // CREATE INSTANCE AND DEVICE
