@@ -2,6 +2,7 @@
 
 
 // -- dorito_comp_frag.frag 
+
 #include "dusty.h"
 
 //        .vert - a vertex shader
@@ -26,4 +27,6 @@ void main() {
   out_color = texture (tex_sampler[pc.resource_id.x], txcrd2);
 
 }
+
+
 

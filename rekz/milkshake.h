@@ -42,20 +42,20 @@ namespace milkshake {
   };
 
   // ---------------------------------------------------------------------------------------
-  struct doritosync  {
+  struct rendersem  {
     //
     // may need a new syncgroup type
-    VkSemaphore sem_image_available;  // signaled when avaiable
-    VkSemaphore sem_gbuffers;         // sig'd when geom finished
-    VkSemaphore sem_lightpass;        // sig'd when final draw
-    VkFence     fence_in_flight;      // flag bit set when present que done
+    VkSemaphore image_available;  // signaled when avaiable
+    VkSemaphore gbuffers;         // sig'd when geom finished
+    VkSemaphore lightpass;        // sig'd when final draw
   };
 
-  struct PerFrameSet {
-    VkCommandBuffer command_buffer;  
-    doritosync        sync;
+  struct per_frame_set {
+    VkCommandBuffer commandbuf;  
+    rendersem       sem;
+    VkFence         inflight;      // flag bit set when present que done
   }; 
-      
+
   enum AttachmentTypes {
 
     ATT_POSITION = 0, ATT_NORMAL, ATT_ALBEDO, // AT_SPECULAR,
@@ -89,14 +89,13 @@ namespace milkshake {
     DescriptorGroup        dorito_de;     
     DescriptorSetLayout    dorito_dslo;          // global r 'shared global' descr's
 
-    Arr<PerFrameSet, kMaxFramesInFlight>   framesets;
-
-    //FrameSyncGroup         framesyncgroup;
-    //DescriptorSetLayout    landscape_dslo;       // global r 'shared global' descr's
+    //FrameSyncGroup       framesyncgroup;
+    //DescriptorSetLayout  landscape_dslo;       // global r 'shared global' descr's
     // descriptors sets
-    //DescriptorGroup        landscape_de; //
-    rekz::transform        viewer; // camera view matrix
+    //DescriptorGroup      landscape_de; //
+    Arr<per_frame_set, kMaxFramesInFlight>  sync; 
 
+    rekz::transform        viewer; // camera view matrix
     // DrawSequence stuff
     DrawSequence::Globals  shared;               
     //std::array<DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
@@ -109,8 +108,6 @@ namespace milkshake {
       DrawSequence::Ref draw;
       rc::Buffer::Ref   buff;
     } grid; 
-
-
     
     PipelineLayout    dorito_plo;
     Pipeline          dorito_pipe;
