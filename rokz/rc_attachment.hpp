@@ -11,6 +11,12 @@
 
 namespace rokz { namespace rc { 
 
+    // -- attachement -- 
+    struct Attachment {
+      rc::Image::Ref     image; // 
+      rc::ImageView::Ref view;  // 
+      VkFormat           format; 
+    };
     // ---------------------------------------------------------------------------------------------
     //                          
     // ---------------------------------------------------------------------------------------------
@@ -63,6 +69,15 @@ namespace rokz { namespace rc {
                                         const VkExtent2D&     image_ext, 
                                         const Device& device);
 
+    bool SetupMSAARenderingAttachments (Attachment&    msaa_color_attachment, 
+                                        VkFormat       swapchain_image_format ,
+
+                                        Attachment&    msaa_depth_attachment, 
+                                        VkFormat              msaa_depth_format      ,
+
+                                        VkSampleCountFlagBits msaa_samples           ,
+                                        const VkExtent2D&     image_ext, 
+                                        const Device& device);
   }}
 
 

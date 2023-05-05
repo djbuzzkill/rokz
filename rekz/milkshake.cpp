@@ -48,19 +48,18 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
 
   glob.msaa_samples = sample_bit_count; 
   
-  Vec<rc::Image::Ref>&     color_targets = glob.colortargets; 
-  Vec<rc::ImageView::Ref>& color_views   = glob.colorviews; 
-
-  color_targets.resize (NUM_ATTACHMENT_TYPES);   
-  color_views  .resize (NUM_ATTACHMENT_TYPES); 
+  Arr<rc::Attachment, NUM_COLOR_ATTACHMENTS>& colorattach = glob.attachment.color; 
+  rc::Attachment&                                   depthattach = glob.attachment.depth;
 
   { // position
     VkImageCreateInfo ci {}; 
 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
-  
-    color_targets[ATT_POSITION] =  rc::CreateImage (ci, device);
+
+    colorattach[COLATT_POSITION].format = VK_FORMAT_R16G16B16A16_SFLOAT; 
+    colorattach[COLATT_POSITION].image  = rc::CreateImage (ci, device);
+    colorattach[COLATT_POSITION].view   ; 
     // create imageview...
     assert (false); 
   }
@@ -70,7 +69,9 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
-    color_targets[ATT_NORMAL] =  rc::CreateImage (ci, device);
+    colorattach[COLATT_NORMAL].format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
+    colorattach[COLATT_NORMAL].image =  rc::CreateImage (ci, device);
+    colorattach[COLATT_NORMAL].view; 
     // create imageview...
     assert (false); 
 
@@ -82,7 +83,10 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
-    color_targets[ATT_ALBEDO] =  rc::CreateImage (ci, device);
+    colorattach[COLATT_ALBEDO].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    colorattach[COLATT_ALBEDO].image  = rc::CreateImage (ci, device);
+    colorattach[COLATT_ALBEDO].view ; 
+
     // create imageview...
     assert (false); 
   }
@@ -99,7 +103,7 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
     //glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
-    glob.depthimage = rc::CreateImage (ci, device); 
+    depthattach.image = rc::CreateImage (ci, device); 
 
     // create imageview...
     assert (false); 
@@ -135,8 +139,8 @@ int milkshake::run (const Vec<std::string>& args) {
 
   milkshake::Glob glob; 
 
-  rc::SwapchainGroup&                   scg      = glob.swapchain_group;
-  Arr<PerFrameSet, kMaxFramesInFlight>& framsets = glob.framesets; 
+  rc::SwapchainGroup&                     scg      = glob.swapchain_group;
+  Arr<per_frame_set, kMaxFramesInFlight>& sync = glob.sync; 
 
 
   glob.mouse_prev.x = 0;

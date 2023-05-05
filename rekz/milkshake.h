@@ -41,58 +41,61 @@ namespace milkshake {
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
   };
 
-  // ---------------------------------------------------------------------------------------
-  struct rendersem  {
-    //
+  // -- semsphores in group
+  struct nacho_sem  {
     // may need a new syncgroup type
     VkSemaphore image_available;  // signaled when avaiable
     VkSemaphore gbuffers;         // sig'd when geom finished
     VkSemaphore lightpass;        // sig'd when final draw
   };
-
+  // -- stuff per frame
   struct per_frame_set {
     VkCommandBuffer commandbuf;  
-    rendersem       sem;
+    nacho_sem       sem;
     VkFence         inflight;      // flag bit set when present que done
   }; 
 
-  enum AttachmentTypes {
+    // -- 
+    enum ColorAttachment {
 
-    ATT_POSITION = 0, ATT_NORMAL, ATT_ALBEDO, // AT_SPECULAR,
+      COLATT_POSITION = 0, COLATT_NORMAL, COLATT_ALBEDO, // AT_SPECULAR,
 
-    NUM_ATTACHMENT_TYPES
-  }; 
+      NUM_COLOR_ATTACHMENTS
+    }; 
+
+  
   // ---------------------------------------------------------------------------------------
   struct Glob : public Basically {
-
 
     Glob () : Basically {} {
     }
 
-
-
     // attachement set
     rc::SwapchainGroup      swapchain_group;
 
-    rc::Image::Ref          depthimage;          //
-    rc::ImageView::Ref      depthview;      //
 
-    Vec<rc::Image::Ref>     colortargets;     //  
-    Vec<rc::ImageView::Ref> colorviews; //
+    struct { 
+    // colrs, depthstencil..
+      Arr<rc::Attachment, NUM_COLOR_ATTACHMENTS> color; 
+      rc::Attachment                             depth; 
+    } attachment;
 
+    
     // uniformbundle
-    Vec<rc::Buffer::Ref>   global_bu;    // vma_shared_uniforms;
+    Vec<rc::Buffer::Ref>   global_bu;        // vma_shared_uniforms;
 
     DescriptorGroup        grid_de;     
-    DescriptorSetLayout    grid_dslo;          // global r 'shared global' descr's
+    DescriptorSetLayout    grid_dslo;        // global r 'shared global' descr's
 
     DescriptorGroup        dorito_de;     
-    DescriptorSetLayout    dorito_dslo;          // global r 'shared global' descr's
+    DescriptorSetLayout    dorito_dslo;      // global r 'shared global' descr's
 
     //FrameSyncGroup       framesyncgroup;
-    //DescriptorSetLayout  landscape_dslo;       // global r 'shared global' descr's
+    //DescriptorSetLayout  landscape_dslo;   // global r 'shared global' descr's
     // descriptors sets
     //DescriptorGroup      landscape_de; //
+
+    // -- is  this correct
     Arr<per_frame_set, kMaxFramesInFlight>  sync; 
 
     rekz::transform        viewer; // camera view matrix
