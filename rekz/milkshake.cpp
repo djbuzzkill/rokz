@@ -24,12 +24,156 @@ void cleanup_milkshake (milkshake::Glob& glob) {
 // --------------------------------------------------------------------------------------------
 struct MilkLoop {
 
+  milkshake::Glob& glob;
 
-  MilkLoop (milkshake::Glob& glob, double Dt) {
+  bool       run        = true;
+  uint32_t   curr_frame = 0; 
+  bool       result     = false;
+  int        countdown  = 6000;
+
+  const float Dt; 
+  std::chrono::system_clock::time_point then;
+
+  std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
+
+  
+
+  MilkLoop (milkshake::Glob& g, double dt) : glob (g), Dt (dt) {
   }
   
   bool cond () { return false; } 
-  bool loop () { return false; } 
+  bool loop () {
+
+
+
+    auto now = std::chrono::high_resolution_clock::now();    
+    
+    glfwPollEvents(); 
+
+    //UpdateRunState ();
+
+    // { 
+    //   char msg[64];
+    //   sprintf (msg, "OSD test: %i", countdown);
+    //   glob.osdata.strings[0] = msg;
+    // }
+      
+    // UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
+    // UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
+
+    //
+    rc::SwapchainGroup& scg = glob.swapchain_group; 
+    // get image index up here
+    uint32_t image_index; 
+    VkResult acquireres = rokz::cx::AcquireFrame  (scg.swapchain->handle,
+                                                   glob.sync[curr_frame].inflight, 
+                                                   glob.sync[curr_frame].sem.image_available,
+                                                   image_index, glob.device); 
+
+    // -------------------- ---------------------
+    if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
+      glob.input_state.fb_resize = false; 
+      glob.swapchain_resetter->Reset (glob.display, glob.device);
+      HERE ("#$A%"); 
+      return true;
+    }
+    else if (acquireres != VK_SUCCESS) {
+      printf("failed to acquire swap chain image!");
+      run = false;
+    }
+    else {
+      // ------------------------ Updaate b4 draw ----------------------------
+      //
+      //   update uniform here, but uniforms can also b update during DrawSeq::Prep ()
+      // 
+      //UpdateDarkUniforms (glob, curr_frame, Dt); 
+
+      //rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
+
+      // did not work as planned
+      //onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
+      
+      // make sure the correct swapchain image is used
+
+      assert (false); 
+      // rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
+      //                                   glob.swapchain_group.imageviews[image_index]->handle);
+
+      // ------------------------------- render pass start -------------------------------
+      // Transitioning Layout and stuff in here
+      // BeginCommandBuffer is called here
+
+      assert (false);
+      // cx::FramePassBegin;
+      
+      
+      // rokz::DrawSequence::RenderEnv poly_re {
+      //   glob.polys_pl, glob.polys_plo.handle, glob.shared, 
+      // };
+      // rokz::DrawSequence::RenderEnv grid_re {
+      //   glob.grid_pl, glob.grid_plo.handle, glob.shared, 
+      // };
+      // rokz::DrawSequence::RenderEnv osd_re  {
+      //   glob.osd_pl, glob.osd_plo.handle, glob.shared, 
+      // };
+
+      // cx::FrameDrawBegin (glob.swapchain_group, glob.sync[curr_frame].commandbuf,
+      //                     image_index, glob.rendering_info_group.ri, glob.device);
+
+      // EXECUTE DRAW LIST RECORDING 
+      // for drawseq's
+      // const std::vector<VkDescriptorSet> descrsets = {
+      //   glob.global_uniform_de.descrsets[curr_frame], glob.objres_uniform_de.descrsets[curr_frame]
+      // };
+
+      assert (false); 
+
+      // DRAW GEOM BUFF 
+
+
+      // cx::PassDrawEnd ();
+      assert (false);
+
+      // cx::FrameNextPass; 
+      
+      // DRAW LIGHT PASS
+      //
+      // glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
+      // glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
+      // // grid
+      // glob.drawgrid->Prep (curr_frame, grid_re, glob.device); 
+      // glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
+      // //
+      // // no more scene beyond here this is overlay now
+      // glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
+      // glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
+
+      // -- we are done, submit
+
+      
+      cx::FrameDrawEnd (glob.swapchain_group,
+                        glob.sync[curr_frame].commandbuf, 
+                        image_index,
+                        glob.sync[curr_frame].inflight,  
+                        glob.sync[curr_frame].sem.image_available,
+                        glob.sync[curr_frame].sem.lightpass, // render_finished ??
+                        //glob.framesyncgroup.syncs[curr_frame],
+                        glob.device);
+    }
+    
+    // how long did we take
+    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+    if (time_to_make_frame < time_per_frame) {
+      auto sleep_time = time_per_frame - time_to_make_frame;
+      std::this_thread::sleep_for(sleep_time);
+    }
+
+    curr_frame = (curr_frame + 1) % milkshake::kMaxFramesInFlight; 
+    then = now; // std::chrono::high_resolution_clock::now(); 
+    countdown--; 
+
+    return false;
+  } 
  
 };
 
@@ -139,7 +283,7 @@ int milkshake::run (const Vec<std::string>& args) {
 
   milkshake::Glob glob; 
 
-  rc::SwapchainGroup&                     scg      = glob.swapchain_group;
+  rc::SwapchainGroup&                     scg  = glob.swapchain_group;
   Arr<per_frame_set, kMaxFramesInFlight>& sync = glob.sync; 
 
 

@@ -10,9 +10,7 @@
 
 namespace rokz { namespace rc { 
 
-    
     //vkDestroySwapchainKHR ();
-
     struct Swapchain : public deviceob<VkSwapchainKHR, Swapchain> {
 
       Swapchain (const Device& d) : deviceob (d) {}

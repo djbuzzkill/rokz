@@ -41,6 +41,14 @@ namespace milkshake {
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
   };
 
+  // -- 
+  enum ColorAttachment {
+
+    COLATT_POSITION = 0, COLATT_NORMAL, COLATT_ALBEDO, // AT_SPECULAR,
+
+    NUM_COLOR_ATTACHMENTS
+  }; 
+  
   // -- semsphores in group
   struct nacho_sem  {
     // may need a new syncgroup type
@@ -48,23 +56,16 @@ namespace milkshake {
     VkSemaphore gbuffers;         // sig'd when geom finished
     VkSemaphore lightpass;        // sig'd when final draw
   };
-  // -- stuff per frame
+
+  // -- stuff per frame --
   struct per_frame_set {
+    // DEF - represent 2-pass rendering sequence geombuf, lightpass
     VkCommandBuffer commandbuf;  
     nacho_sem       sem;
     VkFence         inflight;      // flag bit set when present que done
   }; 
 
-    // -- 
-    enum ColorAttachment {
-
-      COLATT_POSITION = 0, COLATT_NORMAL, COLATT_ALBEDO, // AT_SPECULAR,
-
-      NUM_COLOR_ATTACHMENTS
-    }; 
-
-  
-  // ---------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
   struct Glob : public Basically {
 
     Glob () : Basically {} {
@@ -90,19 +91,12 @@ namespace milkshake {
     DescriptorGroup        dorito_de;     
     DescriptorSetLayout    dorito_dslo;      // global r 'shared global' descr's
 
-    //FrameSyncGroup       framesyncgroup;
-    //DescriptorSetLayout  landscape_dslo;   // global r 'shared global' descr's
-    // descriptors sets
-    //DescriptorGroup      landscape_de; //
-
     // -- is  this correct
     Arr<per_frame_set, kMaxFramesInFlight>  sync; 
 
     rekz::transform        viewer; // camera view matrix
     // DrawSequence stuff
     DrawSequence::Globals  shared;               
-    //std::array<DrawSequence::DescriptorMap, kMaxFramesInFlight> descriptormaps;
-    //DrawSequence::DescriptorLayoutMap  dslomap;
     // 
     // GRID
     struct Grid { 
