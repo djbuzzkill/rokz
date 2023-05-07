@@ -26,8 +26,6 @@ namespace rokz { namespace cx {
     int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
                          const VkRenderingInfo& ri, const Device& device);
     // 
-
-    
     int  FrameDrawEnd   (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                          uint32_t image_index, const FrameSync& framesync, const Device& device);
 
@@ -38,6 +36,8 @@ namespace rokz { namespace cx {
     // int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
     //                      const VkRenderingInfo& ri, const Device& device);
 
+    //
+    // -- no_frame_sync -- 
     int  FrameDrawEnd  (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                         uint32_t image_index,
 
@@ -46,18 +46,20 @@ namespace rokz { namespace cx {
                         VkSemaphore sem_render_finished,
                          
                         const Device& device); 
-
+    //
+    // -- no_frame_sync -- 
     bool PresentFrame (VkQueue present_que,
-                       const rc::Swapchain::Ref& swapchain,
                        uint32_t& image_index,
+                       const rc::Swapchain::Ref& swapchain,
                        const Vec<VkSemaphore>& waits) ; 
-
-
+    //
+    // -- no_frame_sync -- 
     VkResult AcquireFrame (VkSwapchainKHR& swapchain,
+                           uint32_t& image_index,
                            VkFence     fen_in_flight,
                            VkSemaphore sem_image_available,
                            //FrameSync& render_sync,
-                           uint32_t& image_index, const Device&  device); 
+                           const Device&  device); 
 
 
     

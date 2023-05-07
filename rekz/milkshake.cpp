@@ -117,8 +117,8 @@ struct MilkLoop {
       //   glob.osd_pl, glob.osd_plo.handle, glob.shared, 
       // };
 
-      // cx::FrameDrawBegin (glob.swapchain_group, glob.sync[curr_frame].commandbuf,
-      //                     image_index, glob.rendering_info_group.ri, glob.device);
+      cx::FrameDrawBegin (glob.swapchain_group, glob.sync[curr_frame].commandbuf,
+                          image_index, glob.rendering_info_group.ri, glob.device);
 
       // EXECUTE DRAW LIST RECORDING 
       // for drawseq's
@@ -131,13 +131,16 @@ struct MilkLoop {
       // DRAW GEOM BUFF 
 
 
-      // cx::PassDrawEnd ();
       assert (false);
 
+      // TRANSITION IMAGES 
+
+      // BIND DESCRIPTORS
+
       // cx::FrameNextPass; 
-      
+
       // DRAW LIGHT PASS
-      //
+
       // glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
       // glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
       // // grid
@@ -147,8 +150,6 @@ struct MilkLoop {
       // // no more scene beyond here this is overlay now
       // glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
       // glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
-
-      // -- we are done, submit
 
       
       cx::FrameDrawEnd (glob.swapchain_group,
@@ -388,3 +389,5 @@ int milkshake::run (const Vec<std::string>& args) {
   
   return 0; 
 }
+
+
