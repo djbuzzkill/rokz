@@ -9,24 +9,24 @@
 
 using namespace rokz;
 // ----------------------------------------------------------------------------------------------
-// wait_on:image_avaialble, acquire swapchain image after ->  sit_on:in_flight
+// acquire swapchain image after | sit_on:in_flight , signal:image_available, 
 // ----------------------------------------------------------------------------------------------
-VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync,
-                           uint32_t& image_index, const Device&  device) {
+// VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync,
+//                            uint32_t& image_index, const Device&  device) {
 
-  vkWaitForFences (device.handle, 1, &render_sync.in_flight_fence, VK_TRUE, UINT64_MAX);
+//   vkWaitForFences (device.handle, 1, &render_sync.in_flight_fence, VK_TRUE, UINT64_MAX);
     
-  VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
-                                                swapchain,
-                                                UINT64_MAX,
-                                                render_sync.image_available_sem,
-                                                VK_NULL_HANDLE,
-                                                &image_index);
+//   VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
+//                                                 swapchain,
+//                                                 UINT64_MAX,
+//                                                 render_sync.image_available_sem,
+//                                                 VK_NULL_HANDLE,
+//                                                 &image_index);
 
-  vkResetFences (device.handle, 1, &render_sync.in_flight_fence);
-  return acquire_res; 
+//   vkResetFences (device.handle, 1, &render_sync.in_flight_fence);
+//   return acquire_res; 
 
-}
+// }
 
 // ------------------------------------------------------------------------------------------------
 //
@@ -63,56 +63,53 @@ int cx::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
 
 
 
-
-
-
 // ------------------------------------------------------------------------------------------------
 // wait_on:image_available, signal:render_finished, sit_on:in_flight
 // ------------------------------------------------------------------------------------------------
-int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
+// int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index, const FrameSync& framesync, const Device& device) {
 
-  vkCmdEndRendering (command_buffer);
-  //
-  if (VK_SUCCESS != vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
-    printf ("[FAILED] record command buffer\n");
-    return __LINE__; 
-  }
-  //rokz::Swapchain& swapchain = scg.swapchain;
-  VkSubmitInfo submit_info {};
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  VkSemaphore wait_semaphores[]      = { framesync.image_available_sem };
-  VkSemaphore signal_semaphores[]    = { framesync.render_finished_sem }; 
-  VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+//   vkCmdEndRendering (command_buffer);
+//   //
+//   if (VK_SUCCESS != vkEndCommandBuffer (command_buffer) != VK_SUCCESS) {
+//     printf ("[FAILED] record command buffer\n");
+//     return __LINE__; 
+//   }
+//   //rokz::Swapchain& swapchain = scg.swapchain;
+//   VkSubmitInfo submit_info {};
+//   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+//   VkSemaphore wait_semaphores[]      = { framesync.image_available_sem };
+//   VkSemaphore signal_semaphores[]    = { framesync.render_finished_sem }; 
+//   VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-  submit_info.pWaitDstStageMask    = wait_stages;
+//   submit_info.pWaitDstStageMask    = wait_stages;
 
-  submit_info.waitSemaphoreCount   = 1;
-  submit_info.pWaitSemaphores      = wait_semaphores;
+//   submit_info.waitSemaphoreCount   = 1;
+//   submit_info.pWaitSemaphores      = wait_semaphores;
 
-  submit_info.signalSemaphoreCount = 1; 
-  submit_info.pSignalSemaphores    = signal_semaphores; 
+//   submit_info.signalSemaphoreCount = 1; 
+//   submit_info.pSignalSemaphores    = signal_semaphores; 
 
-  submit_info.commandBufferCount   = 1;
-  submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
+//   submit_info.commandBufferCount   = 1;
+//   submit_info.pCommandBuffers      = &command_buffer; // &glob.command_buffer_group.buffers[curr_frame];
 
-  if (vkQueueSubmit (device.queues.graphics, 1, &submit_info, framesync.in_flight_fence) != VK_SUCCESS) {
-    printf("failed to submit draw command buffer!");
-    return false; 
-  }
+//   if (vkQueueSubmit (device.queues.graphics, 1, &submit_info, framesync.in_flight_fence) != VK_SUCCESS) {
+//     printf("failed to submit draw command buffer!");
+//     return false; 
+//   }
   
-  // dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
-                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                             device.queues.graphics,
-                             device.command_pool.handle, device.handle);
+//   // dynamic_rendering now, we have to manually transition
+//   cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
+//                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+//                              device.queues.graphics,
+//                              device.command_pool.handle, device.handle);
 
-  if (!cx::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
-    return __LINE__;
-  }
+//   if (!cx::PresentFrame ( device.queues.present, scg.swapchain, image_index, framesync)) {
+//     return __LINE__;
+//   }
 
-  return 0;
+//   return 0;
 
-}
+// }
 
 
 // ------------------------------------------------------------------------------------------------
@@ -136,15 +133,15 @@ VkPresentInfoKHR& cx::PresentInfo (VkPresentInfoKHR& pi, uint32_t& image_index,
 // ------------------------------------------------------------------------------------------------
 // wait_on:render_finished
 // ------------------------------------------------------------------------------------------------
-bool cx::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
+// bool cx::PresentFrame (VkQueue present_que, const rc::Swapchain::Ref& swapchain, uint32_t& image_index, const FrameSync& render_sync) { 
 
-  std::vector<VkSemaphore>     wait_sems = { render_sync.render_finished_sem };
-  std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
+//   std::vector<VkSemaphore>     wait_sems = { render_sync.render_finished_sem };
+//   std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
 
-  VkPresentInfoKHR pi {};
+//   VkPresentInfoKHR pi {};
 
- return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, wait_sems));
-}
+//  return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, wait_sems));
+// }
 
 
 // ------------------------------------------------------------------------------------------------
@@ -176,7 +173,7 @@ VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
 }
 
 // ------------------------------------------------------------------------------------------------
-// no_frame_sync
+// no_frame_sync | trigger:fence_in_flight
 // ------------------------------------------------------------------------------------------------
 int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                       uint32_t image_index,
@@ -185,7 +182,6 @@ int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                       VkSemaphore sem_image_available,
                       VkSemaphore sem_render_finished,
                       const Device& device) {
-
 
   vkCmdEndRendering (command_buffer);
   //
@@ -236,7 +232,7 @@ int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
 
 
 // ------------------------------------------------------------------------------------------------
-// no_frame_sync
+// no_frame_sync | wait_on:render_finished
 // ------------------------------------------------------------------------------------------------
 bool cx::PresentFrame (VkQueue present_que, uint32_t& image_index,
                        const rc::Swapchain::Ref& swapchain, const Vec<VkSemaphore>& waits) { 

@@ -142,7 +142,12 @@ struct MarzLoop {
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
     uint32_t image_index; 
-    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
+
+    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, image_index,
+                                                  glob.framesyncgroup.syncs[curr_frame].in_flight_fence,
+                                                  glob.framesyncgroup.syncs[curr_frame].image_available_sem,
+                                                  glob.device); 
+    //VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
@@ -185,7 +190,10 @@ struct MarzLoop {
 
       // we are done, submit
       cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
-                    image_index, glob.framesyncgroup.syncs[curr_frame], glob.device);
+                        image_index, glob.framesyncgroup.syncs[curr_frame].in_flight_fence,
+                        glob.framesyncgroup.syncs[curr_frame].image_available_sem,
+                        glob.framesyncgroup.syncs[curr_frame].render_finished_sem, 
+                        glob.device);
     }
     
     // how long did we take

@@ -65,10 +65,10 @@ struct MilkLoop {
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
     uint32_t image_index; 
-    VkResult acquireres = rokz::cx::AcquireFrame  (scg.swapchain->handle,
-                                                   glob.sync[curr_frame].inflight, 
+    VkResult acquireres = rokz::cx::AcquireFrame  (scg.swapchain->handle, image_index, 
+                                                   glob.sync[curr_frame].inflight,
                                                    glob.sync[curr_frame].sem.image_available,
-                                                   image_index, glob.device); 
+                                                   glob.device); 
 
     // -------------------- ---------------------
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
