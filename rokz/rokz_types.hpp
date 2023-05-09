@@ -368,6 +368,30 @@ namespace rokz {
     Vec<VkSubpassDependency>                          dependencies;
   };
 
+  namespace rc {
+
+    // struct RenderPass : public deviceob<VkRenderPass, RenderPass> {
+    //   RenderPass (const Device& dev) : deviceob (dev) {
+
+    //   } 
+
+    //   Vec<VkAttachmentDescription> attach_desc;
+    //   Vec<VkAttachmentReference>   attach_ref;
+
+    //   Vec<VkSubpassDescription>    subpass_descs;
+    //   Vec<VkSubpassDependency>     dependencies;
+    // };
+
+    // struct Framebuffer : public deviceob<VkFramebuffer, Framebuffer> { 
+    //   Framebuffer (const Device& dev) : deviceob (dev) { 
+    //   }
+    
+    //   //VkFramebufferCreateInfo  ci;
+    //   std::vector<VkImageView> attachments; 
+    // };
+
+    
+  }
   // --------------------------------------------------------------------
   // VK 1.3 | dynamic rendering 
   // --------------------------------------------------------------------

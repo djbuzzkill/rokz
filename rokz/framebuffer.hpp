@@ -33,6 +33,19 @@ namespace rokz {
                            const Device&                   device); 
 
 
+  namespace rc {
+
+    struct Framebuffer : public deviceob<VkFramebuffer, Framebuffer> { 
+      Framebuffer (const Device& dev) : deviceob (dev) { 
+      }
+    
+      //VkFramebufferCreateInfo  ci;
+      std::vector<VkImageView> attachments; 
+    };
+
+    
+  }
+
   
 }
 

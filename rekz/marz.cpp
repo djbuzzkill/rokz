@@ -190,9 +190,10 @@ struct MarzLoop {
 
       // we are done, submit
       cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
-                        image_index, glob.framesyncgroup.syncs[curr_frame].in_flight_fence,
+                        image_index, 
                         glob.framesyncgroup.syncs[curr_frame].image_available_sem,
                         glob.framesyncgroup.syncs[curr_frame].render_finished_sem, 
+                        glob.framesyncgroup.syncs[curr_frame].in_flight_fence,
                         glob.device);
     }
     

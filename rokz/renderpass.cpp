@@ -160,3 +160,110 @@ VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&               
   return ci; 
 }
 
+
+
+
+// ----------------------------------------------------------------------------------------------
+// resource counted
+// ----------------------------------------------------------------------------------------------
+rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Device& device) {
+
+  //printf ("%s\n", __FUNCTION__); 
+  rokz::rc::RenderPass::Ref ret = std::make_shared<rc::RenderPass> (device) ;   
+  // COLOR ATTACHMENT | VkAttachmentDescription 
+  //auto CO_n = ATTACH_COLOR; 
+  Vec<VkAttachmentDescription> attach_desc (3);
+
+  // attach_desc[CO_n] = {}; 
+  // attach_desc[CO_n].format         = swapchain_format ;
+  // attach_desc[CO_n].samples        = msaa_samples;  // VK_SAMPLE_COUNT_1_BIT; // msaa samples
+  // attach_desc[CO_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  // attach_desc[CO_n].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  // attach_desc[CO_n].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  // attach_desc[CO_n].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  // attach_desc[CO_n].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  // attach_desc[CO_n].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+
+  // // DEPTHSTENCIL ATTACHMENT | VkAttachmentDescription 
+  // auto DP_n = ATTACH_DEPTHSTENCIL;
+  // attach_desc[DP_n] = {}; 
+  // // render_pass.attach_desc[dp_in].format         = depth_format;
+  // ut::FindDepthFormat (render_pass.attach_desc[DP_n].format, physdev);
+  // attach_desc[DP_n].samples        = msaa_samples; // VK_SAMPLE_COUNT_1_BIT;
+  // attach_desc[DP_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  // attach_desc[DP_n].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  // attach_desc[DP_n].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  // attach_desc[DP_n].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  // attach_desc[DP_n].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  // attach_desc[DP_n].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  // // COLOR RESOLVE ATTACHMENT | VkAttachmentDescription 
+  // auto CR_n = ATTACH_COLRESOLV; 
+  // attach_desc[CR_n] = {}; 
+  // attach_desc[CR_n].format         = swapchain_format ;
+  // attach_desc[CR_n].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
+  // attach_desc[CR_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  // attach_desc[CR_n].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  // attach_desc[CR_n].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  // attach_desc[CR_n].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  // attach_desc[CR_n].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+  // attach_desc[CR_n].finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+  Vec<VkAttachmentReference> attachref{};
+  // render_pass.attach_ref[CO_n] = {};
+  // render_pass.attach_ref[CO_n].attachment = CO_n; // index
+  // render_pass.attach_ref[CO_n].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  // // depth
+  // render_pass.attach_ref[DP_n] = {};
+  // render_pass.attach_ref[DP_n].attachment = DP_n;
+  // render_pass.attach_ref[DP_n].layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  // // 
+  // render_pass.attach_ref[CR_n] = {};
+  // render_pass.attach_ref[CR_n].attachment = CR_n; // index
+  // render_pass.attach_ref[CR_n].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // <--- color opt is correct
+  //                                      // = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  
+  // SUBPASS,  VkSubpassDescription                 
+  Vec<VkSubpassDescription> subpdescs (1);
+  subpdescs[0] = {}; 
+  subpdescs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpdescs[0].colorAttachmentCount    = 1;
+  subpdescs[0].pColorAttachments       = &attachref[0];  // co_in, [cr_in] for msaa
+  subpdescs[0].inputAttachmentCount    = 0;
+  subpdescs[0].pInputAttachments       = nullptr;
+  subpdescs[0].pDepthStencilAttachment = &attachref[1]; //nullptr;
+  subpdescs[0].preserveAttachmentCount = 0;
+  subpdescs[0].pPreserveAttachments    = nullptr;
+  subpdescs[0].pResolveAttachments     = &attachref[2];
+  subpdescs[0].flags = 0 ;
+  //
+  Vec<VkSubpassDependency> subp_deps (1);
+
+  subp_deps[0].srcSubpass    = VK_SUBPASS_EXTERNAL;
+  subp_deps[0].dstSubpass    = 0;
+  subp_deps[0].srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  subp_deps[0].srcAccessMask = 0;
+  subp_deps[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  subp_deps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+  
+  // CREATEINFO. gets passed back out
+  VkRenderPassCreateInfo  ci {}; 
+  ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  ci.attachmentCount = 3; // color + depthstencil + color resolv
+  ci.pAttachments = &attach_desc[0];
+
+  ci.subpassCount = 1;
+  ci.pSubpasses   = &subpdescs[0];
+
+  ci.dependencyCount = subp_deps.size();
+  ci.pDependencies   = &subp_deps[0]; 
+  ci.pNext = nullptr; 
+  //
+  if (vkCreateRenderPass (device.handle, &ci, nullptr, &ret->handle) != VK_SUCCESS) {
+    printf ("[FAILED] %s create render pass\n", __FUNCTION__);
+    return rc::RenderPass::Ref (0); ; 
+  }
+
+  return ret;
+}
+

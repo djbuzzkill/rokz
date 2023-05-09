@@ -48,8 +48,27 @@ namespace rokz {
                          const VkDevice&         device,
                          const VkPhysicalDevice& physdev); 
 
+  // -- rc -- 
+  namespace rc {
 
+    struct RenderPass : public deviceob<VkRenderPass, RenderPass> {
+      RenderPass (const Device& dev) : deviceob (dev) {
 
-  
+      } 
+
+      Vec<VkAttachmentDescription> attach_desc;
+      Vec<VkAttachmentReference>   attach_ref;
+
+      Vec<VkSubpassDescription>    subpass_descs;
+      Vec<VkSubpassDependency>     dependencies;
+    };
+
+    // -- 
+    RenderPass::Ref CreateRenderPass (Vec<VkAttachmentDescription>& attach_descs,
+                                      Vec<VkAttachmentReference>& attach_refs,
+                                      Vec<VkSubpassDescription>& subpdescs,
+                                      Vec<VkSubpassDependency>& subpdeps, 
+                                      const Device& device); 
+  }
 }
 #endif

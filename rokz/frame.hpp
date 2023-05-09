@@ -7,44 +7,40 @@
 #include "rc_swapchain.hpp"
 
 namespace rokz { namespace cx {
-
-
-    bool PresentFrame   (VkQueue present_que, const VkPresentInfoKHR& pi); 
-
-    // ----------------------------------------------------------------------------
-    // 
-    // ----------------------------------------------------------------------------
-    VkPresentInfoKHR& PresentInfo  (VkPresentInfoKHR& pi, uint32_t& image_index, const std::vector<VkSwapchainKHR>& swapchains,  const std::vector<VkSemaphore>& signal_sems); 
-
-    VkResult          AcquireFrame (VkSwapchainKHR& swapchain, FrameSync& render_sync, uint32_t& image_index, const Device&  device); 
-
+    
+    //
+    // -- no_frame_sync -- 
+    VkResult AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
+                           VkFence fen_in_flight,             // fence_sit
+                           VkSemaphore sem_image_available,   // signal
+                           const Device& device); 
     int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
                          const VkRenderingInfo& ri, const Device& device);
-    // 
-    int  FrameDrawEnd   (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
-                         uint32_t image_index, const FrameSync& framesync, const Device& device);
+    // -- no_frame_sync -- 
+    int  FrameDrawEnd  (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
+                        VkSemaphore sem_image_available, // wait 
+                        VkSemaphore sem_render_finished, // wait/signal
+                        VkFence fence_in_flight,         // fence_flag 
+                        const Device& device); 
 
-    bool PresentFrame   (VkQueue present_que, const rc::Swapchain::Ref& swapchain,
-                         uint32_t& image_index, const FrameSync& render_sync);
-    
     // -- multi pass --
     // int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
     //                      const VkRenderingInfo& ri, const Device& device);
 
-    //
-    // -- no_frame_sync -- 
-    int  FrameDrawEnd  (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
-                        VkFence fence_in_flight, VkSemaphore sem_image_available, VkSemaphore sem_render_finished,
-                        const Device& device); 
-    //
-    // -- no_frame_sync -- 
+    // ----------------------------------------------------------------------------
+    // no FrameSync
+    // ----------------------------------------------------------------------------
     bool PresentFrame (VkQueue present_que, uint32_t& image_index,
                        const rc::Swapchain::Ref& swapchain, const Vec<VkSemaphore>& waits) ; 
-    //
-    // -- no_frame_sync -- 
-    VkResult AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
-                           VkFence fen_in_flight, VkSemaphore sem_image_available, const Device&  device); 
 
+    VkPresentInfoKHR& PresentInfo  (VkPresentInfoKHR& pi, uint32_t& image_index,
+                                    const std::vector<VkSwapchainKHR>& swapchains, VkSemaphore wait); 
+
+    VkPresentInfoKHR& PresentInfo  (VkPresentInfoKHR& pi, uint32_t& image_index,
+                                    const std::vector<VkSwapchainKHR>& swapchains,
+                                    const std::vector<VkSemaphore>& waits); 
+    // --
+    bool PresentFrame   (VkQueue present_que, const VkPresentInfoKHR& pi); 
 
     
     
