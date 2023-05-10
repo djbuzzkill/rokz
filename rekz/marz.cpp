@@ -167,7 +167,7 @@ struct MarzLoop {
       //void UpdateGlobals (rokz::DrawSequence::Globals& shared, const rokz::Buffer& buf, const VkExtent2D& viewext, double dt) {
       // update data needed to record drawlist
       rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaa_color_imageview->handle,
-                                        glob.swapchain_group.imageviews[image_index]->handle);
+                                        glob.swapchain_group.views[image_index]->handle);
 
       // Transitioning Layout and stuff in here, BeginCommandBuffer is called here
       cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
@@ -257,7 +257,7 @@ int run_marz (const std::vector<std::string>& args) {
                                      glob.depth_format, scg.extent,
                                      glob.device); // <-- this does all the additional  attachmentes
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.views,
                                                            glob.depth_image, glob.depth_imageview,
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
 

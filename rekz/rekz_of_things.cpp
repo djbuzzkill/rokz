@@ -37,6 +37,39 @@ glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
+void rekz_CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
+
+                             Vec<rc::Image::Ref>&     color_images,
+                             Vec<rc::ImageView::Ref>& color_views,
+
+                             rc::Image::Ref&     depth_image,
+                             rc::ImageView::Ref& depth_view,
+
+                             rc::Swapchain::Ref& swapchain,
+                             const Device&       device) {
+
+
+  for (auto& sc_imageview : sc_image_views) 
+    sc_imageview.reset ();
+  
+
+  for (auto& colimage : color_images) 
+    colimage.reset ();
+
+  for (auto& view : color_views) 
+    view.reset (); 
+
+
+  depth_view.reset ();
+  depth_image.reset ();
+
+  swapchain.reset ();
+
+}
+
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
 
 void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
 
@@ -79,8 +112,6 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
     glfwGetFramebufferSize(display.window.glfw_window, &width, &height);
     glfwWaitEvents();
   }
-  
-
 
   const VkExtent2D newext { 800, 600 };
 

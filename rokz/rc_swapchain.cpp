@@ -41,7 +41,7 @@ bool rc::InitializeSwapchain (rc::SwapchainGroup&               scg,
   //scg.swapchain.ci.aspectFlags;
   const VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT; 
   rc::GetSwapChainImages (scg.images, scg.swapchain, device); 
-  rc::CreateImageViews   (scg.imageviews, scg.images, scg.image_format, aspect, device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rc::CreateImageViews   (scg.views, scg.images, scg.image_format, aspect, device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
     // manual transition b/c KHR_dynamic_rendering

@@ -400,7 +400,7 @@ namespace rokz {
       Vec<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
       // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
     }; 
-  
+
   
   // --------------------------------------------------------
   struct FrameSyncCreateInfo {

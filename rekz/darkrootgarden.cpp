@@ -94,7 +94,7 @@ void CleanupDarkroot (Glob& glob) {
   // }
 
   //
-  rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
+  rekz::CleanupSwapchain (glob.swapchain_group.views,
                           glob.msaacolorimage, glob.msaacolorimageview,
                           glob.depthimage, glob.depthimageview,
                           glob.swapchain_group.swapchain, 
@@ -223,7 +223,7 @@ struct RootLoop {
       // make sure the correct swapchain image is used
 
       rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
-                                        glob.swapchain_group.imageviews[image_index]->handle);
+                                        glob.swapchain_group.views[image_index]->handle);
 
       // ------------------------------- render pass start -------------------------------
       // Transitioning Layout and stuff in here
@@ -377,7 +377,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      kTestExtent,
                                      glob.device); // <-- this does all the additional  attachmentes
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.views,
                                                            glob.depthimage, glob.depthimageview,
                                                            glob.msaacolorimage, glob.msaacolorimageview); 
 

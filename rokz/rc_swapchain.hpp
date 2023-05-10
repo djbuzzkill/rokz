@@ -34,8 +34,18 @@ namespace rokz { namespace rc {
       VkFormat                image_format;
       VkExtent2D              extent; 
       Vec<VkImage>            images    ;// = glob.swapchain_images; 
-      Vec<rc::ImageView::Ref> imageviews;//= glob.swapchain_imageviews; 
+      Vec<rc::ImageView::Ref> views;//= glob.swapchain_imageviews; 
     }; 
+
+
+    // struct SwapchainGroupA {
+    //   rokz::Swapchain        swapchain    ;// = glob.swapchain; 
+    //   Vec<rokz::Image>       images       ;// = glob.swapchain_images; 
+    //   Vec<rc::ImageView>   imageviews   ;//= glob.swapchain_imageviews; 
+    //   Vec<rc::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
+    //   // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
+    // }; 
+
     
     // -----------------------------------------------------------------------------------------
     //
