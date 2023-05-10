@@ -46,7 +46,7 @@ namespace marz {
     // system
     Instance               instance;
     Device                 device;
-    SwapchainSupportInfo   swapchain_support_info;
+    SwapchainInfo          swapchain_info;
     FrameSyncGroup         framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
     RenderingInfoGroup     rendering_info_group;

@@ -90,8 +90,8 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
                     msaa_color_image, msaa_color_imageview,
                     swapchain, device);
 
-  rokz::SwapchainSupportInfo supp;
-  rokz::cx::QuerySwapchainSupport (supp, display.surface, device.physical.handle);
+  rokz::SwapchainInfo supp;
+  rokz::cx::QuerySwapchainInfo (supp, display.surface, device.physical.handle);
 
   //CreateInfo_default (swapchain.ci, surf, extent, swapchain_support_info,
   VkSwapchainCreateInfoKHR ci {};

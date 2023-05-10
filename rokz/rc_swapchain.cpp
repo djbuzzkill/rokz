@@ -8,15 +8,15 @@
 
 using namespace rokz;
 
-
-
-
-bool rc::InitializeSwapchain (rc::SwapchainGroup& scg,
-                              const rokz::SwapchainSupportInfo& swapchain_support_info,
-                              const VkSurfaceKHR& surface,
-                              const VkExtent2D&   extent, 
-                              const rokz::PhysicalDevice& physdev,
-                              const rokz::Device& device) {
+// ----------------------------------------------------------------------------------------------
+//                          
+// ----------------------------------------------------------------------------------------------
+bool rc::InitializeSwapchain (rc::SwapchainGroup&               scg,
+                              const rokz::SwapchainInfo& swapchain_support_info,
+                              const VkSurfaceKHR&               surface,
+                              const VkExtent2D&                 extent, 
+                              const rokz::PhysicalDevice&       physdev,
+                              const rokz::Device&               device) {
 
   scg.extent    = extent;
   scg.swapchain = std::make_shared<rc::Swapchain> (device); 
@@ -32,13 +32,10 @@ bool rc::InitializeSwapchain (rc::SwapchainGroup& scg,
   
   VkSwapchainCreateInfoKHR ci {};
 
-  rokz::cx::CreateInfo_default (ci,  
-                                surface,
-                                scg.swapchain->family_indices,
-                                extent, 
-                                swapchain_support_info);
+  rokz::cx::CreateInfo_default (ci, surface, scg.swapchain->family_indices,
+                                extent, swapchain_support_info);
 
-  scg.image_format     = ci.imageFormat;
+  scg.image_format = ci.imageFormat;
   cx::CreateSwapchain (scg.swapchain->handle, ci, device); 
 
   //scg.swapchain.ci.aspectFlags;
@@ -52,12 +49,15 @@ bool rc::InitializeSwapchain (rc::SwapchainGroup& scg,
                                      VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                      device.queues.graphics, device.command_pool.handle, device.handle);
   }
+
   // end InitializeSwapchain
   return true;
 }
 
 
-// -----------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------
+//                          
+// ----------------------------------------------------------------------------------------------
 bool rc::GetSwapChainImages (Vec<VkImage> &swapchain_images, const rc::Swapchain::Ref& swapchain, const Device& device) {
   printf ("%s\n", __FUNCTION__);
 

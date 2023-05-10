@@ -20,9 +20,9 @@ const bool kEnableValidationLayers = true;
   //#endif
 
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------
+//                          
+// ----------------------------------------------------------------------------------------------
 const std::vector<const char*> kDeviceExtensions = {
   VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
   VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
@@ -59,10 +59,10 @@ std::vector<std::string>& GetValidationLayers (std::vector<std::string>& vstrs) 
   return vstrs; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-rokz::SwapchainSupportInfo& rokz::cx::QuerySwapchainSupport (rokz::SwapchainSupportInfo& si, VkSurfaceKHR surf, VkPhysicalDevice device) {
+// ----------------------------------------------------------------------------------------------
+//                          
+// ----------------------------------------------------------------------------------------------
+rokz::SwapchainInfo& rokz::cx::QuerySwapchainInfo (rokz::SwapchainInfo& si, VkSurfaceKHR surf, VkPhysicalDevice device) {
 
   printf ("%s\n", __FUNCTION__);
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR (device, surf, &si.capabilities);
@@ -82,6 +82,7 @@ rokz::SwapchainSupportInfo& rokz::cx::QuerySwapchainSupport (rokz::SwapchainSupp
 
   if (present_mode_count != 0) {
     si.present_modes.resize(present_mode_count);
+    // just use the index 0
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, surf, &present_mode_count, &si.present_modes[0]);
   }
 
@@ -362,7 +363,7 @@ VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR
                                                         VkSurfaceKHR                surface,
                                                         const std::vector<uint32_t>&      family_indices,
                                                         const VkExtent2D&           extent, 
-                                                        const SwapchainSupportInfo& swapchain_support_info, 
+                                                        const SwapchainInfo& swapchain_support_info, 
                                                         const PhysicalDevice&       physdev) {
   printf ("%s\n", __FUNCTION__);
 
@@ -417,7 +418,7 @@ VkSwapchainCreateInfoKHR& rokz::cx::CreateInfo_default (VkSwapchainCreateInfoKHR
                                                         VkSurfaceKHR                surface,
                                                         const std::vector<uint32_t>&      family_indices,
                                                         const VkExtent2D&           extent, 
-                                                        const SwapchainSupportInfo& swapchain_support_info) {
+                                                        const SwapchainInfo& swapchain_support_info) {
   printf ("%s\n", __FUNCTION__);
 
   VkSurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat (swapchain_support_info.formats);
@@ -889,7 +890,7 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind,
   //   printf ("[exts_supported]\n"); 
   // }
   
-  rokz::SwapchainSupportInfo swapchain_supp_info {};
+  rokz::SwapchainInfo swapchain_supp_info {};
   swapchain_supp_info.capabilities = {};
   swapchain_supp_info.formats = {};
   swapchain_supp_info.present_modes = {};

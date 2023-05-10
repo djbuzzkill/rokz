@@ -236,7 +236,7 @@ int run_marz (const std::vector<std::string>& args) {
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
   VkPhysicalDeviceFeatures2 f2 {};
   rokz::ConfigureFeatures  (f2, glob.device.physical);
@@ -248,7 +248,7 @@ int run_marz (const std::vector<std::string>& args) {
   glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
   // InitializeSwapchain ()
-  rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+  rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
   //
   rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 

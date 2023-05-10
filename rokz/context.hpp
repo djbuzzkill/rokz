@@ -20,32 +20,38 @@ namespace rokz {
   
 
   
-    // ----------------------------------------------------------------------
-    //
-    // ----------------------------------------------------------------------
-    SwapchainSupportInfo& QuerySwapchainSupport (rokz::SwapchainSupportInfo& si,
-                                                 VkSurfaceKHR surface,
-                                                 VkPhysicalDevice device); 
+    // ----------------------------------------------------------------------------------------------
+    //                          
+    // ----------------------------------------------------------------------------------------------
+    SwapchainInfo& QuerySwapchainInfo (rokz::SwapchainInfo& si, VkSurfaceKHR surf,
+                                              VkPhysicalDevice device); 
+
+
+    inline SwapchainInfo& QuerySwapchainSupport (rokz::SwapchainInfo& si, VkSurfaceKHR surface,
+                                                 VkPhysicalDevice device) {
+
+      return QuerySwapchainInfo (si , surface, device); 
+    } 
 
 
 
-    // ----------------------------------------------------------------------
-    //
-    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------
+    //                          
+    // ----------------------------------------------------------------------------------------------
     bool SelectPhysicalDevice (PhysicalDevice& physdev, const VkSurfaceKHR& surf, const VkInstance& inst); 
 
     VkSwapchainCreateInfoKHR& CreateInfo_default (VkSwapchainCreateInfoKHR&    ci, 
                                                   VkSurfaceKHR                 surface,
                                                   const std::vector<uint32_t>&       family_indices, 
                                                   const VkExtent2D&            extent, 
-                                                  const SwapchainSupportInfo&  swapchain_support_info, 
+                                                  const SwapchainInfo&  swapchain_support_info, 
                                                   const PhysicalDevice&        physdev); 
     // like above but no phys dev
     VkSwapchainCreateInfoKHR& CreateInfo_default (VkSwapchainCreateInfoKHR&   ci, 
                                                   VkSurfaceKHR                surface,
                                                   const std::vector<uint32_t>&      family_indices,
                                                   const VkExtent2D&           extent, 
-                                                  const SwapchainSupportInfo& swapchain_support_info);
+                                                  const SwapchainInfo& swapchain_support_info);
 
   
     VkDeviceQueueCreateInfo&  CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
@@ -138,7 +144,7 @@ namespace rokz {
   bool               InitializeDevice    (rokz::Device& device, const VkPhysicalDeviceFeatures2& , const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
 
   bool               InitializeSwapchain (rokz::SwapchainGroup& scg,
-                                          const rokz::SwapchainSupportInfo& swapchain_support_info,
+                                          const rokz::SwapchainInfo& swapchain_support_info,
                                           const VkSurfaceKHR& surface,
                                           const VkExtent2D&   extent, 
                                           const rokz::PhysicalDevice& physdev,

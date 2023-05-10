@@ -42,7 +42,7 @@ Glob::Glob()
   // , depth_image()
   // , depth_imageview()
   , msaa_samples ()
-  , swapchain_support_info()
+  , swapchain_info()
   , shared ()
 { 
   // queues.graphics = {};
@@ -314,7 +314,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
   VkPhysicalDeviceFeatures2 features2 {};  
   //rokz::ConfigureDevice (glob.device.physical, VK_TRUE);
@@ -328,7 +328,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
-  rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+  rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                            kTestExtent, glob.device.physical, glob.device);
 
   // ---------------- INIT POLYGON PIPELINE ---------------------
@@ -506,8 +506,19 @@ int darkrootbasin (const std::vector<std::string>& args) {
   HERE("bai");
   return 0;
 
+
+// VkSubpassDependency dependency{};
+// dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+// dependency.dstSubpass = 0;
+// //make sure the first pass has complete the color output in G-buffers and in depth buffer
+// dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+// //make sure the second pass will wait the first pass before execute the fragment shader which read the G-buffers of the first pass
+// dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+// //the first pass goal is the write in the attachments (G-buffers) & depth buffer 
+// dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+// //the second pass goal is to write in the lit final scene attachment 
+// dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+
 }
-
-
-
 

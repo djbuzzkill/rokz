@@ -13,6 +13,7 @@
 
 
 using namespace rokz; 
+using namespace rekz; 
 
 
 const VkExtent2D kDefaultDimensions { 1024, 768 }; 
@@ -22,27 +23,22 @@ const VkExtent2D kDefaultDimensions { 1024, 768 };
 // ---------------------------------------------------------------------------------------
 // 
 // ---------------------------------------------------------------------------------------
-void cleanup_milkshake (Glob& glob) {
+void cleanup_milkshake (milkshake::Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
 
-  rekz::CleanupPolygonData (glob.polyd, glob.device); 
-  glob.drawpoly.reset ();
-  glob.poly_objects_bu.clear ();
 
-  glob.gridbuff.reset (); //rekz::CleanupGridData    (glob.gridata, glob.device); 
-  glob.drawgrid.reset (); 
+  // glob.gridbuff.reset (); //rekz::CleanupGridData    (glob.gridata, glob.device); 
+  // glob.drawgrid.reset (); 
+
   // descriptor set layouts
   rokz::cx::Destroy (glob.grid_dslo, glob.device); 
-  rokz::cx::Destroy (glob.object_dslo, glob.device); 
 
-  glob.global_rc_uniform_bu.clear ();
+  //  glob.global_rc_uniform_bu.clear ();
 
   // dont bother freeing if pool is destroyed anyways
   rokz::cx::Destroy (glob.grid_de.pool, glob.device); 
 
-  //glob.poly_objects_de; // ?!?! how r descriptors handled
-  rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device); 
 
 #ifdef DARKROOT_HIDE_OSD_PATH
   rokz::cx::Destroy (glob.osd_de.pool, glob.device); 
@@ -56,31 +52,31 @@ void cleanup_milkshake (Glob& glob) {
   // }
 
   //
-  rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
-                          glob.msaacolorimage, glob.msaacolorimageview,
-                          glob.depthimage, glob.depthimageview,
-                          glob.swapchain_group.swapchain, 
-                          glob.device);
+  // rekz::CleanupSwapchain (glob.swapchain_group.imageviews,
+  //                         glob.msaacolorimage, glob.msaacolorimageview,
+  //                         glob.depthimage, glob.depthimageview,
+  //                         glob.swapchain_group.swapchain, 
+  //                         glob.device);
 
   // the the  poly stuff is done in Cleanup, grids is done here
-  for (auto shmod : glob.grid_pl.shader_modules) {
-    vkDestroyShaderModule (glob.device.handle, shmod.handle, nullptr); 
-  }
+  // for (auto shmod : glob.grid_pl.shader_modules) {
+  //   vkDestroyShaderModule (glob.device.handle, shmod.handle, nullptr); 
+  // }
 
-  vkDestroyPipelineLayout (glob.device.handle, glob.grid_plo.handle, nullptr);
-  Vec<VkPipeline> pipes = { 
-    glob.polys_pl.handle, glob.grid_pl.handle }; 
+  // vkDestroyPipelineLayout (glob.device.handle, glob.grid_plo.handle, nullptr);
+  // Vec<VkPipeline> pipes = { 
+  //   glob.polys_pl.handle, glob.grid_pl.handle }; 
 
   
-  darkroot::Cleanup (pipes,
-                     glob.display.surface,
-                     glob.device.command_pool.handle,
-                     glob.framesyncgroup.syncs, 
-                     glob.polys_pl.shader_modules,
-                     glob.polys_plo.handle,  
-                     glob.display,
-                     glob.device,
-                     glob.instance.handle);
+  // darkroot::Cleanup (pipes,
+  //                    glob.display.surface,
+  //                    glob.device.command_pool.handle,
+  //                    glob.framesyncgroup.syncs, 
+  //                    glob.polys_pl.shader_modules,
+  //                    glob.polys_plo.handle,  
+  //                    glob.display,
+  //                    glob.device,
+  //                    glob.instance.handle);
 
   //
   glfwTerminate();
@@ -155,10 +151,10 @@ struct MilkLoop {
       // 
       //UpdateDarkUniforms (glob, curr_frame, Dt); 
 
-      //rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kTestExtent, Dt);
+      //rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kDefaultDimensions, Dt);
 
       // did not work as planned
-      //onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
+      //onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kDefaultDimensions, Dt);  
       
       // make sure the correct swapchain image is used
 
@@ -371,19 +367,27 @@ int milkshake::run (const Vec<std::string>& args) {
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
-  rokz::cx::QuerySwapchainSupport (glob.swapchain_support_info, glob.display.surface, glob.device.physical.handle);
+
+  // 
+  rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
   VkPhysicalDeviceFeatures2 f2 {};
   rokz::ConfigureFeatures  (f2, glob.device.physical);
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
   rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
-  
   // put these somwehere
-  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+
+  // 1 sample
+  glob.msaa_samples = VK_SAMPLE_COUNT_1_BIT;  // rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
+
+
   // InitializeSwapchain ()
-  rc::InitializeSwapchain (scg, glob.swapchain_support_info, glob.display.surface,
+
+  
+  rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
   //
 
@@ -392,7 +396,8 @@ int milkshake::run (const Vec<std::string>& args) {
   // SetupColorRenderAttachment ();
 
   //rc::SetupMSAARenderingAttachments
-  setup_color_render_attachments (glob); 
+
+   setup_color_render_attachments (glob); 
   
   glob.swapchain_resetter =  CreateResetMilkshake (); 
   // rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
@@ -415,24 +420,24 @@ int milkshake::run (const Vec<std::string>& args) {
   // ---------------- INIT GRID PIPELINE  ---------------------
   rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
 
-  glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
-  if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
-                                 kTestExtent, glob.msaa_samples,
+  glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
+  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
+                                 kDefaultDimensions, glob.msaa_samples,
                                  scg.image_format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
 
   // ---------------- INIT OSD PIPELINE  ---------------------
-  rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
+  // rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
 
-  glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
-  if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
-                               kTestExtent, glob.msaa_samples,
-                               scg.image_format, glob.depth_format,  glob.device)) {
-    printf ("[FAILED] --> OSD pipeline \n"); 
-    return false; 
-  }
+  // glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
+  // if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
+  //                              kDefaultDimensions, glob.msaa_samples,
+  //                              scg.image_format, glob.depth_format,  glob.device)) {
+  //   printf ("[FAILED] --> OSD pipeline \n"); 
+  //   return false; 
+  // }
 
   
   //

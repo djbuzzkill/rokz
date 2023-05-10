@@ -32,7 +32,7 @@ namespace darkroot {
     Instance                     instance;
     Device                       device;
     rc::SwapchainGroup           swapchain_group;
-    SwapchainSupportInfo         swapchain_support_info;
+    SwapchainInfo                swapchain_info;
     FrameSyncGroup               framesyncgroup;
     // DYNAMIC RENDERING, no use renderpass
     rokz::RenderingInfoGroup     rendering_info_group;

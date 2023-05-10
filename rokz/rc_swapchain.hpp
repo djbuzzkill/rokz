@@ -40,7 +40,7 @@ namespace rokz { namespace rc {
     //
     // -----------------------------------------------------------------------------------------
     bool InitializeSwapchain (SwapchainGroup& scg,
-                              const rokz::SwapchainSupportInfo& swapchain_support_info,
+                              const rokz::SwapchainInfo& swapchain_support_info,
                               const VkSurfaceKHR& surface,
                               const VkExtent2D&   extent, 
                               const rokz::PhysicalDevice& physdev,

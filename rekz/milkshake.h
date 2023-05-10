@@ -28,7 +28,7 @@ namespace milkshake {
     Instance               instance;
     Device                 device;
     rc::SwapchainGroup     swapchain_group;
-    SwapchainSupportInfo   swapchain_support_info;
+    SwapchainInfo   swapchain_info;
     // DYNAMIC RENDERING, u shal not renderpass
     RenderingInfoGroup     rendering_info_group;
     // struct Display

@@ -166,7 +166,14 @@ VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&               
 // ----------------------------------------------------------------------------------------------
 // resource counted
 // ----------------------------------------------------------------------------------------------
-rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Device& device) {
+
+rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (Vec<VkAttachmentDescription>& attach_descs,
+                                      Vec<VkAttachmentReference>& attach_refs,
+                                      Vec<VkSubpassDescription>& subpdescs,
+                                      Vec<VkSubpassDependency>& subpdeps, 
+                                                  const Device& device) { 
+
+//rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Device& device) {
 
   //printf ("%s\n", __FUNCTION__); 
   rokz::rc::RenderPass::Ref ret = std::make_shared<rc::RenderPass> (device) ;   
@@ -224,7 +231,7 @@ rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Device& device) {
   //                                      // = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   
   // SUBPASS,  VkSubpassDescription                 
-  Vec<VkSubpassDescription> subpdescs (1);
+  //Vec<VkSubpassDescription> subpdescs (1);
   subpdescs[0] = {}; 
   subpdescs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpdescs[0].colorAttachmentCount    = 1;
