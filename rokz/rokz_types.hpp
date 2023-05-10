@@ -6,6 +6,7 @@
 #include "common.hpp"
 #include "shared_types.hpp"
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include "vk_mem_alloc.h"
 
 namespace rokz {
@@ -391,15 +392,16 @@ namespace rokz {
     VkCommandBufferAllocateInfo  alloc_info;
   };
 
-  // --------------------------------------------------------
-  struct SwapchainGroup {
-    rokz::Swapchain        swapchain    ;// = glob.swapchain; 
-    Vec<rokz::Image>       images       ;// = glob.swapchain_images; 
-    Vec<rokz::ImageView>   imageviews   ;//= glob.swapchain_imageviews; 
-    Vec<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
-    // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
-  }; 
-
+    // --------------------------------------------------------
+    struct SwapchainGroup {
+      rokz::Swapchain        swapchain    ;// = glob.swapchain; 
+      Vec<rokz::Image>       images       ;// = glob.swapchain_images; 
+      Vec<rokz::ImageView>   imageviews   ;//= glob.swapchain_imageviews; 
+      Vec<rokz::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
+      // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
+    }; 
+  
+  
   // --------------------------------------------------------
   struct FrameSyncCreateInfo {
 

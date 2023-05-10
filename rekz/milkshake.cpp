@@ -386,11 +386,12 @@ int milkshake::run (const Vec<std::string>& args) {
 
   // InitializeSwapchain ()
 
-  
   rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
   //
 
+  rokz::SwapchainGroup scgroup;
+  
   const size_t NuberOfColorTargets = 2; 
   // SetupColorRenderAttachment ( glob.colortargets, glob.colorviews, NuberOfColorTargets,  );
   // SetupColorRenderAttachment ();
@@ -438,8 +439,6 @@ int milkshake::run (const Vec<std::string>& args) {
   //   printf ("[FAILED] --> OSD pipeline \n"); 
   //   return false; 
   // }
-
-  
   //
   rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 
@@ -451,7 +450,6 @@ int milkshake::run (const Vec<std::string>& args) {
 
   // draw drawlists
 
-    
   // create frame syncs
   assert (false); 
   // fsg.command_buffers.resize (kMaxFramesInFlight);

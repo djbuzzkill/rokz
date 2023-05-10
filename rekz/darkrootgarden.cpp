@@ -293,7 +293,6 @@ int darkrootbasin (const std::vector<std::string>& args) {
   printf ( " Mv = v is the correct order \n"); 
   //VkInstance  vkinst;
   //GLFWwindow* glfwin = nullptr; 
-
   Glob glob; // *globmem; // something representing the app state
   rc::SwapchainGroup& scg = glob.swapchain_group;
   

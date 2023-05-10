@@ -5,6 +5,7 @@
 
 #include "common.hpp"
 #include "rokz_types.hpp"
+#include <vulkan/vulkan_core.h>
 
 namespace rokz {
 
@@ -39,6 +40,11 @@ namespace rokz {
       Framebuffer (const Device& dev) : deviceob (dev) { 
       }
     
+      virtual ~Framebuffer  () { if (handle) { 
+          vkDestroyFramebuffer (device.handle, handle, VK_NULL_HANDLE);
+          handle = VK_NULL_HANDLE; 
+        }
+      }
       //VkFramebufferCreateInfo  ci;
       std::vector<VkImageView> attachments; 
     };

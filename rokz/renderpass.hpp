@@ -5,25 +5,24 @@
 
 #include "common.hpp"
 #include "rokz_types.hpp"
+#include <vulkan/vulkan_core.h>
 
 
 
 namespace rokz {
 
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------------------------------
   bool CreateRenderPass (RenderPass&             render_pass,
                          VkFormat                swapchain_format,
                          VkSampleCountFlagBits   msaa_samples, 
                          const VkDevice&         device,
                          const VkPhysicalDevice& physdev); 
 
-
-
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------
+  // 
+  // ------------------------------------------------------------------------------------------
   VkRenderPassCreateInfo& CreateInfo (VkRenderPassCreateInfo&                     ci,
                                       const std::vector<VkAttachmentDescription>& attach_descs,
                                       const std::vector<VkSubpassDescription>&    subpass_descs,
@@ -55,7 +54,13 @@ namespace rokz {
       RenderPass (const Device& dev) : deviceob (dev) {
 
       } 
-
+      
+      virtual ~RenderPass () { if (handle) { 
+          vkDestroyRenderPass (device.handle, handle, VK_NULL_HANDLE); 
+          handle = VK_NULL_HANDLE;
+        }
+      }
+      
       Vec<VkAttachmentDescription> attach_desc;
       Vec<VkAttachmentReference>   attach_ref;
 

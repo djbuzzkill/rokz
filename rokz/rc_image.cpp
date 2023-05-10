@@ -16,7 +16,7 @@ rc::Image::Ref rokz::rc::CreateImage (const VkImageCreateInfo& ci, const Device&
   if( VK_SUCCESS != vmaCreateImage (device.allocator.handle, &ci, &img->alloc_ci, &img->handle, &img->allocation, &img->alloc_info)) {
     printf ("[FAILED] %s vmaCreateImage\n", __FUNCTION__); 
     return rc::Image::Ref (nullptr); 
-j  }
+  }
 
 
   
