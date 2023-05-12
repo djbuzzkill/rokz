@@ -14,17 +14,19 @@ namespace rokz { namespace rc {
 
     struct Swapchain : public deviceob<VkSwapchainKHR, Swapchain> {
 
-      Swapchain (const Device& d) : deviceob (d) {}
+      Swapchain (const Device& d) : deviceob (d) {
+      }
 
       Vec<uint32> family_indices; 
 
-      virtual ~Swapchain () {
-        if (handle) vkDestroySwapchainKHR (device.handle,  handle, nullptr);
-      }
+      virtual ~Swapchain () { if (handle) {
+          vkDestroySwapchainKHR (device.handle,  handle, nullptr);
+          handle = VK_NULL_HANDLE; 
+        }}
+    }; 
+
       
-    };
-    
-    bool GetSwapChainImages (Vec<VkImage>& swapchain_images, const rc::Swapchain::Ref& swapchain, const Device& device); 
+    Vec<VkImage>& GetSwapChainImages (Vec<VkImage>& oimages, const rc::Swapchain::Ref& swapchain, const Device& device); 
 
     // -----------------------------------------------------------------------------------------
     //
@@ -45,7 +47,6 @@ namespace rokz { namespace rc {
     //   Vec<rc::Framebuffer> framebuffers ;//= glob.swapchain_framebuffers; 
     //   // VkCommandBufferAllocateInfo    command_buffer_alloc_info;
     // }; 
-
     
     // -----------------------------------------------------------------------------------------
     //

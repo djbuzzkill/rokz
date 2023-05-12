@@ -88,6 +88,16 @@ namespace rekz {
                          rc::Swapchain::Ref&   swapchain,
                          const rokz::Device&   device);
 
+
+  void CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
+                         Vec<rc::Image::Ref>&     color_images,
+                         Vec<rc::ImageView::Ref>& color_views,
+                         rc::Image::Ref&          depth_image,
+                         rc::ImageView::Ref&      depth_view,
+                         rc::Swapchain::Ref&      swapchain,
+                         const Device&            device); 
+
+  
   bool RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display& win, 
                           Vec<VkImage>& swapchain_images, Vec<rc::ImageView::Ref>& imageviews,
                           rc::Image::Ref& depth_image, rc::ImageView::Ref& depth_imageview,
@@ -95,7 +105,7 @@ namespace rekz {
                           const Device& device) ;
 
   rokz::SwapchainResetter::Ref
-  CreateSwapchainResetter (rc::Swapchain::Ref& swapchain, 
+  CreateSwapchainResetter (rc::Swapchain::Ref& swapchain, rokz::Display& displ, 
                            Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                            rc::Image::Ref& depthim, rc::ImageView::Ref& depthiv,
                            rc::Image::Ref& msaacolorim, rc::ImageView::Ref& msaacoloriv); 

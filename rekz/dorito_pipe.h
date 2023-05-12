@@ -7,42 +7,32 @@
 #include "rekz.h"
 #include <vulkan/vulkan_core.h>
 
-
 namespace dorito {
 
+  // ----------------------------------------------------------------------------------------
+  //
+  // ----------------------------------------------------------------------------------------
   using namespace rokz; 
     
-  typedef rokz::PNTx_Vert    Vert;
-  const uint32               kControlPoints = 4; 
-
+  const uint32 kMaxCount = 128;
   extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
-  extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc;
-  extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc;
 
+  const uint32 UBO_BINDINGI = 0; 
+  const uint32 POSITION_ATTACHMENT_BINDINGI = 1; 
+  const uint32 NORMAL_ATTACHMENT_BINDINGI   = 2; 
+  const uint32 ALBEDO_ATTACHMENT_BINDINGI   = 3; 
 
-  const VkShaderStageFlags kPC_comp_stages = VK_SHADER_STAGE_VERTEX_BIT
-                                           | VK_SHADER_STAGE_FRAGMENT_BIT;
+// ----------------------------------------------------------------------------------------
+  // Geom buff 
+  // ----------------------------------------------------------------------------------------
+  namespace GBuff {
+    //
+    typedef rokz::PNTx_Vert Vert;
 
-  const VkShaderStageFlags kPC_gbuff_stages = VK_SHADER_STAGE_VERTEX_BIT
-                                            | VK_SHADER_STAGE_FRAGMENT_BIT;
-    
-  namespace gbuff {
+    const VkShaderStageFlags kPC_stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    extern const VkVertexInputBindingDescription& kVertexInputBindingDesc; //  = kPNTx_InputBindingDesc;
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; //  = kPNTx_InputAttributeDesc;
 
-    const uint32 kMaxCount = 128;
-      
-    struct PushConstant {
-      glm::vec4 position;
-      glm::vec4 scale;
-      uint32 resource_id;
-      uint32 _unused3_id;
-      uint32 _unused4_id;
-      uint32 _unused5_id;
-    };
-
-    static_assert (sizeof(PushConstant) <= 128, "exceeding max push constant"); 
-  }    
-
-  namespace comp { 
     struct PushConstant {
       glm::vec4 position;
       glm::vec4 scale;
@@ -53,13 +43,32 @@ namespace dorito {
     };
     static_assert (sizeof(PushConstant) <= 128, "exceeding max push constant"); 
   }
-  
-  
-  const uint32 HEIGHT_IMAGE_BINDINGI = 32;
-  const uint32 NORMAL_IMAGE_BINDINGI = 33;
-  const uint32 COLOR_IMAGE_BINDINGI  = 34;
-  const uint32 PATCH_PARAMS_BINDINGI = 35;
 
+  // ----------------------------------------------------------------------------------------
+  // Light Composition
+  // ----------------------------------------------------------------------------------------
+  namespace LComp {
+
+    typedef rokz::PTx_Vert Vert;
+    const VkShaderStageFlags kPC_stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    extern const VkVertexInputBindingDescription& kVertexInputBindingDesc; // = kPTx_InputBindingDesc; 
+    extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; //  = kPTx_InputAttributeDesc;
+
+    struct PushConstant {
+      glm::vec4 position;
+      glm::vec4 scale;
+      uint32 resource_id;
+      uint32 _unused3_id;
+      uint32 _unused4_id;
+      uint32 _unused5_id;
+    };
+    static_assert (sizeof(PushConstant) <= 128, "exceeding max push constant"); 
+
+  }
+  
+  // ----------------------------------------------------------------------------------------
+  //
+  // ----------------------------------------------------------------------------------------
   bool InitPipeline (Pipeline&                    pipeline,
                      PipelineLayout&              plo,
                      Vec<VkDescriptorSetLayout>&  dslos,

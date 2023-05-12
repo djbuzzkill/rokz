@@ -37,28 +37,22 @@ glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-void rekz_CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
+void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_views,
+                            Vec<rc::Image::Ref>&     color_images,
+                            Vec<rc::ImageView::Ref>& color_views,
 
-                             Vec<rc::Image::Ref>&     color_images,
-                             Vec<rc::ImageView::Ref>& color_views,
+                            rc::Image::Ref&     depth_image,
+                            rc::ImageView::Ref& depth_view,
 
-                             rc::Image::Ref&     depth_image,
-                             rc::ImageView::Ref& depth_view,
-
-                             rc::Swapchain::Ref& swapchain,
-                             const Device&       device) {
+                            rc::Swapchain::Ref& swapchain,
+                            const Device&       device) {
 
 
-  for (auto& sc_imageview : sc_image_views) 
-    sc_imageview.reset ();
-  
+  for (auto& sc_view : sc_views)  sc_view.reset ();
 
-  for (auto& colimage : color_images) 
-    colimage.reset ();
+  for (auto& colimage : color_images)  colimage.reset ();
 
-  for (auto& view : color_views) 
-    view.reset (); 
-
+  for (auto& view : color_views) view.reset (); 
 
   depth_view.reset ();
   depth_image.reset ();
@@ -70,7 +64,6 @@ void rekz_CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
-
 void rekz::CleanupSwapchain (Vec<rc::ImageView::Ref>& sc_image_views,
 
                              rc::Image::Ref&     msaa_color_image,
@@ -134,7 +127,7 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
   
   VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT;
   bool swapchain_res    = cx::CreateSwapchain (swapchain->handle, ci, device);
-  bool imageviews_res   = rc::CreateImageViews( imageviews, swapchain_images, ci.imageFormat, aspect, device);
+  rc::CreateImageViews(imageviews, swapchain_images, ci.imageFormat, aspect, device);
 
   //
   assert (false); // not yet tested
@@ -150,14 +143,14 @@ bool rekz::RecreateSwapchain (rc::Swapchain::Ref& swapchain, const rokz::Display
   rc::CreateDepthBufferTarget (depth_image, depth_imageview,  msaa_samples,
                                  depthformat, ci.imageExtent, device);
 
-  return (swapchain_res && imageviews_res); 
+  return (swapchain_res && imageviews.size()); 
 }
 
 // -----------------------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------------------
 rokz::SwapchainResetter::Ref 
-rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc, 
+rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc, rokz::Display& displ,  
                                Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs,
                                rc::Image::Ref& dp, rc::ImageView::Ref& div,
                                rc::Image::Ref& mscim, rc::ImageView::Ref& mscimv)
@@ -167,12 +160,12 @@ rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc,
     
   public:
 
-    reset_ref_def (rc::Swapchain::Ref& sc, Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs, rc::Image::Ref& dp, rc::ImageView::Ref& dpiv, rc::Image::Ref& mscim, rc::ImageView::Ref&  mscimv)
-      : SwapchainResetter (), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
+    reset_ref_def (rc::Swapchain::Ref& sc, rokz::Display& displ, Vec<VkImage>& scis, Vec<rc::ImageView::Ref>& scivs, rc::Image::Ref& dp, rc::ImageView::Ref& dpiv, rc::Image::Ref& mscim, rc::ImageView::Ref&  mscimv)
+      : SwapchainResetter (), display (displ), swapchain (sc), swapchain_images (scis), swapchain_imageviews (scivs)
       , depth_image (dp), depth_imageview(dpiv), msaa_color_image(mscim), msaa_color_imageview(mscimv) { 
     }
 
-    virtual bool Reset (const rokz::Display& display, const rokz::Device& device) {
+    virtual bool Reset (const rokz::Device& device) {
       return rekz::RecreateSwapchain (swapchain, display, 
                                       swapchain_images, swapchain_imageviews,
                                       depth_image,      depth_imageview,  
@@ -185,12 +178,12 @@ rekz::CreateSwapchainResetter (rc::Swapchain::Ref& sc,
     
     Vec<VkImage>&            swapchain_images;
     Vec<rc::ImageView::Ref>& swapchain_imageviews;
-    
+    rokz::Display&           display; 
     rc::Image::Ref&          depth_image;
     rc::ImageView::Ref&      depth_imageview;  //
     rc::Image::Ref&          msaa_color_image;
     rc::ImageView::Ref&      msaa_color_imageview; 
   };
 
-  return std::make_shared<reset_ref_def> (sc, scis, scivs, dp, div, mscim, mscimv); 
+  return std::make_shared<reset_ref_def> (sc, displ, scis, scivs, dp, div, mscim, mscimv); 
 } 

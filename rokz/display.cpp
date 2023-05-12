@@ -5,8 +5,8 @@
 #include "window_handler.hpp"
 
 
-bool rokz::SetupDisplay (Display& display, const std::string& title , 
-                         InputState& input_state, const VkExtent2D& dim, const Instance& instance) { 
+bool rokz::SetupDisplay (Display& display, InputState& input_state,
+                         const std::string& title, const VkExtent2D& dim, const Instance& instance) { 
   // create GLFW wind o 
   CreateWindow (display.window, dim.width, dim.height, title); 
 

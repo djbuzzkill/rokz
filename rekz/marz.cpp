@@ -151,7 +151,7 @@ struct MarzLoop {
     
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
-      glob.swapchain_resetter->Reset (glob.display, glob.device);
+      glob.swapchain_resetter->Reset (glob.device);
       printf ("===> %i <=== ]\n", __LINE__);
       return true;
     }
@@ -232,7 +232,7 @@ int run_marz (const std::vector<std::string>& args) {
   
   rokz::InitializeInstance (glob.instance); 
 
-  rekz::SetupDisplay (glob.display, "marz", glob.input_state, kDefaultDimensions , glob.instance); 
+  rekz::SetupDisplay (glob.display, glob.input_state, "marz", kDefaultDimensions , glob.instance); 
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
@@ -257,8 +257,8 @@ int run_marz (const std::vector<std::string>& args) {
                                      glob.depth_format, scg.extent,
                                      glob.device); // <-- this does all the additional  attachmentes
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.views,
-                                                           glob.depth_image, glob.depth_imageview,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, glob.display, scg.images,
+                                                           scg.views, glob.depth_image, glob.depth_imageview,
                                                            glob.msaa_color_image, glob.msaa_color_imageview); 
 
   // for BeginRendering ()

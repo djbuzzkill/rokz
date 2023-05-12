@@ -9,6 +9,8 @@
 
 #include "grid_pipeline.h"
 #include "onscreen_pipe.h"
+#include "rokz/renderpass.hpp"
+#include "rokz/rokz_types.hpp"
 
 
 
@@ -20,9 +22,6 @@ const VkExtent2D kDefaultDimensions { 1024, 768 };
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------
-// 
-// ---------------------------------------------------------------------------------------
 void cleanup_milkshake (milkshake::Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
@@ -136,7 +135,7 @@ struct MilkLoop {
     // -------------------- ---------------------
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
-      glob.swapchain_resetter->Reset (glob.display, glob.device);
+      glob.swapchain_resetter->Reset (glob.device);
       HERE ("#$A%"); 
       return true;
     }
@@ -168,7 +167,6 @@ struct MilkLoop {
 
       assert (false);
       // cx::FramePassBegin;
-      
       
       // rokz::DrawSequence::RenderEnv poly_re {
       //   glob.polys_pl, glob.polys_plo.handle, glob.shared, 
@@ -256,8 +254,8 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
 
   glob.msaa_samples = sample_bit_count; 
   
-  Arr<rc::Attachment, NUM_COLOR_ATTACHMENTS>& colorattach = glob.attachment.color; 
-  rc::Attachment&                                   depthattach = glob.attachment.depth;
+  Vec<rc::Attachment>& colorattach = glob.attachment.color; 
+  rc::Attachment&      depthattach = glob.attachment.depth;
 
   { // position
     VkImageCreateInfo ci {}; 
@@ -282,12 +280,11 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
     colorattach[COLATT_NORMAL].view; 
     // create imageview...
     assert (false); 
-
   }
+
 
   { // albedo
     VkImageCreateInfo ci {}; 
-
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
@@ -323,21 +320,30 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-rokz::SwapchainResetter::Ref  CreateResetMilkshake () {
-  assert (false); 
+rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display, Vec<rc::Attachment>& colors, rc::Attachment& depth,
+                                                   const VkExtent2D& ext2d) {
+  //
   struct milkshake_resetter : public SwapchainResetter {
+    rokz::Display&       display; 
+    Vec<rc::Attachment>& colors;     
+    rc::Attachment&      depth;
+    const VkExtent2D&    ext2d;  
     
   public:
-    virtual bool Reset (const rokz::Display& display, const rokz::Device& device) {
 
+    milkshake_resetter (rokz::Display& disp, Vec<rc::Attachment>& cols, rc::Attachment& dep, const VkExtent2D& ext)
+      : display (disp), colors (cols), depth (dep), ext2d (ext)  {
+    }
+    //
+
+    virtual bool Reset (const rokz::Device& device) {
+      HERE("TODO"); 
+      assert (false); 
       return false; 
     }
-
   };
-
-
-  return std::make_shared<milkshake_resetter> (); 
   
+  return std::make_shared<milkshake_resetter> (display, colors, depth, ext2d); 
 }
 // --------------------------------------------------------------------------------------------
 //
@@ -358,12 +364,11 @@ int milkshake::run (const Vec<std::string>& args) {
   systempath data_path = OWENS_LAKE"/rokz/data";     // 
 
   //Default (glob); 
-
   glfwInit();
   
   rokz::InitializeInstance (glob.instance); 
 
-  rekz::SetupDisplay (glob.display, "milkshake", glob.input_state, kDefaultDimensions , glob.instance); 
+  rekz::SetupDisplay (glob.display, glob.input_state, "milkshake", kDefaultDimensions , glob.instance); 
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
@@ -383,39 +388,34 @@ int milkshake::run (const Vec<std::string>& args) {
 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
-
   // InitializeSwapchain ()
-
   rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
-  //
-
-  rokz::SwapchainGroup scgroup;
+  //  
+  //const size_t NuberOfColorTargets = 2; 
+  setup_color_render_attachments (glob); 
   
-  const size_t NuberOfColorTargets = 2; 
-  // SetupColorRenderAttachment ( glob.colortargets, glob.colorviews, NuberOfColorTargets,  );
-  // SetupColorRenderAttachment ();
-
-  //rc::SetupMSAARenderingAttachments
-
-   setup_color_render_attachments (glob); 
-  
-  glob.swapchain_resetter =  CreateResetMilkshake (); 
+  glob.swapchain_resetter =
+      CreateResetMilkshake (glob.display, glob.attachment.color, glob.attachment.depth, kDefaultDimensions); 
+                                                  
   // rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
   //                                                        glob.depth_image, glob.depth_imageview,
   //                                                        glob.msaa_color_image, glob.msaa_color_imageview); 
 
+  // create render pass 
+  
   // for BeginRendering ()
-  assert (false); 
+
+  auto lol =  rc::CreateRenderPass; 
+  
+  auto wat =  rc::CreateFramebuffer; 
   //rokz::SetupDynamicRenderingInfo;//  (glob.rendering_info_group, glob.msaa_color_imageview->handle,
                                   // glob.depth_imageview->handle, scg.extent); 
 
-  
   // define first 
-  rokz::DefineDescriptorSetLayout (glob.grid_dslo, dorito::kDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
 
   rokz::DefineDescriptorSetLayout (glob.dorito_dslo, dorito::kDescriptorBindings, glob.device); 
-
 
 
   // ---------------- INIT GRID PIPELINE  ---------------------

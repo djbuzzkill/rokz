@@ -2,6 +2,9 @@
 
 #include "framebuffer.hpp"
 
+
+
+
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -56,4 +59,16 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
   }
 
   return true; 
+}
+
+
+using namespace rokz; 
+
+rc::Framebuffer::Ref rc::CreateFramebuffer (const Device& device) {
+
+
+  rc::Framebuffer::Ref  res = std::make_shared<rc::Framebuffer> (device);
+
+  return res; 
+ 
 }

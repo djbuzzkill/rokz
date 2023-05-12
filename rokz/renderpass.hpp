@@ -41,25 +41,18 @@ namespace rokz {
   VkSubpassDependency&     SubpassDep_default      (VkSubpassDependency&     dep); 
 
   
-
-
-  bool CreateRenderPass (RenderPass&             render_pass,
-                         const VkDevice&         device,
-                         const VkPhysicalDevice& physdev); 
-
   // -- rc -- 
   namespace rc {
 
     struct RenderPass : public deviceob<VkRenderPass, RenderPass> {
-      RenderPass (const Device& dev) : deviceob (dev) {
 
+      RenderPass (const Device& dev): deviceob (dev) {
       } 
       
       virtual ~RenderPass () { if (handle) { 
           vkDestroyRenderPass (device.handle, handle, VK_NULL_HANDLE); 
           handle = VK_NULL_HANDLE;
-        }
-      }
+        }}
       
       Vec<VkAttachmentDescription> attach_desc;
       Vec<VkAttachmentReference>   attach_ref;
@@ -74,6 +67,8 @@ namespace rokz {
                                       Vec<VkSubpassDescription>& subpdescs,
                                       Vec<VkSubpassDependency>& subpdeps, 
                                       const Device& device); 
-  }
+  } // rc
+
+  
 }
 #endif

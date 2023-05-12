@@ -104,33 +104,30 @@ rc::ImageView::Ref rc::CreateImageView_2D_array (VkImage image, VkFormat format,
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
-bool rc::CreateImageViews (std::vector<rc::ImageView::Ref>&   imageviews, 
-                           const std::vector<VkImage>&        images,
-                           VkFormat                           format, 
-                           VkImageAspectFlagBits              aspectflags,
-                           const Device&                      device) {
+Vec<rc::ImageView::Ref>& rc::CreateImageViews (Vec<rc::ImageView::Ref>&    views, 
+                                              const std::vector<VkImage>& images,
+                                              VkFormat                    format, 
+                                              VkImageAspectFlagBits       aspectflags,
+                                              const Device&               device) {
 
-  printf ("%s\n", __FUNCTION__); 
-
-
-  imageviews.resize (images.size()); 
+  HERE("113"); 
+  views.resize (images.size()); 
   
   for (size_t i = 0; i < images.size(); i++) {
     // CREATEINFO for imageviews from swapchain images
     //CreateInfo (imageviews[i].ci, VK_IMAGE_ASPECT_COLOR_BIT, images[i]); 
-
     VkImageViewCreateInfo ci {}; 
     rokz::cx::CreateInfo (ci, format, aspectflags, images[i] );
-    imageviews[i] = rc::CreateImageView (images[i], format, aspectflags, device);
+    views[i] = rc::CreateImageView (images[i], format, aspectflags, device);
 
-    if ( !imageviews[i] ) { //                                      if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
+    if ( !views[i] ) { //                                      if (!CreateImageView (imageviews[i].handle, imageviews[i].ci, device.handle)) {
        printf ("[FAILED] %s create imageview \n", __FUNCTION__); 
     }
 
   }
 
   printf ("BAI %s\n", __FUNCTION__); 
-  return true;   
+  return views;   
 }
 
 

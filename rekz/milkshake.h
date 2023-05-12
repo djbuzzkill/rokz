@@ -77,8 +77,8 @@ namespace milkshake {
 
     struct { 
     // colrs, depthstencil..
-      Arr<rc::Attachment, NUM_COLOR_ATTACHMENTS> color; 
-      rc::Attachment                             depth; 
+      Vec<rc::Attachment> color; 
+      rc::Attachment      depth; 
     } attachment;
 
     

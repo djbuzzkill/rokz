@@ -49,8 +49,8 @@ namespace rokz { namespace rc {
     ImageView::Ref CreateImageView_2D_array (VkImage image, VkFormat format, uint32 num_layers,
                                              const Device& device); 
 
-    bool           CreateImageViews (std::vector<rc::ImageView::Ref>& imageviews, const Vec<VkImage>& images,
-                                     VkFormat format, VkImageAspectFlagBits aspectflags, const Device& device); 
+    Vec<rc::ImageView::Ref>& CreateImageViews (Vec<rc::ImageView::Ref>& views, const Vec<VkImage>& images,
+                                               VkFormat format, VkImageAspectFlagBits aspectflags, const Device& device); 
 
     
 }}

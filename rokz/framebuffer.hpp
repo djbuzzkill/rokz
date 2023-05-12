@@ -49,6 +49,9 @@ namespace rokz {
       std::vector<VkImageView> attachments; 
     };
 
+
+    Framebuffer::Ref CreateFramebuffer (const Device& device); 
+
     
   }
 

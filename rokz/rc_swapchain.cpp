@@ -41,7 +41,8 @@ bool rc::InitializeSwapchain (rc::SwapchainGroup&               scg,
   //scg.swapchain.ci.aspectFlags;
   const VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT; 
   rc::GetSwapChainImages (scg.images, scg.swapchain, device); 
-  rc::CreateImageViews   (scg.views, scg.images, scg.image_format, aspect, device); //  (std::vector<VkImageView>& swapchain_imageviews);
+
+  rc::CreateImageViews (scg.views, scg.images, scg.image_format, aspect, device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
     // manual transition b/c KHR_dynamic_rendering
@@ -56,30 +57,30 @@ bool rc::InitializeSwapchain (rc::SwapchainGroup&               scg,
 
 
 // ----------------------------------------------------------------------------------------------
-//                          
+// 
 // ----------------------------------------------------------------------------------------------
-bool rc::GetSwapChainImages (Vec<VkImage> &swapchain_images, const rc::Swapchain::Ref& swapchain, const Device& device) {
-  printf ("%s\n", __FUNCTION__);
+Vec<VkImage>& rc::GetSwapChainImages (Vec<VkImage>& oimages, const rc::Swapchain::Ref& swapchain, const Device& device) {
 
   uint32_t image_count = 0; 
 
   VkResult res;
-  res = vkGetSwapchainImagesKHR(device.handle, swapchain->handle, &image_count, nullptr);
+  res = vkGetSwapchainImagesKHR (device.handle, swapchain->handle, &image_count, nullptr);
   if (res != VK_SUCCESS) {
     printf ("LEAVING[FALSE] after image_count %s\n", __FUNCTION__);
-    return false;
-  }
-  printf ( "no. swapchain images[%u]\n", image_count); 
-  
-  //std::vector<VkImage> vk_images(image_count);
-  swapchain_images.resize(image_count);
-  
-  res = vkGetSwapchainImagesKHR (device.handle, swapchain->handle, &image_count, &swapchain_images[0]);
-  if (res != VK_SUCCESS) {
-    printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
-    return false;
+    return oimages;
   }
 
-  return true;
+  printf ( "no. swapchain images[%u]\n", image_count); 
+  //std::vector<VkImage> vk_images(image_count);
+  oimages.resize(image_count);
+  
+  res = vkGetSwapchainImagesKHR (device.handle, swapchain->handle, &image_count, &oimages[0]);
+  if (res != VK_SUCCESS) {
+    oimages.clear (); 
+    printf ("LEAVING[FALSE] after swapchain images %s\n", __FUNCTION__);
+    return oimages;
+  }
+
+  return oimages;
 }
 

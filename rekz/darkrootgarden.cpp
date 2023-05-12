@@ -201,7 +201,7 @@ struct RootLoop {
     // -------------------- ---------------------
     if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
       glob.input_state.fb_resize = false; 
-      glob.swapchain_resetter->Reset (glob.display, glob.device);
+      glob.swapchain_resetter->Reset (glob.device);
       HERE ("#$A%"); 
       return true;
     }
@@ -308,7 +308,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   rokz::InitializeInstance (glob.instance); 
 
-  rokz::SetupDisplay (glob.display, "darkroot garden", glob.input_state, kTestExtent, glob.instance); 
+  rokz::SetupDisplay (glob.display, glob.input_state, "darkroot garden", kTestExtent, glob.instance); 
   //SetupDisplay (glob); 
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
@@ -377,8 +377,8 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      kTestExtent,
                                      glob.device); // <-- this does all the additional  attachmentes
   //
-  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.views,
-                                                           glob.depthimage, glob.depthimageview,
+  glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, glob.display, scg.images,
+                                                           scg.views, glob.depthimage, glob.depthimageview,
                                                            glob.msaacolorimage, glob.msaacolorimageview); 
 
   // for BeginRendering ()
