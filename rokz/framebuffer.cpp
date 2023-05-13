@@ -46,12 +46,10 @@ rc::Framebuffer::Ref rokz::rc::CreateFramebuffer (VkRenderPass renderpass, const
  
 }
 
-
-// -- old
 // --------------------------------------------------------------------------------------------
-//                        
+// -- OLD -- 
 // --------------------------------------------------------------------------------------------
-bool old_rokz_CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
+bool old_CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
                                const std::vector<ImageView>&   imageviews,
                                const RenderPass&               render_pass, 
                                const VkExtent2D&               swapchain_ext, 

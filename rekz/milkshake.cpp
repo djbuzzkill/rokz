@@ -21,33 +21,147 @@ using namespace rekz;
 
 const VkExtent2D kDefaultDimensions { 1024, 768 }; 
 // --------------------------------------------------------------------------------------------
-// 
+//
 // --------------------------------------------------------------------------------------------
-bool setup_gbuf_framebuffers (milkshake::Glob& glob) {
 
-  // glob.attachment.
-  // do we need Nswapchainimages of framebuffers for geombuffer?
+bool setup_color_render_attachments (milkshake::Glob& glob) {
 
-  // rc::RenderPass::Ref renderpass ;
+  using namespace milkshake;
 
-  // for (auto v : glob.swapchain_group.views) { 
+  const Device& device = glob.device; 
+  const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
+  const VkImageUsageFlags color_target_usage   = rokz::kColorTargetUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
+  const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
+
+  glob.msaa_samples = sample_bit_count; 
+  
+  //Vec<rc::Attachment>& colorattach = glob.gbuff.attachment.color; 
+  //rc::Attachment&      depthattach = glob.attachment.depth;
+
+  { // position
+    VkImageCreateInfo ci {}; 
+
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+
+    glob.gbuff.attachment.position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
+    glob.gbuff.attachment.position.image  = rc::CreateImage (ci, device);
+    glob.gbuff.attachment.position.view   ; 
+    // create imageview...
+    assert (false); 
+  }
+
+  { // normal
+    VkImageCreateInfo ci {}; 
 
     
-  //   Vec<rc::ImageView::Ref> views = {
-  //   } 
     
-  //     rc::CreateFramebuffer (views, renderpass, kDefaultDimensions, glob.device);
+    
+      
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+    glob.gbuff.attachment.normal.format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
+    glob.gbuff.attachment.normal.image =  rc::CreateImage (ci, device);
+    glob.gbuff.attachment.normal.view; 
+    // create imageview...
+    assert (false); 
+  }
+
+
+  { // albedo
+    VkImageCreateInfo ci {}; 
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+
+    glob.gbuff.attachment.albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    glob.gbuff.attachment.albedo.image  = rc::CreateImage (ci, device);
+    glob.gbuff.attachment.albedo.view ; 
+
+    // create imageview...
+    assert (false); 
+  }
+
+  // { // specular
+            
   // }
   
-  // position color target
-  //   normall color target
-  //   albedo color target
-  //   depth gbuff target 
+  // { // depth 
+  //   VkImageCreateInfo ci {}; 
+  //   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
+  
+  //   cx::CreateInfo_2D (ci, glob.depth_format, depth_target_usage, sample_bit_count, 
+  //                      kDefaultDimensions.width, kDefaultDimensions.height);
+
+  //   //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+  //   depthattach.image = rc::CreateImage (ci, device); 
+
+  //   // create imageview...
+  //   assert (false); 
+  // }
+
+  return true; 
+}
+
+// --------------------------------------------------------------------------------------------
+//  only 1 geom framebuffer
+// --------------------------------------------------------------------------------------------
+bool setup_gbuff_framebuffer (milkshake::Glob& glob) {
+
+
+  
+  // bool old_CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
+  //                                const std::vector<ImageView>&   imageviews,
+  //                                const RenderPass&               render_pass, 
+  //                                const VkExtent2D&               swapchain_ext, 
+  //                                const VkImageView&              msaa_color_imageview, 
+  //                                const VkImageView&              depth_imageview, 
+  //                                const Device&                   device) {
+  //   printf ("%s\n", __FUNCTION__);
+
+  //   framebuffers.resize (imageviews.size()); 
+
+  //   for (size_t i = 0; i < imageviews.size(); i++) {
+
+  //     framebuffers[i].attachments.clear ();
+
+  //     // does this match renderpass 
+  //     framebuffers[i].attachments.push_back (msaa_color_imageview);
+  //     framebuffers[i].attachments.push_back (depth_imageview );
+  //     framebuffers[i].attachments.push_back (imageviews[i].handle);
+
+  //     CreateInfo (framebuffers[i].ci, render_pass.handle, framebuffers[i].attachments, swapchain_ext); 
+    
+  //     if (vkCreateFramebuffer(device.handle, &framebuffers[i].ci, nullptr, &framebuffers[i].handle) != VK_SUCCESS) {
+  //       printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
+  //       return false;
+  //     }
+
+  //   }
+
+  //   return true; 
+  // }
+  
+  // glob.attachment.
+  // do we need Nswapchainimages of framebuffers for geombuffer?
+  // for (auto v : glob.swapchain_group.views) { 
+  Vec<VkImageView> views = {
+    glob.gbuff.attachment.position.view->handle, 
+    glob.gbuff.attachment.normal.view->handle, 
+    glob.gbuff.attachment.albedo.view->handle, 
+    glob.gbuff.attachment.depth.view->handle, 
+  }; 
+  //   } 
+    
+  glob.gbuff.framebuffer =
+    rc::CreateFramebuffer ( glob.gbuff.renderpass->handle, views, kDefaultDimensions, glob.device); 
   
 
   return false; 
 }
-// -- 
+
+// --------------------------------------------------------------------------------------------
+//  lcomp has swapchain_images.size() framebuffers
+// --------------------------------------------------------------------------------------------
 bool setup_lcomp_framebuffers (milkshake::Glob& glob) {
 
 
@@ -91,118 +205,65 @@ bool setup_lcomp_framebuffers (milkshake::Glob& glob) {
 }
 
 // -- 
-bool setup_gbuf_renderpass  (milkshake::Glob& glob) {
-  // bool rokz::CreateRenderPass (RenderPass&             render_pass,
-  //                              VkFormat                swapchain_format,
-  //                              VkSampleCountFlagBits   msaa_samples, 
-  //                              const VkDevice&         device,
-  //                              const VkPhysicalDevice& physdev) {
+bool setup_gbuff_renderpass  (milkshake::Glob& glob) {
+  using namespace milkshake; 
 
-  //   // COLOR ATTACHMENT | VkAttachmentDescription 
-  //   auto CO_n = ATTACH_COLOR; 
-  //   render_pass.attach_desc[CO_n] = {}; 
-  //   render_pass.attach_desc[CO_n].format         = swapchain_format ;
-  //   render_pass.attach_desc[CO_n].samples        = msaa_samples;  // VK_SAMPLE_COUNT_1_BIT; // msaa samples
-  //   render_pass.attach_desc[CO_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  //   render_pass.attach_desc[CO_n].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  //   render_pass.attach_desc[CO_n].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  //   render_pass.attach_desc[CO_n].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  //   render_pass.attach_desc[CO_n].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  //   render_pass.attach_desc[CO_n].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+  Vec<VkAttachmentDescription> attdescs  (NUM_TOTAL_ATTACHMENTS);
+  Vec<VkAttachmentReference>   attrefs   (NUM_TOTAL_ATTACHMENTS);   
 
-  //   // DEPTHSTENCIL ATTACHMENT | VkAttachmentDescription 
-  //   auto DP_n = ATTACH_DEPTHSTENCIL;
-  //   render_pass.attach_desc[DP_n] = {}; 
-  //   // render_pass.attach_desc[dp_in].format         = depth_format;
-  //   ut::FindDepthFormat (render_pass.attach_desc[DP_n].format, physdev);
-  //   render_pass.attach_desc[DP_n].samples        = msaa_samples; // VK_SAMPLE_COUNT_1_BIT;
-  //   render_pass.attach_desc[DP_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  //   render_pass.attach_desc[DP_n].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  //   render_pass.attach_desc[DP_n].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  //   render_pass.attach_desc[DP_n].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  //   render_pass.attach_desc[DP_n].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  //   render_pass.attach_desc[DP_n].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-  //   // COLOR RESOLVE ATTACHMENT | VkAttachmentDescription 
-  //   auto CR_n = ATTACH_COLRESOLV; 
-  //   render_pass.attach_desc[CR_n] = {}; 
-  //   render_pass.attach_desc[CR_n].format         = swapchain_format ;
-  //   render_pass.attach_desc[CR_n].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
-  //   render_pass.attach_desc[CR_n].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  //   render_pass.attach_desc[CR_n].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  //   render_pass.attach_desc[CR_n].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  //   render_pass.attach_desc[CR_n].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  //   render_pass.attach_desc[CR_n].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  //   render_pass.attach_desc[CR_n].finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-  //   //VkAttachmentReference color_attachment_ref{};
-  //   render_pass.attach_ref[CO_n] = {};
-  //   render_pass.attach_ref[CO_n].attachment = CO_n; // index
-  //   render_pass.attach_ref[CO_n].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  //   // depth
-  //   render_pass.attach_ref[DP_n] = {};
-  //   render_pass.attach_ref[DP_n].attachment = DP_n;
-  //   render_pass.attach_ref[DP_n].layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  //   // 
-  //   render_pass.attach_ref[CR_n] = {};
-  //   render_pass.attach_ref[CR_n].attachment = CR_n; // index
-  //   render_pass.attach_ref[CR_n].layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // <--- color opt is correct
-  //                                        // = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  VkFormat  gbuff_color_format = VK_FORMAT_R16G16B16A16_SFLOAT; 
+  VkFormat  gbuff_depth_format; 
+  ut::FindDepthFormat (gbuff_depth_format, glob.device.physical.handle); 
   
-  //   // SUBPASS,  VkSubpassDescription                 
-  //   render_pass.subpass_descs.resize (1);
-  //   render_pass.subpass_descs[0] = {}; 
-  //   render_pass.subpass_descs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  //   render_pass.subpass_descs[0].colorAttachmentCount    = 1;
-  //   render_pass.subpass_descs[0].pColorAttachments       = &render_pass.attach_ref[CO_n];  // co_in, [cr_in] for msaa
-  //   render_pass.subpass_descs[0].inputAttachmentCount    = 0;
-  //   render_pass.subpass_descs[0].pInputAttachments       = nullptr;
-  //   render_pass.subpass_descs[0].pDepthStencilAttachment = &render_pass.attach_ref[DP_n]; //nullptr;
-  //   render_pass.subpass_descs[0].preserveAttachmentCount = 0;
-  //   render_pass.subpass_descs[0].pPreserveAttachments    = nullptr;
-  //   render_pass.subpass_descs[0].pResolveAttachments     = &render_pass.attach_ref[CR_n];
-  //   render_pass.subpass_descs[0].flags = 0 ;
-  //   //
-  //   render_pass.dependencies.resize (1);
-  //   render_pass.dependencies[0].srcSubpass    = VK_SUBPASS_EXTERNAL;
-  //   render_pass.dependencies[0].dstSubpass    = 0;
+  // bool rokz::CreateRenderPass ... 
+  for (uint32 i = 0; i < NUM_TOTAL_ATTACHMENTS; ++i) { 
+    // descs
+    attdescs[i] = {}; 
+    attdescs[i].format         = (ATTACH_DEPTHI == i ? gbuff_depth_format : gbuff_color_format); 
+    attdescs[i].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
+    attdescs[i].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attdescs[i].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+    attdescs[i].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attdescs[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attdescs[i].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+    attdescs[i].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+    // refs
+    attrefs[i] = {};
+    attrefs[i].attachment = i;
+    attrefs[i].layout     = (i == ATTACH_DEPTHI ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL :
+                                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
+  }
 
-  //   render_pass.dependencies[0].srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  //   render_pass.dependencies[0].srcAccessMask = 0;
+  Vec<VkSubpassDescription> subpdescs (1);
+  subpdescs[0] = {}; 
+  subpdescs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpdescs[0].colorAttachmentCount    = NUM_COLOR_ATTACHMENTS;
+  subpdescs[0].pColorAttachments       = &attrefs[0];  // co_in, [cr_in] for msaa
+  subpdescs[0].inputAttachmentCount    = 0;
+  subpdescs[0].pInputAttachments       = nullptr;
+  subpdescs[0].pDepthStencilAttachment = &attrefs[ATTACH_DEPTHI]; //nullptr;
+  subpdescs[0].preserveAttachmentCount = 0;
+  subpdescs[0].pPreserveAttachments    = nullptr;
+  subpdescs[0].pResolveAttachments     = nullptr;
+  subpdescs[0].flags = 0 ;
 
-  //   render_pass.dependencies[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  //   render_pass.dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-  
-  //   // CREATEINFO. gets passed back out
-  //   render_pass.ci  = {}; 
-  //   render_pass.ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  Vec<VkSubpassDependency> subpdeps (1);
+  subpdeps[0].srcSubpass    = VK_SUBPASS_EXTERNAL;
+  subpdeps[0].dstSubpass    = 0;
+  subpdeps[0].srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  subpdeps[0].srcAccessMask = 0;
+  subpdeps[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  subpdeps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-  //   render_pass.ci.attachmentCount = 3; // color + depthstencil + color resolv
-  //   render_pass.ci.pAttachments = &render_pass.attach_desc[0];
 
-  //   render_pass.ci.subpassCount = 1;
-  //   render_pass.ci.pSubpasses   = &render_pass.subpass_descs[0];
+  glob.gbuff.renderpass = rc::CreateRenderPass (attdescs, subpdescs, subpdeps, glob.device); 
 
-  //   render_pass.ci.dependencyCount = render_pass.dependencies.size();
-  //   render_pass.ci.pDependencies = &render_pass.dependencies[0]; 
-  //   render_pass.ci.pNext = nullptr; 
-  //   //
-  //   if (vkCreateRenderPass(device, &render_pass.ci, nullptr, &render_pass.handle) != VK_SUCCESS) {
-  //     printf ("[FAILED] %s create render pass\n", __FUNCTION__);
-  //     return false; 
-  //   }
-
-  //   return true;
-  // }
-
-  
-  HERE("HAI");
   return false;
+
 }
 
 // -- 
 bool setup_lcomp_renderpass (milkshake::Glob& glob) {
-
 
   HERE("HAI");
   return false; 
@@ -431,96 +492,31 @@ struct MilkLoop {
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-bool setup_color_render_attachments (milkshake::Glob& glob) {
-
-  using namespace milkshake;
-
-  const Device& device = glob.device; 
-  const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
-  const VkImageUsageFlags color_target_usage   = rokz::kColorTargetUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
-  const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
-
-  glob.msaa_samples = sample_bit_count; 
-  
-  Vec<rc::Attachment>& colorattach = glob.attachment.color; 
-  rc::Attachment&      depthattach = glob.attachment.depth;
-
-  { // position
-    VkImageCreateInfo ci {}; 
-
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-
-    colorattach[COLATT_POSITION].format = VK_FORMAT_R16G16B16A16_SFLOAT; 
-    colorattach[COLATT_POSITION].image  = rc::CreateImage (ci, device);
-    colorattach[COLATT_POSITION].view   ; 
-    // create imageview...
-    assert (false); 
-  }
-
-  { // normal
-    VkImageCreateInfo ci {}; 
-
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-    colorattach[COLATT_NORMAL].format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
-    colorattach[COLATT_NORMAL].image =  rc::CreateImage (ci, device);
-    colorattach[COLATT_NORMAL].view; 
-    // create imageview...
-    assert (false); 
-  }
-
-
-  { // albedo
-    VkImageCreateInfo ci {}; 
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-
-    colorattach[COLATT_ALBEDO].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    colorattach[COLATT_ALBEDO].image  = rc::CreateImage (ci, device);
-    colorattach[COLATT_ALBEDO].view ; 
-
-    // create imageview...
-    assert (false); 
-  }
-
-  // { // specular
-            
-  // }
-  
-  // { // depth 
-  //   VkImageCreateInfo ci {}; 
-  //   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
-  
-  //   cx::CreateInfo_2D (ci, glob.depth_format, depth_target_usage, sample_bit_count, 
-  //                      kDefaultDimensions.width, kDefaultDimensions.height);
-
-  //   //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
-  //   depthattach.image = rc::CreateImage (ci, device); 
-
-  //   // create imageview...
-  //   assert (false); 
-  // }
-
-  return true; 
-}
-
-// --------------------------------------------------------------------------------------------
-//
-// --------------------------------------------------------------------------------------------
-rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display, Vec<rc::Attachment>& colors, rc::Attachment& depth,
+rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display,
+                                                   rc::Attachment& position,
+                                                   rc::Attachment& normal,
+                                                   rc::Attachment& albedo,
+                                                   rc::Attachment& gbuff_depth,
+                                                   rc::Attachment& lcomp_depth,
                                                    const VkExtent2D& ext2d) {
   //
   struct milkshake_resetter : public SwapchainResetter {
-    rokz::Display&       display; 
-    Vec<rc::Attachment>& colors;     
-    rc::Attachment&      depth;
+    rokz::Display&  display; 
+    rc::Attachment& position;
+    rc::Attachment& normal;
+    rc::Attachment& albedo;
+    rc::Attachment& gbuff_depth;
+    rc::Attachment& lcomp_depth;
     const VkExtent2D&    ext2d;  
     
   public:
 
-    milkshake_resetter (rokz::Display& disp, Vec<rc::Attachment>& cols, rc::Attachment& dep, const VkExtent2D& ext)
-      : display (disp), colors (cols), depth (dep), ext2d (ext)  {
+    milkshake_resetter (rokz::Display& disp, 
+                        rc::Attachment& pos, rc::Attachment& norm, rc::Attachment& alb,
+                        rc::Attachment& gdep, rc::Attachment& ldep, const VkExtent2D& ext)
+      
+      : display (disp), position (pos), normal (norm), albedo(alb), 
+        gbuff_depth(gdep), lcomp_depth(ldep), ext2d (ext)  {
     }
     //
 
@@ -531,7 +527,8 @@ rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display, Vec<r
     }
   };
   
-  return std::make_shared<milkshake_resetter> (display, colors, depth, ext2d); 
+  return std::make_shared<milkshake_resetter> (display, position, normal, albedo,
+                                               gbuff_depth, lcomp_depth, ext2d); 
 }
 // --------------------------------------------------------------------------------------------
 //
@@ -584,7 +581,13 @@ int milkshake::run (const Vec<std::string>& args) {
   setup_color_render_attachments (glob); 
   
   glob.swapchain_resetter =
-      CreateResetMilkshake (glob.display, glob.attachment.color, glob.attachment.depth, kDefaultDimensions); 
+      CreateResetMilkshake (glob.display,
+                            glob.gbuff.attachment.position,
+                            glob.gbuff.attachment.normal,
+                            glob.gbuff.attachment.albedo,
+                            glob.gbuff.attachment.depth,
+                            glob.lcomp.attachment.depth,
+                            kDefaultDimensions); 
                                                   
   // rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
   //                                                        glob.depth_image, glob.depth_imageview,
@@ -594,10 +597,10 @@ int milkshake::run (const Vec<std::string>& args) {
   
   // for BeginRendering ()
 
-  setup_gbuf_renderpass (glob);
-  setup_lcomp_renderpass (glob);
+  setup_gbuff_renderpass (glob);
+  setup_gbuff_framebuffer (glob); 
 
-  setup_gbuf_framebuffers (glob); 
+  setup_lcomp_renderpass (glob);
   setup_lcomp_framebuffers (glob); 
 
   //rokz::SetupDynamicRenderingInfo;//  (glob.rendering_info_group, glob.msaa_color_imageview->handle,

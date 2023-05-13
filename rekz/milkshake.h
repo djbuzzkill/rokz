@@ -17,6 +17,15 @@ namespace milkshake {
   // ---------------------------------------------------------------------------------------
   enum { kMaxFramesInFlight = 2 }; 
 
+  // -- 
+  enum { 
+    ATTACH_POSITIONI = 0, 
+    ATTACH_NORMALI,
+    ATTACH_ALBEDOI, // AT_SPECULAR,
+    NUM_COLOR_ATTACHMENTS, 
+    ATTACH_DEPTHI = NUM_COLOR_ATTACHMENTS, 
+    NUM_TOTAL_ATTACHMENTS
+  }; 
   // ---------------------------------------------------------------------------------------
   struct Basically {
 
@@ -41,14 +50,7 @@ namespace milkshake {
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
   };
 
-  // -- 
-  enum ColorAttachment {
-
-    COLATT_POSITION = 0, COLATT_NORMAL, COLATT_ALBEDO, // AT_SPECULAR,
-
-    NUM_COLOR_ATTACHMENTS
-  }; 
-  
+    
   // -- semsphores in group
   struct nacho_sem  {
     // may need a new syncgroup type
@@ -74,13 +76,20 @@ namespace milkshake {
     // attachement set
     rc::SwapchainGroup      swapchain_group;
 
-
     struct { 
-    // colrs, depthstencil..
-      Vec<rc::Attachment> color; 
-      rc::Attachment      depth; 
-    } attachment;
+      rc::Framebuffer::Ref framebuffer; 
+      rc::RenderPass::Ref  renderpass ;
+      struct {
+        rc::Attachment position, normal, albedo, depth; } attachment;
+    } gbuff; 
 
+    struct {
+      Vec<rc::Framebuffer::Ref> framebuffers;
+      rc::RenderPass::Ref       renderpass;
+      struct {
+        rc::Attachment depth; } attachment; 
+    } lcomp; 
+    
     
     // uniformbundle
     Vec<rc::Buffer::Ref>   global_bu;        // vma_shared_uniforms;

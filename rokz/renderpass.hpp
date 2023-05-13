@@ -43,10 +43,9 @@ namespace rokz {
 
     // -- 
   namespace rc {
-  rc::RenderPass::Ref CreateRenderPass (Vec<VkAttachmentDescription>& attach_descs,
-                                        Vec<VkAttachmentReference>& attach_refs,
-                                        Vec<VkSubpassDescription>& subpdescs,
-                                        Vec<VkSubpassDependency>& subpdeps, 
+  rc::RenderPass::Ref CreateRenderPass (const Vec<VkAttachmentDescription>& attach_descs,
+                                        const Vec<VkSubpassDescription>&    subpdescs,
+                                        const Vec<VkSubpassDependency>&     subpdeps, 
                                         const Device& device); 
   }
 }
