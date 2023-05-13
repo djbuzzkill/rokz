@@ -166,12 +166,11 @@ VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&               
 // ----------------------------------------------------------------------------------------------
 // resource counted
 // ----------------------------------------------------------------------------------------------
-
 rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (Vec<VkAttachmentDescription>& attach_descs,
-                                      Vec<VkAttachmentReference>& attach_refs,
-                                      Vec<VkSubpassDescription>& subpdescs,
-                                      Vec<VkSubpassDependency>& subpdeps, 
-                                                  const Device& device) { 
+                                                      Vec<VkAttachmentReference>& attach_refs,
+                                                      Vec<VkSubpassDescription>& subpdescs,
+                                                      Vec<VkSubpassDependency>& subpdeps, 
+                                                      const Device& device) { 
 
 //rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Device& device) {
 

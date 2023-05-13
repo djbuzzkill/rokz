@@ -174,6 +174,10 @@ namespace rokz {
   // ---------------------------------------------------------------------
   bool CreateGraphicsPipeline (rokz::Pipeline& pipeline, const VkDevice device); 
 
+
+
+  namespace rc {
+  }  
 }
   
 #endif

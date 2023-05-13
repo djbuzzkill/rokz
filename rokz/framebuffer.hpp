@@ -5,15 +5,22 @@
 
 #include "common.hpp"
 #include "rokz_types.hpp"
+#include "rc_types.hpp"
+#include "rc_image.hpp"
 #include <vulkan/vulkan_core.h>
 
 namespace rokz {
 
   
-  VkFramebufferCreateInfo& CreateInfo (VkFramebufferCreateInfo& ci,
-                                       const VkExtent2D&               swapchain_ext, 
-                                       const RenderPass&               render_pass,
-                                       const std::vector<VkImageView>& attachments); 
+  // VkFramebufferCreateInfo& CreateInfo (VkFramebufferCreateInfo& ci,
+  //                                      const VkExtent2D&               swapchain_ext, 
+  //                                      const RenderPass&               render_pass,
+  //                                      const std::vector<VkImageView>& attachments); 
+
+  VkFramebufferCreateInfo& CreateInfo (VkFramebufferCreateInfo&  ci,
+                                       VkRenderPass             render_pass,
+                                       const Vec<VkImageView>&   attachments, 
+                                       const VkExtent2D&         swapchain_ext); 
   // ---------------------------------------------------------------------
   bool CreateFramebuffer (VkFramebuffer&           framebuffers,
                           VkFramebufferCreateInfo& create_infos,
@@ -34,25 +41,18 @@ namespace rokz {
                            const Device&                   device); 
 
 
-  namespace rc {
 
-    struct Framebuffer : public deviceob<VkFramebuffer, Framebuffer> { 
-      Framebuffer (const Device& dev) : deviceob (dev) { 
-      }
-    
-      virtual ~Framebuffer  () { if (handle) { 
-          vkDestroyFramebuffer (device.handle, handle, VK_NULL_HANDLE);
-          handle = VK_NULL_HANDLE; 
-        }
-      }
-      //VkFramebufferCreateInfo  ci;
-      std::vector<VkImageView> attachments; 
-    };
+  // -- -- 
+  namespace rc { // 
 
 
-    Framebuffer::Ref CreateFramebuffer (const Device& device); 
+    // Framebuffer::Ref CreateFramebuffer (const Vec<rc::ImageView::Ref>& views, const rc::RenderPass::Ref& renderpass,
+    //                                     const VkExtent2D& ext2d, const Device& device); 
 
-    
+    Framebuffer::Ref CreateFramebuffer (VkRenderPass renderpass, const Vec<VkImageView>& views, 
+                                        const VkExtent2D& ext2d, const Device& device); 
+
+
   }
 
   

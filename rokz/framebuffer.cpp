@@ -1,24 +1,24 @@
 
 
 #include "framebuffer.hpp"
+#include "renderpass.hpp"
+#include <vulkan/vulkan_core.h>
 
 
 
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-VkFramebufferCreateInfo& rokz::CreateInfo (VkFramebufferCreateInfo&        ci,
-                                           const VkExtent2D&               swapchain_ext, 
-                                           const RenderPass&               render_pass,
-                                           const std::vector<VkImageView>& attachments)
+using namespace rokz; 
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+VkFramebufferCreateInfo& rokz::CreateInfo (VkFramebufferCreateInfo& ci, VkRenderPass render_pass,
+                                           const Vec<VkImageView>& attach_views, const VkExtent2D& swapchain_ext)
 {
     ci = {}; 
     ci.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     ci.pNext           = nullptr;
-    ci.renderPass      = render_pass.handle;
-    ci.attachmentCount = attachments.size(); // color + depthstencil + colresolv
-    ci.pAttachments    = &attachments[0]; // attachments;
+    ci.renderPass      = render_pass;
+    ci.attachmentCount = attach_views.size(); // color + depthstencil + colresolv
+    ci.pAttachments    = &attach_views[0]; // attachments;
     ci.width           = swapchain_ext.width;
     ci.height          = swapchain_ext.height;
     ci.layers          = 1;
@@ -26,10 +26,32 @@ VkFramebufferCreateInfo& rokz::CreateInfo (VkFramebufferCreateInfo&        ci,
     return ci; 
 }
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+rc::Framebuffer::Ref rokz::rc::CreateFramebuffer (VkRenderPass renderpass, const Vec<VkImageView>& views, 
+                                                  const VkExtent2D& ext2d, const Device& device) {
+
+  rc::Framebuffer::Ref  res = std::make_shared<rc::Framebuffer> (device);
+
+  VkFramebufferCreateInfo ci {};
+  CreateInfo ( ci, renderpass, views, ext2d); 
+    
+  if (vkCreateFramebuffer(device.handle, &ci, nullptr, &res->handle) != VK_SUCCESS) {
+    printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
+    res.reset ();
+  }
+  
+  return res; 
+ 
+}
+
+
+// -- old
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+bool old_rokz_CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
                                const std::vector<ImageView>&   imageviews,
                                const RenderPass&               render_pass, 
                                const VkExtent2D&               swapchain_ext, 
@@ -49,7 +71,7 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
     framebuffers[i].attachments.push_back (depth_imageview );
     framebuffers[i].attachments.push_back (imageviews[i].handle);
 
-    CreateInfo (framebuffers[i].ci, swapchain_ext, render_pass, framebuffers[i].attachments); 
+    CreateInfo (framebuffers[i].ci, render_pass.handle, framebuffers[i].attachments, swapchain_ext); 
     
     if (vkCreateFramebuffer(device.handle, &framebuffers[i].ci, nullptr, &framebuffers[i].handle) != VK_SUCCESS) {
       printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
@@ -61,14 +83,23 @@ bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers,
   return true; 
 }
 
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+// VkFramebufferCreateInfo& rokz::CreateInfo (VkFramebufferCreateInfo&        ci,
+//                                            const VkExtent2D&               swapchain_ext, 
+//                                            const RenderPass&               render_pass,
+//                                            const std::vector<VkImageView>& attachments)
+// {
+//     ci = {}; 
+//     ci.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+//     ci.pNext           = nullptr;
+//     ci.renderPass      = render_pass.handle;
+//     ci.attachmentCount = attachments.size(); // color + depthstencil + colresolv
+//     ci.pAttachments    = &attachments[0]; // attachments;
+//     ci.width           = swapchain_ext.width;
+//     ci.height          = swapchain_ext.height;
+//     ci.layers          = 1;
 
-using namespace rokz; 
-
-rc::Framebuffer::Ref rc::CreateFramebuffer (const Device& device) {
-
-
-  rc::Framebuffer::Ref  res = std::make_shared<rc::Framebuffer> (device);
-
-  return res; 
- 
-}
+//     return ci; 
+// }

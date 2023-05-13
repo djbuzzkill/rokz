@@ -3,6 +3,7 @@
 #define ROKZ_SHADER_H
 
 #include "common.hpp"
+//#include "shared_types.hpp"
 #include "rokz_types.hpp"
 #include "file.hpp"
 #include <vulkan/vulkan_core.h>
@@ -22,7 +23,7 @@ namespace rokz {
   //  bool               CreateShaderModules(std::vector<VkShaderModule>& shader_modules, std::vector<VkPipelineShaderStageCreateInfo> &shader_stage_create_infos, const std::filesystem::path& fspath, const VkDevice& device); 
   VkPipelineShaderStageCreateInfo& CreateInfo          (VkPipelineShaderStageCreateInfo& ci, VkShaderStageFlagBits stage_flags, const std::string& entry_point, const VkShaderModule& module); 
   //VkShaderModuleCreateInfo&        CreateInfo          (VkShaderModuleCreateInfo& ci, const rokz::bytearray& bin);
-  VkShaderModuleCreateInfo&        CreateInfo          (VkShaderModuleCreateInfo& ci, const rokz::spvcode& spv);
+  VkShaderModuleCreateInfo&        CreateInfo          (VkShaderModuleCreateInfo& ci, const spvcode& spv);
   
   bool                             CreateShaderModule  (VkShaderModule& shmod, const VkShaderModuleCreateInfo& ci, const VkDevice& device); 
   bool                             CreateShaderModule  (ShaderModule& shm, const VkDevice& dev);

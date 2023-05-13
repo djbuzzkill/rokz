@@ -23,7 +23,7 @@ namespace rokz {
 
 
     void TransitionImageLayout (VkImage              image,
-                                rokz::uint32         layeri, 
+                                uint32               layeri, 
                                 VkFormat             format,
                                 const VkImageLayout& old_layout,
                                 const VkImageLayout& new_layout,

@@ -62,7 +62,7 @@ std::vector<std::string>& GetValidationLayers (std::vector<std::string>& vstrs) 
 // ----------------------------------------------------------------------------------------------
 //                          
 // ----------------------------------------------------------------------------------------------
-rokz::SwapchainInfo& rokz::cx::QuerySwapchainInfo (rokz::SwapchainInfo& si, VkSurfaceKHR surf, VkPhysicalDevice device) {
+rokz::SwapchainInfo& rokz::cx::QuerySwapchainInfo (SwapchainInfo& si, VkSurfaceKHR surf, VkPhysicalDevice device) {
 
   printf ("%s\n", __FUNCTION__);
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR (device, surf, &si.capabilities);
@@ -114,11 +114,11 @@ VkApplicationInfo& rokz::cx::AppInfo_default (VkApplicationInfo& app_info) {
 // ---------------------------------------------------------------------
 
 VkInstanceCreateInfo& rokz::cx::CreateInfo (VkInstanceCreateInfo& ci,
-                                        std::vector<const char*>& required_extensions,
-                                        std::vector<std::string>& extstrs,
-                                        std::vector<const char*>& vls,
-                                        std::vector<std::string>& vstrs,
-                                        const VkApplicationInfo&  app_info) {
+                                            Vec<const char*>& required_extensions,
+                                            Vec<std::string>& extstrs,
+                                            Vec<const char*>& vls,
+                                            Vec<std::string>& vstrs,
+                                            const VkApplicationInfo&  app_info) {
 
   printf ("%s -> VkInstanceCreateInfo \n", __FUNCTION__); 
   
