@@ -46,24 +46,21 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
 
     glob.gbuff.attachment.position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
     glob.gbuff.attachment.position.image  = rc::CreateImage (ci, device);
-    glob.gbuff.attachment.position.view   ; 
+    glob.gbuff.attachment.position.view   =
+      rc::CreateImageView (glob.gbuff.attachment.position.image->handle, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
     // create imageview...
     assert (false); 
   }
 
   { // normal
     VkImageCreateInfo ci {}; 
-
-    
-    
-    
-      
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
     glob.gbuff.attachment.normal.format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
     glob.gbuff.attachment.normal.image =  rc::CreateImage (ci, device);
-    glob.gbuff.attachment.normal.view; 
-    // create imageview...
+    glob.gbuff.attachment.normal.view =   
+        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
+       // create imageview...
     assert (false); 
   }
 
@@ -75,29 +72,28 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
 
     glob.gbuff.attachment.albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
     glob.gbuff.attachment.albedo.image  = rc::CreateImage (ci, device);
-    glob.gbuff.attachment.albedo.view ; 
+    glob.gbuff.attachment.albedo.view  =  
+        rc::CreateImageView (glob.gbuff.attachment.albedo.image->handle, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
 
     // create imageview...
     assert (false); 
   }
 
-  // { // specular
-            
-  // }
+  { // depth 
+    VkImageCreateInfo ci {}; 
+    rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
   
-  // { // depth 
-  //   VkImageCreateInfo ci {}; 
-  //   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
-  
-  //   cx::CreateInfo_2D (ci, glob.depth_format, depth_target_usage, sample_bit_count, 
-  //                      kDefaultDimensions.width, kDefaultDimensions.height);
+    cx::CreateInfo_2D (ci, glob.depth_format, depth_target_usage, sample_bit_count, 
+                       kDefaultDimensions.width, kDefaultDimensions.height);
 
-  //   //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
-  //   depthattach.image = rc::CreateImage (ci, device); 
+    //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+    glob.gbuff.attachment.depth.image = rc::CreateImage (ci, device); 
+    glob.gbuff.attachment.depth.view = 
+        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle, VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
 
-  //   // create imageview...
-  //   assert (false); 
-  // }
+    // create imageview...
+    assert (false); 
+  }
 
   return true; 
 }
