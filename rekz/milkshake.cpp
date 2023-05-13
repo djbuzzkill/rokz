@@ -47,7 +47,8 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
     glob.gbuff.attachment.position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
     glob.gbuff.attachment.position.image  = rc::CreateImage (ci, device);
     glob.gbuff.attachment.position.view   =
-      rc::CreateImageView (glob.gbuff.attachment.position.image->handle, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
+      rc::CreateImageView (glob.gbuff.attachment.position.image->handle,
+                           glob.gbuff.attachment.position.format,  VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
     // create imageview...
     assert (false); 
   }
@@ -59,7 +60,8 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
     glob.gbuff.attachment.normal.format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
     glob.gbuff.attachment.normal.image =  rc::CreateImage (ci, device);
     glob.gbuff.attachment.normal.view =   
-        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
+        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
+                             glob.gbuff.attachment.normal.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
        // create imageview...
     assert (false); 
   }
@@ -73,7 +75,8 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
     glob.gbuff.attachment.albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
     glob.gbuff.attachment.albedo.image  = rc::CreateImage (ci, device);
     glob.gbuff.attachment.albedo.view  =  
-        rc::CreateImageView (glob.gbuff.attachment.albedo.image->handle, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
+        rc::CreateImageView (glob.gbuff.attachment.albedo.image->handle,
+                             glob.gbuff.attachment.albedo.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
 
     // create imageview...
     assert (false); 
@@ -89,7 +92,8 @@ bool setup_color_render_attachments (milkshake::Glob& glob) {
     //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
     glob.gbuff.attachment.depth.image = rc::CreateImage (ci, device); 
     glob.gbuff.attachment.depth.view = 
-        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle, VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
+      rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
+                           glob.depth_format, VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
 
     // create imageview...
     assert (false); 
