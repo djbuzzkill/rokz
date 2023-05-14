@@ -253,7 +253,7 @@ int run_marz (const std::vector<std::string>& args) {
   //
   rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
                                      glob.depth_image, glob.depth_imageview,
-                                     glob.msaa_samples, scg.image_format,
+                                     glob.msaa_samples, scg.format,
                                      glob.depth_format, scg.extent,
                                      glob.device); // <-- this does all the additional  attachmentes
   //
@@ -279,7 +279,7 @@ int run_marz (const std::vector<std::string>& args) {
 
   if (!grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
                                scg.extent, glob.msaa_samples,
-                               scg.image_format, glob.depth_format, glob.device)) { 
+                               scg.format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
@@ -287,7 +287,7 @@ int run_marz (const std::vector<std::string>& args) {
   //glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
   if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
-                             glob.msaa_samples, scg.image_format, glob.depth_format,
+                             glob.msaa_samples, scg.format, glob.depth_format,
                              pipe_path, scg.extent, glob.device)) {
     printf ("[FAILED] --> InitLandscapeTiler \n"); 
     return false; 

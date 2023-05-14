@@ -49,6 +49,9 @@ set (REKZ_SOURCE_FILES
   marzdata.cpp
   mars_files.cpp
   milkshake.cpp
+  milkshake_framebuffer.cpp
+  milkshake_renderpass.cpp
+  milkshake_attachment.cpp
   onscreen_data.cpp
   onscreen_draw.cpp
   onscreen_pipe.cpp

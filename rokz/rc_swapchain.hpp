@@ -33,10 +33,10 @@ namespace rokz { namespace rc {
     // -----------------------------------------------------------------------------------------
     struct SwapchainGroup {
       Swapchain::Ref          swapchain ;// = glob.swapchain;
-      VkFormat                image_format;
-      VkExtent2D              extent; 
+      VkFormat                format;
       Vec<VkImage>            images    ;// = glob.swapchain_images; 
       Vec<rc::ImageView::Ref> views;//= glob.swapchain_imageviews; 
+      VkExtent2D              extent; 
     }; 
 
 

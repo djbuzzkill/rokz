@@ -33,14 +33,20 @@ namespace rokz {
   // VkFormat                                    swapchain_format,
   // VkSampleCountFlagBits                       msaa_samples,
 
-  VkAttachmentDescription& ColorAttachment_default  (VkAttachmentDescription& ad);
-  VkAttachmentDescription& DepthStencil_default     (VkAttachmentDescription& ad);
-  VkAttachmentDescription& PresentSrc_default       (VkAttachmentDescription& ad);
-
   
   VkSubpassDescription&    SubpassDesc_default     (VkSubpassDescription&    spd); 
   VkSubpassDependency&     SubpassDep_default      (VkSubpassDependency&     dep); 
 
+
+  VkAttachmentReference&
+  AttachmentReference (VkAttachmentReference& ref, uint32 index, VkImageLayout layout);
+
+  //
+  VkAttachmentDescription& AttachmentDescription (VkAttachmentDescription& desc,              
+                                                  VkFormat format, VkSampleCountFlagBits sample_count_bits, 
+                                                  VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
+                                                  VkAttachmentLoadOp stencil_loadop, VkAttachmentStoreOp stencil_storeop, 
+                                                  VkImageLayout initial_layout, VkImageLayout final_layout); 
     // -- 
   namespace rc {
   rc::RenderPass::Ref CreateRenderPass (const Vec<VkAttachmentDescription>& attach_descs,
@@ -48,5 +54,9 @@ namespace rokz {
                                         const Vec<VkSubpassDependency>&     subpdeps, 
                                         const Device& device); 
   }
+
+
+  #include "renderpass.inl"
+
 }
 #endif

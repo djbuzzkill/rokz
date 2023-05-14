@@ -4,12 +4,6 @@
 #include <vulkan/vulkan_core.h>
 
 
-
-
-
-
-
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -118,17 +112,6 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
 }
 
 
-// r there defaults? ColorAttachment_default, DepthStencil_default,  PresentSrc_default
-
-VkAttachmentDescription& rokz::ColorAttachment_default  (VkAttachmentDescription& ad);
-VkAttachmentDescription& rokz::DepthStencil_default     (VkAttachmentDescription& ad);
-VkAttachmentDescription& rokz::PresentSrc_default       (VkAttachmentDescription& ad);
-
-VkSubpassDescription&    rokz::SubpassDesc_default     (VkSubpassDescription&    spd); 
-VkSubpassDependency&     rokz::SubpassDep_default      (VkSubpassDependency&     dep); 
-
-
-
 // ---------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------
@@ -155,6 +138,39 @@ VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&               
 }
 
 
+// --------------------------------------------------------------------------------------------
+//  
+// --------------------------------------------------------------------------------------------
+VkAttachmentReference& rokz::AttachmentReference (VkAttachmentReference& ref,
+                                                  uint32 index, VkImageLayout layout)
+{
+  ref.attachment = index;
+  ref.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
+  return ref; 
+}
+
+// --------------------------------------------------------------------------------------------
+//  
+// --------------------------------------------------------------------------------------------
+VkAttachmentDescription& rokz::AttachmentDescription (VkAttachmentDescription& desc,              
+                                                      VkFormat format, VkSampleCountFlagBits sample_count_bits, 
+                                                      VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
+                                                      VkAttachmentLoadOp stencil_loadop, VkAttachmentStoreOp stencil_storeop, 
+                                                      VkImageLayout initial_layout, VkImageLayout final_layout)
+{
+
+  desc = {}; 
+  desc.format         = format; 
+  desc.samples        = sample_count_bits; 
+  desc.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  desc.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  desc.stencilLoadOp  = stencil_loadop ;
+  desc.stencilStoreOp = stencil_storeop;
+  desc.initialLayout  = initial_layout;
+  desc.finalLayout    = final_layout; 
+
+  return desc; 
+}
 
 
 // ----------------------------------------------------------------------------------------------

@@ -14,6 +14,7 @@ namespace milkshake {
 
   using rokz::Display; 
 
+  const VkExtent2D kDefaultDimensions { 1024, 768 }; 
   // ---------------------------------------------------------------------------------------
   enum { kMaxFramesInFlight = 2 }; 
 
@@ -36,14 +37,18 @@ namespace milkshake {
     // system
     Instance               instance;
     Device                 device;
+
+
     rc::SwapchainGroup     swapchain_group;
-    SwapchainInfo   swapchain_info;
+    SwapchainInfo          swapchain_info;
+
+    rc::Attachment         depth; 
+
     // DYNAMIC RENDERING, u shal not renderpass
     RenderingInfoGroup     rendering_info_group;
     // struct Display
     Display                display; //
     //AttachmentProps { 
-    VkFormat               depth_format;  
     VkSampleCountFlagBits  msaa_samples;
     VkFormat               swapchain_format; 
     //
@@ -73,8 +78,6 @@ namespace milkshake {
     Glob () : Basically {} {
     }
 
-    // attachement set
-    rc::SwapchainGroup      swapchain_group;
 
     struct { 
       rc::Framebuffer::Ref framebuffer; 

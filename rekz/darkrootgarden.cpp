@@ -336,7 +336,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
   if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
                               kTestExtent, glob.msaa_samples,
-                              scg.image_format, glob.depth_format, glob.device)) {
+                              scg.format, glob.depth_format, glob.device)) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
@@ -348,7 +348,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
   if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
                                  kTestExtent, glob.msaa_samples,
-                                 scg.image_format, glob.depth_format, glob.device)) { 
+                                 scg.format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
@@ -359,7 +359,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
   if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
                                kTestExtent, glob.msaa_samples,
-                               scg.image_format, glob.depth_format,  glob.device)) {
+                               scg.format, glob.depth_format,  glob.device)) {
     printf ("[FAILED] --> OSD pipeline \n"); 
     return false; 
   }
@@ -372,7 +372,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      glob.depthimageview,
                             
                                      glob.msaa_samples,
-                                     scg.image_format,
+                                     scg.format,
                                      glob.depth_format,          
                                      kTestExtent,
                                      glob.device); // <-- this does all the additional  attachmentes

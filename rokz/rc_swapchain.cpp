@@ -35,18 +35,18 @@ bool rc::InitializeSwapchain (rc::SwapchainGroup&               scg,
   rokz::cx::CreateInfo_default (ci, surface, scg.swapchain->family_indices,
                                 extent, swapchain_support_info);
 
-  scg.image_format = ci.imageFormat;
+  scg.format = ci.imageFormat;
   cx::CreateSwapchain (scg.swapchain->handle, ci, device); 
 
   //scg.swapchain.ci.aspectFlags;
   const VkImageAspectFlagBits aspect = VK_IMAGE_ASPECT_COLOR_BIT; 
   rc::GetSwapChainImages (scg.images, scg.swapchain, device); 
 
-  rc::CreateImageViews (scg.views, scg.images, scg.image_format, aspect, device); //  (std::vector<VkImageView>& swapchain_imageviews);
+  rc::CreateImageViews (scg.views, scg.images, scg.format, aspect, device); //  (std::vector<VkImageView>& swapchain_imageviews);
 
   for (size_t iimg = 0; iimg < scg.images.size (); ++iimg) {
     // manual transition b/c KHR_dynamic_rendering
-    rokz::cx::TransitionImageLayout (scg.images[iimg], scg.image_format,
+    rokz::cx::TransitionImageLayout (scg.images[iimg], scg.format,
                                      VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                                      device.queues.graphics, device.command_pool.handle, device.handle);
   }

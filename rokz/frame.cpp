@@ -17,7 +17,7 @@ int cx::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
   //rc::Swapchain::Ref& swapchain = scg.swapchain;
   
   // dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
+  cx::TransitionImageLayout (scg.images[image_index], scg.format,
                              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                              device.queues.graphics, device.command_pool.handle, device.handle);
 
@@ -149,7 +149,7 @@ int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
   }
   
   // dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index], scg.image_format,
+  cx::TransitionImageLayout (scg.images[image_index], scg.format,
                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              device.queues.graphics,
                              device.command_pool.handle, device.handle);

@@ -13,269 +13,28 @@
 #include "rokz/renderpass.hpp"
 #include "rokz/rokz_types.hpp"
 
-
-
 using namespace rokz; 
 using namespace rekz; 
+using namespace milkshake;
 
-
-const VkExtent2D kDefaultDimensions { 1024, 768 }; 
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
+bool setup_lcomp_attachments (Glob& glob); 
+bool setup_gbuff_attachments (Glob& glob); 
 
-bool setup_color_render_attachments (milkshake::Glob& glob) {
+bool setup_gbuff_framebuffer  (Glob& glob);
+bool setup_lcomp_framebuffers (Glob& glob); 
 
-  using namespace milkshake;
-
-  const Device& device = glob.device; 
-  const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
-  const VkImageUsageFlags color_target_usage   = rokz::kColorTargetUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
-  const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
-
-  glob.msaa_samples = sample_bit_count; 
-  
-  //Vec<rc::Attachment>& colorattach = glob.gbuff.attachment.color; 
-  //rc::Attachment&      depthattach = glob.attachment.depth;
-
-  { // position
-    VkImageCreateInfo ci {}; 
-
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-
-    glob.gbuff.attachment.position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
-    glob.gbuff.attachment.position.image  = rc::CreateImage (ci, device);
-    glob.gbuff.attachment.position.view   =
-      rc::CreateImageView (glob.gbuff.attachment.position.image->handle,
-                           glob.gbuff.attachment.position.format,  VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
-    // create imageview...
-    assert (false); 
-  }
-
-  { // normal
-    VkImageCreateInfo ci {}; 
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-    glob.gbuff.attachment.normal.format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
-    glob.gbuff.attachment.normal.image =  rc::CreateImage (ci, device);
-    glob.gbuff.attachment.normal.view =   
-        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
-                             glob.gbuff.attachment.normal.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
-       // create imageview...
-    assert (false); 
-  }
-
-
-  { // albedo
-    VkImageCreateInfo ci {}; 
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-
-    glob.gbuff.attachment.albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    glob.gbuff.attachment.albedo.image  = rc::CreateImage (ci, device);
-    glob.gbuff.attachment.albedo.view  =  
-        rc::CreateImageView (glob.gbuff.attachment.albedo.image->handle,
-                             glob.gbuff.attachment.albedo.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
-
-    // create imageview...
-    assert (false); 
-  }
-
-  { // depth 
-    VkImageCreateInfo ci {}; 
-    rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
-  
-    cx::CreateInfo_2D (ci, glob.depth_format, depth_target_usage, sample_bit_count, 
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-
-    //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
-    glob.gbuff.attachment.depth.image = rc::CreateImage (ci, device); 
-    glob.gbuff.attachment.depth.view = 
-      rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
-                           glob.depth_format, VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
-
-    // create imageview...
-    assert (false); 
-  }
-
-  return true; 
-}
+bool setup_gbuff_renderpass (Glob& glob);
+bool setup_lcomp_renderpass (Glob& glob); 
 
 // --------------------------------------------------------------------------------------------
-//  only 1 geom framebuffer
+//
 // --------------------------------------------------------------------------------------------
-bool setup_gbuff_framebuffer (milkshake::Glob& glob) {
-
-
-  
-  // bool old_CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
-  //                                const std::vector<ImageView>&   imageviews,
-  //                                const RenderPass&               render_pass, 
-  //                                const VkExtent2D&               swapchain_ext, 
-  //                                const VkImageView&              msaa_color_imageview, 
-  //                                const VkImageView&              depth_imageview, 
-  //                                const Device&                   device) {
-  //   printf ("%s\n", __FUNCTION__);
-
-  //   framebuffers.resize (imageviews.size()); 
-
-  //   for (size_t i = 0; i < imageviews.size(); i++) {
-
-  //     framebuffers[i].attachments.clear ();
-
-  //     // does this match renderpass 
-  //     framebuffers[i].attachments.push_back (msaa_color_imageview);
-  //     framebuffers[i].attachments.push_back (depth_imageview );
-  //     framebuffers[i].attachments.push_back (imageviews[i].handle);
-
-  //     CreateInfo (framebuffers[i].ci, render_pass.handle, framebuffers[i].attachments, swapchain_ext); 
-    
-  //     if (vkCreateFramebuffer(device.handle, &framebuffers[i].ci, nullptr, &framebuffers[i].handle) != VK_SUCCESS) {
-  //       printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
-  //       return false;
-  //     }
-
-  //   }
-
-  //   return true; 
-  // }
-  
-  // glob.attachment.
-  // do we need Nswapchainimages of framebuffers for geombuffer?
-  // for (auto v : glob.swapchain_group.views) { 
-  Vec<VkImageView> views = {
-    glob.gbuff.attachment.position.view->handle, 
-    glob.gbuff.attachment.normal.view->handle, 
-    glob.gbuff.attachment.albedo.view->handle, 
-    glob.gbuff.attachment.depth.view->handle, 
-  }; 
-  //   } 
-    
-  glob.gbuff.framebuffer =
-    rc::CreateFramebuffer ( glob.gbuff.renderpass->handle, views, kDefaultDimensions, glob.device); 
-  
-
-  return false; 
-}
-
-// --------------------------------------------------------------------------------------------
-//  lcomp has swapchain_images.size() framebuffers
-// --------------------------------------------------------------------------------------------
-bool setup_lcomp_framebuffers (milkshake::Glob& glob) {
-
-
-  // surface color target
-  // depth lcmop target
-
-  // bool rokz::CreateFramebuffers (std::vector<Framebuffer>&       framebuffers, 
-  //                                const std::vector<ImageView>&   imageviews,
-  //                                const RenderPass&               render_pass, 
-  //                                const VkExtent2D&               swapchain_ext, 
-  //                                const VkImageView&              msaa_color_imageview, 
-  //                                const VkImageView&              depth_imageview, 
-  //                                const Device&                   device) {
-  //   printf ("%s\n", __FUNCTION__);
-
-  //   framebuffers.resize (imageviews.size()); 
-
-  //   for (size_t i = 0; i < imageviews.size(); i++) {
-
-  //     framebuffers[i].attachments.clear ();
-
-  //     // does this match renderpass 
-  //     framebuffers[i].attachments.push_back (msaa_color_imageview);
-  //     framebuffers[i].attachments.push_back (depth_imageview );
-  //     framebuffers[i].attachments.push_back (imageviews[i].handle);
-
-  //     CreateInfo (framebuffers[i].ci, swapchain_ext, render_pass, framebuffers[i].attachments); 
-    
-  //     if (vkCreateFramebuffer(device.handle, &framebuffers[i].ci, nullptr, &framebuffers[i].handle) != VK_SUCCESS) {
-  //       printf ("[FAILED] %s create framebuffer\n", __FUNCTION__);
-  //       return false;
-  //     }
-
-  //   }
-
-  //   return true; 
-  // }
-
-
-  return false; 
-}
-
-// -- 
-bool setup_gbuff_renderpass  (milkshake::Glob& glob) {
-  using namespace milkshake; 
-
-  Vec<VkAttachmentDescription> attdescs  (NUM_TOTAL_ATTACHMENTS);
-  Vec<VkAttachmentReference>   attrefs   (NUM_TOTAL_ATTACHMENTS);   
-
-  VkFormat  gbuff_color_format = VK_FORMAT_R16G16B16A16_SFLOAT; 
-  VkFormat  gbuff_depth_format; 
-  ut::FindDepthFormat (gbuff_depth_format, glob.device.physical.handle); 
-  
-  // bool rokz::CreateRenderPass ... 
-  for (uint32 i = 0; i < NUM_TOTAL_ATTACHMENTS; ++i) { 
-    // descs
-    attdescs[i] = {}; 
-    attdescs[i].format         = (ATTACH_DEPTHI == i ? gbuff_depth_format : gbuff_color_format); 
-    attdescs[i].samples        = VK_SAMPLE_COUNT_1_BIT; // msaa samples
-    attdescs[i].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attdescs[i].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-    attdescs[i].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attdescs[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attdescs[i].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-    attdescs[i].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
-    // refs
-    attrefs[i] = {};
-    attrefs[i].attachment = i;
-    attrefs[i].layout     = (i == ATTACH_DEPTHI ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL :
-                                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
-  }
-
-  Vec<VkSubpassDescription> subpdescs (1);
-  subpdescs[0] = {}; 
-  subpdescs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  subpdescs[0].colorAttachmentCount    = NUM_COLOR_ATTACHMENTS;
-  subpdescs[0].pColorAttachments       = &attrefs[0];  // co_in, [cr_in] for msaa
-  subpdescs[0].inputAttachmentCount    = 0;
-  subpdescs[0].pInputAttachments       = nullptr;
-  subpdescs[0].pDepthStencilAttachment = &attrefs[ATTACH_DEPTHI]; //nullptr;
-  subpdescs[0].preserveAttachmentCount = 0;
-  subpdescs[0].pPreserveAttachments    = nullptr;
-  subpdescs[0].pResolveAttachments     = nullptr;
-  subpdescs[0].flags = 0 ;
-
-  Vec<VkSubpassDependency> subpdeps (1);
-  subpdeps[0].srcSubpass    = VK_SUBPASS_EXTERNAL;
-  subpdeps[0].dstSubpass    = 0;
-  subpdeps[0].srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  subpdeps[0].srcAccessMask = 0;
-  subpdeps[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-  subpdeps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-
-  glob.gbuff.renderpass = rc::CreateRenderPass (attdescs, subpdescs, subpdeps, glob.device); 
-
-  return false;
-
-}
-
-// -- 
-bool setup_lcomp_renderpass (milkshake::Glob& glob) {
-
-  HERE("HAI");
-  return false; 
-}
-
-
-// -- 
-void cleanup_milkshake (milkshake::Glob& glob) {
+void cleanup_milkshake (Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
-
-
   // glob.gridbuff.reset (); //rekz::CleanupGridData    (glob.gridata, glob.device); 
   // glob.drawgrid.reset (); 
 
@@ -571,14 +330,14 @@ int milkshake::run (const Vec<std::string>& args) {
   // 1 sample
   glob.msaa_samples = VK_SAMPLE_COUNT_1_BIT;  // rokz::ut::MaxUsableSampleCount (glob.device.physical); 
 
-  rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
+  rokz::ut::FindDepthFormat (glob.depth.format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
   //  
   //const size_t NuberOfColorTargets = 2; 
-  setup_color_render_attachments (glob); 
+  setup_gbuff_attachments (glob); 
   
   glob.swapchain_resetter =
       CreateResetMilkshake (glob.display,
@@ -618,7 +377,7 @@ int milkshake::run (const Vec<std::string>& args) {
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
   if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
                                  kDefaultDimensions, glob.msaa_samples,
-                                 scg.image_format, glob.depth_format, glob.device)) { 
+                                 scg.format, glob.depth.format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
