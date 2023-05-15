@@ -10,8 +10,7 @@ using namespace milkshake;
 // --------------------------------------------------------------------------------------------
 //  
 // --------------------------------------------------------------------------------------------
-bool setup_gbuff_renderpass  (Glob& glob) {
-
+bool setup_gbuff_renderpass (Glob& glob) {
 
   const Device& device = glob.device; 
 
@@ -19,7 +18,6 @@ bool setup_gbuff_renderpass  (Glob& glob) {
   Vec<VkAttachmentReference>   attrefs   (NUM_TOTAL_ATTACHMENTS);   
 
   ut::FindDepthFormat (glob.depth.format, device.physical.handle); 
-
   VkFormat color_format = VK_FORMAT_R16G16B16A16_SFLOAT; 
   VkFormat depth_format =  glob.depth.format;
   
@@ -87,35 +85,11 @@ bool setup_lcomp_renderpass (Glob& glob) {
   
   Vec<VkAttachmentDescription> attdescs  (attachment_count);
   Vec<VkAttachmentReference>   attrefs   (attachment_count);   
-  //glob.msaa_samples = VK_SAMPLE_COUNT_1_BIT; <-- should be set by now
-  // attdescs[0] = {}; 
-  // attdescs[0].format         = color_format; 
-  // attdescs[0].samples        = glob.msaa_samples; 
-  // attdescs[0].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  // attdescs[0].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  // attdescs[0].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  // attdescs[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  // attdescs[0].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  // attdescs[0].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+
   ColorAttachment_default (attdescs[0], color_format, glob.msaa_samples); 
-  // attrefs[0] = {};
-  // attrefs[0].attachment      = 0;
-  // attrefs[0].layout          = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
   AttachmentReference (attrefs[0], 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
 
-  // attdescs[1] = {}; 
-  // attdescs[1].format         = depth_format; 
-  // attdescs[1].samples        = glob.msaa_samples; 
-  // attdescs[1].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  // attdescs[1].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  // attdescs[1].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  // attdescs[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  // attdescs[1].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-  // attdescs[1].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
   DepthAttachment_default (attdescs[1], depth_format, glob.msaa_samples); 
-  // attrefs [1] = {};
-  // attrefs [1].attachment     = 1; <--- is this referencing the position of attdescs?
-  // attrefs [1].layout         =  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; 
   AttachmentReference (attrefs[1], 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL); 
     
   Vec<VkSubpassDescription> subpdescs (1);

@@ -4,16 +4,98 @@
 #include <vulkan/vulkan_core.h>
 
 
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-bool rokz::CreateRenderPass (RenderPass&             render_pass,
+
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&                     ci,
+                                          const std::vector<VkAttachmentDescription>& attach_descs,
+                                          const std::vector<VkSubpassDescription>&    subpass_descs,
+                                          const std::vector<VkSubpassDependency>&     deps) {
+
+  ci  = {}; 
+  ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  ci.flags = 0; 
+  ci.pNext = nullptr; 
+  // VkAttachmentDescription's
+  ci.attachmentCount = attach_descs.size(); 
+  ci.pAttachments = &attach_descs[0];
+  // VkSubpassDescription's
+  ci.subpassCount = subpass_descs.size();
+  ci.pSubpasses   = &subpass_descs[0];
+  // VkSubpassDependency's
+  ci.dependencyCount = deps.size();
+  ci.pDependencies   = &deps[0]; 
+
+  return ci; 
+}
+
+
+// --------------------------------------------------------------------------------------------
+//  
+// --------------------------------------------------------------------------------------------
+VkAttachmentReference& rokz::AttachmentReference (VkAttachmentReference& ref,
+                                                  uint32 index, VkImageLayout layout)
+{
+  ref.attachment = index;
+  ref.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
+  return ref; 
+}
+
+// --------------------------------------------------------------------------------------------
+//  
+// --------------------------------------------------------------------------------------------
+VkAttachmentDescription& rokz::AttachmentDescription (VkAttachmentDescription& desc,              
+                                                      VkFormat format, VkSampleCountFlagBits sample_count_bits, 
+                                                      VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
+                                                      VkAttachmentLoadOp stencil_loadop, VkAttachmentStoreOp stencil_storeop, 
+                                                      VkImageLayout initial_layout, VkImageLayout final_layout)
+{
+  desc = {}; 
+  desc.flags          = 0;                            // VkAttachmentDescriptionFlagBits
+  desc.format         = format;                       // VkFormat 
+  desc.samples        = sample_count_bits;            // VkSampleCountFlagBits 
+  desc.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;  // VkAttachmentLoadOp  
+  desc.storeOp        = VK_ATTACHMENT_STORE_OP_STORE; // VkAttachmentStoreOp 
+  desc.stencilLoadOp  = stencil_loadop ;              //
+  desc.stencilStoreOp = stencil_storeop;              //
+  desc.initialLayout  = initial_layout;               // VkImageLayout 
+  desc.finalLayout    = final_layout;                 //
+  return desc; 
+}
+
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
+rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Vec<VkAttachmentDescription>& descs,
+                                                      const Vec<VkSubpassDescription>&    subpdescs,
+                                                      const Vec<VkSubpassDependency>&     subpdeps, 
+                                                      const Device&                       device) { 
+
+  HERE("HAI"); 
+  rokz::rc::RenderPass::Ref ret = std::make_shared<rc::RenderPass> (device) ;   
+  VkRenderPassCreateInfo  ci {}; 
+  CreateInfo (ci, descs, subpdescs, subpdeps); 
+
+  if (vkCreateRenderPass (device.handle, &ci, nullptr, &ret->handle) != VK_SUCCESS) {
+    printf ("[FAILED] %s create render pass\n", __FUNCTION__);
+    return rc::RenderPass::Ref (0); ; 
+  }
+
+  return ret;
+}
+
+
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
+bool rokz_old_CreateRenderPass (rokz::RenderPass&             render_pass,
                              VkFormat                swapchain_format,
                              VkSampleCountFlagBits   msaa_samples, 
                              const VkDevice&         device,
                              const VkPhysicalDevice& physdev) {
   //printf ("%s\n", __FUNCTION__); 
-
+  using namespace rokz; 
   // COLOR ATTACHMENT | VkAttachmentDescription 
   auto CO_n = ATTACH_COLOR; 
   render_pass.attach_desc[CO_n] = {}; 
@@ -109,89 +191,5 @@ bool rokz::CreateRenderPass (RenderPass&             render_pass,
   }
 
   return true;
-}
-
-
-// ---------------------------------------------------------------------
-//
-// ---------------------------------------------------------------------
-VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&                     ci,
-                                          const std::vector<VkAttachmentDescription>& attach_descs,
-                                          const std::vector<VkSubpassDescription>&    subpass_descs,
-                                          const std::vector<VkSubpassDependency>&     deps) {
-
-  ci  = {}; 
-  ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  ci.flags = 0; 
-  ci.pNext = nullptr; 
-  // VkAttachmentDescription's
-  ci.attachmentCount = attach_descs.size(); 
-  ci.pAttachments = &attach_descs[0];
-  // VkSubpassDescription's
-  ci.subpassCount = subpass_descs.size();
-  ci.pSubpasses   = &subpass_descs[0];
-  // VkSubpassDependency's
-  ci.dependencyCount = deps.size();
-  ci.pDependencies   = &deps[0]; 
-
-  return ci; 
-}
-
-
-// --------------------------------------------------------------------------------------------
-//  
-// --------------------------------------------------------------------------------------------
-VkAttachmentReference& rokz::AttachmentReference (VkAttachmentReference& ref,
-                                                  uint32 index, VkImageLayout layout)
-{
-  ref.attachment = index;
-  ref.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
-  return ref; 
-}
-
-// --------------------------------------------------------------------------------------------
-//  
-// --------------------------------------------------------------------------------------------
-VkAttachmentDescription& rokz::AttachmentDescription (VkAttachmentDescription& desc,              
-                                                      VkFormat format, VkSampleCountFlagBits sample_count_bits, 
-                                                      VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
-                                                      VkAttachmentLoadOp stencil_loadop, VkAttachmentStoreOp stencil_storeop, 
-                                                      VkImageLayout initial_layout, VkImageLayout final_layout)
-{
-
-  desc = {}; 
-  desc.format         = format; 
-  desc.samples        = sample_count_bits; 
-  desc.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  desc.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-  desc.stencilLoadOp  = stencil_loadop ;
-  desc.stencilStoreOp = stencil_storeop;
-  desc.initialLayout  = initial_layout;
-  desc.finalLayout    = final_layout; 
-
-  return desc; 
-}
-
-
-// ----------------------------------------------------------------------------------------------
-// resource counted
-// ----------------------------------------------------------------------------------------------
-rokz::rc::RenderPass::Ref rokz::rc::CreateRenderPass (const Vec<VkAttachmentDescription>& attach_descs,
-                                                      const Vec<VkSubpassDescription>&    subpdescs,
-                                                      const Vec<VkSubpassDependency>&     subpdeps, 
-                                                      const Device& device) { 
-
-  HERE("HAI"); 
-       
-  rokz::rc::RenderPass::Ref ret = std::make_shared<rc::RenderPass> (device) ;   
-  VkRenderPassCreateInfo  ci {}; 
-  CreateInfo (ci, attach_descs, subpdescs, subpdeps); 
-
-  if (vkCreateRenderPass (device.handle, &ci, nullptr, &ret->handle) != VK_SUCCESS) {
-    printf ("[FAILED] %s create render pass\n", __FUNCTION__);
-    return rc::RenderPass::Ref (0); ; 
-  }
-
-  return ret;
 }
 

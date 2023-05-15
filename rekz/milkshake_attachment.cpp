@@ -16,71 +16,48 @@ bool setup_gbuff_attachments (Glob& glob) {
   const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
   const VkImageUsageFlags color_target_usage   = rokz::kColorTargetUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
   const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
-
-  glob.msaa_samples = sample_bit_count; 
-  
-  //Vec<rc::Attachment>& colorattach = glob.gbuff.attachment.color; 
-  //rc::Attachment&      depthattach = glob.attachment.depth;
-
-  { // position
-    VkImageCreateInfo ci {}; 
-
-    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
-
-    glob.gbuff.attachment.position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
-    glob.gbuff.attachment.position.image  = rc::CreateImage (ci, device);
-    glob.gbuff.attachment.position.view   =
-      rc::CreateImageView (glob.gbuff.attachment.position.image->handle,
-                           glob.gbuff.attachment.position.format,  VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
-    // create imageview...
-    assert (false); 
-  }
-
-  { // normal
+  //
+  { rc::Attachment& position = glob.gbuff.attachment.position;
     VkImageCreateInfo ci {}; 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
-    glob.gbuff.attachment.normal.format  =  VK_FORMAT_R16G16B16A16_SFLOAT;
-    glob.gbuff.attachment.normal.image =  rc::CreateImage (ci, device);
-    glob.gbuff.attachment.normal.view =   
-        rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
-                             glob.gbuff.attachment.normal.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
-       // create imageview...
-    assert (false); 
+    position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
+    position.image  = rc::CreateImage (ci, device);
+    position.view   = rc::CreateImageView (position.image->handle,
+                                           position.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
   }
-
-
-  { // albedo
+  //
+  { rc::Attachment& normal = glob.gbuff.attachment.normal;
+    VkImageCreateInfo ci {}; 
+    cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
+                       kDefaultDimensions.width, kDefaultDimensions.height);
+    normal.format  = VK_FORMAT_R16G16B16A16_SFLOAT;
+    normal.image   = rc::CreateImage (ci, device);
+    normal.view    = rc::CreateImageView (normal.image->handle, normal.format,
+                                       VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
+  }
+  //
+  { rc::Attachment& albedo  = glob.gbuff.attachment.albedo;
     VkImageCreateInfo ci {}; 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
-    glob.gbuff.attachment.albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    glob.gbuff.attachment.albedo.image  = rc::CreateImage (ci, device);
-    glob.gbuff.attachment.albedo.view  =  
-        rc::CreateImageView (glob.gbuff.attachment.albedo.image->handle,
-                             glob.gbuff.attachment.albedo.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
-
-    // create imageview...
-    assert (false); 
+     
+    albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    albedo.image  = rc::CreateImage (ci, device);
+    albedo.view  = rc::CreateImageView (albedo.image->handle, albedo.format,
+                                        VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
   }
+  //
+  { rc::Attachment& depth  = glob.gbuff.attachment.depth; 
 
-  { // depth 
     VkImageCreateInfo ci {}; 
-    rokz::ut::FindDepthFormat (glob.depth.format, glob.device.physical.handle);
-  
     cx::CreateInfo_2D (ci, glob.depth.format, depth_target_usage, sample_bit_count, 
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
-    //glob.msaa_samples rokz::ut::MaxUsableSampleCount (glob.device.physical); 
-    glob.gbuff.attachment.depth.image = rc::CreateImage (ci, device); 
-    glob.gbuff.attachment.depth.view = 
-      rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
-                           glob.depth.format, VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
-
-    // create imageview...
-    assert (false); 
+    depth.image = rc::CreateImage (ci, device); 
+    depth.view  = rc::CreateImageView (depth.image->handle, depth.format,
+                                      VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
   }
 
   return true; 
@@ -91,25 +68,18 @@ bool setup_gbuff_attachments (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 bool setup_lcomp_attachments  (Glob& glob) {
 
-
   const Device& device = glob.device; 
   const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
   const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage; 
-
-  { // depth 
+  // only depth needs to be created, color target will use target from swapchain 
+  { rc::Attachment& depth = glob.lcomp.attachment.depth; 
     VkImageCreateInfo ci {}; 
-    rokz::ut::FindDepthFormat (glob.depth.format, glob.device.physical.handle);
-  
     cx::CreateInfo_2D (ci, glob.depth.format, depth_target_usage, sample_bit_count, 
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
-    glob.lcomp.attachment.depth.image = rc::CreateImage (ci, device); 
-    glob.lcomp.attachment.depth.view =
-      rc::CreateImageView (glob.gbuff.attachment.normal.image->handle,
-                           glob.depth.format, VK_IMAGE_ASPECT_DEPTH_BIT, device); 
-
-    // create imageview...
-    assert (false); 
+    depth.image = rc::CreateImage (ci, device); 
+    depth.view  = rc::CreateImageView (depth.image->handle, depth.format,
+                                       VK_IMAGE_ASPECT_DEPTH_BIT, device); 
   }
   return true; 
 }

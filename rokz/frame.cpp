@@ -181,6 +181,84 @@ bool cx::PresentFrame (VkQueue present_que, uint32_t& image_index,
 }
 
 
+// ------------------------------------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------------------------------------
+void cx::BeginRenderPass (VkCommandBuffer cb,
+                         VkRenderPass             renderpass, 
+                         VkFramebuffer            framebuffer, 
+                         VkSubpassContents        contents,
+                         const VkRect2D&          ext2d, 
+                         const Vec<VkClearValue>& clearvalues)
+ {
+   // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdBeginRenderPass2.html ]
+  VkRenderPassBeginInfo rpbi {} ;
+  rpbi.pNext           = nullptr; 
+  rpbi.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  rpbi.renderPass      = renderpass ; 
+  rpbi.renderArea      = ext2d;
+  rpbi.framebuffer     = framebuffer;
+  rpbi.clearValueCount = clearvalues.size ();
+  rpbi.pClearValues    = &clearvalues[0]; 
+  //VK_RENDER_PASS_CREATE_FLAG_BITS_MAX_ENUM
+  // typedef struct VkRenderPassBeginInfo {
+  //     VkStructureType        sType;
+  //     const void*            pNext;
+  //     VkRenderPass           renderPass;
+  //     VkFramebuffer          framebuffer;
+  //     VkRect2D               renderArea;
+  //     uint32_t               clearValueCount;
+  //     const VkClearValue*    pClearValues;
+  // } VkRenderPassBeginInfo;
+
+
+  VkSubpassBeginInfo spbi {};
+  spbi.pNext    = nullptr;
+  spbi.sType    = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO;
+  spbi.contents = contents;  
+  // typedef enum VkSubpassContents {
+  //     VK_SUBPASS_CONTENTS_INLINE = 0,
+  //     VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,
+  // } VkSubpassContents;
+  vkCmdBeginRenderPass2 (cb, &rpbi, &spbi); 
+}
+
+// ------------------------------------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------------------------------------
+void cx::NextSubpass (VkCommandBuffer cb, VkSubpassContents begin_contents) {
+
+    // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdNextSubpass2KHR.html ]
+    
+    // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSubpassDescription2KHR.html ]
+    VkSubpassBeginInfo subpbeg {};
+    subpbeg.sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO;
+    subpbeg.pNext = nullptr;
+    subpbeg.contents = begin_contents; 
+
+    VkSubpassEndInfo   subpend {};
+    subpend.sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO; 
+    subpend.pNext = nullptr; 
+    
+    vkCmdNextSubpass2 (cb, &subpbeg, &subpend); 
+}
+
+// ------------------------------------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------------------------------------
+void cx::EndRenderPass (VkCommandBuffer cb) {
+
+  // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdEndRenderPass2.html ]
+
+    VkSubpassEndInfo   subpend {};
+    subpend.sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO; 
+    subpend.pNext = nullptr; 
+
+    vkCmdEndRenderPass2 ( cb, &subpend); 
+}
+
+
+
 //
 // -- notes -- 
 //

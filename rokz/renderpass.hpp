@@ -47,12 +47,13 @@ namespace rokz {
                                                   VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
                                                   VkAttachmentLoadOp stencil_loadop, VkAttachmentStoreOp stencil_storeop, 
                                                   VkImageLayout initial_layout, VkImageLayout final_layout); 
-    // -- 
+
+  // -- 
   namespace rc {
-  rc::RenderPass::Ref CreateRenderPass (const Vec<VkAttachmentDescription>& attach_descs,
+  rc::RenderPass::Ref CreateRenderPass (const Vec<VkAttachmentDescription>& descs,
                                         const Vec<VkSubpassDescription>&    subpdescs,
                                         const Vec<VkSubpassDependency>&     subpdeps, 
-                                        const Device& device); 
+                                        const Device&                       device); 
   }
 
 

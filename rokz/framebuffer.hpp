@@ -11,7 +11,6 @@
 
 namespace rokz {
 
-  
   // VkFramebufferCreateInfo& CreateInfo (VkFramebufferCreateInfo& ci,
   //                                      const VkExtent2D&               swapchain_ext, 
   //                                      const RenderPass&               render_pass,
@@ -40,19 +39,10 @@ namespace rokz {
                            const VkImageView&              depth_imageview, 
                            const Device&                   device); 
 
-
-
   // -- -- 
   namespace rc { // 
-
-
-    // Framebuffer::Ref CreateFramebuffer (const Vec<rc::ImageView::Ref>& views, const rc::RenderPass::Ref& renderpass,
-    //                                     const VkExtent2D& ext2d, const Device& device); 
-
     Framebuffer::Ref CreateFramebuffer (VkRenderPass renderpass, const Vec<VkImageView>& views, 
                                         const VkExtent2D& ext2d, const Device& device); 
-
-
   }
 
   

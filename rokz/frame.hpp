@@ -1,4 +1,4 @@
-
+//
 #ifndef ROKZ_FRAME_INCLUDE
 #define ROKZ_FRAME_INCLUDE
 
@@ -8,12 +8,17 @@
 
 namespace rokz { namespace cx {
     
+    // ------------------------------------------------------------------------------------------------
     //
-    // -- no_frame_sync -- 
+    // ------------------------------------------------------------------------------------------------
     VkResult AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
                            VkFence fen_in_flight,             // fence_sit
                            VkSemaphore sem_image_available,   // signal
                            const Device& device); 
+
+    // ------------------------------------------------------------------------------------------------
+    // dynamic_rendering
+    // ------------------------------------------------------------------------------------------------
     int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
                          const VkRenderingInfo& ri, const Device& device);
     // -- no_frame_sync -- 
@@ -22,11 +27,19 @@ namespace rokz { namespace cx {
                         VkSemaphore sem_render_finished, // wait/signal
                         VkFence fence_in_flight,         // fence_flag 
                         const Device& device); 
-
-    // -- multi pass --
-    // int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
-    //                      const VkRenderingInfo& ri, const Device& device);
-
+    
+    // ------------------------------------------------------------------------------------------------
+    // Framebuffer+RenderPasse
+    // -k-----------------------------------------------------------------------------------------------
+    void BeginRenderPass (VkCommandBuffer cb,
+                         VkRenderPass             renderpass, 
+                         VkFramebuffer            framebuffer, 
+                         VkSubpassContents        contents,
+                         const VkRect2D&          ext2d, 
+                         const Vec<VkClearValue>& clearvalues);
+    
+    void NextSubpass     (VkCommandBuffer cb, VkSubpassContents begin_contents); 
+    void EndRenderPass   (VkCommandBuffer cb); 
     // ----------------------------------------------------------------------------
     // no FrameSync
     // ----------------------------------------------------------------------------
