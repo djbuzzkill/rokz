@@ -19,18 +19,16 @@ using namespace rokz;
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-glm::vec3& rekz::unit_angle_xz (glm::vec3& v, float theta) {
-  v.x = cos (theta) ;
-  v.y = 0.0f;
-  v.z = -sinf (theta) ;
-  return v; 
+glm::vec3  rekz::unit_angle_xz (float theta) {
+
+  return   glm::vec3 ( cos (theta), 0.0,  -sinf (theta) ); 
+
 }
 
-glm::vec3& rekz::unit_angle_yz (glm::vec3& v, float theta) {
-  v.x = 0.0;
-  v.y = cos (theta) ;
-  v.z = -sinf (theta) ;
-  return v; 
+
+glm::vec3 rekz::unit_angle_yz (float theta) {
+
+  return glm::vec3 (0.0, cos (theta), -sinf (theta)); 
 }
 
 

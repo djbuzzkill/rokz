@@ -33,10 +33,8 @@ struct PolygonDraw : public rokz::DrawSequence {
     // update uniform buffer 
     if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rc::MappedPointer (objbuffs[currentframe] ))) {
       //    if (PolygonParam* obj = reinterpret_cast<PolygonParam*> (rokz::cx::MappedPointer ( polyd.vma_poly_uniforms[globals.current_frame] ))) {
-      glm::vec3 va, vb;
-      rekz::unit_angle_xz (va, 5.0 * env.globals.sim_time ); 
-      rekz::unit_angle_xz (vb, 5.0 * env.globals.sim_time + rekz::kPi); 
-
+      glm::vec3 va = rekz::unit_angle_xz (5.0 * env.globals.sim_time ); 
+      glm::vec3 vb = rekz::unit_angle_xz (5.0 * env.globals.sim_time + rekz::kPi); 
       //glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  va + glm::vec3 (0.0, -2.0, 0.0));
       glm::mat4 model0 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (0.0, 0.0, 0.0));
       glm::mat4 model1 =  glm::translate (glm::mat4(1.0f),  glm::vec3 (2.0, 4.0, 0.0));
