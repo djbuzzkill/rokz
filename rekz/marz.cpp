@@ -211,6 +211,25 @@ struct MarzLoop {
     return true;
   }
 };
+
+
+struct MarzDeviceFeatures : public VkPhysicalDeviceFeatures2 {
+
+  MarzDeviceFeatures (VkPhysicalDeviceFeatures& devfeats)  {
+    
+    dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+    dynamic_rendering_feature.pNext = nullptr;
+    dynamic_rendering_feature.dynamicRendering = VK_TRUE;
+
+    sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
+    pNext = &dynamic_rendering_feature; 
+    features = devfeats; 
+  }
+
+  VkPhysicalDeviceDynamicRenderingFeaturesKHR  dynamic_rendering_feature {};
+  //VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures separate_depth_stencil_layout_feature {}; 
+};
+
 // --------------------------------------------------------------------------------------------
 //                        
 // --------------------------------------------------------------------------------------------
@@ -238,11 +257,14 @@ int run_marz (const std::vector<std::string>& args) {
   //
   rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
-  VkPhysicalDeviceFeatures2 f2 {};
-  rokz::ConfigureFeatures  (f2, glob.device.physical);
+  // VkPhysicalDeviceFeatures2 f2 {};
+  // rokz::ConfigureFeatures  (f2, glob.device.physical);
+  MarzDeviceFeatures marzfeats (glob.device.physical.features2.features);
+  // marzfeats.features.samplerAnisotropy  =  glob.device.physical.features2.features.samplerAnisotropy  ;
+  // marzfeats.features.tessellationShader =  glob.device.physical.features2.features.tessellationShader ;
   // this does a lot of shit
-  //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
-  rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
+  //rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
+  rokz::InitializeDevice2 (glob.device, marzfeats, glob.device.physical, glob.instance);
   
   // put these somwehere
   glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 

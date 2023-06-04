@@ -223,7 +223,7 @@ VkDeviceCreateInfo& rokz::cx::CreateInfo2 (VkDeviceCreateInfo& info,
 
   info.queueCreateInfoCount  = queuecreateinfos.size();   
   info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
-  info.pEnabledFeatures      = VK_NULL_HANDLE; ;
+  info.pEnabledFeatures      = VK_NULL_HANDLE; 
   info.enabledLayerCount     = vls.size();   
   info.ppEnabledLayerNames   = &vls[0]; 
   return info;

@@ -296,22 +296,14 @@ struct MilkshakeDeviceFeatures : public VkPhysicalDeviceFeatures2 {
   
   MilkshakeDeviceFeatures (const rokz::PhysicalDevice& physdev) : VkPhysicalDeviceFeatures2 {} {
     // features.samplerAnisotropy  =  physdev.features2.features.samplerAnisotropy;
-    // features.tessellationShader =  physdev.features2.features.tessellationShader ;
-
+    // features.tessellationShader =  physdev.features2.features.tessellationShader;
     separate_depth_stencil_layout_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
     separate_depth_stencil_layout_feature.pNext = VK_NULL_HANDLE;
     separate_depth_stencil_layout_feature.separateDepthStencilLayouts = VK_TRUE;
 
-    
-    dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-    dynamic_rendering_feature.pNext = &separate_depth_stencil_layout_feature;
-    dynamic_rendering_feature.dynamicRendering = VK_TRUE;
-
-    
-
-    sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
-    pNext = &dynamic_rendering_feature; 
-    features = physdev.features2.features; // .samplerAnisotropy;
+    sType    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
+    pNext    = &separate_depth_stencil_layout_feature; 
+    features = physdev.features2.features;             
   }
   
   // ext structs
