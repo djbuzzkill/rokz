@@ -13,6 +13,7 @@
 #include "rokz/renderpass.hpp"
 #include "rokz/rokz_types.hpp"
 
+
 using namespace rokz; 
 using namespace rekz; 
 using namespace milkshake;
@@ -114,8 +115,6 @@ struct MilkLoop {
   
   bool cond () { return false; } 
   bool loop () {
-
-
 
     auto now = std::chrono::high_resolution_clock::now();    
     
@@ -289,6 +288,38 @@ rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display,
   return std::make_shared<milkshake_resetter> (display, position, normal, albedo,
                                                gbuff_depth, lcomp_depth, ext2d); 
 }
+
+// --------------------------------------------------------------------------------------------
+//
+// --------------------------------------------------------------------------------------------
+struct MilkshakeDeviceFeatures : public VkPhysicalDeviceFeatures2 {
+  
+  MilkshakeDeviceFeatures (const rokz::PhysicalDevice& physdev) : VkPhysicalDeviceFeatures2 {} {
+    // features.samplerAnisotropy  =  physdev.features2.features.samplerAnisotropy;
+    // features.tessellationShader =  physdev.features2.features.tessellationShader ;
+
+    separate_depth_stencil_layout_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
+    separate_depth_stencil_layout_feature.pNext = VK_NULL_HANDLE;
+    separate_depth_stencil_layout_feature.separateDepthStencilLayouts = VK_TRUE;
+
+    
+    dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+    dynamic_rendering_feature.pNext = &separate_depth_stencil_layout_feature;
+    dynamic_rendering_feature.dynamicRendering = VK_TRUE;
+
+    
+
+    sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
+    pNext = &dynamic_rendering_feature; 
+    features = physdev.features2.features; // .samplerAnisotropy;
+  }
+  
+  // ext structs
+  VkPhysicalDeviceDynamicRenderingFeaturesKHR         dynamic_rendering_feature {};
+  VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures separate_depth_stencil_layout_feature {}; 
+  
+}; 
+
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
@@ -316,15 +347,14 @@ int milkshake::run (const Vec<std::string>& args) {
   
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
   //
-
-  // 
   rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
-  VkPhysicalDeviceFeatures2 f2 {};
-  rokz::ConfigureFeatures  (f2, glob.device.physical);
+  // -- replace rokz::ConfigureFeatures  (feats, glob.device.physical);
+  MilkshakeDeviceFeatures milkfeats (glob.device.physical);
+
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
-  rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
+  rokz::InitializeDevice2 (glob.device, milkfeats, glob.device.physical, glob.instance);
   // put these somwehere
 
   // 1 sample
@@ -337,8 +367,9 @@ int milkshake::run (const Vec<std::string>& args) {
                             kDefaultDimensions, glob.device.physical, glob.device);
   //  
   //const size_t NuberOfColorTargets = 2; 
+
   setup_gbuff_attachments (glob); 
-  
+
   glob.swapchain_resetter =
       CreateResetMilkshake (glob.display,
                             glob.gbuff.attachment.position,
@@ -355,12 +386,19 @@ int milkshake::run (const Vec<std::string>& args) {
   // create render pass 
   
   // for BeginRendering ()
+  HERE ("b4 setup renderpass ");
 
   setup_gbuff_renderpass (glob);
+
+  HERE ("b4 setup framebuff ");
   setup_gbuff_framebuffer (glob); 
 
+  HERE ("b4 setup lcomp renderpass ");
+
   setup_lcomp_renderpass (glob);
+  HERE ("b4 setup lcomp framebuff ");
   setup_lcomp_framebuffers (glob); 
+  HERE ("4f setup framebuff  ");
 
   //rokz::SetupDynamicRenderingInfo;//  (glob.rendering_info_group, glob.msaa_color_imageview->handle,
                                   // glob.depth_imageview->handle, scg.extent); 
@@ -404,7 +442,10 @@ int milkshake::run (const Vec<std::string>& args) {
   // draw drawlists
 
   // create frame syncs
+
+  HERE ("407");
   assert (false); 
+  HERE ("409");
   // fsg.command_buffers.resize (kMaxFramesInFlight);
   // fsg.syncs.resize           (kMaxFramesInFlight);
   // rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.device.command_pool.handle); 

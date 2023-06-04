@@ -45,7 +45,7 @@ VkAttachmentReference& rokz::AttachmentReference (VkAttachmentReference& ref,
 // --------------------------------------------------------------------------------------------
 //  
 // --------------------------------------------------------------------------------------------
-VkAttachmentDescription& rokz::AttachmentDescription (VkAttachmentDescription& desc,              
+VkAttachmentDescription& rokz::AttachmentDescription (VkAttachmentDescription& desc,
                                                       VkFormat format, VkSampleCountFlagBits sample_count_bits, 
                                                       VkAttachmentLoadOp loadop, VkAttachmentStoreOp storeop, 
                                                       VkAttachmentLoadOp stencil_loadop, VkAttachmentStoreOp stencil_storeop, 

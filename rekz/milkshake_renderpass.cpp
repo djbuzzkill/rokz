@@ -12,6 +12,8 @@ using namespace milkshake;
 // --------------------------------------------------------------------------------------------
 bool setup_gbuff_renderpass (Glob& glob) {
 
+  HERE("setup_gbuff_renderpass");
+  
   const Device& device = glob.device; 
 
   Vec<VkAttachmentDescription> attdescs  (NUM_TOTAL_ATTACHMENTS);
@@ -23,6 +25,9 @@ bool setup_gbuff_renderpass (Glob& glob) {
   
   // bool rokz::CreateRenderPass ... 
   for (uint32 i = 0; i < NUM_TOTAL_ATTACHMENTS; ++i) { 
+
+    VkImageLayout image_lo = (i == ATTACH_DEPTHI ? // depth layout otherwise color 
+                                  VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     // descs
     attdescs[i] = {}; 
     attdescs[i].format         = (ATTACH_DEPTHI == i ? depth_format : color_format); 
@@ -32,14 +37,15 @@ bool setup_gbuff_renderpass (Glob& glob) {
     attdescs[i].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attdescs[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attdescs[i].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-    attdescs[i].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // when msaa is used otherwise -> VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+    attdescs[i].finalLayout    = image_lo;
     // refs
     attrefs[i] = {};
-    attrefs[i].attachment = i;
-    attrefs[i].layout     = (i == ATTACH_DEPTHI ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL :
-                                                  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
+    attrefs[i].attachment      = i;
+    attrefs[i].layout          = image_lo;
   }
 
+  HERE("setup_gbuff_renderpass");
+ 
   Vec<VkSubpassDescription> subpdescs (1);
   subpdescs[0] = {}; 
   subpdescs[0].pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -61,8 +67,10 @@ bool setup_gbuff_renderpass (Glob& glob) {
   subpdeps[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
   subpdeps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
+  HERE("setup_gbuff_renderpass");
   glob.gbuff.renderpass = rc::CreateRenderPass (attdescs, subpdescs, subpdeps, device); 
-
+  HERE("setup_gbuff_renderpass");
+ 
   return true; 
 
 }

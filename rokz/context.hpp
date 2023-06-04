@@ -57,6 +57,7 @@ namespace rokz {
     VkDeviceQueueCreateInfo&  CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
     
     VkDeviceCreateInfo&       CreateInfo (VkDeviceCreateInfo& info,
+                                          const void* next, 
                                           std::vector<const char*>& vls, 
                                           std::vector<std::string>& vstrs, 
 
@@ -66,17 +67,14 @@ namespace rokz {
                                           const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
                                           const VkPhysicalDeviceFeatures* devfeats); 
 
+    VkDeviceCreateInfo&       CreateInfo2 (VkDeviceCreateInfo& info,
+                                           const VkPhysicalDeviceFeatures2* feat2,
+                                           std::vector<const char*>& vls, std::vector<std::string>& vstrs,
+                                           std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
+                                           const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos); 
 
-    VkDeviceCreateInfo&       CreateInfo (VkDeviceCreateInfo&       info,
-                                          const void*               next, 
-                                          std::vector<const char*>& vls, 
-                                          std::vector<std::string>& vstrs, 
+    
 
-                                          std::vector<const char*>& dxs,
-                                          std::vector<std::string>& dxstrs, 
-
-                                          const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
-                                          const VkPhysicalDeviceFeatures* devfeats); 
     // ------------------------------------------------------------------
     //
     // ------------------------------------------------------------------
@@ -142,6 +140,13 @@ namespace rokz {
   PhysicalDevice&    ConfigureDevice     (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy); 
   bool               InitializeDevice    (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
   bool               InitializeDevice    (rokz::Device& device, const VkPhysicalDeviceFeatures2& , const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
+
+
+  // --- mainly using VkPhysicalDeviceFeatures2, assume memory initialization lifetime 
+  bool               InitializeDevice2   (rokz::Device&                      device,
+                                          const VkPhysicalDeviceFeatures2& features2, 
+                                          const rokz::PhysicalDevice&      physical_device,
+                                          const rokz::Instance&            instance); 
 
   bool               InitializeSwapchain (rokz::SwapchainGroup& scg,
                                           const rokz::SwapchainInfo& swapchain_support_info,

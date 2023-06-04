@@ -9,6 +9,8 @@
 #include "meshery.h"
 #include "shaderc/shaderc.hpp"
 #include <vulkan/vulkan_core.h>
+
+
 //#include <vulkan/vulkan_core.h>
 //#include "rokz/rokz_funcs.h"
 namespace rekz {
@@ -21,9 +23,7 @@ namespace rekz {
   //                           
   // ----------------------------------------------------------------------------------------------
   template<typename Ty> struct RGBx {
-    Ty r;
-    Ty g;
-    Ty b;
+    Ty r, g, b;
   };
 
   typedef RGBx<unsigned char> RGBu8;

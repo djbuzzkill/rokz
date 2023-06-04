@@ -16,7 +16,7 @@ bool setup_gbuff_attachments (Glob& glob) {
   const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
   const VkImageUsageFlags color_target_usage   = rokz::kColorTargetUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
   const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage | VK_IMAGE_USAGE_SAMPLED_BIT; 
-  //
+
   { rc::Attachment& position = glob.gbuff.attachment.position;
     VkImageCreateInfo ci {}; 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
@@ -26,6 +26,7 @@ bool setup_gbuff_attachments (Glob& glob) {
     position.view   = rc::CreateImageView (position.image->handle,
                                            position.format, VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
   }
+   HERE (" setup_gbuff_attachments  ");
   //
   { rc::Attachment& normal = glob.gbuff.attachment.normal;
     VkImageCreateInfo ci {}; 
@@ -36,6 +37,7 @@ bool setup_gbuff_attachments (Glob& glob) {
     normal.view    = rc::CreateImageView (normal.image->handle, normal.format,
                                        VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
   }
+   HERE (" setup_gbuff_attachments  ");
   //
   { rc::Attachment& albedo  = glob.gbuff.attachment.albedo;
     VkImageCreateInfo ci {}; 
@@ -48,6 +50,8 @@ bool setup_gbuff_attachments (Glob& glob) {
     albedo.view  = rc::CreateImageView (albedo.image->handle, albedo.format,
                                         VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
   }
+
+  HERE (" setup_gbuff_attachments  ");
   //
   { rc::Attachment& depth  = glob.gbuff.attachment.depth; 
 
@@ -55,6 +59,7 @@ bool setup_gbuff_attachments (Glob& glob) {
     cx::CreateInfo_2D (ci, glob.depth.format, depth_target_usage, sample_bit_count, 
                        kDefaultDimensions.width, kDefaultDimensions.height);
 
+    depth.format = glob.depth.format;
     depth.image = rc::CreateImage (ci, device); 
     depth.view  = rc::CreateImageView (depth.image->handle, depth.format,
                                       VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 

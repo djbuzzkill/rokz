@@ -2,12 +2,10 @@
 #ifndef ROKZ_RENDERPASS_H
 #define ROKZ_RENDERPASS_H
 
-
 #include "common.hpp"
 #include "rokz_types.hpp"
 #include "rc_types.hpp"
 #include <vulkan/vulkan_core.h>
-
 
 
 namespace rokz {
