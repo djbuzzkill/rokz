@@ -213,9 +213,12 @@ struct MarzLoop {
 };
 
 
+// --------------------------------------------------------------------------------------------
+//                        
+// --------------------------------------------------------------------------------------------
 struct MarzDeviceFeatures : public VkPhysicalDeviceFeatures2 {
 
-  MarzDeviceFeatures (VkPhysicalDeviceFeatures& devfeats)  {
+  MarzDeviceFeatures (const VkPhysicalDeviceFeatures& devfeats)  {
     
     dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
     dynamic_rendering_feature.pNext = nullptr;
@@ -226,8 +229,8 @@ struct MarzDeviceFeatures : public VkPhysicalDeviceFeatures2 {
     features = devfeats; 
   }
 
+  // extension structs
   VkPhysicalDeviceDynamicRenderingFeaturesKHR  dynamic_rendering_feature {};
-  //VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures separate_depth_stencil_layout_feature {}; 
 };
 
 // --------------------------------------------------------------------------------------------
@@ -258,7 +261,7 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
   // VkPhysicalDeviceFeatures2 f2 {};
-  // rokz::ConfigureFeatures  (f2, glob.device.physical);
+  rokz::ConfigureFeatures; 
   MarzDeviceFeatures marzfeats (glob.device.physical.features2.features);
   // marzfeats.features.samplerAnisotropy  =  glob.device.physical.features2.features.samplerAnisotropy  ;
   // marzfeats.features.tessellationShader =  glob.device.physical.features2.features.tessellationShader ;

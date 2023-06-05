@@ -27,6 +27,8 @@ const std::vector<const char*> kDeviceExtensions = {
   VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
   VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
   VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME, 
+  VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME, 
+
   //"VK_EXT_descriptor_indexing", 
 
 };
@@ -208,10 +210,18 @@ VkDeviceCreateInfo& rokz::cx::CreateInfo2 (VkDeviceCreateInfo& info,
                                           std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
                                           const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos) {
 
-  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
+  HERE("HAI"); 
 
+//  --> VK_KHR_swapchain
+//  --> enable extension: VK_KHR_dynamic_rendering
+//  --> enable extension: VK_EXT_extended_dynamic_state2
+
+  
   dxstrs.clear (); 
-  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
+  for (auto& dx : GetDeviceExtensionNames (dxstrs)) {
+    printf (" --> enable extension: %s\n", dx.c_str() ); 
+    dxs.push_back ( dx.c_str() );
+  }
     
   vls.clear ();
   for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
@@ -924,7 +934,8 @@ bool IsDeviceSuitable (rokz::QueueFamilyIndices& outind,
   //VkPhysicalDeviceFeatures devfeatures {};
   //
   //devfeatures.samplerAnisotropy = VK_TRUE;
-  vkGetPhysicalDeviceFeatures (physdev, &features2.features);
+  vkGetPhysicalDeviceFeatures2 (physdev, &features2);
+  //vkGetPhysicalDeviceFeatures (physdev, &features2.features);
 
   // if (VK_TRUE == devfeatures.tessellationShader)
   //   HERE("features 1 tesslation_available:YES"); 
@@ -1146,8 +1157,6 @@ VkPhysicalDeviceFeatures2& rokz::ConfigureFeatures (VkPhysicalDeviceFeatures2& f
 
   features2.features.samplerAnisotropy  =  physical_device.features2.features.samplerAnisotropy  ;
   features2.features.tessellationShader =  physical_device.features2.features.tessellationShader ;
-
-
   // VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures separate_depth_stencil_layout_feature {}; 
   // separate_depth_stencil_layout_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
   // separate_depth_stencil_layout_feature.pNext = VK_NULL_HANDLE;

@@ -25,6 +25,8 @@
 #include "buffer.hpp"
 #include "image.hpp"
 #include "imagebuff.hpp"
+#include "input_state.hpp"
+
 #include "framebuffer.hpp"
 #include "frame.hpp"
 #include "pipeline.hpp"

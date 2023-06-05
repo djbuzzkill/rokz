@@ -12,7 +12,7 @@ using namespace milkshake;
 // --------------------------------------------------------------------------------------------
 bool setup_gbuff_renderpass (Glob& glob) {
 
-  HERE("setup_gbuff_renderpass");
+  HERE("HAI");
   
   const Device& device = glob.device; 
 
@@ -44,7 +44,6 @@ bool setup_gbuff_renderpass (Glob& glob) {
     attrefs[i].layout          = image_lo;
   }
 
-  HERE("setup_gbuff_renderpass");
  
   Vec<VkSubpassDescription> subpdescs (1);
   subpdescs[0] = {}; 
@@ -67,10 +66,9 @@ bool setup_gbuff_renderpass (Glob& glob) {
   subpdeps[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
   subpdeps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-  HERE("setup_gbuff_renderpass");
   glob.gbuff.renderpass = rc::CreateRenderPass (attdescs, subpdescs, subpdeps, device); 
-  HERE("setup_gbuff_renderpass");
  
+  HERE("BAI");
   return true; 
 
 }
@@ -123,6 +121,7 @@ bool setup_lcomp_renderpass (Glob& glob) {
 
   glob.lcomp.renderpass = rc::CreateRenderPass (attdescs, subpdescs, subpdeps, device); 
   
+  HERE("BAI");
   return true; 
 
 }

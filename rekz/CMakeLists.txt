@@ -101,5 +101,3 @@ target_include_directories (
 
   /usr/include/freetype2/
 )
-
-

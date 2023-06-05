@@ -295,10 +295,9 @@ rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display,
 struct MilkshakeDeviceFeatures : public VkPhysicalDeviceFeatures2 {
   
   MilkshakeDeviceFeatures (const rokz::PhysicalDevice& physdev) : VkPhysicalDeviceFeatures2 {} {
-    // features.samplerAnisotropy  =  physdev.features2.features.samplerAnisotropy;
-    // features.tessellationShader =  physdev.features2.features.tessellationShader;
-    separate_depth_stencil_layout_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
-    separate_depth_stencil_layout_feature.pNext = VK_NULL_HANDLE;
+
+    separate_depth_stencil_layout_feature.sType                       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
+    separate_depth_stencil_layout_feature.pNext                       = VK_NULL_HANDLE;
     separate_depth_stencil_layout_feature.separateDepthStencilLayouts = VK_TRUE;
 
     sType    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
@@ -307,8 +306,13 @@ struct MilkshakeDeviceFeatures : public VkPhysicalDeviceFeatures2 {
   }
   
   // ext structs
-  VkPhysicalDeviceDynamicRenderingFeaturesKHR         dynamic_rendering_feature {};
   VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures separate_depth_stencil_layout_feature {}; 
+ // VK_KHR_synchronization2
+ // VK_KHR_timeline_semaphore
+ // VK_EXT_color_write_enable
+ // VK_EXT_extended_dynamic_state3
+ // VK_EXT_separate_stencil_usage
+ // VK_EXT_transform_feedback
   
 }; 
 
@@ -357,12 +361,8 @@ int milkshake::run (const Vec<std::string>& args) {
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                             kDefaultDimensions, glob.device.physical, glob.device);
-  //  
-  //const size_t NuberOfColorTargets = 2; 
 
-  setup_gbuff_attachments (glob); 
-
-  glob.swapchain_resetter =
+  glob.swapchain_resetter = 
       CreateResetMilkshake (glob.display,
                             glob.gbuff.attachment.position,
                             glob.gbuff.attachment.normal,
@@ -376,22 +376,18 @@ int milkshake::run (const Vec<std::string>& args) {
   //                                                        glob.msaa_color_image, glob.msaa_color_imageview); 
 
   // create render pass 
-  
-  // for BeginRendering ()
-  HERE ("b4 setup renderpass ");
-
-  setup_gbuff_renderpass (glob);
-
-  HERE ("b4 setup framebuff ");
+  //  
+  //const size_t NuberOfColorTargets = 2; 
+  setup_gbuff_attachments (glob); 
+  setup_gbuff_renderpass  (glob);
   setup_gbuff_framebuffer (glob); 
 
-  HERE ("b4 setup lcomp renderpass ");
-
-  setup_lcomp_renderpass (glob);
-  HERE ("b4 setup lcomp framebuff ");
-  setup_lcomp_framebuffers (glob); 
-  HERE ("4f setup framebuff  ");
-
+  HERE("B4 Lcomp things");  
+  setup_lcomp_attachments (glob); 
+  setup_lcomp_renderpass  (glob);
+  setup_lcomp_framebuffers(glob); 
+  HERE("4f Lcomp things");  
+  // for BeginRendering ()
   //rokz::SetupDynamicRenderingInfo;//  (glob.rendering_info_group, glob.msaa_color_imageview->handle,
                                   // glob.depth_imageview->handle, scg.extent); 
 

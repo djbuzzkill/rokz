@@ -9,6 +9,7 @@ using namespace rokz;
 //
 //#include "rokz_test.cpp"
 #include "milkshake.h"
+//#include "okui.h"
 
 //
 int texture_tool (const Vec<std::string>& args); 
@@ -37,6 +38,7 @@ int main (int argv, char** argc) {
     {"fontz"        , font_tool },
     {"stonk"        , stonk },
     {"milkshake"    , milkshake::run } , 
+    //  {"okui"         , okui::run } , 
 
   };
 

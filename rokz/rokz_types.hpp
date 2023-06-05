@@ -57,7 +57,13 @@ namespace rokz {
   // -----------------------------------------------------------------------------------------------
   struct PhysicalDevice {
     PhysicalDevice () : handle (VK_NULL_HANDLE),
-      properties (),  features2 (), family_indices () {}
+      properties (),  features2 (), family_indices () {
+
+
+      features2.sType =  VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+      features2.pNext =  VK_NULL_HANDLE; 
+
+    }
     
     
     VkPhysicalDevice           handle;

@@ -28,6 +28,7 @@ add_subdirectory (rokz)
 # exe's
 add_subdirectory (rekz)
 
+add_subdirectory (okui)
 
 # add_subdirectory (/home/djbuzzkill/owenslake/gx/aframe aframe)
 
