@@ -34,6 +34,13 @@ namespace rokz {
     GLFWwindow*  glfw_window;
   };
 
+
+  struct Listing {
+    Vec<const char*>     required_extensions;
+    Vec<std::string>     extension_strings; 
+  };
+
+  
   //-------------------------------------------------------------------------------------
   //                
   //-------------------------------------------------------------------------------------

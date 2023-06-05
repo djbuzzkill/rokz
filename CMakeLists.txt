@@ -38,3 +38,8 @@ add_subdirectory (okui)
 #message (STATUS "${CMAKE_SOURCE_DIR}")
 #message (STATUS "${CMAKE_CURRENT_BINARY_DIR}")
 #message (STATUS "${CMAKE_CURRENT_SOURCE_DIR}")
+
+
+message (STATUS "${projname} - ${CMAKE_SOURCE_DIR}/rokz")
+message (STATUS "${projname} - ${CMAKE_CURRENT_BINARY_DIR}")
+message (STATUS "${projname} - ${CMAKE_CURRENT_SOURCE_DIR}")

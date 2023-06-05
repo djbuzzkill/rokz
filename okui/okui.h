@@ -2,10 +2,11 @@
 #ifndef OKUI_INCLUDE
 #define OKUI_INCLUDE
 
-#include "rokz.hpp"
+#include "rokz/rokz.hpp"
 #include <vulkan/vulkan.h>
-
-//#include <imgui.h>
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
 
 namespace okui {
 
@@ -82,9 +83,10 @@ namespace okui {
   };
 
   
-
-  
   int run (const Vec<std::string>& args); 
+
+  // imgui_demo
+  int imgui_test (int, char**); 
 
 }
 

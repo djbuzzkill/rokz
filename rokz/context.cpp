@@ -28,9 +28,7 @@ const std::vector<const char*> kDeviceExtensions = {
   VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
   VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME, 
   VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME, 
-
   //"VK_EXT_descriptor_indexing", 
-
 };
 
 //#define VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME "VK_EXT_extended_dynamic_state2"
@@ -212,11 +210,9 @@ VkDeviceCreateInfo& rokz::cx::CreateInfo2 (VkDeviceCreateInfo& info,
 
   HERE("HAI"); 
 
-//  --> VK_KHR_swapchain
-//  --> enable extension: VK_KHR_dynamic_rendering
-//  --> enable extension: VK_EXT_extended_dynamic_state2
-
-  
+  //  --> VK_KHR_swapchain
+  //  --> enable extension: VK_KHR_dynamic_rendering
+  //  --> enable extension: VK_EXT_extended_dynamic_state2
   dxstrs.clear (); 
   for (auto& dx : GetDeviceExtensionNames (dxstrs)) {
     printf (" --> enable extension: %s\n", dx.c_str() ); 
@@ -224,8 +220,11 @@ VkDeviceCreateInfo& rokz::cx::CreateInfo2 (VkDeviceCreateInfo& info,
   }
     
   vls.clear ();
-  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
-  
+  for (auto& vl : GetValidationLayers (vstrs)) { 
+    printf (" --> validation layers: %s\n", vl.c_str() ); 
+    vls.push_back (vl.c_str()); 
+  }
+
   info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   info.pNext                 = feat2;
   info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
@@ -259,7 +258,7 @@ int rokz::cx::CreateInstance (VkInstance& instance, const VkInstanceCreateInfo& 
   uint32_t ext_count = 0;
   vkEnumerateInstanceExtensionProperties (nullptr, &ext_count, nullptr);
 
-  printf("Number of Available Instance Extensions[%u] -> \n", ext_count);
+  printf("[Instance Extensions] avaiable [%u] -> \n", ext_count);
   std::vector<VkExtensionProperties> extensions(ext_count);
   vkEnumerateInstanceExtensionProperties(nullptr, &ext_count, &extensions[0]);
 
