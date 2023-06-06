@@ -65,9 +65,6 @@ int okui::run (const Vec<std::string>& args) {
   rokz::InitializeDevice (glob.device, ok_feats, glob.device.physical, glob.instance);
 
 
-  ImGui_ImplVulkan_InitInfo vk_init_info;
-  
-  
   return 0; 
 }
 
@@ -77,9 +74,7 @@ int okui::run (const Vec<std::string>& args) {
 int main (int argv, char** argc) {
 
   Vec<std::string> args (argc, argc + argv); 
-
   // return okui::imgui_test (argv, argc);
   //return im_demo (argv, argc);
   return okui::run (args); 
- 
 }
