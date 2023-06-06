@@ -41,6 +41,8 @@ namespace rokz {
   };
 
   
+
+
   //-------------------------------------------------------------------------------------
   //                
   //-------------------------------------------------------------------------------------
@@ -72,7 +74,6 @@ namespace rokz {
 
     }
     
-    
     VkPhysicalDevice           handle;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceFeatures2  features2;
@@ -95,21 +96,23 @@ namespace rokz {
     VkCommandPoolCreateInfo ci; 
   };
 
+
   // -----------------------------------------------------------------------------------------------
   //
   // -----------------------------------------------------------------------------------------------
   struct Device {
 
-    Device () : handle (VK_NULL_HANDLE) , ci (), queue_ci (), physical() {
+    Device () : handle (VK_NULL_HANDLE), queue_ci (), physical() {
     }
       
     VkDevice                     handle;
-    VkDeviceCreateInfo           ci;
+    // VkDeviceCreateInfo           ci;
     Vec<VkDeviceQueueCreateInfo> queue_ci;
-
-    CommandPool                  command_pool;
     Allocator                    allocator;
-
+    CommandPool                  command_pool;
+    VkSampleCountFlagBits        msaa_samples;    //
+    // uint32_t                     min_image_count; // >= 2
+    // uint32_t                     image_count;     // >= MinImageCount
     struct { VkQueue graphics; VkQueue present; } queues;
     struct { float graphics; float present; } priority;
 
@@ -124,6 +127,16 @@ namespace rokz {
 
   }; 
   
+
+
+  // -----------------------------------------------------------------------------------------------
+  //
+  // -----------------------------------------------------------------------------------------------
+  struct VKSystem {
+    Instance    instance;
+    Vec<Device> devices;
+  };
+
   // -----------------------------------------------------------------------------------------------
   //
   // -----------------------------------------------------------------------------------------------

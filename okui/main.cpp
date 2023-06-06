@@ -62,7 +62,7 @@ int okui::run (const Vec<std::string>& args) {
 
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
-  rokz::InitializeDevice2 (glob.device, ok_feats, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device, ok_feats, glob.device.physical, glob.instance);
 
 
   ImGui_ImplVulkan_InitInfo vk_init_info;

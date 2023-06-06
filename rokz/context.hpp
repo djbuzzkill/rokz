@@ -18,13 +18,11 @@ namespace rokz {
 
     QueueFamilyIndices&   FindQueueFamilies (QueueFamilyIndices& queue_fams, const VkSurfaceKHR& surf, const VkPhysicalDevice& physdev);
   
-
-  
     // ----------------------------------------------------------------------------------------------
     //                          
     // ----------------------------------------------------------------------------------------------
     SwapchainInfo& QuerySwapchainInfo (rokz::SwapchainInfo& si, VkSurfaceKHR surf,
-                                              VkPhysicalDevice device); 
+                                       VkPhysicalDevice device); 
 
 
     inline SwapchainInfo& QuerySwapchainSupport (rokz::SwapchainInfo& si, VkSurfaceKHR surface,
@@ -32,8 +30,6 @@ namespace rokz {
 
       return QuerySwapchainInfo (si , surface, device); 
     } 
-
-
 
     // ----------------------------------------------------------------------------------------------
     //                          
@@ -56,28 +52,15 @@ namespace rokz {
   
     VkDeviceQueueCreateInfo&  CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, float* q_priority);
     
-    VkDeviceCreateInfo&       CreateInfo (VkDeviceCreateInfo& info,
-                                          const void* next, 
-                                          std::vector<const char*>& vls, 
-                                          std::vector<std::string>& vstrs, 
-
-                                          std::vector<const char*>& dxs,
-                                          std::vector<std::string>& dxstrs, 
-
-                                          const std::vector<VkDeviceQueueCreateInfo>& quecreateinfo,
-                                          const VkPhysicalDeviceFeatures* devfeats); 
-
-    VkDeviceCreateInfo&       CreateInfo2 (VkDeviceCreateInfo& info,
+    VkDeviceCreateInfo&       CreateInfo  (VkDeviceCreateInfo& info,
                                            const VkPhysicalDeviceFeatures2* feat2,
                                            std::vector<const char*>& vls, std::vector<std::string>& vstrs,
                                            std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
                                            const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos); 
 
-    
-
-    // ------------------------------------------------------------------
-    //
-    // ------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
+    //                      
+    // ---------------------------------------------------------------------------------------
     VkApplicationInfo&    AppInfo_default (VkApplicationInfo& app_info); 
     VkInstanceCreateInfo& CreateInfo      (VkInstanceCreateInfo& ci,
                                            std::vector<const char*>& required_extensions, 
@@ -97,9 +80,9 @@ namespace rokz {
     VkExtent2D         ChooseSwapExtent (const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* win);
   
     bool               CreateSurface (VkSurfaceKHR* surf, GLFWwindow* glfwin, const VkInstance& inst);
-    // -------------------------------------------------------------------------
-    //
-    // -------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
+    //                      
+    // ---------------------------------------------------------------------------------------
     //bool               CreateSwapchain (Swapchain& swapchain, const Device& device);
     bool               CreateSwapchain (VkSwapchainKHR& swapchain, const VkSwapchainCreateInfoKHR& ci, const Device& device);
 
@@ -109,44 +92,34 @@ namespace rokz {
     bool               GetSwapChainImages (std::vector<Image> &swapchain_images, const Swapchain& swapchain, const VkDevice& dev);
 
     VkCommandPoolCreateInfo&     CreateInfo (VkCommandPoolCreateInfo& ci, uint32_t queue_family_index);
-  // ---------------------------------------------------------------------
-  //
-  // ---------------------------------------------------------------------
-  VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, uint32_t commandbuffers,  const VkCommandPool& commandpool); 
-  VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool); 
+    // ---------------------------------------------------------------------------------------
+    //                      
+    // ---------------------------------------------------------------------------------------
+    VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, uint32_t commandbuffers,  const VkCommandPool& commandpool); 
+    VkCommandBufferAllocateInfo& AllocateInfo (VkCommandBufferAllocateInfo& alloc_info, const VkCommandPool& commandpool); 
 
-  bool CreateCommandPool (VkCommandPool& command_pool, const VkCommandPoolCreateInfo&  create_info, const VkDevice& device);
-  // bool CreateCommandPool (VkCommandPool&            command_pool,
-  //                         VkCommandPoolCreateInfo&  create_info,
-  //                         const QueueFamilyIndices& queue_family_inds, const VkDevice& device);
+    bool CreateCommandPool (VkCommandPool& command_pool, const VkCommandPoolCreateInfo&  create_info, const VkDevice& device);
+    // bool CreateCommandPool (VkCommandPool&            command_pool,
+    //                         VkCommandPoolCreateInfo&  create_info,
+    //                         const QueueFamilyIndices& queue_family_inds, const VkDevice& device);
   
-  bool CreateCommandBuffers (std::vector<VkCommandBuffer>&      commandbuffers,
-                             const VkCommandBufferAllocateInfo& alloc_info, 
+    bool CreateCommandBuffers (std::vector<VkCommandBuffer>&      commandbuffers,
+                               const VkCommandBufferAllocateInfo& alloc_info, 
+                               const VkDevice&                    device); 
+  
+    bool CreateCommandBuffer(VkCommandBuffer&                   command_buffer,
+                             const VkCommandBufferAllocateInfo& create_info, 
                              const VkDevice&                    device); 
-  
-  bool CreateCommandBuffer(VkCommandBuffer&                   command_buffer,
-                           const VkCommandBufferAllocateInfo& create_info, 
-                           const VkDevice&                    device); 
-
-
-
-
   } // cx
 
-
-  VkPhysicalDeviceFeatures2& ConfigureFeatures  (VkPhysicalDeviceFeatures2& features2, const rokz::PhysicalDevice& physical_device);
-  
   bool               InitializeInstance  (rokz::Instance& instance); 
   PhysicalDevice&    ConfigureDevice     (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy); 
-  bool               InitializeDevice    (rokz::Device& device, const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
-  bool               InitializeDevice    (rokz::Device& device, const VkPhysicalDeviceFeatures2& , const rokz::PhysicalDevice& physical_device, const rokz::Instance& instance);
-
 
   // --- mainly using VkPhysicalDeviceFeatures2, assume memory initialization lifetime 
-  bool               InitializeDevice2   (rokz::Device&                      device,
-                                          const VkPhysicalDeviceFeatures2& features2, 
-                                          const rokz::PhysicalDevice&      physical_device,
-                                          const rokz::Instance&            instance); 
+  bool               InitializeDevice   (rokz::Device&                      device,
+                                         const VkPhysicalDeviceFeatures2& features2, 
+                                         const rokz::PhysicalDevice&      physical_device,
+                                         const rokz::Instance&            instance); 
 
   bool               InitializeSwapchain (rokz::SwapchainGroup& scg,
                                           const rokz::SwapchainInfo& swapchain_support_info,
@@ -154,26 +127,6 @@ namespace rokz {
                                           const VkExtent2D&   extent, 
                                           const rokz::PhysicalDevice& physdev,
                                           const rokz::Device& device) ; 
-
-  // -----------------------------------------------------------------------------------------------
-  //
-  // -----------------------------------------------------------------------------------------------
-
-  // bool               RecreateSwapchain (Swapchain&                          swapchain,
-  //                                       std::vector<Image>&                 swapchain_images, 
-  //                                       std::vector<Framebuffer>&           framebuffers,
-  //                                       std::vector<ImageView>&             image_views, 
-
-  //                                       RenderPass&                         render_pass, 
-  //                                       Image&                              depth_image, 
-  //                                       ImageView&                          depth_imageview,
-
-  //                                       Image&                              multisamp_color_image, 
-  //                                       ImageView&                          multisamp_color_imageview,
-
-  //                                       const Device&                         device,
-  //                                       const VmaAllocator&                   allocator,
-  //                                       GLFWwindow*                           glfwin); 
 
   // -----------------------------------------------------------------------------------------------
   //

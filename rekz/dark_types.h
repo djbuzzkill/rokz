@@ -41,7 +41,7 @@ namespace darkroot {
     // device props - framebuffer properties
     //AttachmentProps { 
     VkFormat                     depth_format;  
-    VkSampleCountFlagBits        msaa_samples;
+    //VkSampleCountFlagBits        msaa_samples;
     VkFormat                     color_format;
 
     //}  

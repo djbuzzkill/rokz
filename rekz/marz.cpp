@@ -261,16 +261,15 @@ int run_marz (const std::vector<std::string>& args) {
   rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
   // VkPhysicalDeviceFeatures2 f2 {};
-  rokz::ConfigureFeatures; 
+  //rokz::ConfigureFeatures; 
   MarzDeviceFeatures marzfeats (glob.device.physical.features2.features);
   // marzfeats.features.samplerAnisotropy  =  glob.device.physical.features2.features.samplerAnisotropy  ;
   // marzfeats.features.tessellationShader =  glob.device.physical.features2.features.tessellationShader ;
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, f2, glob.device.physical, glob.instance);
-  rokz::InitializeDevice2 (glob.device, marzfeats, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device, marzfeats, glob.device.physical, glob.instance);
   
   // put these somwehere
-  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
@@ -278,7 +277,7 @@ int run_marz (const std::vector<std::string>& args) {
   //
   rc::SetupMSAARenderingAttachments (glob.msaa_color_image, glob.msaa_color_imageview, 
                                      glob.depth_image, glob.depth_imageview,
-                                     glob.msaa_samples, scg.format,
+                                     glob.device.msaa_samples, scg.format,
                                      glob.depth_format, scg.extent,
                                      glob.device); // <-- this does all the additional  attachmentes
   //
@@ -303,7 +302,7 @@ int run_marz (const std::vector<std::string>& args) {
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
 
   if (!grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
-                               scg.extent, glob.msaa_samples,
+                               scg.extent, glob.device.msaa_samples,
                                scg.format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
@@ -312,7 +311,7 @@ int run_marz (const std::vector<std::string>& args) {
   //glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
   if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
-                             glob.msaa_samples, scg.format, glob.depth_format,
+                             glob.device.msaa_samples, scg.format, glob.depth_format,
                              pipe_path, scg.extent, glob.device)) {
     printf ("[FAILED] --> InitLandscapeTiler \n"); 
     return false; 

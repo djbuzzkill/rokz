@@ -350,7 +350,7 @@ int milkshake::run (const Vec<std::string>& args) {
 
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
-  rokz::InitializeDevice2 (glob.device, milkfeats, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device, milkfeats, glob.device.physical, glob.instance);
   // put these somwehere
 
   // 1 sample

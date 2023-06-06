@@ -41,7 +41,7 @@ Glob::Glob()
   , device ()
   // , depth_image()
   // , depth_imageview()
-  , msaa_samples ()
+  //, msaa_samples ()
   , swapchain_info()
   , shared ()
 { 
@@ -284,7 +284,27 @@ struct RootLoop {
 };
 
 // #define  DARKROOT_HIDE_OSD_PATH 1
+struct DarkrootFeatures : public   VkPhysicalDeviceFeatures2 {
 
+  DarkrootFeatures () = default; 
+
+  DarkrootFeatures (const rokz::PhysicalDevice& physdev) {
+
+    dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+    dynamic_rendering_feature.pNext = nullptr;
+    dynamic_rendering_feature.dynamicRendering = VK_TRUE;
+
+
+    sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
+    pNext  = &dynamic_rendering_feature; 
+    features = physdev.features2.features; 
+  }
+
+  // extension structs
+  VkPhysicalDeviceDynamicRenderingFeaturesKHR  dynamic_rendering_feature {};
+  
+}; 
+  
 // ------------------------------------------------------------------------------------------
 // main()
 // ------------------------------------------------------------------------------------------
@@ -315,15 +335,16 @@ int darkrootbasin (const std::vector<std::string>& args) {
   //
   rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
-  VkPhysicalDeviceFeatures2 features2 {};  
+  //VkPhysicalDeviceFeatures2 features2 {};  
+  DarkrootFeatures darkfeats (glob.device.physical);
   //rokz::ConfigureDevice (glob.device.physical, VK_TRUE);
-  rokz::ConfigureFeatures (features2, glob.device.physical);
+  //rokz::ConfigureFeatures (features2, glob.device.physical);
 
   // this does a lot of shit
-  rokz::InitializeDevice (glob.device, features2, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device, darkfeats, glob.device.physical, glob.instance);
   
   // put these somwehere else
-  glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+  //glob.device.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
   rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
@@ -335,7 +356,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
   if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
-                              kTestExtent, glob.msaa_samples,
+                              kTestExtent, glob.device.msaa_samples,
                               scg.format, glob.depth_format, glob.device)) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
@@ -347,7 +368,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
   if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
-                                 kTestExtent, glob.msaa_samples,
+                                 kTestExtent, glob.device.msaa_samples,
                                  scg.format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
@@ -358,7 +379,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
   if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
-                               kTestExtent, glob.msaa_samples,
+                               kTestExtent, glob.device.msaa_samples,
                                scg.format, glob.depth_format,  glob.device)) {
     printf ("[FAILED] --> OSD pipeline \n"); 
     return false; 
@@ -371,7 +392,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
                                      glob.depthimage,       
                                      glob.depthimageview,
                             
-                                     glob.msaa_samples,
+                                     glob.device.msaa_samples,
                                      scg.format,
                                      glob.depth_format,          
                                      kTestExtent,

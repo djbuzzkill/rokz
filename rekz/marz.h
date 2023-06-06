@@ -54,7 +54,7 @@ namespace marz {
     rokz::Display          display;             //
     // 
     VkFormat               depth_format;        //
-    VkSampleCountFlagBits  msaa_samples;        // = VK_SAMPLE_COUNT_1_BIT;
+    //VkSampleCountFlagBits  msaa_samples;        // = VK_SAMPLE_COUNT_1_BIT;
 
     // attachement set
     rc::SwapchainGroup     swapchain_group;

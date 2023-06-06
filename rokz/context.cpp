@@ -15,11 +15,7 @@
 #include "command.hpp"
 #include <vulkan/vulkan_core.h>
 
-
 const bool kEnableValidationLayers = true;
-  //#endif
-
-
 // ----------------------------------------------------------------------------------------------
 //                          
 // ----------------------------------------------------------------------------------------------
@@ -32,9 +28,7 @@ const std::vector<const char*> kDeviceExtensions = {
 };
 
 //#define VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME "VK_EXT_extended_dynamic_state2"
-
 std::vector<std::string>& GetDeviceExtensionNames (std::vector<std::string>& dxstrs){
-
   dxstrs.clear (); 
   for (auto s : kDeviceExtensions) 
     dxstrs.push_back (s); 
@@ -44,12 +38,9 @@ std::vector<std::string>& GetDeviceExtensionNames (std::vector<std::string>& dxs
 // const std::vector<const char*>& rokz::GetDeviceExtensionNames () {
 //   return kDeviceExtensions; 
 // }
-
-
 static const std::vector<std::string> kValidationLayers  = {
   "VK_LAYER_KHRONOS_validation",
 };
-
 
 std::vector<std::string>& GetValidationLayers (std::vector<std::string>& vstrs) {
   vstrs.clear ();
@@ -173,36 +164,6 @@ rokz::cx::CreateInfo (VkDeviceQueueCreateInfo& info, uint32_t que_fam_index, flo
 //
 // ------------------------------------------------------------------------------------------------------
 VkDeviceCreateInfo& rokz::cx::CreateInfo (VkDeviceCreateInfo& info,
-                                          const void* next, 
-                                          std::vector<const char*>& vls, std::vector<std::string>& vstrs,
-                                          std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
-                                          const std::vector<VkDeviceQueueCreateInfo>&  queuecreateinfos,
-                                          const VkPhysicalDeviceFeatures* devfeats) {
-
-  printf ("%s VkDeviceCreateInfo\n", __FUNCTION__);
-
-  dxstrs.clear (); 
-  for (auto& dx : GetDeviceExtensionNames (dxstrs)) dxs.push_back ( dx.c_str() ); 
-    
-  vls.clear ();
-  for (auto& vl : GetValidationLayers (vstrs)) vls.push_back (vl.c_str()); 
-  
-  info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  info.pNext                 = next;
-  info.enabledExtensionCount = dxs.size ();  //static_cast<uint32_t> (device_extensions.size ());
-  info.ppEnabledExtensionNames= &dxs[0]; 
-
-  info.queueCreateInfoCount  = queuecreateinfos.size();   
-  info.pQueueCreateInfos     = &queuecreateinfos[0]; /// &glob.create_info.queue;
-  info.pEnabledFeatures      = devfeats; // &glob.device_features;
-  info.enabledLayerCount     = vls.size();   
-  info.ppEnabledLayerNames   = &vls[0]; 
-  return info;
-}
-// ------------------------------------------------------------------------------------------------------
-//
-// ------------------------------------------------------------------------------------------------------
-VkDeviceCreateInfo& rokz::cx::CreateInfo2 (VkDeviceCreateInfo& info,
                                           const VkPhysicalDeviceFeatures2* feat2,
                                           std::vector<const char*>& vls, std::vector<std::string>& vstrs,
                                           std::vector<const char*>& dxs, std::vector<std::string>& dxstrs,
@@ -237,7 +198,6 @@ VkDeviceCreateInfo& rokz::cx::CreateInfo2 (VkDeviceCreateInfo& info,
   info.ppEnabledLayerNames   = &vls[0]; 
   return info;
 }
-
 
 
 
@@ -1022,78 +982,11 @@ bool rokz::InitializeInstance (rokz::Instance& instance) {
   return rokz::cx::CreateInstance (instance.handle, instance.ci);
 }
 
-// -------------------------------------------------------------------------------------------
-//                                             
-// -------------------------------------------------------------------------------------------
-bool rokz::InitializeDevice (rokz::Device&                    device,
-                             const VkPhysicalDeviceFeatures2& features2, 
-                             const rokz::PhysicalDevice&      physical_device,
-                             const rokz::Instance&            instance) {
-
-  device.priority.graphics = 1.0f;
-  device.priority.present  = 1.0f;
-
-  device.queue_ci.resize  (2);
-
-  uint32 graphicsq = ~0;
-  uint32 presentq  = ~0;
-  if (!physical_device.family_indices.graphics || !physical_device.family_indices.present) {
-    HERE("all commands queues needed");
-    return false;
-  }
-  graphicsq = physical_device.family_indices.graphics.value ();
-  presentq  = physical_device.family_indices.present.value  ();
-
-
-  rokz::cx::CreateInfo (device.queue_ci[0],  graphicsq, &device.priority.graphics);
-  rokz::cx::CreateInfo (device.queue_ci[1],  presentq , &device.priority.present);
-
-  // device info
-  //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
-
-  // * 01/15/2023 - use dynamic rendering pass 
-  VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature {};
-  dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-  dynamic_rendering_feature.pNext = nullptr;
-  dynamic_rendering_feature.dynamicRendering = VK_TRUE;
-
-  // * 03/29/2023 VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME
-  //VkPhysicalDeviceFeatures2 features2 {};
-  //VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT  
-
-  
-
-  rokz::cx::CreateInfo (device.ci, &dynamic_rendering_feature, 
-                        device.vals, device.valstrs, device.dxs, device.dxstrs, 
-                        device.queue_ci, &features2.features);
-
-  rokz::cx::CreateLogicalDevice (&device.handle, &device.ci, physical_device.handle); 
-
-  rokz::cx::CreateInfo             (device.command_pool.ci, physical_device.family_indices.graphics.value());
-  rokz::cx::CreateCommandPool      (device.command_pool.handle, device.command_pool.ci, device.handle);
-
-  // get queue handle
-  rokz::cx::GetDeviceQueue (&device.queues.graphics, graphicsq, device.handle);
-  rokz::cx::GetDeviceQueue (&device.queues.present,  presentq , device.handle);
-
-  // VMA SECTION
-  // VmaVulkanFunctions vulkanFunctions = {};
-  // vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-  // vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
-
-  // VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA VMA 
-  rokz::cx::CreateInfo (device.allocator.ci, instance, device, physical_device); 
-  vmaCreateAllocator(&device.allocator.ci, &device.allocator.handle);
-
-  printf ("%s BAI", __FUNCTION__);
-  return true;
-
-}
 
 // -------------------------------------------------------------------------------------------
 //                                             
 // -------------------------------------------------------------------------------------------
-bool rokz::InitializeDevice2 (rokz::Device&                      device,
+bool rokz::InitializeDevice (rokz::Device&                      device,
                              const VkPhysicalDeviceFeatures2& features2, 
                              const rokz::PhysicalDevice&      physical_device,
                              const rokz::Instance&            instance) {
@@ -1107,26 +1000,18 @@ bool rokz::InitializeDevice2 (rokz::Device&                      device,
     HERE("all commands queues needed");
     return false;
   }
+  device.msaa_samples = rokz::ut::MaxUsableSampleCount (physical_device); 
+
   graphicsq = physical_device.family_indices.graphics.value ();
   presentq  = physical_device.family_indices.present.value  ();
   rokz::cx::CreateInfo (device.queue_ci[0],  graphicsq, &device.priority.graphics);
   rokz::cx::CreateInfo (device.queue_ci[1],  presentq , &device.priority.present);
-
-  // device info
-  //VkDeviceCreateInfo&       Default (VkDeviceCreateInfo& info, VkDeviceQueueCreateInfo* quecreateinfo, VkPhysicalDeviceFeatures* devfeats); 
-  // * 01/15/2023 - use dynamic rendering pass 
-  // VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature {};
-  // dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-  // dynamic_rendering_feature.pNext = nullptr;
-  // dynamic_rendering_feature.dynamicRendering = VK_TRUE;
-
-  // * 03/29/2023 VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME
-  //VkPhysicalDeviceFeatures2 features2 {};
-  //VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT  
-  rokz::cx::CreateInfo2 (device.ci, &features2, 
+                  
+  VkDeviceCreateInfo ci {};
+  rokz::cx::CreateInfo (ci, &features2, 
                         device.vals, device.valstrs, device.dxs, device.dxstrs, device.queue_ci);
 
-  rokz::cx::CreateLogicalDevice (&device.handle, &device.ci, physical_device.handle); 
+  rokz::cx::CreateLogicalDevice (&device.handle, &ci, physical_device.handle); 
 
   rokz::cx::CreateInfo             (device.command_pool.ci, physical_device.family_indices.graphics.value());
   rokz::cx::CreateCommandPool      (device.command_pool.handle, device.command_pool.ci, device.handle);
@@ -1143,43 +1028,5 @@ bool rokz::InitializeDevice2 (rokz::Device&                      device,
 
   printf ("%s BAI", __FUNCTION__);
   return true;
-}
-// -------------------------------------------------------------------------------------------
-//                   
-// -------------------------------------------------------------------------------------------
-VkPhysicalDeviceFeatures2& rokz::ConfigureFeatures (VkPhysicalDeviceFeatures2& features2, const rokz::PhysicalDevice& physical_device) {
-
-  HERE("this is all botched");
-
-  features2.sType = physical_device.features2.sType;
-  features2.pNext = physical_device.features2.pNext;
-
-  features2.features.samplerAnisotropy  =  physical_device.features2.features.samplerAnisotropy  ;
-  features2.features.tessellationShader =  physical_device.features2.features.tessellationShader ;
-  // VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures separate_depth_stencil_layout_feature {}; 
-  // separate_depth_stencil_layout_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
-  // separate_depth_stencil_layout_feature.pNext = VK_NULL_HANDLE;
-  // separate_depth_stencil_layout_feature.separateDepthStencilLayouts = VK_TRUE;
-
-  // features2.pNext = &separate_depth_stencil_layout_feature;
-  
-
-  //separateDepthStencilLayouts
-
-  
-  return features2;
-}
-
-// ---^----------------------------------------------------------------------------------------
-//    +-these r rufly the same function               
-// ---v---------------------------------------------------------------------------------------
-rokz::PhysicalDevice& rokz::ConfigureDevice (rokz::PhysicalDevice& physical_device, VkBool32 sampler_anisotropy) {
-  HERE("this rly needs to be revised");
-  // VkDeviceSize min_uniform_buffer_offset_alignment =
-  //   rokz::ut::MinUniformBufferOffsetAlignment (physical_device);
-  physical_device.features2.features.samplerAnisotropy  = sampler_anisotropy;
-  physical_device.features2.features.tessellationShader = VK_TRUE;
-  //VK_EXT_extended_dynamic_state2
-  return physical_device; 
 }
 
