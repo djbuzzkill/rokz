@@ -6,7 +6,7 @@ project (${projname})
 #set ("CMAKE_CXX_FLAGS=-g -O0")
 #set ("CMAKE_C_FLAGS=-g -O0")
 
-set (IMGUI_DIR ${CMAKE_SOURCE_DIR}/imgui)
+set (IMGUI_DIR ${CMAKE_SOURCE_DIR}/extern/imgui)
 #message (STATUS "${projname}:IMGUI_DIR -> ${IMGUI_DIR} ")
 
 

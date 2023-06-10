@@ -7,7 +7,6 @@
 #include "image.hpp"
 #include "pipeline.hpp"
 #include "framebuffer.hpp"
-//#include "rokz/shared_types.h"
 #include "shader.hpp"
 #include "window.hpp"
 #include "descriptor.hpp"
