@@ -21,7 +21,7 @@ using namespace marz;
 using namespace rekz; 
 using std::size_t; 
 
-{
+namespace {
   const VkExtent2D kDefaultDimensions {1024, 768}; 
 }
 
