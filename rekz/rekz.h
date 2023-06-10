@@ -8,7 +8,7 @@
 #include "rokz/vert_defs.hpp"
 #include "meshery.h"
 #include "shaderc/shaderc.hpp"
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 
 //#include <vulkan/vulkan_core.h>
@@ -64,13 +64,13 @@ namespace rekz {
   // ---------------------------------------------------------------------------------------
   //                   
   // ---------------------------------------------------------------------------------------
-  rc::Buffer::Ref SetupGridData (size_t& vertoffset, size_t& indoffset, 
+  rc::Buffer::Ref SetupGridData (std::size_t& vertoffset, size_t& indoffset, 
                                  uint32 xvertcount, uint32 zvertcount,
                                  float xsize, float zsize,
                                  const Device& device); 
 
   rokz::DrawSequence::Ref CreateDrawGrid (rokz::rc::Buffer::Ref& griddata,
-                                          rekz::DescriptorGroup& dg, size_t voffs, size_t ioffs); 
+                                          rekz::DescriptorGroup& dg, std::size_t voffs, std::size_t ioffs); 
   // --------------------------------------------------------------------
   // 
   // --------------------------------------------------------------------

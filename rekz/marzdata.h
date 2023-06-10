@@ -3,6 +3,7 @@
 #define MARZ_DATA_INCLUDE
 
 #include "rekz.h"
+#include <vulkan/vulkan.h>
 
 namespace marz {
 

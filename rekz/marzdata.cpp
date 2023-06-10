@@ -5,7 +5,7 @@
 #include "rokz/image.hpp"
 #include "rokz/sampler.hpp"
 #include "rokz/texture.hpp"
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 
 using namespace rokz;

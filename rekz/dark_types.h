@@ -11,6 +11,8 @@
 
 #include "rokz/display.hpp"
 #include "rokz/input_state.hpp"
+#include <vulkan/vulkan.h>
+
 
 namespace darkroot {
 

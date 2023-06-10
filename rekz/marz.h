@@ -3,6 +3,7 @@
 #define MARZ_INCLUDE
 
 #include "rekz.h"
+#include <vulkan/vulkan.h>
 
 #include "rokz/display.hpp"
 #include "rokz/input_state.hpp"

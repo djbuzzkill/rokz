@@ -316,8 +316,9 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd) {
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount; // Now we can use the next set of semaphores
 }
 
+ 
 // Main code
-int imgui_test (int, char**) {
+int okui::imgui_test (int, char**) {
 
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit())

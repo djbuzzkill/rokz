@@ -16,7 +16,8 @@ message (STATUS "CMAKE_SOURCE_DIR:${CMAKE_SOURCE_DIR}")
 add_definitions (-DCMAKE_EXPORT_COMPILE_COMMANDS=1 )
 add_definitions (-DOWENS_LAKE="${OWENS_LAKE}")
 
-add_compile_options (-g -O0 -Wextra -Wshadow -Wpedantic -fexceptions -std=c++20) #  -Wall -Wpedantic -Werror -Wconversion
+
+add_compile_options (-g -O0 -Wextra -Wshadow -Wpedantic -fexceptions -std=c++17) #  -Wall -Wpedantic -Werror -Wconversion
 
 #
 link_directories (

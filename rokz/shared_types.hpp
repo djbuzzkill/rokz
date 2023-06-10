@@ -3,7 +3,7 @@
 #define ROKZ_SHARED_TYPES
 
 #include "common.hpp"
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 
  #define NO_PROB(x)(x)==0

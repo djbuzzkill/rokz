@@ -9,17 +9,20 @@
 #include "rokz/descriptor.hpp"
 #include "rokz/draw_sequence.hpp"
 #include "rokz/global_descriptor.hpp"
+
 #include "rokz/rokz_types.hpp"
+
+#include <vulkan/vulkan.h>
+
 //
 
 using namespace rokz;
 using namespace marz; 
 using namespace rekz; 
+using std::size_t; 
 
-namespace { 
-
+{
   const VkExtent2D kDefaultDimensions {1024, 768}; 
-
 }
 
 // --------------------------------------------------------------------------------------------
@@ -78,7 +81,7 @@ struct MarzLoop {
   Glob& glob;
 
   bool       run        = true;
-  uint32_t   curr_frame = 0; 
+  std::uint32_t   curr_frame = 0; 
   bool       result     = false;
   int        countdown  = 6000000;
 
@@ -141,7 +144,7 @@ struct MarzLoop {
     //
     rc::SwapchainGroup& scg = glob.swapchain_group; 
     // get image index up here
-    uint32_t image_index; 
+    std::uint32_t image_index; 
 
     VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, image_index,
                                                   glob.framesyncgroup.syncs[curr_frame].in_flight_fence,
@@ -379,7 +382,7 @@ int run_marz (const std::vector<std::string>& args) {
   fsg.syncs.resize           (kMaxFramesInFlight);
   rokz::cx::AllocateInfo (fsg.command_buffer_alloc_info, glob.device.command_pool.handle); 
 
-  for (size_t i = 0; i < kMaxFramesInFlight; ++i) {
+  for (std::size_t i = 0; i < kMaxFramesInFlight; ++i) {
     // ^^ 'CreateCommandBuffers' should be called, we call it 
     rokz::cx::CreateCommandBuffer(fsg.command_buffers[i], fsg.command_buffer_alloc_info, glob.device.handle);
     rokz::cx::CreateFrameSync (fsg.syncs[i], fsg.syncs[i].ci, glob.device.handle);

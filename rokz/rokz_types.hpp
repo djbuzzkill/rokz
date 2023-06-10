@@ -6,7 +6,6 @@
 #include "common.hpp"
 #include "shared_types.hpp"
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 #include "vk_mem_alloc.h"
 
 namespace rokz {
@@ -132,7 +131,7 @@ namespace rokz {
   // -----------------------------------------------------------------------------------------------
   //
   // -----------------------------------------------------------------------------------------------
-  struct VKSystem {
+  struct VKContext {
     Instance    instance;
     Vec<Device> devices;
   };

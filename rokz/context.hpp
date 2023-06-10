@@ -7,6 +7,7 @@
 #include "rokz_types.hpp"
 
 #include "defaults.hpp"
+#include <vulkan/vulkan.h>
 
 
 //namespace rokz::inner; 
