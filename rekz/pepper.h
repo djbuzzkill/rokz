@@ -72,19 +72,23 @@ namespace pepper {
     RenderingInfoGroup     rendering_info_group;
     // not yet
 
+    VkRenderPassBeginInfo renderPassInfo {};
+    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    // renderPassInfo.renderPass = renderPass;
+    // renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+
     // PerFrame
-    
-    rc::RenderPass::Ref    renderpass;
-    rc::Framebuffer::Ref   framebuffer;
+    rc::RenderPass::Ref         renderpass;
+    Vec<rc::Framebuffer::Ref>   framebuffers; 
 
     // struct Display
     Display                display; //
     //AttachmentProps { 
-    VkSampleCountFlagBits  msaa_samples;
-    VkFormat               swapchain_format; 
+    //VkSampleCountFlagBits  msaa_samples;
+    //VkFormat               swapchain_format; 
 
-    VkFormat                     depth_format;  
-    VkFormat                     color_format;
+    //VkFormat                     depth_format;  
+    //VkFormat                     color_format;
 
     //
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
@@ -103,11 +107,13 @@ namespace pepper {
 
     //}  
     // attachement set
-    rc::Image::Ref         depthimage;          
-    rc::ImageView::Ref     depthimageview;      
+    rc::Attachment         depth; 
+    // rc::Image::Ref         depthimage;          
+    // rc::ImageView::Ref     depthimageview;      
   
-    rc::Image::Ref         msaacolorimage;      
-    rc::ImageView::Ref     msaacolorimageview;  
+    rc::Attachment         msaacolor;
+    // rc::Image::Ref         msaacolorimage;      
+    // rc::ImageView::Ref     msaacolorimageview;  
 
     DrawSequence::Globals  shared;             
     DescriptorSetLayout    grid_dslo;        

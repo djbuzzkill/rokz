@@ -19,14 +19,14 @@ namespace rokz { namespace cx {
     // ------------------------------------------------------------------------------------------------
     // dynamic_rendering
     // ------------------------------------------------------------------------------------------------
-    int  FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
-                         const VkRenderingInfo& ri, const Device& device);
+    int  FrameDrawingBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
+                            const VkRenderingInfo& ri, const Device& device);
     // -- no_frame_sync -- 
-    int  FrameDrawEnd  (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
-                        VkSemaphore sem_image_available, // wait 
-                        VkSemaphore sem_render_finished, // wait/signal
-                        VkFence fence_in_flight,         // fence_flag 
-                        const Device& device); 
+    int  FrameDrawingEnd  (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer, uint32_t image_index,
+                           VkSemaphore sem_image_available, // wait 
+                           VkSemaphore sem_render_finished, // wait/signal
+                           VkFence fence_in_flight,         // fence_flag 
+                           const Device& device); 
     
     // ------------------------------------------------------------------------------------------------
     // Framebuffer+RenderPasse

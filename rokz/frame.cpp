@@ -11,7 +11,7 @@ using namespace rokz;
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
-int cx::FrameDrawBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
+int cx::FrameDrawingBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                               uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
 
   //rc::Swapchain::Ref& swapchain = scg.swapchain;
@@ -108,7 +108,7 @@ VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
 // no_frame_sync | trigger:fence_in_flight
 // ------------------------------------------------------------------------------------------------
 
-int cx::FrameDrawEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
+int cx::FrameDrawingEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                       uint32_t image_index,
                       VkSemaphore sem_image_available,
                       VkSemaphore sem_render_finished,

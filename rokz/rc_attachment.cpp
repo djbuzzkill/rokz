@@ -155,3 +155,25 @@ bool rokz::rc::SetupMSAARenderingAttachments (rc::Image::Ref&       msaa_color_i
 
 }
 
+
+
+bool rokz::rc::CreateBasicMSAAAttachments (rc::Attachment&       msaacolor,
+                                           rc::Attachment&       msaadepth,
+                                           VkSampleCountFlagBits msaa_samples,
+                                           VkFormat              color_format,
+                                           VkFormat              depth_format,
+                                           const VkExtent2D&     image_ext, 
+                                           const Device& device) {
+
+  
+  rc::CreateMSAAColorTarget (msaacolor.image, msaacolor.view, msaa_samples,
+                               color_format, image_ext, device);
+  msaacolor.format = color_format;
+  
+  // CreateDepthBufferImage -> (image, imageview)
+  rc::CreateDepthBufferTarget (msaadepth.image, msaadepth.view, msaa_samples,
+                                 depth_format, image_ext, device);
+  msaadepth.format = depth_format;
+
+  return true;
+}

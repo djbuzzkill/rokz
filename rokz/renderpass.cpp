@@ -26,7 +26,7 @@ VkRenderPassCreateInfo& rokz::CreateInfo (VkRenderPassCreateInfo&               
   // VkSubpassDependency's
   ci.dependencyCount = deps.size();
   ci.pDependencies   = &deps[0]; 
-
+  
   return ci; 
 }
 

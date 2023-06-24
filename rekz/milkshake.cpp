@@ -187,7 +187,7 @@ struct LoopFrame {
       //   glob.osd_pl, glob.osd_plo.handle, glob.shared, 
       // };
 
-      cx::FrameDrawBegin (glob.swapchain_group, glob.sync[curr_frame].commandbuf,
+      cx::FrameDrawingBegin (glob.swapchain_group, glob.sync[curr_frame].commandbuf,
                           image_index, glob.rendering_info_group.ri, glob.device);
 
       // EXECUTE DRAW LIST RECORDING 
@@ -222,7 +222,7 @@ struct LoopFrame {
       // glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
 
       
-      cx::FrameDrawEnd (glob.swapchain_group,
+      cx::FrameDrawingEnd (glob.swapchain_group,
                         glob.sync[curr_frame].commandbuf, 
                         image_index,
                         glob.sync[curr_frame].sem.image_available,

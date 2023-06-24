@@ -69,15 +69,13 @@ namespace rokz { namespace rc {
                                         const VkExtent2D&     image_ext, 
                                         const Device& device);
 
-    bool SetupMSAARenderingAttachments (Attachment&    msaa_color_attachment, 
-                                        VkFormat       swapchain_image_format ,
-
-                                        Attachment&    msaa_depth_attachment, 
-                                        VkFormat              msaa_depth_format      ,
-
-                                        VkSampleCountFlagBits msaa_samples           ,
-                                        const VkExtent2D&     image_ext, 
-                                        const Device& device);
+    bool CreateBasicMSAAAttachments (rc::Attachment&       msaacolor,
+                                     rc::Attachment&       msaadepth,
+                                     VkSampleCountFlagBits msaa_samples,
+                                     VkFormat              color_format,
+                                     VkFormat              depth_format,
+                                     const VkExtent2D&     image_ext, 
+                                     const Device&         device); 
   }}
 
 

@@ -1,6 +1,9 @@
 #include "pepper.h"
 
 #include "grid_pipeline.h"
+#include "rokz/framebuffer.hpp"
+#include "rokz/renderpass.hpp"
+#include <vulkan/vulkan_core.h>
 
 
 using namespace rokz;
@@ -40,18 +43,121 @@ void darkroot_cleanup (Vec<VkPipeline>&         pipelines,
   vkDestroyInstance  (inst, nullptr);
 }
 
+// -----------------------------------------------------------------------------------------
+//                
+// -----------------------------------------------------------------------------------------
+bool pepper::setup_renderpasses (Glob& g) {
 
-bool pepper::setup_renderpasses ( Glob& g) {
+  enum att_type {
 
-  return false;
+    COLOR_ATTACH = 0,
+    DEPTH_ATTACH,
+    RESOLVE_ATTACH,
+
+    NUM_ATTACH
+  };
+
+  att_type  res = RESOLVE_ATTACH;
+  att_type  col = COLOR_ATTACH;
+  att_type  dep = DEPTH_ATTACH;
+
+  // VkAttachmentDescription
+  Vec<VkAttachmentDescription>  attde (NUM_ATTACH);
+  
+  attde[col].format = g.msaacolor.format; 
+  attde[col].samples = g.device.msaa_samples; // g.msaa_samples;
+  attde[col].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;;
+  attde[col].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  attde[col].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attde[col].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  attde[col].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; 
+  attde[col].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
+
+  attde[dep].format = g.depth.format; ; 
+  attde[dep].samples = g.device.msaa_samples; // g.msaa_samples;
+  attde[dep].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;;
+  attde[dep].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  attde[dep].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  attde[dep].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE; 
+  attde[dep].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; 
+  attde[dep].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; 
+
+  attde[res].format = g.swapchain_group.format;  
+  attde[res].samples = VK_SAMPLE_COUNT_1_BIT; // resolve always has 1
+  attde[res].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;;
+  attde[res].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  attde[res].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  attde[res].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE; 
+  attde[res].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; 
+  attde[res].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+  
+  // VkAttachmentReference
+  Vec<VkAttachmentReference> attref (NUM_ATTACH);
+  attref[col].attachment = 0;
+  attref[col].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  attref[dep].attachment = 1; 
+  attref[dep].layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; 
+
+  attref[res].attachment = 2; 
+  attref[res].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
+  
+  // VkSubpassDescription
+  Vec<VkSubpassDescription> subpde (1);
+  subpde[0].pipelineBindPoint      = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpde[0].colorAttachmentCount   = 1;
+  subpde[0].pColorAttachments      = &attref[col]; 
+  subpde[0].pDepthStencilAttachment= &attref[dep];
+  subpde[0].pResolveAttachments    = &attref[res];
+
+  subpde[0].preserveAttachmentCount = 0;
+  subpde[0].pPreserveAttachments  = nullptr;
+
+  //
+  Vec<VkSubpassDependency> subpdep (1);
+  subpdep[0].srcSubpass    = VK_SUBPASS_EXTERNAL;
+  subpdep[0].dstSubpass    = 0;
+  subpdep[0].srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  subpdep[0].srcAccessMask = VK_ACCESS_NONE;
+  subpdep[0].dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  subpdep[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+  g.renderpass = rc::CreateRenderPass (attde, subpde, subpdep, g.device); 
+
+  return (g.renderpass->handle != VK_NULL_HANDLE);
 }
 
-bool pepper::setup_framebuffers ( Glob& g) {
+// -----------------------------------------------------------------------------------------
+//                
+// -----------------------------------------------------------------------------------------
+bool pepper::setup_framebuffers (Glob& g) {
 
-  return false;
+  auto num_fbs = g.swapchain_group.images.size(); 
+  
+  g.framebuffers.resize (num_fbs); 
+  
+  for (size_t i = 0; i < num_fbs; i++) {
+
+    Vec<VkImageView> attachments {
+      g.msaacolor.view->handle, 
+      g.depth.view->handle, 
+      g.swapchain_group.views[i]->handle, 
+    }; 
+
+    g.framebuffers[i] = rc::CreateFramebuffer (g.renderpass->handle, attachments  ,
+                                               g.swapchain_group.extent, g.device); 
+
+
+    if ( !g.framebuffers[i] )
+      return false;
+  }  
+  
+  return true;
 } 
 
-// -------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
+//                
+// -----------------------------------------------------------------------------------------
 void pepper::cleanup ( pepper::Glob& glob) {
 
   printf ("%s \n", __FUNCTION__); 
@@ -87,8 +193,8 @@ void pepper::cleanup ( pepper::Glob& glob) {
 
   //
   rekz::CleanupSwapchain (glob.swapchain_group.views,
-                          glob.msaacolorimage, glob.msaacolorimageview,
-                          glob.depthimage, glob.depthimageview,
+                          glob.msaacolor.image, glob.msaacolor.view,
+                          glob.depth.image, glob.depth.view,
                           glob.swapchain_group.swapchain, 
                           glob.device);
 
@@ -214,13 +320,13 @@ struct pepper::PepperLoop {
       
       // make sure the correct swapchain image is used
 
-      rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
+      rokz::UpdateDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolor.view->handle,
                                         glob.swapchain_group.views[image_index]->handle);
 
       // ------------------------------- render pass start -------------------------------
       // Transitioning Layout and stuff in here
       // BeginCommandBuffer is called here
-      cx::FrameDrawBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
+      cx::FrameDrawingBegin (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame],
                           image_index, glob.rendering_info_group.ri, glob.device);
       // EXECUTE DRAW LIST RECORDING 
       // for drawseq's
@@ -252,7 +358,7 @@ struct pepper::PepperLoop {
       glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
 
       // -- we are done, submit
-      cx::FrameDrawEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
+      cx::FrameDrawingEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
                         image_index, 
                         glob.framesyncgroup.syncs[curr_frame].image_available_sem,
                         glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
@@ -335,12 +441,13 @@ int pepper::run (const Vec<std::string>& args) {
   rokz::InitializeDevice (glob.device, darkfeats, glob.device.physical, glob.instance);
   
   // put these somwehere else
-  //glob.device.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
-  rokz::ut::FindDepthFormat (glob.depth_format, glob.device.physical.handle);
+  //glob.msaa_samples = rokz::ut::MaxUsableSampleCount (glob.device.physical); 
+  rokz::ut::FindDepthFormat (glob.depth.format, glob.device.physical.handle);
 
   // InitializeSwapchain ()
   rc::InitializeSwapchain (scg, glob.swapchain_info, glob.display.surface,
                            kDefaultDimensions, glob.device.physical, glob.device);
+
 
   // ---------------- INIT POLYGON PIPELINE ---------------------
   rokz::DefineDescriptorSetLayout (glob.object_dslo, obz::kDescriptorBindings, glob.device); 
@@ -348,7 +455,7 @@ int pepper::run (const Vec<std::string>& args) {
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
   if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
                               kDefaultDimensions, glob.device.msaa_samples,
-                              scg.format, glob.depth_format, glob.device)) {
+                              scg.format, glob.depth.format, glob.device)) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
@@ -360,7 +467,7 @@ int pepper::run (const Vec<std::string>& args) {
   glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
   if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
                                  kDefaultDimensions, glob.device.msaa_samples,
-                                 scg.format, glob.depth_format, glob.device)) { 
+                                 scg.format, glob.depth.format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }
@@ -371,31 +478,42 @@ int pepper::run (const Vec<std::string>& args) {
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
   if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
                                kDefaultDimensions, glob.device.msaa_samples,
-                               scg.format, glob.depth_format,  glob.device)) {
+                               scg.format, glob.depth.format,  glob.device)) {
     printf ("[FAILED] --> OSD pipeline \n"); 
     return false; 
   }
 
   //
-  rc::SetupMSAARenderingAttachments (glob.msaacolorimage,
-                                     glob.msaacolorimageview, 
-                                     
-                                     glob.depthimage,       
-                                     glob.depthimageview,
-                            
-                                     glob.device.msaa_samples,
-                                     scg.format,
-                                     glob.depth_format,          
-                                     kDefaultDimensions,
-                                     glob.device); // <-- this does all the additional  attachmentes
+  // 
+  rc::CreateBasicMSAAAttachments (glob.msaacolor, glob.depth,       
+                                  
+                                  glob.device.msaa_samples,
+                                  scg.format,
+                                  glob.depth.format,          
+                                  kDefaultDimensions,
+                                  glob.device); // <-- this does all the additional  attachmentes
+
+  // 
+  //
+  if (!setup_renderpasses (glob)) {
+    printf ("[FAILED] --> setup_renderpasses \n"); 
+    return false;
+  }
+  // 
+  if (!setup_framebuffers (glob)) {
+    printf ("[FAILED] --> setup_framebuffers \n"); 
+    return false;
+    
+  }
+
   //
   glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, glob.display, scg.images,
-                                                           scg.views, glob.depthimage, glob.depthimageview,
-                                                           glob.msaacolorimage, glob.msaacolorimageview); 
+                                                           scg.views, glob.depth.image, glob.depth.view,
+                                                           glob.msaacolor.image, glob.msaacolor.view); 
 
   // for BeginRendering ()
-  rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolorimageview->handle,
-                                   glob.depthimageview->handle, scg.extent); 
+  rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolor.view->handle,
+                                   glob.depth.view->handle, scg.extent); 
 
 
   //  --------------------------- GLOBAL ---------------------------
