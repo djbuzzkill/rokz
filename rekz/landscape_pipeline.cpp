@@ -91,9 +91,13 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
                            const VkExtent2D&            displayextent,
                            const Device&                device)
 {
+
+
+  
   DefineGraphicsPipelineLayout (plo.handle, plo.ci, sizeof(tile::PushConstant),
                                 kPCStages, dslos, device.handle);
-  
+
+  // tessellation + default states
   PipelineState_tessellation (pipeline.state, msaa_samples, kControlPoints,
                               kVertexInputAttributeDesc, kVertexInputBindingDesc, displayextent); 
 
@@ -103,19 +107,25 @@ bool lscape::InitPipeline (Pipeline&                    pipeline,
     HERE("FAILED setup_landscape_shader_modules"); 
     return false;
   }
+
+  // extensions we use 
+  struct { // only needed until CreateGraphicsPipeline
+    VkPipelineRenderingCreateInfoKHR ci; 
+    Vec<VkFormat> color_formats;
+  } dynamic_rendering;
   
-  // DYNAMIC RENDERING IS AN EXTENSION
-  pipeline.ext.pipeline_rendering.color_formats.resize (1);
-  pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
-  CreateInfo  (pipeline.ext.pipeline_rendering.ci,
-               pipeline.ext.pipeline_rendering.color_formats, depth_format); 
+  
+  // DYNAMIC RENDERING IS
+  dynamic_rendering.color_formats.resize (1);
+  dynamic_rendering.color_formats[0] = color_format;
+  CreateInfo  (dynamic_rendering.ci, dynamic_rendering.color_formats, depth_format); 
 
   //
   auto& psci = pipeline.state.ci;
 
   CreateInfo (pipeline.ci,
               plo.handle,
-              &pipeline.ext.pipeline_rendering.ci,                    
+              &dynamic_rendering.ci,                    
               psci.shader_stages,       // const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
               &psci.input_assembly,     // const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
               &psci.vertexinputstate,   // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,

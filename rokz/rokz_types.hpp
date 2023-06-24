@@ -6,6 +6,7 @@
 #include "common.hpp"
 #include "shared_types.hpp"
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include "vk_mem_alloc.h"
 
 namespace rokz {
@@ -126,16 +127,6 @@ namespace rokz {
 
   }; 
   
-
-
-  // -----------------------------------------------------------------------------------------------
-  //
-  // -----------------------------------------------------------------------------------------------
-  struct VKContext {
-    Instance    instance;
-    Vec<Device> devices;
-  };
-
   // -----------------------------------------------------------------------------------------------
   //
   // -----------------------------------------------------------------------------------------------
@@ -325,19 +316,9 @@ namespace rokz {
     PipelineState                    state;
     Vec<rokz::ShaderModule>  shader_modules; 
     Vec<ShaderStageDef>     shader_stage_defs;
-
-    
     // 
     Vec<VkDescriptorSetLayout> dslos;
-    // EXTENSIONS
-    struct { 
-      struct {
-        VkPipelineRenderingCreateInfoKHR ci; 
-        Vec<VkFormat> color_formats;
-        VkFormat              depth_format;
-      } pipeline_rendering;
-    } ext;
-  
+
   };
 
   // ------------------------------------------------------------------------

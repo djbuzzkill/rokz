@@ -5,12 +5,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.17.2)
 project (rekz)
 #set ("CMAKE_CXX_FLAGS=-g -O0")
 #set ("CMAKE_C_FLAGS=-g -O0")
-  
 set (REKZ_HEADER_FILES
   meshery.h
   rekz.h
   dark_types.h
-  dorito_pipe.h
+  lumen_pipe.h
   marz.h
   darkrootgarden.h
   drawpolygon.h
@@ -27,6 +26,7 @@ set (REKZ_HEADER_FILES
   image_loader.h
   image_tool.h
   milkshake.h
+  pepper.h
 )
 
 
@@ -39,7 +39,7 @@ set (REKZ_SOURCE_FILES
   drawmarz.cpp
   drawwireframe.cpp
   drawpolygon.cpp
-  dorito_pipe.cpp
+  lumen_pipe.cpp
   font_tool.cpp
   griddata.cpp
   grid_pipeline.cpp  
@@ -55,6 +55,7 @@ set (REKZ_SOURCE_FILES
   onscreen_data.cpp
   onscreen_draw.cpp
   onscreen_pipe.cpp
+  pepper.cpp
   platonic.cpp
   rekz.cpp
   rekz_of_things.cpp

@@ -169,18 +169,25 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
     return false;
   }
 
-  // proto more orthogonal version
-  pipeline.ext.pipeline_rendering.color_formats.resize (1);
-  pipeline.ext.pipeline_rendering.color_formats[0] = color_format;
+  struct {
+    VkPipelineRenderingCreateInfoKHR ci; 
+    Vec<VkFormat> color_formats;
+    //VkFormat              depth_format;
+  } dynamic_rendering;
+   
 
-  CreateInfo  (pipeline.ext.pipeline_rendering.ci,
-                     pipeline.ext.pipeline_rendering.color_formats, depth_format); 
+  // proto more orthogonal version
+  dynamic_rendering.color_formats.resize (1);
+  dynamic_rendering.color_formats[0] = color_format;
+
+  CreateInfo  (dynamic_rendering.ci,
+                     dynamic_rendering.color_formats, depth_format); 
 
   auto& psci = pipeline.state.ci;
   //
   CreateInfo (pipeline.ci,
               plo.handle,
-              &pipeline.ext.pipeline_rendering.ci,                    
+              &dynamic_rendering.ci,                    
               psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 
               &psci.input_assembly,     //const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
               &psci.vertexinputstate, // const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,

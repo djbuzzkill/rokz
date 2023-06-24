@@ -96,7 +96,6 @@ namespace rokz { namespace rc {
       //VkFramebufferCreateInfo  ci;
       //std::vector<VkImageView> attachments; 
     };
-
     
   }}
 #endif

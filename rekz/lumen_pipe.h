@@ -1,13 +1,13 @@
 
 
-#ifndef DORITO_PIPE_INCLUDE
-#define DORITO_PIPE_INCLUDE
+#ifndef LUMEN_PIPE_INCLUDE
+#define LUMEN_PIPE_INCLUDE
 
 
 #include "rekz.h"
 #include <vulkan/vulkan_core.h>
 
-namespace dorito {
+namespace lumen {
 
   // ----------------------------------------------------------------------------------------
   //
@@ -25,7 +25,7 @@ namespace dorito {
 // ----------------------------------------------------------------------------------------
   // Geom buff 
   // ----------------------------------------------------------------------------------------
-  namespace GBuff {
+  namespace gbuff {
     //
     typedef rokz::PNTx_Vert Vert;
 
@@ -47,7 +47,7 @@ namespace dorito {
   // ----------------------------------------------------------------------------------------
   // Light Composition
   // ----------------------------------------------------------------------------------------
-  namespace LComp {
+  namespace lcomp {
 
     typedef rokz::PTx_Vert Vert;
     const VkShaderStageFlags kPC_stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;

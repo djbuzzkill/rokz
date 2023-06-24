@@ -1,6 +1,6 @@
 
 #include "milkshake.h"
-#include "dorito_pipe.h"
+#include "lumen_pipe.h"
 
 #include "rokz/attachment.hpp"
 #include "rokz/context.hpp"
@@ -96,7 +96,7 @@ void cleanup_milkshake (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-struct MilkLoop {
+struct LoopFrame {
 
   milkshake::Glob& glob;
 
@@ -112,7 +112,7 @@ struct MilkLoop {
 
   
 
-  MilkLoop (milkshake::Glob& g, double dt) : glob (g), Dt (dt) {
+  LoopFrame (milkshake::Glob& g, double dt) : glob (g), Dt (dt) {
   }
 
   bool cond () { return false; } 
@@ -274,7 +274,6 @@ rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display,
     milkshake_resetter (rokz::Display& disp, 
                         rc::Attachment& pos, rc::Attachment& norm, rc::Attachment& alb,
                         rc::Attachment& gdep, rc::Attachment& ldep, const VkExtent2D& ext)
-      
       : display (disp), position (pos), normal (norm), albedo(alb), 
         gbuff_depth(gdep), lcomp_depth(ldep), ext2d (ext)  {
     }
@@ -294,9 +293,9 @@ rokz::SwapchainResetter::Ref CreateResetMilkshake (rokz::Display& display,
 // --------------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------------
-struct MilkshakeDeviceFeatures : public VkPhysicalDeviceFeatures2 {
+struct milkshake::ConfigureFeatures : public VkPhysicalDeviceFeatures2 {
   
-  MilkshakeDeviceFeatures (const rokz::PhysicalDevice& physdev) : VkPhysicalDeviceFeatures2 {} {
+  ConfigureFeatures (const rokz::Device& dev) {
 
     separate_depth_stencil_layout_feature.sType                       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
     separate_depth_stencil_layout_feature.pNext                       = VK_NULL_HANDLE;
@@ -304,7 +303,7 @@ struct MilkshakeDeviceFeatures : public VkPhysicalDeviceFeatures2 {
 
     sType    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2; 
     pNext    = &separate_depth_stencil_layout_feature; 
-    features = physdev.features2.features;             
+    features = dev.physical.features2.features;             
   }
   
   // ext structs
@@ -348,11 +347,12 @@ int milkshake::run (const Vec<std::string>& args) {
   rokz::cx::QuerySwapchainSupport (glob.swapchain_info, glob.display.surface, glob.device.physical.handle);
 
   // -- replace rokz::ConfigureFeatures  (feats, glob.device.physical);
-  MilkshakeDeviceFeatures milkfeats (glob.device.physical);
+  ConfigureFeatures milkfeats (glob.device);
 
   // this does a lot of shit
   //rokz::InitializeDevice (glob.device, glob.device.physical, glob.instance);
-  rokz::InitializeDevice (glob.device, milkfeats, glob.device.physical, glob.instance);
+  rokz::InitializeDevice (glob.device,
+                          milkfeats, glob.device.physical, glob.instance);
   // put these somwehere
 
   // 1 sample
@@ -376,7 +376,6 @@ int milkshake::run (const Vec<std::string>& args) {
   // rekz::CreateSwapchainResetter (scg.swapchain, scg.images, scg.imageviews,
   //                                                        glob.depth_image, glob.depth_imageview,
   //                                                        glob.msaa_color_image, glob.msaa_color_imageview); 
-
   // create render pass 
   //  
   //const size_t NuberOfColorTargets = 2; 
@@ -392,19 +391,20 @@ int milkshake::run (const Vec<std::string>& args) {
   // for BeginRendering ()
   //rokz::SetupDynamicRenderingInfo;//  (glob.rendering_info_group, glob.msaa_color_imageview->handle,
                                   // glob.depth_imageview->handle, scg.extent); 
-
   // define first 
-  rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.grid_dslo,
+                                   grid::kDescriptorBindings, glob.device); 
 
-  rokz::DefineDescriptorSetLayout (glob.dorito_dslo, dorito::kDescriptorBindings, glob.device); 
-
+  rokz::DefineDescriptorSetLayout (glob.lumen_dslo,
+                                   lumen::kDescriptorBindings, glob.device); 
 
   // ---------------- INIT GRID PIPELINE  ---------------------
-  rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
+  rokz::DefineDescriptorSetLayout (glob.grid_dslo,
+                                   grid::kDescriptorBindings, glob.device); 
 
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
-  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
-                                 kDefaultDimensions, glob.msaa_samples,
+  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos ,
+                                 pipe_path, kDefaultDimensions, glob.msaa_samples,
                                  scg.format, glob.depth.format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
@@ -451,7 +451,7 @@ int milkshake::run (const Vec<std::string>& args) {
   double Dt = time_per_frame_sec; // just do this for now
   // auto t0 = std::chrono::high_resolution_clock::now(); 
   // std::chrono::system_clock::time_point then = t0; 
-  MilkLoop milkloop (glob, Dt); 
+  LoopFrame  milkloop (glob, Dt); 
   rokz::FrameLoop  (milkloop);
 
 

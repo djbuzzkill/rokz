@@ -5,6 +5,8 @@
 
 #include "common.hpp"
 #include "rokz_types.hpp"
+#include "display.hpp"
+#include "rc_swapchain.hpp"
 
 #include "defaults.hpp"
 #include <vulkan/vulkan.h>
@@ -160,6 +162,26 @@ namespace rokz {
                 VkInstance&                       instance);
 
   // moved 
+  // -----------------------------------------------------------------------------------------------
+  //
+  // -----------------------------------------------------------------------------------------------
+  struct Context {
 
+    Device             device;
+    rc::SwapchainGroup swapchain;
+
+    // attachement set
+    rc::Image::Ref         depth_image;          //
+    rc::ImageView::Ref     depth_imageview;      //
+    rc::Image::Ref         msaa_color_image;     //  
+    rc::ImageView::Ref     msaa_color_imageview; //
+    // struct { 
+    //   Vec<VkImage>     image; 
+    //   Vec<VkImageView> view; 
+    // } swapchain;
+    FrameSyncGroup   framesyncgroup;
+    Display          display;             //
+  };
+  
 }
 #endif

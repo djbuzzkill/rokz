@@ -96,7 +96,7 @@ bool rokz::SetupDynamicRenderingInfo (rokz::RenderingInfoGroup& ri,
   ri.clear_colors.resize (1);
   ri.color_attachment_infos.resize (1);
 
-  ri.clear_colors[0].color = {{0.01f, 0.01f, 0.02f, 1.0f}};
+  ri.clear_colors[0].color = {{0.1f, 0.1f, 1.0f, 1.0f}};
   //rig.clear_colors[1].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   ri.clear_depth.depthStencil = {1.0f, 0};
 

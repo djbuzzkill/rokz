@@ -13,7 +13,6 @@ namespace milkshake {
 
   using namespace rokz;
 
-  using rokz::Display; 
 
   const VkExtent2D kDefaultDimensions { 1024, 768 }; 
   // ---------------------------------------------------------------------------------------
@@ -28,33 +27,6 @@ namespace milkshake {
     ATTACH_DEPTHI = NUM_COLOR_ATTACHMENTS, 
     NUM_TOTAL_ATTACHMENTS
   }; 
-  // ---------------------------------------------------------------------------------------
-  struct Basically {
-
-    // input 
-    InputState             input_state;
-    glm::ivec2             mouse_prev; 
-    int                    prev_inside;
-    // system
-    Instance               instance;
-    Device                 device;
-
-
-    rc::SwapchainGroup     swapchain_group;
-    SwapchainInfo          swapchain_info;
-
-    rc::Attachment         depth; 
-
-    // DYNAMIC RENDERING, u shal not renderpass
-    RenderingInfoGroup     rendering_info_group;
-    // struct Display
-    Display                display; //
-    //AttachmentProps { 
-    VkSampleCountFlagBits  msaa_samples;
-    VkFormat               swapchain_format; 
-    //
-    SwapchainResetter::Ref swapchain_resetter; // swchresetter
-  };
 
     
   // -- semsphores in group
@@ -73,7 +45,39 @@ namespace milkshake {
     VkFence         inflight;      // flag bit set when present que done
   }; 
 
-    // ---------------------------------------------------------------------------------------
+  
+  using rokz::Display; 
+  // ---------------------------------------------------------------------------------------
+  struct Basically {
+    // input 
+    InputState             input_state;
+    glm::ivec2             mouse_prev; 
+    int                    prev_inside;
+    // system
+    Instance               instance;
+    Device                 device;
+
+
+    rc::SwapchainGroup     swapchain_group;
+    SwapchainInfo          swapchain_info;
+
+    rc::Attachment         depth; 
+
+    // DYNAMIC RENDERING
+    RenderingInfoGroup     rendering_info_group;
+
+    // struct Display
+    Display                display; //
+    //AttachmentProps { 
+    VkSampleCountFlagBits  msaa_samples;
+    VkFormat               swapchain_format; 
+    //
+    SwapchainResetter::Ref swapchain_resetter; // swchresetter
+  };
+  // ---------------------------------------------------------------------------------------
+
+  struct ConfigureFeatures; 
+  // ---------------------------------------------------------------------------------------
   struct Glob : public Basically {
 
     Glob () : Basically {} {
@@ -102,7 +106,7 @@ namespace milkshake {
     DescriptorSetLayout    grid_dslo;        // global r 'shared global' descr's
 
     DescriptorGroup        dorito_de;     
-    DescriptorSetLayout    dorito_dslo;      // global r 'shared global' descr's
+    DescriptorSetLayout    lumen_dslo;      // global r 'shared global' descr's
 
     // -- is  this correct
     Arr<per_frame_set, kMaxFramesInFlight>  sync; 
@@ -119,10 +123,10 @@ namespace milkshake {
       rc::Buffer::Ref   buff;
     } grid; 
     
-    PipelineLayout    dorito_plo;
-    Pipeline          dorito_pipe;
+    PipelineLayout    lumen_plo;
+    Pipeline          lumen_pipe;
 
-    DrawSequence::Ref draw_doritos;
+    DrawSequence::Ref draw_lumens;
 
   }; 
   // ---------------------------------------------------------------------------------------

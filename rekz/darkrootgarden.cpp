@@ -542,3 +542,34 @@ int darkrootbasin (const std::vector<std::string>& args) {
 
 }
 
+// gemini
+// uphold
+// swan
+// capital one
+// US Bank
+// Chase
+// Allstate
+// eRenter plan
+// Bank of Colorado
+// what-cha
+// Camden
+// xfinity
+// twitch.tv
+// capital
+// tmobile
+// steam
+// twitter
+// HSA
+// Ikon
+// trezor
+// Xcel energy
+// Epoch
+// Rome SDS
+// Vital Proteins
+// Turbo Tax
+// Parler
+// Zoom video
+//
+
+
+// .Hotmail

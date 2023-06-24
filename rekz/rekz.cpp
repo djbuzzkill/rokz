@@ -9,6 +9,7 @@ using namespace rokz;
 //
 //#include "rokz_test.cpp"
 #include "milkshake.h"
+#include "pepper.h"
 //#include "okui.h"
 
 //
@@ -38,6 +39,7 @@ int main (int argv, char** argc) {
     {"fontz"        , font_tool },
     {"stonk"        , stonk },
     {"milkshake"    , milkshake::run } , 
+    {"pepper"       , pepper::run } , 
     //  {"okui"         , okui::run } , 
 
   };
