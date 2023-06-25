@@ -39,7 +39,11 @@ namespace rokz { namespace cx {
                          const Vec<VkClearValue>& clearvalues);
     
     void NextSubpass     (VkCommandBuffer cb, VkSubpassContents begin_contents); 
-    void EndRenderPass   (VkCommandBuffer cb); 
+
+    bool EndRenderPass (VkCommandBuffer cb, VkQueue queue, VkSemaphore wait_sem,
+                        VkSemaphore signal_sem, VkFence signal_fence);
+
+    bool EndRenderPass   (VkCommandBuffer cb); 
     // ----------------------------------------------------------------------------
     // no FrameSync
     // ----------------------------------------------------------------------------

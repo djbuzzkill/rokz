@@ -9,37 +9,119 @@
 
 using namespace rokz;
 // ------------------------------------------------------------------------------------------------
-//
+// no_frame_sync
 // ------------------------------------------------------------------------------------------------
-int cx::FrameDrawingBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
-                              uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
-
-  //rc::Swapchain::Ref& swapchain = scg.swapchain;
+VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
+                           VkFence in_flight, VkSemaphore image_available, const Device& device) {
   
-  // dynamic_rendering now, we have to manually transition
-  cx::TransitionImageLayout (scg.images[image_index], scg.format,
-                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
-                             device.queues.graphics, device.command_pool.handle, device.handle);
-
-  if (VK_SUCCESS != vkResetCommandBuffer (command_buffer, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
-    return __LINE__; 
-  }
-
-  VkCommandBufferBeginInfo begin_info {};
-  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.pNext = nullptr;
-  begin_info.flags = 0;                  // 
-  begin_info.pInheritanceInfo = nullptr; // 
-
-  if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
-     printf ("failed to begin recording command buffer!");
-     return __LINE__; 
-  }
-
-  vkCmdBeginRendering (command_buffer, &ri);
+  vkWaitForFences (device.handle, 1, &in_flight, VK_TRUE, UINT64_MAX);
   
-  return 0;
+  VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
+                                                swapchain,
+                                                UINT64_MAX,
+                                                image_available,
+                                                VK_NULL_HANDLE,
+                                                &image_index);
+  //
+  vkResetFences (device.handle, 1, &in_flight);
+  return acquire_res; 
 }
+// ------------------------------------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------------------------------------
+void cx::BeginRenderPass (VkCommandBuffer         cb,
+                         VkRenderPass             renderpass, 
+                         VkFramebuffer            framebuffer, 
+                         VkSubpassContents        contents,
+                         const VkRect2D&          area, 
+                         const Vec<VkClearValue>& clearvalues)
+ {
+   // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdBeginRenderPass2.html ]
+   if (VK_SUCCESS != vkResetCommandBuffer (cb, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
+     HERE("FAILED -> vkResetCommandBuffer");
+     return; 
+   }
+
+   VkCommandBufferBeginInfo begin_info {};
+   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+   begin_info.pNext = nullptr;
+   begin_info.flags = 0;                  // 
+   begin_info.pInheritanceInfo = nullptr; // 
+
+   if (vkBeginCommandBuffer(cb, &begin_info) != VK_SUCCESS) {
+     HERE ("FAILED -> vkBeginCommandBuffer");
+     return; 
+   }
+
+      
+   VkRenderPassBeginInfo rp {};
+   rp.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+   rp.pNext           = nullptr;
+   rp.renderPass      = renderpass;
+   rp.framebuffer     = framebuffer; 
+   rp.renderArea      = area; 
+   //rp.renderArea      = VkRect2D {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
+   rp.clearValueCount = (uint32_t)clearvalues.size ();
+   rp.pClearValues    = &clearvalues[0]; 
+
+   // contents : 
+   vkCmdBeginRenderPass (cb, &rp, contents); 
+
+}
+
+
+// ------------------------------------------------------------------------------------------------
+// 
+// ------------------------------------------------------------------------------------------------
+bool cx::EndRenderPass (VkCommandBuffer cb, VkQueue queue, VkSemaphore wait_sem,
+                       VkSemaphore signal_sem, VkFence signal_fence)
+{
+    // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdEndRenderPass2.html ]
+  vkCmdEndRenderPass (cb); 
+
+  //
+  if (VK_SUCCESS != vkEndCommandBuffer (cb) != VK_SUCCESS) {
+    HERE("FAILED -> vkEndCommandBuffer");
+    return false; 
+  }
+
+  VkQueue          graphic_queue; // = glob.device.queues.graphics
+  VkFence          in_flight_fence; // = glob.framesyncgroup.syncs[curr_frame].in_flight_fence
+
+  VkSemaphore      image_available_sem; // glob.framesyncgroup.syncs[curr_frame].image_available_sem
+  VkSemaphore      render_finished_sem; //  glob.framesyncgroup.syncs[curr_frame].render_finished_sem
+
+  {
+    VkSubmitInfo submit_info {};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.pNext = nullptr;
+    VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+    // VkCommandBuffer  command_buffers[] = {cb};
+    // Vec<VkSemaphore> waits    = { image_available_sem };
+    // Vec<VkSemaphore> signals  = { render_finished_sem }; 
+
+    submit_info.pWaitDstStageMask    = wait_stages;
+
+    submit_info.waitSemaphoreCount   = 1; // sem_image_available waits here 
+    submit_info.pWaitSemaphores      = &wait_sem;
+
+    submit_info.signalSemaphoreCount = 1;  // sem_render_finished signals here 
+    submit_info.pSignalSemaphores    = &signal_sem; 
+
+    submit_info.commandBufferCount   = 1;
+    submit_info.pCommandBuffers      = &cb; // &glob.command_buffer_group.buffers[curr_frame];
+
+    //
+    if (vkQueueSubmit (queue, 1, &submit_info, signal_fence) != VK_SUCCESS) {
+      HERE("FAILE -> vkQueueSubmit");
+      return false; 
+    }
+  }
+
+  return true;
+}
+
 // ------------------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------------------
@@ -84,30 +166,40 @@ bool cx::PresentFrame (VkQueue present_que, const VkPresentInfoKHR& pi) {
  return VK_SUCCESS == vkQueuePresentKHR (present_que , &pi);
 }
 
-
-// ------------------------------------------------------------------------------------------------
-// no_frame_sync
-// ------------------------------------------------------------------------------------------------
-VkResult cx::AcquireFrame (VkSwapchainKHR& swapchain, uint32_t& image_index,
-                           VkFence in_flight, VkSemaphore image_available, const Device& device) {
-  
-  vkWaitForFences (device.handle, 1, &in_flight, VK_TRUE, UINT64_MAX);
-  
-  VkResult acquire_res = vkAcquireNextImageKHR (device.handle,
-                                                swapchain,
-                                                UINT64_MAX,
-                                                image_available,
-                                                VK_NULL_HANDLE,
-                                                &image_index);
-  //
-  vkResetFences (device.handle, 1, &in_flight);
-  return acquire_res; 
-}
-
 // ------------------------------------------------------------------------------------------------
 // no_frame_sync | trigger:fence_in_flight
 // ------------------------------------------------------------------------------------------------
+int cx::FrameDrawingBegin (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
+                              uint32_t image_index, const VkRenderingInfo& ri, const Device& device) {
+  //rc::Swapchain::Ref& swapchain = scg.swapchain;
+  // dynamic_rendering now, we have to manually transition
+  cx::TransitionImageLayout (scg.images[image_index], scg.format,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+                             device.queues.graphics, device.command_pool.handle, device.handle);
 
+  if (VK_SUCCESS != vkResetCommandBuffer (command_buffer, 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
+    return __LINE__; 
+  }
+
+  VkCommandBufferBeginInfo begin_info {};
+  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  begin_info.pNext = nullptr;
+  begin_info.flags = 0;                  // 
+  begin_info.pInheritanceInfo = nullptr; // 
+
+  if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS) {
+     printf ("failed to begin recording command buffer!");
+     return __LINE__; 
+  }
+
+  vkCmdBeginRendering (command_buffer, &ri);
+  
+  return 0;
+}
+
+// ------------------------------------------------------------------------------------------------
+//
+// ------------------------------------------------------------------------------------------------
 int cx::FrameDrawingEnd (rc::SwapchainGroup& scg, VkCommandBuffer command_buffer,
                       uint32_t image_index,
                       VkSemaphore sem_image_available,
@@ -181,47 +273,6 @@ bool cx::PresentFrame (VkQueue present_que, uint32_t& image_index,
 }
 
 
-// ------------------------------------------------------------------------------------------------
-// 
-// ------------------------------------------------------------------------------------------------
-void cx::BeginRenderPass (VkCommandBuffer cb,
-                         VkRenderPass             renderpass, 
-                         VkFramebuffer            framebuffer, 
-                         VkSubpassContents        contents,
-                         const VkRect2D&          ext2d, 
-                         const Vec<VkClearValue>& clearvalues)
- {
-   // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdBeginRenderPass2.html ]
-  VkRenderPassBeginInfo rpbi {};
-  rpbi.pNext           = nullptr; 
-  rpbi.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  rpbi.renderPass      = renderpass ; 
-  rpbi.renderArea      = ext2d;
-  rpbi.framebuffer     = framebuffer;
-  rpbi.clearValueCount = clearvalues.size ();
-  rpbi.pClearValues    = &clearvalues[0]; 
-  //VK_RENDER_PASS_CREATE_FLAG_BITS_MAX_ENUM
-  // typedef struct VkRenderPassBeginInfo {
-  //     VkStructureType        sType;
-  //     const void*            pNext;
-  //     VkRenderPass           renderPass;
-  //     VkFramebuffer          framebuffer;
-  //     VkRect2D               renderArea;
-  //     uint32_t               clearValueCount;
-  //     const VkClearValue*    pClearValues;
-  // } VkRenderPassBeginInfo;
-
-
-  VkSubpassBeginInfo spbi {};
-  spbi.pNext    = nullptr;
-  spbi.sType    = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO;
-  spbi.contents = contents;  
-  // typedef enum VkSubpassContents {
-  //     VK_SUBPASS_CONTENTS_INLINE = 0,
-  //     VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,
-  // } VkSubpassContents;
-  vkCmdBeginRenderPass2 (cb, &rpbi, &spbi); 
-}
 
 // ------------------------------------------------------------------------------------------------
 // 
@@ -243,19 +294,58 @@ void cx::NextSubpass (VkCommandBuffer cb, VkSubpassContents begin_contents) {
     vkCmdNextSubpass2 (cb, &subpbeg, &subpend); 
 }
 
-// ------------------------------------------------------------------------------------------------
-// 
-// ------------------------------------------------------------------------------------------------
-void cx::EndRenderPass (VkCommandBuffer cb) {
 
-  // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdEndRenderPass2.html ]
 
-    VkSubpassEndInfo   subpend {};
-    subpend.sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO; 
-    subpend.pNext = nullptr; 
 
-    vkCmdEndRenderPass2 ( cb, &subpend); 
-}
+// bool cx::EndRenderPass (VkCommandBuffer cb) {
+
+//   // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdEndRenderPass2.html ]
+//   vkCmdEndRenderPass (cb); 
+
+//   //
+//   if (VK_SUCCESS != vkEndCommandBuffer (cb) != VK_SUCCESS) {
+//     HERE("FAILED -> vkEndCommandBuffer");
+//     return false; 
+//   }
+
+//   VkQueue          graphic_queue; // = glob.device.queues.graphics
+//   VkFence          in_flight_fence; // = glob.framesyncgroup.syncs[curr_frame].in_flight_fence
+
+//   VkSemaphore      image_available_sem; // glob.framesyncgroup.syncs[curr_frame].image_available_sem
+//   VkSemaphore      render_finished_sem; //  glob.framesyncgroup.syncs[curr_frame].render_finished_sem
+
+//   VkCommandBuffer  command_buffers[] = {cb};
+
+//   {
+//     VkSubmitInfo submit_info {};
+//     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+//     submit_info.pNext = nullptr;
+
+//     VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+//     Vec<VkSemaphore> waits    = { image_available_sem };
+//     Vec<VkSemaphore> signals  = { render_finished_sem }; 
+
+//     submit_info.pWaitDstStageMask    = wait_stages;
+
+//     submit_info.waitSemaphoreCount   = waits.size(); // sem_image_available waits here 
+//     submit_info.pWaitSemaphores      = &waits[0];
+
+//     submit_info.signalSemaphoreCount = signals.size();  // sem_render_finished signals here 
+//     submit_info.pSignalSemaphores    = &signals[0]; 
+
+//     submit_info.commandBufferCount   = 1;
+//     submit_info.pCommandBuffers      = command_buffers; // &glob.command_buffer_group.buffers[curr_frame];
+
+//     //
+//     if (vkQueueSubmit (graphic_queue, 1, &submit_info, 
+//                        in_flight_fence) != VK_SUCCESS) {
+//       HERE("FAILE -> vkQueueSubmit");
+//       return false; 
+//     }
+//   }
+
+//   return true;
+// }
 
 
 

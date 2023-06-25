@@ -335,42 +335,49 @@ struct pepper::PepperLoop_rp {
       };
 
       Vec<VkClearValue> clear_values (3); 
-      clear_values[0].color        = {{0.1f, 0.1f, 0.1f, 1.0f}};
+      clear_values[0].color        = {{0.01f, 0.01f, 0.01f, 1.0f}};
       clear_values[1].depthStencil = {1.0f, 0};
-      clear_values[2].color        = {{0.1f, 0.1f, 0.1f, 1.0f}};
+      clear_values[2].color        = {{0.01f, 0.01f, 0.01f, 1.0f}};
 
 
-      if (VK_SUCCESS != vkResetCommandBuffer (glob.framesyncgroup.command_buffers[curr_frame], 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
-        return __LINE__; 
-      }
+      // if (VK_SUCCESS != vkResetCommandBuffer (glob.framesyncgroup.command_buffers[curr_frame], 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
+      //   return __LINE__; 
+      // }
 
-      VkCommandBufferBeginInfo begin_info {};
-      begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      begin_info.pNext = nullptr;
-      begin_info.flags = 0;                  // 
-      begin_info.pInheritanceInfo = nullptr; // 
+      // VkCommandBufferBeginInfo begin_info {};
+      // begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      // begin_info.pNext = nullptr;
+      // begin_info.flags = 0;                  // 
+      // begin_info.pInheritanceInfo = nullptr; // 
 
-      if (vkBeginCommandBuffer(glob.framesyncgroup.command_buffers[curr_frame], &begin_info) != VK_SUCCESS) {
-        printf ("failed to begin recording command buffer!");
-        return __LINE__; 
-      }
+      // if (vkBeginCommandBuffer(glob.framesyncgroup.command_buffers[curr_frame], &begin_info) != VK_SUCCESS) {
+      //   printf ("failed to begin recording command buffer!");
+      //   return __LINE__; 
+      // }
+
 
       
-      VkRenderPassBeginInfo rp {};
-      rp.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-      rp.pNext           = nullptr;
-      rp.renderPass      = glob.renderpass->handle;
-      rp.framebuffer     = glob.framebuffers[image_index]->handle; 
-      rp.renderArea      = VkRect2D {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
-      rp.clearValueCount = (uint32_t)clear_values.size ();
-      rp.pClearValues    = &clear_values[0]; 
+      // VkRenderPassBeginInfo rp {};
+      // rp.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      // rp.pNext           = nullptr;
+      // rp.renderPass      = glob.renderpass->handle;
+      // rp.framebuffer     = glob.framebuffers[image_index]->handle; 
+      // rp.renderArea      = VkRect2D {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
+      // rp.clearValueCount = (uint32_t)clear_values.size ();
+      // rp.pClearValues    = &clear_values[0]; 
 
-      vkCmdBeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame],
-                            &rp, VK_SUBPASS_CONTENTS_INLINE); 
+      // vkCmdBeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame],
+      //                       &rp, VK_SUBPASS_CONTENTS_INLINE); 
 
 
+      VkRect2D area {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
 
-      vkResetCommandBuffer; 
+      //vkResetCommandBuffer; 
+      cx::BeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame], glob.renderpass->handle, 
+                         glob.framebuffers[image_index]->handle, VK_SUBPASS_CONTENTS_INLINE,
+                         area,  clear_values); 
+
+
       //
       // polygons
       glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
@@ -389,43 +396,13 @@ struct pepper::PepperLoop_rp {
       //   glob.framesyncgroup.syncs[curr_frame].in_flight_fence, 
       //   glob.device);
       //
-      vkCmdEndRenderPass (glob.framesyncgroup.command_buffers[curr_frame]); 
 
-      //
-      if (VK_SUCCESS != vkEndCommandBuffer (glob.framesyncgroup.command_buffers[curr_frame]) != VK_SUCCESS) {
-        printf ("[FAILED] record command buffer\n");
-        return __LINE__; 
-      }
+      cx::EndRenderPass (glob.framesyncgroup.command_buffers[curr_frame],
+                         glob.device.queues.graphics,
+                         glob.framesyncgroup.syncs[curr_frame].image_available_sem,
+                         glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
+                         glob.framesyncgroup.syncs[curr_frame].in_flight_fence);
 
-      // -- we are done, submit
-      //rokz::Swapchain& swapchain = scg.swapchain;
-      {
-        VkSubmitInfo submit_info {};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.pNext = nullptr;
-
-        VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        Vec<VkSemaphore> waits    = { glob.framesyncgroup.syncs[curr_frame].image_available_sem };
-        Vec<VkSemaphore> signals  = { glob.framesyncgroup.syncs[curr_frame].render_finished_sem }; 
-
-        submit_info.pWaitDstStageMask    = wait_stages;
-
-        submit_info.waitSemaphoreCount   = waits.size(); // sem_image_available waits here 
-        submit_info.pWaitSemaphores      = &waits[0];
-
-        submit_info.signalSemaphoreCount = signals.size();  // sem_render_finished signals here 
-        submit_info.pSignalSemaphores    = &signals[0]; 
-
-        submit_info.commandBufferCount   = 1;
-        submit_info.pCommandBuffers      = &glob.framesyncgroup.command_buffers[curr_frame]; // &glob.command_buffer_group.buffers[curr_frame];
-
-        //
-        if (vkQueueSubmit (glob.device.queues.graphics, 1, &submit_info,
-                           glob.framesyncgroup.syncs[curr_frame].in_flight_fence) != VK_SUCCESS) {
-          printf("failed to submit draw command buffer!");
-          return false; 
-        }
-      }
 
       {
         Vec<VkSemaphore> wait_render_finished = {
@@ -436,12 +413,7 @@ struct pepper::PepperLoop_rp {
           return __LINE__;
         }
       }
-      // cx::FrameDrawingEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
-      //                   image_index, 
-      //                   glob.framesyncgroup.syncs[curr_frame].image_available_sem,
-      //                   glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
-      //                   glob.framesyncgroup.syncs[curr_frame].in_flight_fence, 
-      //                   glob.device);
+
     }
     
     // how long did we take
