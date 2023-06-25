@@ -403,9 +403,10 @@ int milkshake::run (const Vec<std::string>& args) {
                                    grid::kDescriptorBindings, glob.device); 
 
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
-  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos ,
-                                 pipe_path, kDefaultDimensions, glob.msaa_samples,
-                                 scg.format, glob.depth.format, glob.device)) { 
+  if (!rekz::grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, VK_NULL_HANDLE,
+                                 glob.grid.pipe.dslos , pipe_path, kDefaultDimensions,
+                                 glob.msaa_samples, scg.format, glob.depth.format,
+                                 glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
   }

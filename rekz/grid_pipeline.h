@@ -34,7 +34,7 @@ namespace rekz { namespace grid {
     // ----------------------------------------------------------------------------------------------
     bool InitPipeline  (Pipeline&              pipeline,
                         PipelineLayout&        plo,
-                        //0
+                        VkRenderPass           renderpass, 
                         const Vec<VkDescriptorSetLayout>& dslos,
                         const std::filesystem::path&      fspath,
                         const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,

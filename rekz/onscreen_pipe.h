@@ -43,6 +43,7 @@ namespace rekz { namespace onscreen {
     // 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890 1234  
     bool InitPipeline (Pipeline&                         pipeline,
                        PipelineLayout&                   plo,
+                       VkRenderPass                      renderpass, 
                        const Vec<VkDescriptorSetLayout>& dslos,
                        //0
                        const systempath&                 fspath,

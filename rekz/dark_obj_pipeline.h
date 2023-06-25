@@ -59,8 +59,8 @@ namespace rekz {
   // ----------------------------------------------------------------------------------------------
   bool InitObjPipeline     (Pipeline&                         pipeline,
                             PipelineLayout&                   plo,
+                            VkRenderPass                      renderpass, 
                             const Vec<VkDescriptorSetLayout>& dslos,
-                            //0
                             const std::filesystem::path&      fspath,
                             const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
                             VkSampleCountFlagBits             msaa_samples,

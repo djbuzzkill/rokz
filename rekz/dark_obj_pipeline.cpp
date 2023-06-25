@@ -147,8 +147,8 @@ bool rekz::BindObjectDescriptorResources (Vec<VkDescriptorSet>&         dss ,
 // ----------------------------------------------------------------------------------------
 bool rekz::InitObjPipeline (Pipeline&                   pipeline,
                             PipelineLayout&             plo,
+                            VkRenderPass                renderpass, 
                             const Vec<VkDescriptorSetLayout>& dslos,
-                            //0
                             const std::filesystem::path&      fspath,
                             const VkExtent2D&                 viewport_extent, //const rokz::Swapchain& swapchain,
                             VkSampleCountFlagBits             msaa_samples,
@@ -169,23 +169,25 @@ bool rekz::InitObjPipeline (Pipeline&                   pipeline,
     return false;
   }
 
+
+   // ?? is this the best place for this
   struct {
     VkPipelineRenderingCreateInfoKHR ci; 
-    Vec<VkFormat> color_formats;
-    //VkFormat              depth_format;
+    Vec<VkFormat>                    color_formats;
   } dynamic_rendering;
-   
 
+  
   // proto more orthogonal version
   dynamic_rendering.color_formats.resize (1);
   dynamic_rendering.color_formats[0] = color_format;
 
   CreateInfo  (dynamic_rendering.ci,
-                     dynamic_rendering.color_formats, depth_format); 
+               dynamic_rendering.color_formats, depth_format); 
 
   auto& psci = pipeline.state.ci;
   //
   CreateInfo (pipeline.ci,
+              renderpass, 
               plo.handle,
               &dynamic_rendering.ci,                    
               psci.shader_stages,       //const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 

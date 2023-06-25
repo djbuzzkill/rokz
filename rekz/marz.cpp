@@ -13,6 +13,7 @@
 #include "rokz/rokz_types.hpp"
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 //
 
@@ -304,8 +305,8 @@ int run_marz (const std::vector<std::string>& args) {
   // grid only uses globals
   glob.grid.pipe.dslos.push_back (glob.grid_dslo.handle);
 
-  if (!grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, glob.grid.pipe.dslos , pipe_path,
-                               scg.extent, glob.device.msaa_samples,
+  if (!grid::InitPipeline (glob.grid.pipe,  glob.grid.plo, VK_NULL_HANDLE, glob.grid.pipe.dslos ,
+                           pipe_path, scg.extent, glob.device.msaa_samples,
                                scg.format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
     return false; 
@@ -313,7 +314,7 @@ int run_marz (const std::vector<std::string>& args) {
   //
   //glob.scape.pipe.dslos.push_back (glob.global_dslo.handle); 
   glob.scape.pipe.dslos.push_back (glob.landscape_dslo.handle); 
-  if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, glob.scape.pipe.dslos,
+  if (!lscape::InitPipeline (glob.scape.pipe, glob.scape.plo, VK_NULL_HANDLE, glob.scape.pipe.dslos,
                              glob.device.msaa_samples, scg.format, glob.depth_format,
                              pipe_path, scg.extent, glob.device)) {
     printf ("[FAILED] --> InitLandscapeTiler \n"); 

@@ -100,11 +100,10 @@ namespace rokz {
 
   
   //
-  // VkGraphicsPipelineCreateInfo
-  //
   VkGraphicsPipelineCreateInfo&           CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
-                                                      const VkPipelineLayout&                            pipeline_layout,
-                                                      const VkRenderPass&                                render_pass,
+                                                      VkRenderPass                                       render_pass,
+                                                      VkPipelineLayout                                   pipeline_layout,
+                                                      const void*                                        next, 
                                                       const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
                                                       const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
                                                       const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
@@ -116,9 +115,9 @@ namespace rokz {
                                                       const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
                                                       const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state); 
 
+
   //
   // VkGraphicsPipelineCreateInfo - similar to above except using dynamic render pass
-  //
   VkGraphicsPipelineCreateInfo&          CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
                                                      const VkPipelineLayout&                            pipeline_layout,
                                                      const VkPipelineRenderingCreateInfoKHR*            ci_pipeline_rendering, 

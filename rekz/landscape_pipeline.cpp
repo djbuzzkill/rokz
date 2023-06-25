@@ -83,6 +83,7 @@ bool setup_landscape_shader_modules (Pipeline&         pipeline,
 // ----------------------------------------------------------------------------------------
 bool lscape::InitPipeline (Pipeline&                    pipeline,
                            PipelineLayout&              plo,
+                           VkRenderPass                 renderpass, 
                            Vec<VkDescriptorSetLayout>&  dslos,
                            VkSampleCountFlagBits        msaa_samples,
                            VkFormat                     color_format,

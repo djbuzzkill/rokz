@@ -69,15 +69,16 @@ bool setup_grid_shader_modules (rokz::Pipeline& pipeline, const systempath& fspa
 // ----------------------------------------------------------------------------------------------
 
 bool rekz::grid::InitPipeline (rokz::Pipeline&              pipeline,
-                             rokz::PipelineLayout&        plo,
+                               rokz::PipelineLayout&        plo,
+                               VkRenderPass                 renderpass, 
                              //0
-                             const Vec<VkDescriptorSetLayout>&   dslos,
-                             const systempath&            fspath,
-                             const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
-                             VkSampleCountFlagBits        msaa_samples,
-                             VkFormat                     color_format,
-                             VkFormat                     depth_format,
-                             const rokz::Device&          device) {
+                               const Vec<VkDescriptorSetLayout>&   dslos,
+                               const systempath&            fspath,
+                               const VkExtent2D&            viewport_extent, //const rokz::Swapchain& swapchain,
+                               VkSampleCountFlagBits        msaa_samples,
+                               VkFormat                     color_format,
+                               VkFormat                     depth_format,
+                               const rokz::Device&          device) {
   //
   // Descriptor Set
   //rokz::DefineDescriptorSetLayout (dslo,  kGridDescriptorBindings, device);
@@ -122,6 +123,7 @@ bool rekz::grid::InitPipeline (rokz::Pipeline&              pipeline,
   // the main create info
   auto& psci = pipeline.state.ci;
   rokz::CreateInfo (pipeline.ci,
+                    renderpass,
                     plo.handle,
                     &dynamic_rendering.ci,                    
                     psci.shader_stages,       // const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 

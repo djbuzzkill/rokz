@@ -46,6 +46,7 @@ bool setup_onscreen_shaders (Pipeline& pipeline, const systempath& fspath, const
 // ----------------------------------------------------------------------------------------------
 bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
                                    PipelineLayout&                   plo,
+                                   VkRenderPass                      renderpass, 
                                    const Vec<VkDescriptorSetLayout>& dslos,
                                    //0
                                    const systempath&                 fspath,
@@ -82,6 +83,7 @@ bool rekz::onscreen::InitPipeline (Pipeline&                         pipeline,
   auto& psci = pipeline.state.ci;
   //
   CreateInfo (pipeline.ci,
+              renderpass,
               plo.handle,
               &dynamic_rendering.ci,                    
               psci.shader_stages,      // const std::vector<VkPipelineShaderStageCreateInfo> ci_shader_stages, 

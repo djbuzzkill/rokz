@@ -17,7 +17,8 @@ namespace pepper {
 
   const VkExtent2D kDefaultDimensions { 1024, 768 }; 
 
-  struct PepperLoop; 
+  struct PepperLoop_dyn; 
+  struct PepperLoop_rp; 
   // ---------------------------------------------------------------------------------------
   enum { kMaxFramesInFlight = 2 }; 
 
@@ -72,7 +73,6 @@ namespace pepper {
     RenderingInfoGroup     rendering_info_group;
     // not yet
 
-    VkRenderPassBeginInfo renderPassInfo {};
     // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     // renderPassInfo.renderPass = renderPass;
     // renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];

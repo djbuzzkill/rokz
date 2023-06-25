@@ -424,12 +424,13 @@ bool rokz::CreateGraphicsPipelineLayout (
   return true;
 }
 
-// ---------------------------------------------------------------------
-// VkGraphicsPipelineCreateInfo 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------------
+// VkGraphicsPipelineCreateInfo                    
+// ---------------------------------------------------------------------------------
 VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&                      ci, 
-                                                const VkPipelineLayout&                            pipeline_layout,
-                                                const VkRenderPass&                                render_pass,
+                                                VkRenderPass                                       render_pass,
+                                                VkPipelineLayout                                   pipeline_layout,
+                                                const void*                                        next, 
                                                 const std::vector<VkPipelineShaderStageCreateInfo>& ci_shader_stages, 
                                                 const VkPipelineInputAssemblyStateCreateInfo*      ci_input_assembly, 
                                                 const VkPipelineVertexInputStateCreateInfo*        ci_vertex_input_state,
@@ -441,9 +442,10 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
                                                 const VkPipelineColorBlendStateCreateInfo*         ci_colorblend, 
                                                 const VkPipelineDynamicStateCreateInfo*            ci_dynamic_state)
 {
+
   ci = {}; 
   ci.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  ci.pNext               = nullptr;
+  ci.pNext               = next;
   ci.flags               = 0x0; 
   ci.stageCount          = ci_shader_stages.size();
   ci.pStages             = &ci_shader_stages[0]; 
@@ -461,20 +463,13 @@ VkGraphicsPipelineCreateInfo& rokz::CreateInfo (VkGraphicsPipelineCreateInfo&   
   ci.subpass             = 0;                        // and also to a specific subpass
   ci.basePipelineHandle  = VK_NULL_HANDLE; 
   ci.basePipelineIndex   = -1;              
-
-  return ci; 
+  
+  return ci;
 }
-
-
-
-
 // ---------------------------------------------------------------------
 // VkGraphicsPipelineCreateInfo 
 // ---------------------------------------------------------------------
-
-
-VkPipelineRenderingCreateInfoKHR& rokz::CreateInfo  (VkPipelineRenderingCreateInfoKHR& ci,
-
+VkPipelineRenderingCreateInfoKHR& rokz::CreateInfo (VkPipelineRenderingCreateInfoKHR& ci,
                                                      const std::vector<VkFormat>& color_formats,
                                                      VkFormat depth_format,
                                                      VkFormat stencil_format) {
@@ -487,7 +482,6 @@ VkPipelineRenderingCreateInfoKHR& rokz::CreateInfo  (VkPipelineRenderingCreateIn
   //     VkFormat           depthAttachmentFormat;
   //     VkFormat           stencilAttachmentFormat;
   // } VkPipelineRenderingCreateInfo;
-
   ci.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO; 
   ci.pNext = nullptr;
   ci.viewMask = 0;

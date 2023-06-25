@@ -53,6 +53,9 @@
     // ----------------------------------------------------------------------------------------
     bool InitPipeline (Pipeline&                    pipeline,
                        PipelineLayout&              plo,
+
+                       VkRenderPass                      renderpass, 
+
                        Vec<VkDescriptorSetLayout>&  dslos,
                        VkSampleCountFlagBits        msaa_samples,
                        VkFormat                     color_format,

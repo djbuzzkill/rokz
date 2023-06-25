@@ -9,15 +9,15 @@
 using namespace rokz;
 
 void darkroot_cleanup (Vec<VkPipeline>&         pipelines,
-                        VkSurfaceKHR&            surf,
-                        VkCommandPool&           command_pool,
-                        Vec<rokz::FrameSync>&    syncs, 
-                        Vec<rokz::ShaderModule>& shader_modules,
-                        VkPipelineLayout&        pipeline_layout,
-                        rokz::Display&           display,
-                        rokz::Device&            device,
-                        VkInstance&              inst) {
-
+                       VkSurfaceKHR&            surf,
+                       VkCommandPool&           command_pool,
+                       Vec<rokz::FrameSync>&    syncs, 
+                       Vec<rokz::ShaderModule>& shader_modules,
+                       VkPipelineLayout&        pipeline_layout,
+                       rokz::Display&           display,
+                       rokz::Device&            device,
+                       VkInstance&              inst) {
+  
   for (auto& p : pipelines) {
     vkDestroyPipeline (device.handle, p, nullptr);
   }
@@ -63,56 +63,61 @@ bool pepper::setup_renderpasses (Glob& g) {
 
   // VkAttachmentDescription
   Vec<VkAttachmentDescription>  attde (NUM_ATTACH);
-  
-  attde[col].format = g.msaacolor.format; 
-  attde[col].samples = g.device.msaa_samples; // g.msaa_samples;
-  attde[col].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;;
-  attde[col].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attde[col].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attde[col] = {};
+  attde[col].format         = g.msaacolor.format; 
+  attde[col].samples        = g.device.msaa_samples; // g.msaa_samples;
+  attde[col].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  attde[col].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  attde[col].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   attde[col].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attde[col].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; 
-  attde[col].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
+  attde[col].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED; 
+  attde[col].finalLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
 
-  attde[dep].format = g.depth.format; ; 
-  attde[dep].samples = g.device.msaa_samples; // g.msaa_samples;
-  attde[dep].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;;
-  attde[dep].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attde[dep].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  attde[dep].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE; 
-  attde[dep].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; 
-  attde[dep].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; 
+  attde[dep] = {};
+  //ut::FindDepthFormat (render_pass.attach_desc[DP_n].format, g.device.physical);
+  attde[dep].format         = g.depth.format;  
+  attde[dep].samples        = g.device.msaa_samples; // g.msaa_samples;
+  attde[dep].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;;
+  attde[dep].storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  attde[dep].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attde[dep].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; 
+  attde[dep].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED; 
+  attde[dep].finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; 
 
-  attde[res].format = g.swapchain_group.format;  
-  attde[res].samples = VK_SAMPLE_COUNT_1_BIT; // resolve always has 1
-  attde[res].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;;
-  attde[res].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attde[res].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  attde[res].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE; 
-  attde[res].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; 
-  attde[res].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
+  attde[res] = {};
+  attde[res].format         = g.swapchain_group.format;  
+  attde[res].samples        = VK_SAMPLE_COUNT_1_BIT; // resolve always has 1
+  attde[res].loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  attde[res].storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+  attde[res].stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attde[res].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  attde[res].initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED; 
+  attde[res].finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; 
   
   // VkAttachmentReference
   Vec<VkAttachmentReference> attref (NUM_ATTACH);
-  attref[col].attachment = 0;
+  attref[col].attachment = col;
   attref[col].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-  attref[dep].attachment = 1; 
+  attref[dep].attachment = dep; 
   attref[dep].layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; 
 
-  attref[res].attachment = 2; 
+  attref[res].attachment = res; 
   attref[res].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
   
   // VkSubpassDescription
   Vec<VkSubpassDescription> subpde (1);
+  subpde[0] = {};
   subpde[0].pipelineBindPoint      = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpde[0].colorAttachmentCount   = 1;
   subpde[0].pColorAttachments      = &attref[col]; 
+  subpde[0].inputAttachmentCount = 0;
+  subpde[0].pInputAttachments    = nullptr;
   subpde[0].pDepthStencilAttachment= &attref[dep];
+  subpde[0].preserveAttachmentCount= 0;
+  subpde[0].pPreserveAttachments   = nullptr;
   subpde[0].pResolveAttachments    = &attref[res];
-
-  subpde[0].preserveAttachmentCount = 0;
-  subpde[0].pPreserveAttachments  = nullptr;
-
+  subpde[0].flags                  = 0; 
   //
   Vec<VkSubpassDependency> subpdep (1);
   subpdep[0].srcSubpass    = VK_SUBPASS_EXTERNAL;
@@ -144,7 +149,7 @@ bool pepper::setup_framebuffers (Glob& g) {
       g.swapchain_group.views[i]->handle, 
     }; 
 
-    g.framebuffers[i] = rc::CreateFramebuffer (g.renderpass->handle, attachments  ,
+    g.framebuffers[i] = rc::CreateFramebuffer (g.renderpass->handle, attachments,
                                                g.swapchain_group.extent, g.device); 
 
 
@@ -180,9 +185,7 @@ void pepper::cleanup ( pepper::Glob& glob) {
   //glob.poly_objects_de; // ?!?! how r descriptors handled
   rokz::cx::Destroy (glob.poly_objects_de.pool, glob.device); 
 
-#ifdef DARKROOT_HIDE_OSD_PATH
   rokz::cx::Destroy (glob.osd_de.pool, glob.device); 
-#endif
   // ?  
   // polygons will make use of object descriptors
 
@@ -204,10 +207,10 @@ void pepper::cleanup ( pepper::Glob& glob) {
   }
 
   vkDestroyPipelineLayout (glob.device.handle, glob.grid_plo.handle, nullptr);
-  Vec<VkPipeline> pipes = { 
-    glob.polys_pl.handle, glob.grid_pl.handle }; 
 
-  
+  Vec<VkPipeline> pipes = { 
+    glob.polys_pl.handle, glob.grid_pl.handle, glob.osd_pl.handle }; 
+
   darkroot_cleanup (pipes,
                      glob.display.surface,
                      glob.device.command_pool.handle,
@@ -223,10 +226,243 @@ void pepper::cleanup ( pepper::Glob& glob) {
 
 }
 
+// ----------------------------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------------------------
+struct pepper::PepperLoop_rp {
+
+  pepper::Glob& glob;
+
+  bool       run        = true;
+  uint32_t   curr_frame = 0; 
+  bool       result     = false;
+  int        countdown  = 6000;
+
+  const float Dt; 
+  std::chrono::system_clock::time_point then;
+
+  std::chrono::duration<size_t, std::chrono::microseconds::period> time_per_frame; //(time_per_frame_us);
+
+  void UpdateRunState  () {
+    //UpdateInput(glob, glob.dt);
+    if (glob.input_state.keys.count (GLFW_KEY_Q)) {
+      printf ("--> [q] pressed... quitting \n");
+      run = false;
+    }
+  } 
+  
+  // -------------------------------------------------------------
+  PepperLoop_rp (pepper::Glob& g, float dt) : glob(g), Dt(dt) { 
+
+    then = std::chrono::high_resolution_clock::now(); 
+
+    time_per_frame = std::chrono::microseconds (static_cast<size_t>(Dt * 1000000.0));
+    
+    printf ( "\nBegin run for [%i] frames.. \n\n", countdown); 
+
+  }
+  // while (cond()) loop()
+  // -------------------------------------------------------------
+  bool cond () {
+    return countdown && run && !glfwWindowShouldClose(glob.display.window.glfw_window); 
+  }
+  //
+  // -------------------------------------------------------------
+  bool loop () {
+
+    auto now = std::chrono::high_resolution_clock::now();    
+    
+    glfwPollEvents(); 
+
+    UpdateRunState ();
+
+    { 
+      char msg[64];
+      sprintf (msg, "OSD test: %i", countdown);
+      glob.osdata.strings[0] = msg;
+    }
+      
+    UpdateViewAttitude (glob.shared.view_rot, glob.mouse_prev, glob.prev_inside, glob.input_state, 0.01f);
+    UpdateViewPosition (glob.shared.view_pos, glob.shared.view_rot, glob.input_state, 0.1);
+
+    //
+    rc::SwapchainGroup& scg = glob.swapchain_group; 
+    // get image index up here
+    uint32_t image_index;
+
+    // -- no_frame_sync -- 
+    VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, image_index,
+                                                  glob.framesyncgroup.syncs[curr_frame].in_flight_fence, 
+                                                  glob.framesyncgroup.syncs[curr_frame].image_available_sem, 
+                                                  glob.device); 
+    //VkResult acquireres = rokz::cx::AcquireFrame (scg.swapchain->handle, glob.framesyncgroup.syncs[curr_frame], image_index, glob.device); 
+
+    // -------------------- ---------------------
+    if (acquireres == VK_ERROR_OUT_OF_DATE_KHR || acquireres == VK_SUBOPTIMAL_KHR || glob.input_state.fb_resize) {
+      glob.input_state.fb_resize = false; 
+      glob.swapchain_resetter->Reset (glob.device);
+      HERE ("#$A%"); 
+      return true;
+    }
+    else if (acquireres != VK_SUCCESS) {
+      printf("failed to acquire swap chain image!");
+      run = false;
+    }
+    else {
+      // ------------------------ Updaate b4 draw ----------------------------
+      //
+      //   update uniform here, but uniforms can also b update during DrawSeq::Prep ()
+      // 
+      //UpdateDarkUniforms (glob, curr_frame, Dt); 
+
+      rokz::UpdateGlobals (glob.shared, glob.global_rc_uniform_bu [curr_frame], kDefaultDimensions, Dt);
+
+      // did not work as planned
+      //onscreen::UpdateOSD (glob.global_rc_uniform_bu[curr_frame], glob.osdata.strings, kTestExtent, Dt);  
+      
+      // make sure the correct swapchain image is used
+
+      rokz::DrawSequence::RenderEnv poly_re {
+        glob.polys_pl, glob.polys_plo.handle, glob.shared, 
+      };
+
+      rokz::DrawSequence::RenderEnv grid_re {
+        glob.grid_pl, glob.grid_plo.handle, glob.shared, 
+      };
+
+      rokz::DrawSequence::RenderEnv osd_re  {
+        glob.osd_pl, glob.osd_plo.handle, glob.shared, 
+      };
+
+      Vec<VkClearValue> clear_values (3); 
+      clear_values[0].color        = {{0.1f, 0.1f, 0.1f, 1.0f}};
+      clear_values[1].depthStencil = {1.0f, 0};
+      clear_values[2].color        = {{0.1f, 0.1f, 0.1f, 1.0f}};
+
+
+      if (VK_SUCCESS != vkResetCommandBuffer (glob.framesyncgroup.command_buffers[curr_frame], 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
+        return __LINE__; 
+      }
+
+      VkCommandBufferBeginInfo begin_info {};
+      begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      begin_info.pNext = nullptr;
+      begin_info.flags = 0;                  // 
+      begin_info.pInheritanceInfo = nullptr; // 
+
+      if (vkBeginCommandBuffer(glob.framesyncgroup.command_buffers[curr_frame], &begin_info) != VK_SUCCESS) {
+        printf ("failed to begin recording command buffer!");
+        return __LINE__; 
+      }
+
+      
+      VkRenderPassBeginInfo rp {};
+      rp.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      rp.pNext           = nullptr;
+      rp.renderPass      = glob.renderpass->handle;
+      rp.framebuffer     = glob.framebuffers[image_index]->handle; 
+      rp.renderArea      = VkRect2D {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
+      rp.clearValueCount = (uint32_t)clear_values.size ();
+      rp.pClearValues    = &clear_values[0]; 
+
+      vkCmdBeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame],
+                            &rp, VK_SUBPASS_CONTENTS_INLINE); 
+
+
+
+      vkResetCommandBuffer; 
+      //
+      // polygons
+      glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
+      glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
+      // grid
+      glob.drawgrid->Prep (curr_frame, grid_re, glob.device); 
+      glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
+      //
+      // no more scene beyond here this is overlay now
+      glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
+      glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
+
+      // image_index, 
+      //   glob.framesyncgroup.syncs[curr_frame].image_available_sem,
+      //   glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
+      //   glob.framesyncgroup.syncs[curr_frame].in_flight_fence, 
+      //   glob.device);
+      //
+      vkCmdEndRenderPass (glob.framesyncgroup.command_buffers[curr_frame]); 
+
+      //
+      if (VK_SUCCESS != vkEndCommandBuffer (glob.framesyncgroup.command_buffers[curr_frame]) != VK_SUCCESS) {
+        printf ("[FAILED] record command buffer\n");
+        return __LINE__; 
+      }
+
+      // -- we are done, submit
+      //rokz::Swapchain& swapchain = scg.swapchain;
+      {
+        VkSubmitInfo submit_info {};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.pNext = nullptr;
+
+        VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        Vec<VkSemaphore> waits    = { glob.framesyncgroup.syncs[curr_frame].image_available_sem };
+        Vec<VkSemaphore> signals  = { glob.framesyncgroup.syncs[curr_frame].render_finished_sem }; 
+
+        submit_info.pWaitDstStageMask    = wait_stages;
+
+        submit_info.waitSemaphoreCount   = waits.size(); // sem_image_available waits here 
+        submit_info.pWaitSemaphores      = &waits[0];
+
+        submit_info.signalSemaphoreCount = signals.size();  // sem_render_finished signals here 
+        submit_info.pSignalSemaphores    = &signals[0]; 
+
+        submit_info.commandBufferCount   = 1;
+        submit_info.pCommandBuffers      = &glob.framesyncgroup.command_buffers[curr_frame]; // &glob.command_buffer_group.buffers[curr_frame];
+
+        //
+        if (vkQueueSubmit (glob.device.queues.graphics, 1, &submit_info,
+                           glob.framesyncgroup.syncs[curr_frame].in_flight_fence) != VK_SUCCESS) {
+          printf("failed to submit draw command buffer!");
+          return false; 
+        }
+      }
+
+      {
+        Vec<VkSemaphore> wait_render_finished = {
+          glob.framesyncgroup.syncs[curr_frame].render_finished_sem  // sem_render_finished waits here 
+        }; 
+
+        if (!cx::PresentFrame ( glob.device.queues.present, image_index, scg.swapchain, wait_render_finished)) {
+          return __LINE__;
+        }
+      }
+      // cx::FrameDrawingEnd (glob.swapchain_group, glob.framesyncgroup.command_buffers[curr_frame], 
+      //                   image_index, 
+      //                   glob.framesyncgroup.syncs[curr_frame].image_available_sem,
+      //                   glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
+      //                   glob.framesyncgroup.syncs[curr_frame].in_flight_fence, 
+      //                   glob.device);
+    }
+    
+    // how long did we take
+    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+    if (time_to_make_frame < time_per_frame) {
+      auto sleep_time = time_per_frame - time_to_make_frame;
+      std::this_thread::sleep_for(sleep_time);
+    }
+
+    curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
+    then = now; // std::chrono::high_resolution_clock::now(); 
+    countdown--; 
+
+    return true;
+  }
+
+}; 
 // ---------------------------------------------------------------------------------------
 //  encapsulate rendering loop
 // ---------------------------------------------------------------------------------------
-struct pepper::PepperLoop {
+struct pepper::PepperLoop_dyn {
 
   
   pepper::Glob& glob;
@@ -251,7 +487,7 @@ struct pepper::PepperLoop {
   } 
   
   // -------------------------------------------------------------
-  PepperLoop (pepper::Glob& g, float dt) : glob(g), Dt(dt) { 
+  PepperLoop_dyn (pepper::Glob& g, float dt) : glob(g), Dt(dt) { 
 
     then = std::chrono::high_resolution_clock::now(); 
 
@@ -379,9 +615,10 @@ struct pepper::PepperLoop {
 
     return true;
   }
+
 };
 
-// #define  DARKROOT_HIDE_OSD_PATH 1
+// -- FEATURES ----------------------------------------------------------------------
 struct PepperFeatures : public   VkPhysicalDeviceFeatures2 {
 
   PepperFeatures () = default; 
@@ -425,7 +662,7 @@ int pepper::run (const Vec<std::string>& args) {
 
   rokz::InitializeInstance (glob.instance); 
 
-  rokz::SetupDisplay (glob.display, glob.input_state, "darkroot garden", kDefaultDimensions, glob.instance); 
+  rokz::SetupDisplay (glob.display, glob.input_state, "pepper", kDefaultDimensions, glob.instance); 
   //SetupDisplay (glob); 
 
   rokz::cx::SelectPhysicalDevice (glob.device.physical, glob.display.surface, glob.instance.handle);
@@ -449,48 +686,11 @@ int pepper::run (const Vec<std::string>& args) {
                            kDefaultDimensions, glob.device.physical, glob.device);
 
 
-  // ---------------- INIT POLYGON PIPELINE ---------------------
-  rokz::DefineDescriptorSetLayout (glob.object_dslo, obz::kDescriptorBindings, glob.device); 
-
-  glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
-  if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
-                              kDefaultDimensions, glob.device.msaa_samples,
-                              scg.format, glob.depth.format, glob.device)) {
-    printf ("[FAILED] --> InitObjPipeline \n"); 
-    return false;
-  }
-
-
-  // ---------------- INIT GRID PIPELINE  ---------------------
-  rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
-
-  glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
-  if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
-                                 kDefaultDimensions, glob.device.msaa_samples,
-                                 scg.format, glob.depth.format, glob.device)) { 
-    printf ("[FAILED] --> InitGridPipeline \n"); 
-    return false; 
-  }
-
-  // ---------------- INIT OSD PIPELINE  ---------------------
-  rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
-
-  glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
-  if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
-                               kDefaultDimensions, glob.device.msaa_samples,
-                               scg.format, glob.depth.format,  glob.device)) {
-    printf ("[FAILED] --> OSD pipeline \n"); 
-    return false; 
-  }
-
   //
   // 
   rc::CreateBasicMSAAAttachments (glob.msaacolor, glob.depth,       
-                                  
-                                  glob.device.msaa_samples,
-                                  scg.format,
-                                  glob.depth.format,          
-                                  kDefaultDimensions,
+                                  glob.device.msaa_samples,  scg.format,
+                                  glob.depth.format,kDefaultDimensions,
                                   glob.device); // <-- this does all the additional  attachmentes
 
   // 
@@ -506,14 +706,51 @@ int pepper::run (const Vec<std::string>& args) {
     
   }
 
-  //
+  
+  // ---------------- INIT POLYGON PIPELINE ---------------------
+  rokz::DefineDescriptorSetLayout (glob.object_dslo, obz::kDescriptorBindings, glob.device); 
+
+  glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
+  if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.renderpass->handle,
+                              glob.polys_pl.dslos, dark_path, kDefaultDimensions,
+                              glob.device.msaa_samples, scg.format,
+                              glob.depth.format, glob.device)) {
+    printf ("[FAILED] --> InitObjPipeline \n"); 
+    return false;
+  }
+
+  
+  // ---------------- INIT GRID PIPELINE  ---------------------
+  rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
+
+  glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
+  if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.renderpass->handle,
+                                 glob.grid_pl.dslos , dark_path, kDefaultDimensions,
+                                 glob.device.msaa_samples, scg.format, glob.depth.format,
+                                 glob.device)) { 
+    printf ("[FAILED] --> InitGridPipeline \n"); 
+    return false; 
+  }
+
+  // ---------------- INIT OSD PIPELINE  ---------------------
+  rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
+
+  glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
+  if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.renderpass->handle,
+                               glob.osd_pl.dslos, dark_path, kDefaultDimensions,
+                               glob.device.msaa_samples, scg.format, glob.depth.format, glob.device)) {
+    printf ("[FAILED] --> OSD pipeline \n"); 
+    return false; 
+  }
+
+  // DISPLAY CHANGED RESETTER
   glob.swapchain_resetter = rekz::CreateSwapchainResetter (scg.swapchain, glob.display, scg.images,
                                                            scg.views, glob.depth.image, glob.depth.view,
                                                            glob.msaacolor.image, glob.msaacolor.view); 
 
   // for BeginRendering ()
-  rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolor.view->handle,
-                                   glob.depth.view->handle, scg.extent); 
+  // rokz::SetupDynamicRenderingInfo (glob.rendering_info_group, glob.msaacolor.view->handle,
+  //                                  glob.depth.view->handle, scg.extent); 
 
 
   //  --------------------------- GLOBAL ---------------------------
@@ -602,6 +839,8 @@ int pepper::run (const Vec<std::string>& args) {
     //rekz::CreateDrawGrid (glob.gridata); 
   // items per frames 
   //scg.command_buffer_group.buffers.resize (kMaxFramesInFlight);
+  HERE (" -- > 831 "); 
+
   rokz::FrameSyncGroup& fsg = glob.framesyncgroup;
   // !! 
   fsg.command_buffers.resize (kMaxFramesInFlight);
@@ -626,7 +865,7 @@ int pepper::run (const Vec<std::string>& args) {
   auto t0 = std::chrono::high_resolution_clock::now(); 
   std::chrono::system_clock::time_point then = t0; 
 
-  PepperLoop rootloop (glob, Dt ); 
+  PepperLoop_rp rootloop (glob, Dt); 
   rokz::FrameLoop  (rootloop);
 
   vkDeviceWaitIdle(glob.device.handle);

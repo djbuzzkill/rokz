@@ -355,9 +355,10 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rokz::DefineDescriptorSetLayout (glob.object_dslo, obz::kDescriptorBindings, glob.device); 
 
   glob.polys_pl.dslos.push_back (glob.object_dslo.handle);
-  if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, glob.polys_pl.dslos, dark_path,
-                              kTestExtent, glob.device.msaa_samples,
-                              scg.format, glob.depth_format, glob.device)) {
+  if (!rekz::InitObjPipeline (glob.polys_pl, glob.polys_plo, VK_NULL_HANDLE,
+                              glob.polys_pl.dslos, dark_path, kTestExtent,
+                              glob.device.msaa_samples, scg.format,
+                              glob.depth_format, glob.device)) {
     printf ("[FAILED] --> InitObjPipeline \n"); 
     return false;
   }
@@ -367,7 +368,7 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rokz::DefineDescriptorSetLayout (glob.grid_dslo, grid::kDescriptorBindings, glob.device); 
 
   glob.grid_pl.dslos.push_back (glob.grid_dslo.handle);
-  if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, glob.grid_pl.dslos , dark_path,
+  if (!rekz::grid::InitPipeline (glob.grid_pl,  glob.grid_plo, VK_NULL_HANDLE, glob.grid_pl.dslos , dark_path,
                                  kTestExtent, glob.device.msaa_samples,
                                  scg.format, glob.depth_format, glob.device)) { 
     printf ("[FAILED] --> InitGridPipeline \n"); 
@@ -378,9 +379,10 @@ int darkrootbasin (const std::vector<std::string>& args) {
   rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
 
   glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
-  if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
-                               kTestExtent, glob.device.msaa_samples,
-                               scg.format, glob.depth_format,  glob.device)) {
+  if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo,VK_NULL_HANDLE,
+                               glob.osd_pl.dslos, dark_path, kTestExtent,
+                               glob.device.msaa_samples, scg.format, glob.depth_format,
+                               glob.device)) {
     printf ("[FAILED] --> OSD pipeline \n"); 
     return false; 
   }

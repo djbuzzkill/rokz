@@ -176,8 +176,8 @@ bool cx::PresentFrame (VkQueue present_que, uint32_t& image_index,
   std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
 
   VkPresentInfoKHR pi {};
-
- return cx::PresentFrame (present_que , cx::PresentInfo (pi, image_index, swapchains, waits));
+  return cx::PresentFrame (present_que ,
+                           cx::PresentInfo (pi, image_index, swapchains, waits));
 }
 
 
@@ -192,7 +192,7 @@ void cx::BeginRenderPass (VkCommandBuffer cb,
                          const Vec<VkClearValue>& clearvalues)
  {
    // [ https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdBeginRenderPass2.html ]
-  VkRenderPassBeginInfo rpbi {} ;
+  VkRenderPassBeginInfo rpbi {};
   rpbi.pNext           = nullptr; 
   rpbi.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   rpbi.renderPass      = renderpass ; 
