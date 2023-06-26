@@ -268,7 +268,7 @@ bool cx::PresentFrame (VkQueue present_que, uint32_t& image_index,
   std::vector<VkSwapchainKHR>  swapchains = { swapchain->handle };
 
   VkPresentInfoKHR pi {};
-  return cx::PresentFrame (present_que ,
+  return cx::PresentFrame (present_que,
                            cx::PresentInfo (pi, image_index, swapchains, waits));
 }
 

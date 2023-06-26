@@ -14,7 +14,7 @@ namespace milkshake {
   using namespace rokz;
 
 
-  const VkExtent2D kDefaultDimensions { 1024, 768 }; 
+  const VkExtent2D kDefaultExtent { 1024, 768 }; 
   // ---------------------------------------------------------------------------------------
   enum { kMaxFramesInFlight = 2 }; 
 
@@ -57,21 +57,15 @@ namespace milkshake {
     Instance               instance;
     Device                 device;
 
-
     rc::SwapchainGroup     swapchain_group;
     SwapchainInfo          swapchain_info;
 
-    rc::Attachment         depth; 
-
     // DYNAMIC RENDERING
-    RenderingInfoGroup     rendering_info_group;
+    //RenderingInfoGroup     rendering_info_group;
 
     // struct Display
     Display                display; //
-    //AttachmentProps { 
-    VkSampleCountFlagBits  msaa_samples;
-    VkFormat               swapchain_format; 
-    //
+
     SwapchainResetter::Ref swapchain_resetter; // swchresetter
   };
   // ---------------------------------------------------------------------------------------
@@ -97,7 +91,7 @@ namespace milkshake {
       struct {
         rc::Attachment depth; } attachment; 
     } lcomp; 
-    
+
     
     // uniformbundle
     Vec<rc::Buffer::Ref>   global_bu;        // vma_shared_uniforms;
@@ -130,10 +124,19 @@ namespace milkshake {
 
   }; 
   // ---------------------------------------------------------------------------------------
-  int run (const Vec<std::string>& args); 
-  
-  }
 
+  bool setup_lcomp_attachments (Glob& glob); 
+  bool setup_gbuff_attachments (Glob& glob); 
+
+  bool setup_gbuff_framebuffer (Glob& glob);
+  bool setup_lcomp_framebuffers(Glob& glob); 
+
+  bool setup_gbuff_renderpass  (Glob& glob);
+  bool setup_lcomp_renderpass  (Glob& glob); 
+  // 
+  int run (const Vec<std::string>& args); 
+
+} // milkshake
 
 
 #endif

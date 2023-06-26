@@ -25,16 +25,15 @@ namespace rokz { namespace rc {
         }}
     }; 
 
-      
+    //
     Vec<VkImage>& GetSwapChainImages (Vec<VkImage>& oimages, const rc::Swapchain::Ref& swapchain, const Device& device); 
-
     // -----------------------------------------------------------------------------------------
     //
     // -----------------------------------------------------------------------------------------
     struct SwapchainGroup {
       Swapchain::Ref          swapchain ;// = glob.swapchain;
       VkFormat                format;
-      Vec<VkImage>            images    ;// = glob.swapchain_images; 
+      Vec<VkImage>            images;// = glob.swapchain_images; 
       Vec<rc::ImageView::Ref> views;//= glob.swapchain_imageviews; 
       VkExtent2D              extent; 
     }; 

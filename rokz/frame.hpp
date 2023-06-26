@@ -43,7 +43,6 @@ namespace rokz { namespace cx {
     bool EndRenderPass (VkCommandBuffer cb, VkQueue queue, VkSemaphore wait_sem,
                         VkSemaphore signal_sem, VkFence signal_fence);
 
-    bool EndRenderPass   (VkCommandBuffer cb); 
     // ----------------------------------------------------------------------------
     // no FrameSync
     // ----------------------------------------------------------------------------

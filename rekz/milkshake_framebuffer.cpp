@@ -1,5 +1,6 @@
 
 #include "milkshake.h"
+#include <vulkan/vulkan_core.h>
 
 
 using namespace rokz;
@@ -12,7 +13,7 @@ using namespace milkshake;
 // --------------------------------------------------------------------------------------------
 //  only 1 geom framebuffer
 // --------------------------------------------------------------------------------------------
-bool setup_gbuff_framebuffer (Glob& glob) {
+bool milkshake::setup_gbuff_framebuffer (Glob& glob) {
 
   Vec<VkImageView> views = {
     glob.gbuff.attachment.position.view->handle, 
@@ -23,32 +24,34 @@ bool setup_gbuff_framebuffer (Glob& glob) {
   //   } 
     
   glob.gbuff.framebuffer =
-    rc::CreateFramebuffer (glob.gbuff.renderpass->handle, views, kDefaultDimensions, glob.device); 
-  
-  return false; 
+    rc::CreateFramebuffer (glob.gbuff.renderpass->handle, views, kDefaultExtent, glob.device); 
+
+
+  return CHECK_VK_HANDLE(glob.gbuff.framebuffer->handle);  
 }
 
 // --------------------------------------------------------------------------------------------
 //  lcomp has swapchain_images.size() framebuffers
 // --------------------------------------------------------------------------------------------
-bool setup_lcomp_framebuffers (Glob& glob) {
+bool milkshake::setup_lcomp_framebuffers (Glob& glob) {
 
-  // surface color target
-  // depth lcmop target
-  uint32 framebuff_count =   glob.swapchain_group.views.size(); ; 
-  
-  Vec<VkImageView> views; //  = glob.swapchain_group.views;
-
+  uint32 framebuff_count = glob.swapchain_group.views.size();
   glob.lcomp.framebuffers.resize (framebuff_count);
+
   for (size_t i = 0; i < framebuff_count; i++) {
-
-    views.push_back (glob.swapchain_group.views[i]->handle);
-    views.push_back (glob.depth.view->handle);
+    //
+    Vec<VkImageView> views = {
+      glob.swapchain_group.views[i]->handle,
+      glob.lcomp.attachment.depth.view->handle
+    }; 
     
-    glob.lcomp.framebuffers[i] =
-        rc::CreateFramebuffer (glob.gbuff.renderpass->handle, views, kDefaultDimensions, glob.device); 
-
+    glob.lcomp.framebuffers[i] = rc::CreateFramebuffer (glob.lcomp.renderpass->handle, views,
+                                                        kDefaultExtent, glob.device); 
+    if (!CHECK_VK_HANDLE(glob.lcomp.framebuffers[i]->handle)) {
+      HERE("FAILED -> CreateFramebuffer");
+      return false;
+    }
   }
 
-  return false; 
+  return true; 
 }

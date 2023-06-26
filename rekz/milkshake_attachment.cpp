@@ -10,7 +10,7 @@ using namespace milkshake;
 // --------------------------------------------------------------------------------------------
 //  
 // --------------------------------------------------------------------------------------------
-bool setup_gbuff_attachments (Glob& glob) {
+bool milkshake::setup_gbuff_attachments (Glob& glob) {
 
   HERE("HAI");
   const Device& device = glob.device; 
@@ -21,7 +21,7 @@ bool setup_gbuff_attachments (Glob& glob) {
   { rc::Attachment& position = glob.gbuff.attachment.position;
     VkImageCreateInfo ci {}; 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
+                       kDefaultExtent.width, kDefaultExtent.height);
     position.format = VK_FORMAT_R16G16B16A16_SFLOAT; 
     position.image  = rc::CreateImage (ci, device);
     position.view   = rc::CreateImageView (position.image->handle,
@@ -31,7 +31,7 @@ bool setup_gbuff_attachments (Glob& glob) {
   { rc::Attachment& normal = glob.gbuff.attachment.normal;
     VkImageCreateInfo ci {}; 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
+                       kDefaultExtent.width, kDefaultExtent.height);
     normal.format  = VK_FORMAT_R16G16B16A16_SFLOAT;
     normal.image   = rc::CreateImage (ci, device);
     normal.view    = rc::CreateImageView (normal.image->handle, normal.format,
@@ -41,7 +41,7 @@ bool setup_gbuff_attachments (Glob& glob) {
   { rc::Attachment& albedo  = glob.gbuff.attachment.albedo;
     VkImageCreateInfo ci {}; 
     cx::CreateInfo_2D (ci, VK_FORMAT_R16G16B16A16_SFLOAT, color_target_usage, sample_bit_count,
-                       kDefaultDimensions.width, kDefaultDimensions.height);
+                       kDefaultExtent.width, kDefaultExtent.height);
 
      
     albedo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -50,14 +50,13 @@ bool setup_gbuff_attachments (Glob& glob) {
                                         VK_IMAGE_ASPECT_COLOR_BIT, glob.device); 
   }
 
-  //
   { rc::Attachment& depth  = glob.gbuff.attachment.depth; 
 
     VkImageCreateInfo ci {}; 
-    cx::CreateInfo_2D (ci, glob.depth.format, depth_target_usage, sample_bit_count, 
-                       kDefaultDimensions.width, kDefaultDimensions.height);
+    cx::CreateInfo_2D (ci, glob.gbuff.attachment.depth.format, depth_target_usage, sample_bit_count, 
+                       kDefaultExtent.width, kDefaultExtent.height);
 
-    depth.format = glob.depth.format;
+    depth.format = glob.gbuff.attachment.depth.format;
     depth.image = rc::CreateImage (ci, device); 
     depth.view  = rc::CreateImageView (depth.image->handle, depth.format,
                                       VK_IMAGE_ASPECT_DEPTH_BIT, glob.device); 
@@ -70,23 +69,27 @@ bool setup_gbuff_attachments (Glob& glob) {
 // --------------------------------------------------------------------------------------------
 //  only 1 geom framebuffer
 // --------------------------------------------------------------------------------------------
-bool setup_lcomp_attachments  (Glob& glob) {
+bool milkshake::setup_lcomp_attachments  (Glob& glob) {
 
   HERE("HAI");
   const Device& device = glob.device; 
   const VkSampleCountFlagBits sample_bit_count = VK_SAMPLE_COUNT_1_BIT; 
   const VkImageUsageFlags depth_target_usage   = rokz::kDepthStencilUsage; 
-  // only depth needs to be created, color target will use target from swapchain 
-  { rc::Attachment& depth = glob.lcomp.attachment.depth; 
-    VkImageCreateInfo ci {}; 
-    cx::CreateInfo_2D (ci, glob.depth.format, depth_target_usage, sample_bit_count, 
-                       kDefaultDimensions.width, kDefaultDimensions.height);
 
-    depth.format = glob.depth.format; 
+  // only depth needs to be created, color target will use target from swapchain 
+  rc::Attachment& depth = glob.lcomp.attachment.depth; 
+  { 
+    VkImageCreateInfo ci {}; 
+    cx::CreateInfo_2D (ci, glob.lcomp.attachment.depth.format, depth_target_usage, sample_bit_count, 
+                       kDefaultExtent.width, kDefaultExtent.height);
+
+    depth.format = glob.lcomp.attachment.depth.format; 
     depth.image = rc::CreateImage (ci, device); 
     depth.view  = rc::CreateImageView (depth.image->handle, depth.format,
                                        VK_IMAGE_ASPECT_DEPTH_BIT, device); 
   }
   HERE("BAI");
-  return true; 
+
+  
+  return CHECK_VK_HANDLE(depth.view->handle);
 }

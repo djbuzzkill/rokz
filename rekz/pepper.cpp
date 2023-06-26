@@ -7,7 +7,9 @@
 
 
 using namespace rokz;
-
+// -----------------------------------------------------------------------------------------
+//                
+// -----------------------------------------------------------------------------------------
 void darkroot_cleanup (Vec<VkPipeline>&         pipelines,
                        VkSurfaceKHR&            surf,
                        VkCommandPool&           command_pool,
@@ -270,7 +272,7 @@ struct pepper::PepperLoop_rp {
   // -------------------------------------------------------------
   bool loop () {
 
-    auto now = std::chrono::high_resolution_clock::now();    
+    auto timestart = std::chrono::high_resolution_clock::now();    
     
     glfwPollEvents(); 
 
@@ -339,46 +341,16 @@ struct pepper::PepperLoop_rp {
       clear_values[1].depthStencil = {1.0f, 0};
       clear_values[2].color        = {{0.01f, 0.01f, 0.01f, 1.0f}};
 
-
-      // if (VK_SUCCESS != vkResetCommandBuffer (glob.framesyncgroup.command_buffers[curr_frame], 0)) {  //   vkResetCommandBuffer (glob.command_buffer_group.buffers[curr_frame], 0);
-      //   return __LINE__; 
-      // }
-
-      // VkCommandBufferBeginInfo begin_info {};
-      // begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      // begin_info.pNext = nullptr;
-      // begin_info.flags = 0;                  // 
-      // begin_info.pInheritanceInfo = nullptr; // 
-
-      // if (vkBeginCommandBuffer(glob.framesyncgroup.command_buffers[curr_frame], &begin_info) != VK_SUCCESS) {
-      //   printf ("failed to begin recording command buffer!");
-      //   return __LINE__; 
-      // }
-
-
-      
-      // VkRenderPassBeginInfo rp {};
-      // rp.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-      // rp.pNext           = nullptr;
-      // rp.renderPass      = glob.renderpass->handle;
-      // rp.framebuffer     = glob.framebuffers[image_index]->handle; 
-      // rp.renderArea      = VkRect2D {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
-      // rp.clearValueCount = (uint32_t)clear_values.size ();
-      // rp.pClearValues    = &clear_values[0]; 
-
-      // vkCmdBeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame],
-      //                       &rp, VK_SUBPASS_CONTENTS_INLINE); 
-
-
-      VkRect2D area {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
-
-      //vkResetCommandBuffer; 
-      cx::BeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame], glob.renderpass->handle, 
-                         glob.framebuffers[image_index]->handle, VK_SUBPASS_CONTENTS_INLINE,
-                         area,  clear_values); 
+      //
+      VkRect2D render_area {VkOffset2D{0, 0}, glob.swapchain_group.extent}; 
 
 
       //
+      //
+      cx::BeginRenderPass (glob.framesyncgroup.command_buffers[curr_frame], glob.renderpass->handle, 
+                         glob.framebuffers[image_index]->handle, VK_SUBPASS_CONTENTS_INLINE,
+                         render_area,  clear_values); 
+
       // polygons
       glob.drawpoly->Prep (curr_frame, poly_re, glob.device); 
       glob.drawpoly->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, poly_re);
@@ -386,45 +358,37 @@ struct pepper::PepperLoop_rp {
       glob.drawgrid->Prep (curr_frame, grid_re, glob.device); 
       glob.drawgrid->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, grid_re);
       //
-      // no more scene beyond here this is overlay now
+      // UI overlay
       glob.osdraw->Prep (curr_frame, osd_re , glob.device); 
       glob.osdraw->Exec (glob.framesyncgroup.command_buffers[curr_frame], curr_frame, osd_re); 
-
-      // image_index, 
-      //   glob.framesyncgroup.syncs[curr_frame].image_available_sem,
-      //   glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
-      //   glob.framesyncgroup.syncs[curr_frame].in_flight_fence, 
-      //   glob.device);
       //
-
       cx::EndRenderPass (glob.framesyncgroup.command_buffers[curr_frame],
                          glob.device.queues.graphics,
                          glob.framesyncgroup.syncs[curr_frame].image_available_sem,
                          glob.framesyncgroup.syncs[curr_frame].render_finished_sem,
                          glob.framesyncgroup.syncs[curr_frame].in_flight_fence);
 
+      //
+      Vec<VkSemaphore> wait_render_finished = {
+        glob.framesyncgroup.syncs[curr_frame].render_finished_sem  // sem_render_finished waits here 
+      }; 
 
-      {
-        Vec<VkSemaphore> wait_render_finished = {
-          glob.framesyncgroup.syncs[curr_frame].render_finished_sem  // sem_render_finished waits here 
-        }; 
-
-        if (!cx::PresentFrame ( glob.device.queues.present, image_index, scg.swapchain, wait_render_finished)) {
-          return __LINE__;
-        }
+      if (!cx::PresentFrame (glob.device.queues.present, image_index,
+                             scg.swapchain, wait_render_finished)) {
+        return __LINE__;
       }
 
     }
     
     // how long did we take
-    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - now;
+    auto time_to_make_frame = std::chrono::high_resolution_clock::now() - timestart;
     if (time_to_make_frame < time_per_frame) {
       auto sleep_time = time_per_frame - time_to_make_frame;
       std::this_thread::sleep_for(sleep_time);
     }
 
     curr_frame = (curr_frame + 1) % kMaxFramesInFlight;
-    then = now; // std::chrono::high_resolution_clock::now(); 
+    then = timestart; // std::chrono::high_resolution_clock::now(); 
     countdown--; 
 
     return true;

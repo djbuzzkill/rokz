@@ -73,22 +73,12 @@ namespace pepper {
     RenderingInfoGroup     rendering_info_group;
     // not yet
 
-    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    // renderPassInfo.renderPass = renderPass;
-    // renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-
     // PerFrame
     rc::RenderPass::Ref         renderpass;
     Vec<rc::Framebuffer::Ref>   framebuffers; 
 
     // struct Display
     Display                display; //
-    //AttachmentProps { 
-    //VkSampleCountFlagBits  msaa_samples;
-    //VkFormat               swapchain_format; 
-
-    //VkFormat                     depth_format;  
-    //VkFormat                     color_format;
 
     //
     SwapchainResetter::Ref swapchain_resetter; // swchresetter

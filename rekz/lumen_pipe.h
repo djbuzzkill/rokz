@@ -71,8 +71,9 @@ namespace lumen {
   // ----------------------------------------------------------------------------------------
   bool InitPipeline (Pipeline&                    pipeline,
                      PipelineLayout&              plo,
-                     Vec<VkDescriptorSetLayout>&  dslos,
-                     VkSampleCountFlagBits        msaa_samples,
+                     VkRenderPass                 renderpass, 
+                     const Vec<VkDescriptorSetLayout>&  dslos,
+                     //VkSampleCountFlagBits        msaa_samples,
                      VkFormat                     color_format,
                      VkFormat                     depth_format,
                      const std::filesystem::path& pipe_path,

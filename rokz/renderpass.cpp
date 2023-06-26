@@ -38,7 +38,7 @@ VkAttachmentReference& rokz::AttachmentReference (VkAttachmentReference& ref,
                                                   uint32 index, VkImageLayout layout)
 {
   ref.attachment = index;
-  ref.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; 
+  ref.layout     = layout; 
   return ref; 
 }
 
