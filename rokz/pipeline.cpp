@@ -162,10 +162,10 @@ VkPipelineVertexInputStateCreateInfo& rokz::CreateInfo (
   create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   create_info.pNext = nullptr;
-  create_info.vertexBindingDescriptionCount = 1;
-  create_info.pVertexBindingDescriptions = &binding_desc; 
+  create_info.vertexBindingDescriptionCount   = 1;
+  create_info.pVertexBindingDescriptions      = &binding_desc; 
   create_info.vertexAttributeDescriptionCount = attrib_desc.size(); 
-  create_info.pVertexAttributeDescriptions = &attrib_desc[0]; 
+  create_info.pVertexAttributeDescriptions    = &attrib_desc[0]; 
 
   return create_info; 
 }
@@ -337,6 +337,9 @@ bool rokz::DefineGraphicsPipelineLayout (
     const std::vector<VkDescriptorSetLayout>& desc_set_layouts, 
     const VkDevice&              device)
 {
+  //
+  // input mainly descriptorsetlayouts + pushconstants
+
   // PIPELINE LAYOUT CREATE INFO << mostly empty for now
   create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   create_info.pNext          = nullptr;

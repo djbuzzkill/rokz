@@ -310,15 +310,14 @@ namespace rokz {
     }
     
     VkPipeline                       handle; 
-    VkGraphicsPipelineCreateInfo     ci;
     //PipelineLayout                   layout; // move to pipeline-def
 
-    PipelineState                    state;
-    Vec<rokz::ShaderModule>  shader_modules; 
-    Vec<ShaderStageDef>     shader_stage_defs;
-    // 
-    Vec<VkDescriptorSetLayout> dslos;
-
+    // -- these are used only during creation --------
+    VkGraphicsPipelineCreateInfo ci;
+    Vec<rokz::ShaderModule>      shader_modules; 
+    Vec<ShaderStageDef>          shader_stage_defs;
+    Vec<VkDescriptorSetLayout>   dslos;
+    PipelineState                state;
   };
 
   // ------------------------------------------------------------------------

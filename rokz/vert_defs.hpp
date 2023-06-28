@@ -7,16 +7,6 @@
 #include "shared_types.hpp"
 
 
-
-
-
-
-
-
-
-
-
-
 // N  | normal
 // P  | position
 // C  | color

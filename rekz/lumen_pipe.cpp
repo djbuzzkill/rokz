@@ -9,7 +9,12 @@ using namespace rokz;
 const VkShaderStageFlags k_descriptor_stages =
   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT; 
 
-namespace lumen { 
+// -------------------------------------------------------------------------------------------
+namespace lumen::gbuff
+{ 
+  // ------------------------------------------------------------------------------------
+  const VkVertexInputBindingDescription&        kVertexInputBindingDesc = kPNTx_InputBindingDesc;
+  const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc = kPNTx_InputAttributeDesc;
   //
   const Vec<VkDescriptorSetLayoutBinding> kDescriptorBindings = {
     { UBO_BINDINGI,                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         0, VK_SHADER_STAGE_VERTEX_BIT  , nullptr }, // height
@@ -17,13 +22,15 @@ namespace lumen {
     { NORMAL_ATTACHMENT_BINDINGI,   VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // 
     { ALBEDO_ATTACHMENT_BINDINGI,   VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }, // 
   };
+}
 
-  // ------------------------------------------------------------------------------------
-  const VkVertexInputBindingDescription&        gbuff::kVertexInputBindingDesc = kPNTx_InputBindingDesc;
-  const Vec<VkVertexInputAttributeDescription>& gbuff::kVertexInputAttributeDesc = kPNTx_InputAttributeDesc;
+// -------------------------------------------------------------------------------------------
+namespace lumen::lcomp
+{ 
+  const VkVertexInputBindingDescription&        kVertexInputBindingDesc   = kPTx_InputBindingDesc; 
 
-  const VkVertexInputBindingDescription&        lcomp::kVertexInputBindingDesc = kPTx_InputBindingDesc; 
-  const Vec<VkVertexInputAttributeDescription>& lcomp::kVertexInputAttributeDesc = kPTx_InputAttributeDesc;
+  // const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc = kPTx_InputAttributeDesc;
+
 }
 
 

@@ -26,12 +26,8 @@ namespace rokz {
                                       const std::vector<VkAttachmentDescription>& attach_descs,
                                       const std::vector<VkSubpassDescription>&    subpass_descs,
                                       const std::vector<VkSubpassDependency>&     deps); 
-
-
   // VkFormat                                    swapchain_format,
   // VkSampleCountFlagBits                       msaa_samples,
-
-  
   VkSubpassDescription&    SubpassDesc_default     (VkSubpassDescription&    spd); 
   VkSubpassDependency&     SubpassDep_default      (VkSubpassDependency&     dep); 
 

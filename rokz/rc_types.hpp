@@ -31,7 +31,7 @@ namespace rokz { namespace rc {
         }}
 
         PipelineState              state;
-        Vec<ShaderModule>    shader_modules; 
+        Vec<ShaderModule>          shader_modules; 
         Vec<VkDescriptorSetLayout> dslos;
     };
 
@@ -45,8 +45,6 @@ namespace rokz { namespace rc {
     //     }
     //   }}; 
 
-
-    
 
     // -- ??? -- 
     struct DynRenderPipe: public Pipeline {

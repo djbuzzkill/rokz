@@ -22,6 +22,7 @@ set (ROKZ_HEADER_FILES
   image.hpp
   imagebuff.hpp
   pipeline.hpp
+  pipelinebuilder.hpp
   framebuffer.hpp
   renderpass.hpp
   render.hpp
@@ -63,6 +64,7 @@ set (ROKZ_SOURCE_FILES
   command.cpp
   defaults.cpp
   pipeline.cpp
+  pipelinebuilder.cpp
   framebuffer.cpp
   renderpass.cpp
   render.cpp

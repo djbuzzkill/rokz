@@ -393,12 +393,7 @@ int milkshake::run (const Vec<std::string>& args) {
     return __LINE__;
   }
 
-  HERE("HERERERERE");
   //
-  glob.lcomp.renderpass->handle;
-  
-  glob.gbuff.renderpass->handle;
-  
   // for BeginRendering ()
   //rokz::SetupDynamicRenderingInfo;//  (glob.rendering_info_group, glob.msaa_color_imageview->handle,
                                   // glob.depth_imageview->handle, scg.extent); 
@@ -407,9 +402,8 @@ int milkshake::run (const Vec<std::string>& args) {
                                    grid::kDescriptorBindings, glob.device); 
 
   rokz::DefineDescriptorSetLayout (glob.lumen_dslo,
-                                   lumen::kDescriptorBindings, glob.device); 
+                                   lumen::gbuff::kDescriptorBindings, glob.device); 
 
-  HERE("GRID HERERERERE");
   // ---------------- INIT GRID PIPELINE  ---------------------
   rokz::DefineDescriptorSetLayout (glob.grid_dslo,
                                    grid::kDescriptorBindings, glob.device); 
@@ -423,18 +417,13 @@ int milkshake::run (const Vec<std::string>& args) {
     return false; 
   }
 
-  HERE("AFTER GRID HERERERERE");
+  // ---------------- INIT LUMEN PIPE ------------------------
+  rokz::DefineDescriptorSetLayout (glob.lumen_dslo, 
+                                   lumen::gbuff::kDescriptorBindings, glob.device); 
 
-  // ---------------- INIT OSD PIPELINE  ---------------------
-  // rokz::DefineDescriptorSetLayout (glob.osd_dslo, onscreen::kDescriptorBindings, glob.device); 
 
-  // glob.osd_pl.dslos.push_back (glob.osd_dslo.handle); 
-  // if (!onscreen::InitPipeline (glob.osd_pl, glob.osd_plo, glob.osd_pl.dslos, dark_path,
-  //                              kDefaultExtent, glob.msaa_samples,
-  //                              scg.image_format, glob.depth_format,  glob.device)) {
-  //   printf ("[FAILED] --> OSD pipeline \n"); 
-  //   return false; 
-  // }
+  // 
+
   //
   rokz::SetupGlobalUniforms (glob.global_bu, kMaxFramesInFlight, glob.device); 
 

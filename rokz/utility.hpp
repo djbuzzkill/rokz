@@ -10,6 +10,7 @@
 #define HERE(x) printf(" [%s|line:%i] --> %s \n",__FUNCTION__,__LINE__,(x));
 
 #define CHECK_VK_HANDLE(x) ((x)!=VK_NULL_HANDLE)
+#define CHECK_VK_RESULT(x) ((x)==VK_SUCCESS)
 
 namespace rokz { namespace ut { 
 

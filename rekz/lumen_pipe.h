@@ -1,38 +1,33 @@
 
-
 #ifndef LUMEN_PIPE_INCLUDE
 #define LUMEN_PIPE_INCLUDE
-
 
 #include "rekz.h"
 #include <vulkan/vulkan_core.h>
 
 namespace lumen {
-
-  // ----------------------------------------------------------------------------------------
-  //
   // ----------------------------------------------------------------------------------------
   using namespace rokz; 
     
   const uint32 kMaxCount = 128;
-  extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
 
   const uint32 UBO_BINDINGI = 0; 
   const uint32 POSITION_ATTACHMENT_BINDINGI = 1; 
   const uint32 NORMAL_ATTACHMENT_BINDINGI   = 2; 
   const uint32 ALBEDO_ATTACHMENT_BINDINGI   = 3; 
 
-// ----------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------
   // Geom buff 
   // ----------------------------------------------------------------------------------------
   namespace gbuff {
-    //
-    typedef rokz::PNTx_Vert Vert;
 
-    const VkShaderStageFlags kPC_stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    extern const VkVertexInputBindingDescription& kVertexInputBindingDesc; //  = kPNTx_InputBindingDesc;
+    typedef rokz::PNTx_Vert                              Vert;
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc; //  = kPNTx_InputBindingDesc;
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; //  = kPNTx_InputAttributeDesc;
 
+    extern const Vec<VkDescriptorSetLayoutBinding>       kDescriptorBindings;
+    const VkShaderStageFlags                             kPC_stages = VK_SHADER_STAGE_VERTEX_BIT
+                                                                    | VK_SHADER_STAGE_FRAGMENT_BIT;
     struct PushConstant {
       glm::vec4 position;
       glm::vec4 scale;
@@ -49,9 +44,11 @@ namespace lumen {
   // ----------------------------------------------------------------------------------------
   namespace lcomp {
 
-    typedef rokz::PTx_Vert Vert;
-    const VkShaderStageFlags kPC_stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    extern const VkVertexInputBindingDescription& kVertexInputBindingDesc; // = kPTx_InputBindingDesc; 
+    typedef rokz::PTx_Vert                               Vert;
+    const VkShaderStageFlags                             kPC_stages = VK_SHADER_STAGE_VERTEX_BIT
+                                                                    | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    extern const VkVertexInputBindingDescription&        kVertexInputBindingDesc; // = kPTx_InputBindingDesc; 
     extern const Vec<VkVertexInputAttributeDescription>& kVertexInputAttributeDesc; //  = kPTx_InputAttributeDesc;
 
     struct PushConstant {
