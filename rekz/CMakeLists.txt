@@ -6,6 +6,8 @@ project (rekz)
 #set ("CMAKE_CXX_FLAGS=-g -O0")
 #set ("CMAKE_C_FLAGS=-g -O0")
 set (REKZ_HEADER_FILES
+
+  bumptool.hpp
   meshery.h
   rekz.h
   dark_types.h
@@ -31,6 +33,8 @@ set (REKZ_HEADER_FILES
 
 
 set (REKZ_SOURCE_FILES
+
+  bumptool.cpp
   drawgrid.cpp  
   darkrootgarden.cpp
   darkpolydata.cpp

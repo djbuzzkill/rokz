@@ -4,7 +4,7 @@
 
 
 
-rokz::rc::Pipeline::Ref  rokz::PipelineBuilder::MakePipeline () {
+rokz::rc::Pipeline::Ref  rokz::PipelineBuilder::MakePipeline (const Device& device) {
 
 
 
